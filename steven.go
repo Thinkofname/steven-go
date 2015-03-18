@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/thinkofdeath/steven/platform"
-	"github.com/thinkofdeath/steven/platform/gl"
+	"github.com/thinkofdeath/steven/render"
 )
 
 func main() {
@@ -13,16 +13,9 @@ func main() {
 }
 
 func start() {
-
+	render.Start()
 }
 
-var test = float32(0.0)
-
 func draw() {
-	gl.ClearColor(0.0, test, 0.0, 1.0)
-	test += 0.005
-	if test > 1.0 {
-		test = 0.0
-	}
-	gl.Clear(gl.ColorBufferBit)
+	render.Draw()
 }

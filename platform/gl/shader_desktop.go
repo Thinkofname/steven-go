@@ -56,8 +56,8 @@ func (p Program) UniformLocation(name string) Uniform {
 	return Uniform(gl.GetUniformLocation(uint32(p), n))
 }
 
-func (u Uniform) Matrix4(transpose bool, matrix *vmath.Matrix4) {
-	gl.UniformMatrix4fv(int32(u), 1, transpose, (*float32)(unsafe.Pointer(matrix)))
+func (u Uniform) Matrix4(matrix *vmath.Matrix4) {
+	gl.UniformMatrix4fv(int32(u), 1, false, (*float32)(unsafe.Pointer(matrix)))
 }
 
 func (u Uniform) Int(val int) {

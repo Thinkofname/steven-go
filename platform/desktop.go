@@ -8,6 +8,8 @@ import (
 	"runtime"
 )
 
+var window *glfw.Window
+
 func run(handler Handler) {
 	runtime.LockOSThread()
 	if err := glfw.Init(); err != nil {
@@ -18,7 +20,8 @@ func run(handler Handler) {
 	glfw.WindowHint(glfw.ContextVersionMajor, 2)
 	glfw.WindowHint(glfw.ContextVersionMajor, 1)
 
-	window, err := glfw.CreateWindow(800, 480, "Steven", nil, nil)
+	var err error
+	window, err = glfw.CreateWindow(800, 480, "Steven", nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -36,4 +39,8 @@ func run(handler Handler) {
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}
+}
+
+func size() (int, int) {
+	return window.GetFramebufferSize()
 }

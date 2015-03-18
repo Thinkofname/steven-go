@@ -14,7 +14,8 @@ license that can be found in the LICENSE file.
 	<application android:label="Basic" android:hasCode="false">
 	<activity android:name="android.app.NativeActivity"
 		android:label="Steven"
-		android:configChanges="orientation|keyboardHidden">
+		android:configChanges="orientation|keyboardHidden"
+		android:screenOrientation="landscape">
 		<meta-data android:name="android.app.lib_name" android:value="steven" />
 		<intent-filter>
 			<action android:name="android.intent.action.MAIN" />

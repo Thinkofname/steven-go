@@ -52,7 +52,7 @@ func (p Program) UniformLocation(name string) Uniform {
 	return Uniform(gl.GetUniformLocation(gl.Program(p), name))
 }
 
-func (u Uniform) Matrix4(transpose bool, matrix *vmath.Matrix4) {
+func (u Uniform) Matrix4(matrix *vmath.Matrix4) {
 	gl.UniformMatrix4fv(gl.Uniform(u), matrix[:])
 }
 
