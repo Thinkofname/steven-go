@@ -2,6 +2,10 @@
 
 package protocol
 
+import (
+	"github.com/thinkofdeath/steven/chat"
+)
+
 // KeepAliveClientbound is sent by a server to check if the
 // client is still responding and keep the connection open.
 // The client should reply with the KeepAliveServerbound
@@ -32,4 +36,26 @@ type JoinGame struct {
 	// Whether the client should reduce the amount of debug
 	// information it displays in F3 mode
 	ReducedDebugInfo bool
+}
+
+// ServerMessage is a message sent by the server. It could be from a player
+// or just a system message. The Type field controls the location the
+// message is displayed at and when the message is displayed.
+//
+// Currently the packet id is: 0x02
+type ServerMessage struct {
+	Message chat.AnyComponent `as:"json"`
+	// 0 - Chat message, 1 - System message, 2 - Action bar message
+	Type byte
+}
+
+// TimeUpdate is sent to sync the world's time to the client, the client
+// will manually tick the time itself so this doesn't need to sent repeatedly
+// but if the server or client has issues keeping up this can fall out of sync
+// so it is a good idea to sent this now and again
+//
+// Currently the packet id is: 0x03
+type TimeUpdate struct {
+	WorldAge  int64
+	TimeOfDay int64
 }

@@ -2,7 +2,22 @@ package protocol
 
 import (
 	"bytes"
+	"errors"
 )
+
+var (
+	// ErrUnexpectedPacket is returned if the method got a different
+	// packet to the one it expected.
+	ErrUnexpectedPacket = errors.New("unexpected packet")
+)
+
+// Serializable is a type which can be serialized into a packet.
+// This is used by protocol_builder when the struct tag 'as' is set
+// to "raw".
+type Serializable interface {
+	Serialize(w *bytes.Buffer) error
+	Deserialize(r *bytes.Reader) error
+}
 
 // State defined which state the protocol is in.
 type State int

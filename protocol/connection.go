@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"strings"
 )
 
@@ -17,8 +18,12 @@ import (
 // state may be set using the State field.
 type Conn struct {
 	conn      byteConn
+	net       net.Conn
 	direction int
 	State     State
+
+	host string
+	port uint16
 }
 
 // Dial creates a connection to a Minecraft server at
@@ -46,11 +51,19 @@ func Dial(address string) (*Conn, error) {
 	if err != nil {
 		return nil, err
 	}
+	parts := strings.SplitN(address, ":", 2)
+	port, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return nil, err
+	}
 	return &Conn{
 		conn: byteConn{
 			ReadWriter: c,
 		},
+		net:       c,
 		direction: serverbound,
+		host:      parts[0],
+		port:      uint16(port),
 	}, nil
 }
 
@@ -111,6 +124,10 @@ func (c *Conn) ReadPacket() (Packet, error) {
 		return packet, fmt.Errorf("Have %d byte(s) left to read", r.Len())
 	}
 	return packet, nil
+}
+
+func (c *Conn) Close() error {
+	return c.net.Close()
 }
 
 // Provides helper byte reading/writing methods

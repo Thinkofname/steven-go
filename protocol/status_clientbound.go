@@ -11,7 +11,7 @@ package protocol
 //     {
 //         "version": {
 //             "name": "1.8.3",
-//             "protocol": "47",
+//             "protocol": 47,
 //         },
 //         "players": {
 //             "max": 20,
@@ -26,7 +26,7 @@ package protocol
 //
 // Currently the packet id is: 0x00
 type StatusResponse struct {
-	Status string
+	Status StatusReply `as:"json"`
 }
 
 // StatusPong is sent as a reply to a StatusPing.
