@@ -1,27 +1,44 @@
 package protocol
 
 import (
-	"bytes"
 	"errors"
+	"github.com/thinkofdeath/steven/encoding/nbt"
 	"io"
 )
 
 const varPart = uint32(0x7F)
+const varPartLong = uint64(0x7F)
 
 var (
 	// ErrVarIntTooLarge is returned when a read varint was too large
 	// (more than 5 bytes)
 	ErrVarIntTooLarge = errors.New("VarInt too large")
+	// ErrVarLongTooLarge is returned when a read varint was too large
+	// (more than 10 bytes)
+	ErrVarLongTooLarge = errors.New("VarLong too large")
 )
 
-func writeVarInt(w io.ByteWriter, i VarInt) error {
+func varIntSize(i VarInt) int {
+	size := 0
+	ui := uint32(i)
+	for {
+		size++
+		if (ui & ^varPart) == 0 {
+			return size
+		}
+		ui >>= 7
+	}
+
+}
+
+func writeVarInt(w io.Writer, i VarInt) error {
 	ui := uint32(i)
 	for {
 		if (ui & ^varPart) == 0 {
-			err := w.WriteByte(byte(ui))
+			err := writeByte(w, byte(ui))
 			return err
 		}
-		err := w.WriteByte(byte((ui & varPart) | 0x80))
+		err := writeByte(w, byte((ui&varPart)|0x80))
 		if err != nil {
 			return err
 		}
@@ -29,11 +46,11 @@ func writeVarInt(w io.ByteWriter, i VarInt) error {
 	}
 }
 
-func readVarInt(r io.ByteReader) (VarInt, error) {
+func readVarInt(r io.Reader) (VarInt, error) {
 	var size uint
 	var val uint32
 	for {
-		b, err := r.ReadByte()
+		b, err := readByte(r)
 		if err != nil {
 			return VarInt(val), err
 		}
@@ -51,7 +68,44 @@ func readVarInt(r io.ByteReader) (VarInt, error) {
 	return VarInt(val), nil
 }
 
-func writeString(w *bytes.Buffer, str string) error {
+func writeVarLong(w io.Writer, i VarLong) error {
+	ui := uint64(i)
+	for {
+		if (ui & ^varPartLong) == 0 {
+			err := writeByte(w, byte(ui))
+			return err
+		}
+		err := writeByte(w, byte((ui&varPartLong)|0x80))
+		if err != nil {
+			return err
+		}
+		ui >>= 7
+	}
+}
+
+func readVarLong(r io.Reader) (VarLong, error) {
+	var size uint
+	var val uint64
+	for {
+		b, err := readByte(r)
+		if err != nil {
+			return VarLong(val), err
+		}
+
+		val |= (uint64(b) & varPartLong) << (size * 7)
+		size++
+		if size > 10 {
+			return VarLong(val), ErrVarLongTooLarge
+		}
+
+		if (b & 0x80) == 0 {
+			break
+		}
+	}
+	return VarLong(val), nil
+}
+
+func writeString(w io.Writer, str string) error {
 	b := []byte(str)
 	err := writeVarInt(w, VarInt(len(b)))
 	if err != nil {
@@ -61,7 +115,7 @@ func writeString(w *bytes.Buffer, str string) error {
 	return err
 }
 
-func readString(r *bytes.Reader) (string, error) {
+func readString(r io.Reader) (string, error) {
 	l, err := readVarInt(r)
 	if err != nil {
 		return "", nil
@@ -71,17 +125,70 @@ func readString(r *bytes.Reader) (string, error) {
 	return string(buf), err
 }
 
-func writeBool(w *bytes.Buffer, b bool) error {
+func writeBool(w io.Writer, b bool) error {
 	if b {
-		return w.WriteByte(1)
+		return writeByte(w, 1)
 	}
-	return w.WriteByte(0)
+	return writeByte(w, 0)
 }
 
-func readBool(r *bytes.Reader) (bool, error) {
-	b, err := r.ReadByte()
+func readBool(r io.Reader) (bool, error) {
+	b, err := readByte(r)
 	if b == 0 {
 		return false, err
 	}
 	return true, err
+}
+
+func writeByte(w io.Writer, b byte) error {
+	if bw, ok := w.(io.ByteWriter); ok {
+		return bw.WriteByte(b)
+	}
+	var buf [1]byte
+	buf[0] = b
+	_, err := w.Write(buf[:1])
+	return err
+}
+
+func readByte(r io.Reader) (byte, error) {
+	if br, ok := r.(io.ByteReader); ok {
+		return br.ReadByte()
+	}
+	var buf [1]byte
+	_, err := r.Read(buf[:1])
+	return buf[0], err
+}
+
+func readNBT(r io.Reader) (*nbt.Compound, error) {
+	b, err := readByte(r)
+	if err != nil || b == 0 { // 0 == No tag
+		return nil, err
+	}
+	n := nbt.NewCompound()
+	err = n.Deserialize(&singleBufferedReader{R: r, B: b})
+	return n, err
+}
+
+func writeNBT(w io.Writer, n *nbt.Compound) error {
+	if n == nil {
+		return writeByte(w, 0)
+	}
+	return n.Serialize(w)
+}
+
+type singleBufferedReader struct {
+	R    io.Reader
+	B    byte
+	read bool
+}
+
+func (s *singleBufferedReader) Read(b []byte) (int, error) {
+	if !s.read && len(b) != 0 {
+		n, err := s.R.Read(b[1:])
+		n++
+		b[0] = s.B
+		s.read = true
+		return n, err
+	}
+	return s.R.Read(b)
 }

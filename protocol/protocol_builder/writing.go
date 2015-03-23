@@ -13,45 +13,64 @@ type writing struct {
 
 	scratchSize int
 	tmpCount    int
+	base        string
 }
 
-func (w *writing) writeStruct(s *ast.TypeSpec, name string) {
-	spec := s.Type.(*ast.StructType)
+func (w *writing) writeStruct(spec *ast.StructType, name string) {
+	var lastCondition conditions
 	for _, field := range spec.Fields.List {
 		tag := reflect.StructTag("")
 		if field.Tag != nil {
 			tag = reflect.StructTag(field.Tag.Value[1 : len(field.Tag.Value)-1])
 		}
+
+		var condition conditions
+		if ifTag := tag.Get("if"); ifTag != "" {
+			condition = parseCondition(ifTag)
+		}
+
+		if !lastCondition.equals(condition) {
+			if lastCondition != nil {
+				w.buf.WriteString("}\n")
+			}
+			if condition != nil {
+				condition.print(name, &w.buf)
+			}
+		}
+		lastCondition = condition
+
 		for _, n := range field.Names {
 			w.writeType(field.Type, fmt.Sprintf("%s.%s", name, n), tag)
 		}
+	}
+	if lastCondition != nil {
+		w.buf.WriteString("}\n")
 	}
 }
 
 func (w *writing) writeType(e ast.Expr, name string, tag reflect.StructTag) {
 	switch e := e.(type) {
+	case *ast.StructType:
+		w.writeStruct(e, name)
 	case *ast.SelectorExpr:
 		pck := e.X.(*ast.Ident).Name
 		s := e.Sel.Name
-		if tag.Get("as") != "" {
-			w.writeNamed(pck+"."+s, name, tag)
-		}
+		w.writeNamed(pck+"."+s, name, tag)
 	case *ast.StarExpr:
-		if tag.Get("as") == "" {
-			panic("pointers can only be 'as'd")
-		}
 		w.writeType(e.X, name, tag)
 	case *ast.Ident:
 		w.writeNamed(e.Name, name, tag)
 	case *ast.ArrayType:
 		lT := tag.Get("length")
-		w.writeNamed(lT, fmt.Sprintf("%s(len(%s))", lT, name), "")
+		if lT != "remaining" && lT != "" && lT[0] != '@' {
+			w.writeNamed(lT, fmt.Sprintf("%s(len(%s))", lT, name), "")
+		}
 		if i, ok := e.Elt.(*ast.Ident); ok && (i.Name == "byte" || i.Name == "uint8") {
 			fmt.Fprintf(&w.buf, "if _, err = ww.Write(%s); err != nil { return }\n", name)
 		} else {
 			iVar := w.tmp()
 			fmt.Fprintf(&w.buf, "for %s := range %s {\n", iVar, name)
-			w.writeType(e.Elt, fmt.Sprintf("%s[%s]", name, iVar), "")
+			w.writeType(e.Elt, fmt.Sprintf("%s[%s]", name, iVar), tag)
 			w.buf.WriteString("}\n")
 		}
 	default:
@@ -70,17 +89,17 @@ func (w *writing) writeNamed(t, name string, tag reflect.StructTag) {
 			fmt.Fprintf(&w.buf, `var %[1]s []byte
 				if %[1]s, err = json.Marshal(&%[2]s); err != nil { return }
 				%[3]s := string(%[1]s)
-				if err = writeString(ww, %[3]s); err != nil { return err }
+				if err = writeString(ww, %[3]s); err != nil { return  }
 			`, tmp1, name, tmp2)
 		case "raw":
-			fmt.Fprintf(&w.buf, "if err = %s.Serialize(ww); err != nil { return err }\n", name)
+			fmt.Fprintf(&w.buf, "if err = %s.Serialize(ww); err != nil { return  }\n", name)
 		default:
 			fmt.Fprintf(&w.buf, "// Can't 'as' %s\n", as)
 		}
 		return
 	}
 	if s, ok := structs[t]; ok {
-		w.writeStruct(s, name)
+		w.writeStruct(s.Type.(*ast.StructType), name)
 		return
 	}
 	funcName := ""
@@ -88,10 +107,16 @@ func (w *writing) writeNamed(t, name string, tag reflect.StructTag) {
 	switch t {
 	case "VarInt":
 		funcName = "writeVarInt"
+	case "VarLong":
+		funcName = "writeVarLong"
 	case "string":
 		funcName = "writeString"
 	case "bool":
 		funcName = "writeBool"
+	case "Metadata":
+		funcName = "writeMetadata"
+	case "nbt.Compound":
+		funcName = "writeNBT"
 	case "int8", "uint8", "byte":
 		w.scratch(1)
 		generateNumberWrite(&w.buf, name, t, 1, t[0] != 'i')
@@ -115,14 +140,14 @@ func (w *writing) writeNamed(t, name string, tag reflect.StructTag) {
 		fmt.Fprintf(&w.buf, "%s := math.Float64bits(%s)\n", name, orig)
 		t = "uint64"
 		fallthrough
-	case "int64", "uint64":
+	case "int64", "uint64", "Position":
 		w.scratch(8)
-		generateNumberWrite(&w.buf, name, t, 8, t[0] == 'u')
+		generateNumberWrite(&w.buf, name, t, 8, t[0] != 'i')
 	default:
 		fmt.Fprintf(&w.buf, "// TODO write to %s type %s\n", name, t)
 	}
 	if len(funcName) != 0 {
-		fmt.Fprintf(&w.buf, "if err = %s(ww, %s); err != nil { return err }\n", funcName, name)
+		fmt.Fprintf(&w.buf, "if err = %s(ww, %s); err != nil { return  }\n", funcName, name)
 	}
 }
 

@@ -12,6 +12,10 @@ func mapStruct(val interface{}, m map[string]json.RawMessage) error {
 
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
+		if f.Type.Kind() == reflect.Struct {
+			mapStruct(v.Field(i).Addr().Interface(), m)
+			continue
+		}
 		name := f.Tag.Get("json")
 		if name == "" {
 			name = f.Name

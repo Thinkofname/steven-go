@@ -93,24 +93,26 @@ func main() {
 
 	// Packets
 	for _, p := range packets {
-		imports["bytes"] = struct{}{}
+		imports["io"] = struct{}{}
 		short := string(strings.ToLower(p.name)[0])
 
 		fmt.Fprintf(&buf, "func (%s *%s) id() int { return %d; }\n", short, p.name, p.id)
 
-		fmt.Fprintf(&buf, "func (%s *%s) write(ww *bytes.Buffer) (err error) { \n", short, p.name)
+		fmt.Fprintf(&buf, "func (%s *%s) write(ww io.Writer) (err error) { \n", short, p.name)
 		w := &writing{
-			out: &buf,
+			base: short,
+			out:  &buf,
 		}
-		w.writeStruct(structs[p.name], short)
+		w.writeStruct(structs[p.name].Type.(*ast.StructType), short)
 		w.flush()
 		buf.WriteString("return; }\n")
 
-		fmt.Fprintf(&buf, "func (%s *%s) read(rr *bytes.Reader) (err error) { \n", short, p.name)
+		fmt.Fprintf(&buf, "func (%s *%s) read(rr io.Reader) (err error) { \n", short, p.name)
 		r := &reading{
-			out: &buf,
+			base: short,
+			out:  &buf,
 		}
-		r.readStruct(structs[p.name], short)
+		r.readStruct(structs[p.name].Type.(*ast.StructType), short)
 		r.flush()
 		buf.WriteString("return; }\n")
 
@@ -141,6 +143,7 @@ func main() {
 
 	b, err := format.Source(header.Bytes())
 	if err != nil {
+		log.Println(header.String())
 		log.Fatalf("format error: %s", err)
 	}
 

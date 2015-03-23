@@ -68,6 +68,10 @@ func (c *Conn) LoginToServer(profile mojang.Profile) (err error) {
 		SharedSecret: sharedKey,
 		VerifyToken:  verifyToken,
 	})
+	if err != nil {
+		return
+	}
 
-	return err
+	err = c.EnableEncryption(key)
+	return
 }

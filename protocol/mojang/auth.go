@@ -53,10 +53,10 @@ func JoinServer(profile Profile, serverHash ...[]byte) error {
 		twosCompliment(hash)
 	}
 	serverID := hex.EncodeToString(hash)
+	serverID = strings.TrimLeft(serverID, "0")
 	if negative {
 		serverID = "-" + serverID
 	}
-	serverID = strings.TrimLeft(serverID, "0")
 
 	b, err := json.Marshal(joinData{
 		AccessToken:     profile.AccessToken,

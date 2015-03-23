@@ -4,59 +4,59 @@
 package protocol
 
 import (
-	"bytes"
 	"encoding/json"
+	"io"
 )
 
 func (l *LoginDisconnect) id() int { return 0 }
-func (l *LoginDisconnect) write(ww *bytes.Buffer) (err error) {
+func (l *LoginDisconnect) write(ww io.Writer) (err error) {
 	var tmp0 []byte
 	if tmp0, err = json.Marshal(&l.Reason); err != nil {
 		return
 	}
 	tmp1 := string(tmp0)
 	if err = writeString(ww, tmp1); err != nil {
-		return err
+		return
 	}
 	return
 }
-func (l *LoginDisconnect) read(rr *bytes.Reader) (err error) {
+func (l *LoginDisconnect) read(rr io.Reader) (err error) {
 	var tmp0 string
 	if tmp0, err = readString(rr); err != nil {
 		return err
 	}
 	if err = json.Unmarshal([]byte(tmp0), &l.Reason); err != nil {
-		return err
+		return
 	}
 	return
 }
 
 func (e *EncryptionRequest) id() int { return 1 }
-func (e *EncryptionRequest) write(ww *bytes.Buffer) (err error) {
+func (e *EncryptionRequest) write(ww io.Writer) (err error) {
 	if err = writeString(ww, e.ServerID); err != nil {
-		return err
+		return
 	}
 	if err = writeVarInt(ww, VarInt(len(e.PublicKey))); err != nil {
-		return err
+		return
 	}
 	if _, err = ww.Write(e.PublicKey); err != nil {
 		return
 	}
 	if err = writeVarInt(ww, VarInt(len(e.VerifyToken))); err != nil {
-		return err
+		return
 	}
 	if _, err = ww.Write(e.VerifyToken); err != nil {
 		return
 	}
 	return
 }
-func (e *EncryptionRequest) read(rr *bytes.Reader) (err error) {
+func (e *EncryptionRequest) read(rr io.Reader) (err error) {
 	if e.ServerID, err = readString(rr); err != nil {
-		return err
+		return
 	}
 	var tmp0 VarInt
 	if tmp0, err = readVarInt(rr); err != nil {
-		return err
+		return
 	}
 	e.PublicKey = make([]byte, tmp0)
 	if _, err = rr.Read(e.PublicKey); err != nil {
@@ -64,7 +64,7 @@ func (e *EncryptionRequest) read(rr *bytes.Reader) (err error) {
 	}
 	var tmp1 VarInt
 	if tmp1, err = readVarInt(rr); err != nil {
-		return err
+		return
 	}
 	e.VerifyToken = make([]byte, tmp1)
 	if _, err = rr.Read(e.VerifyToken); err != nil {
@@ -74,35 +74,35 @@ func (e *EncryptionRequest) read(rr *bytes.Reader) (err error) {
 }
 
 func (l *LoginSuccess) id() int { return 2 }
-func (l *LoginSuccess) write(ww *bytes.Buffer) (err error) {
+func (l *LoginSuccess) write(ww io.Writer) (err error) {
 	if err = writeString(ww, l.UUID); err != nil {
-		return err
+		return
 	}
 	if err = writeString(ww, l.Username); err != nil {
-		return err
+		return
 	}
 	return
 }
-func (l *LoginSuccess) read(rr *bytes.Reader) (err error) {
+func (l *LoginSuccess) read(rr io.Reader) (err error) {
 	if l.UUID, err = readString(rr); err != nil {
-		return err
+		return
 	}
 	if l.Username, err = readString(rr); err != nil {
-		return err
+		return
 	}
 	return
 }
 
 func (s *SetInitialCompression) id() int { return 3 }
-func (s *SetInitialCompression) write(ww *bytes.Buffer) (err error) {
+func (s *SetInitialCompression) write(ww io.Writer) (err error) {
 	if err = writeVarInt(ww, s.Threshold); err != nil {
-		return err
+		return
 	}
 	return
 }
-func (s *SetInitialCompression) read(rr *bytes.Reader) (err error) {
+func (s *SetInitialCompression) read(rr io.Reader) (err error) {
 	if s.Threshold, err = readVarInt(rr); err != nil {
-		return err
+		return
 	}
 	return
 }

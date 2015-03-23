@@ -4,35 +4,35 @@
 package protocol
 
 import (
-	"bytes"
 	"encoding/json"
+	"io"
 )
 
 func (s *StatusResponse) id() int { return 0 }
-func (s *StatusResponse) write(ww *bytes.Buffer) (err error) {
+func (s *StatusResponse) write(ww io.Writer) (err error) {
 	var tmp0 []byte
 	if tmp0, err = json.Marshal(&s.Status); err != nil {
 		return
 	}
 	tmp1 := string(tmp0)
 	if err = writeString(ww, tmp1); err != nil {
-		return err
+		return
 	}
 	return
 }
-func (s *StatusResponse) read(rr *bytes.Reader) (err error) {
+func (s *StatusResponse) read(rr io.Reader) (err error) {
 	var tmp0 string
 	if tmp0, err = readString(rr); err != nil {
 		return err
 	}
 	if err = json.Unmarshal([]byte(tmp0), &s.Status); err != nil {
-		return err
+		return
 	}
 	return
 }
 
 func (s *StatusPong) id() int { return 1 }
-func (s *StatusPong) write(ww *bytes.Buffer) (err error) {
+func (s *StatusPong) write(ww io.Writer) (err error) {
 	var tmp [8]byte
 	tmp[0] = byte(s.Time >> 56)
 	tmp[1] = byte(s.Time >> 48)
@@ -47,10 +47,10 @@ func (s *StatusPong) write(ww *bytes.Buffer) (err error) {
 	}
 	return
 }
-func (s *StatusPong) read(rr *bytes.Reader) (err error) {
+func (s *StatusPong) read(rr io.Reader) (err error) {
 	var tmp [8]byte
 	if _, err = rr.Read(tmp[:8]); err != nil {
-		return err
+		return
 	}
 	s.Time = int64((uint64(tmp[7]) << 0) | (uint64(tmp[6]) << 8) | (uint64(tmp[5]) << 16) | (uint64(tmp[4]) << 24) | (uint64(tmp[3]) << 32) | (uint64(tmp[2]) << 40) | (uint64(tmp[1]) << 48) | (uint64(tmp[0]) << 56))
 	return

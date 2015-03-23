@@ -4,17 +4,17 @@
 package protocol
 
 import (
-	"bytes"
+	"io"
 )
 
 func (h *Handshake) id() int { return 0 }
-func (h *Handshake) write(ww *bytes.Buffer) (err error) {
+func (h *Handshake) write(ww io.Writer) (err error) {
 	var tmp [2]byte
 	if err = writeVarInt(ww, h.ProtocolVersion); err != nil {
-		return err
+		return
 	}
 	if err = writeString(ww, h.Host); err != nil {
-		return err
+		return
 	}
 	tmp[0] = byte(h.Port >> 8)
 	tmp[1] = byte(h.Port >> 0)
@@ -22,24 +22,24 @@ func (h *Handshake) write(ww *bytes.Buffer) (err error) {
 		return
 	}
 	if err = writeVarInt(ww, h.Next); err != nil {
-		return err
+		return
 	}
 	return
 }
-func (h *Handshake) read(rr *bytes.Reader) (err error) {
+func (h *Handshake) read(rr io.Reader) (err error) {
 	var tmp [2]byte
 	if h.ProtocolVersion, err = readVarInt(rr); err != nil {
-		return err
+		return
 	}
 	if h.Host, err = readString(rr); err != nil {
-		return err
+		return
 	}
 	if _, err = rr.Read(tmp[:2]); err != nil {
-		return err
+		return
 	}
 	h.Port = (uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8)
 	if h.Next, err = readVarInt(rr); err != nil {
-		return err
+		return
 	}
 	return
 }

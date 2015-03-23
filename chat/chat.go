@@ -34,7 +34,7 @@ func (s AnyComponent) Type() Type {
 }
 
 // MarshalJSON marshals the contained value to json.
-func (s AnyComponent) MarshalJSON() ([]byte, error) {
+func (s *AnyComponent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.Value)
 }
 

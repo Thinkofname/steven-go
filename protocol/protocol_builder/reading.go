@@ -13,43 +13,74 @@ type reading struct {
 
 	scratchSize int
 	tmpCount    int
+	base        string
 }
 
-func (r *reading) readStruct(s *ast.TypeSpec, name string) {
-	spec := s.Type.(*ast.StructType)
+func (r *reading) readStruct(spec *ast.StructType, name string) {
+	var lastCondition conditions
 	for _, field := range spec.Fields.List {
 		tag := reflect.StructTag("")
 		if field.Tag != nil {
 			tag = reflect.StructTag(field.Tag.Value[1 : len(field.Tag.Value)-1])
 		}
+
+		var condition conditions
+		if ifTag := tag.Get("if"); ifTag != "" {
+			condition = parseCondition(ifTag)
+		}
+
+		if !lastCondition.equals(condition) {
+			if lastCondition != nil {
+				r.buf.WriteString("}\n")
+			}
+			if condition != nil {
+				condition.print(name, &r.buf)
+			}
+		}
+		lastCondition = condition
+
 		for _, n := range field.Names {
 			r.readType(field.Type, fmt.Sprintf("%s.%s", name, n), tag)
 		}
+	}
+	if lastCondition != nil {
+		r.buf.WriteString("}\n")
 	}
 }
 
 func (r *reading) readType(e ast.Expr, name string, tag reflect.StructTag) {
 	switch e := e.(type) {
+	case *ast.StructType:
+		r.readStruct(e, name)
 	case *ast.SelectorExpr:
 		pck := e.X.(*ast.Ident).Name
 		s := e.Sel.Name
-		if tag.Get("as") != "" {
-			r.readNamed(pck+"."+s, name, tag)
-		}
+		r.readNamed(pck+"."+s, name, tag)
 	case *ast.StarExpr:
-		if tag.Get("as") == "" {
-			panic("pointers can only be 'as'd")
+		ty, ok := e.X.(*ast.Ident)
+		if ok {
+			fmt.Fprintf(&r.buf, "%s = new(%s)\n", name, ty.Name)
+			r.readNamed(ty.Name, name, tag)
+		} else {
+			r.readType(e.X, name, tag)
 		}
-		ty := e.X.(*ast.Ident).Name
-		fmt.Fprintf(&r.buf, "%s = new(%s)\n", name, ty)
-		r.readNamed(ty, name, tag)
 	case *ast.Ident:
 		r.readNamed(e.Name, name, tag)
 	case *ast.ArrayType:
 		lT := tag.Get("length")
+		if lT == "remaining" {
+			imports["io/ioutil"] = struct{}{}
+			fmt.Fprintf(&r.buf, "if %s, err = ioutil.ReadAll(rr); err != nil { return }\n", name)
+			return
+		}
 		lenVar := r.tmp()
-		fmt.Fprintf(&r.buf, "var %s %s\n", lenVar, lT)
-		r.readNamed(lT, lenVar, "")
+		if lT != "" && lT[0] == '@' {
+			fmt.Fprintf(&r.buf, "%s := %s(%s)\n", lenVar, lT[1:], r.base)
+		} else {
+			fmt.Fprintf(&r.buf, "var %s %s\n", lenVar, lT)
+			r.readNamed(lT, lenVar, "")
+		}
+
 		// Allocate the slice
 
 		fmt.Fprintf(&r.buf, "%s = make([]%s, %s)\n", name, e.Elt, lenVar)
@@ -58,7 +89,7 @@ func (r *reading) readType(e ast.Expr, name string, tag reflect.StructTag) {
 		} else {
 			iVar := r.tmp()
 			fmt.Fprintf(&r.buf, "for %s := range %s {\n", iVar, name)
-			r.readType(e.Elt, fmt.Sprintf("%s[%s]", name, iVar), "")
+			r.readType(e.Elt, fmt.Sprintf("%s[%s]", name, iVar), tag)
 			r.buf.WriteString("}\n")
 		}
 	default:
@@ -75,17 +106,17 @@ func (r *reading) readNamed(t, name string, tag reflect.StructTag) {
 			tmp1 := r.tmp()
 			fmt.Fprintf(&r.buf, `var %[1]s string 
 			if %[1]s, err = readString(rr); err != nil { return err }
-			if err = json.Unmarshal([]byte(%[1]s), &%[2]s); err != nil { return err }
+			if err = json.Unmarshal([]byte(%[1]s), &%[2]s); err != nil { return  }
 			`, tmp1, name)
 		case "raw":
-			fmt.Fprintf(&r.buf, "if err = %s.Deserialize(rr); err != nil { return err }\n", name)
+			fmt.Fprintf(&r.buf, "if err = %s.Deserialize(rr); err != nil { return  }\n", name)
 		default:
 			fmt.Fprintf(&r.buf, "// Can't 'as' %s\n", as)
 		}
 		return
 	}
 	if s, ok := structs[t]; ok {
-		r.readStruct(s, name)
+		r.readStruct(s.Type.(*ast.StructType), name)
 		return
 	}
 	funcName := ""
@@ -95,10 +126,16 @@ func (r *reading) readNamed(t, name string, tag reflect.StructTag) {
 	switch t {
 	case "VarInt":
 		funcName = "readVarInt"
+	case "VarLong":
+		funcName = "readVarLong"
 	case "string":
 		funcName = "readString"
 	case "bool":
 		funcName = "readBool"
+	case "Metadata":
+		funcName = "readMetadata"
+	case "nbt.Compound":
+		funcName = "readNBT"
 	case "int8", "uint8", "byte":
 		r.scratch(1)
 		generateNumberRead(&r.buf, name, t, 1, t[0] != 'i')
@@ -123,9 +160,9 @@ func (r *reading) readNamed(t, name string, tag reflect.StructTag) {
 		t = "uint64"
 		fmt.Fprintf(&r.buf, "var %s uint64\n", name)
 		fallthrough
-	case "int64", "uint64":
+	case "int64", "uint64", "Position":
 		r.scratch(8)
-		generateNumberRead(&r.buf, name, t, 8, t[0] == 'u')
+		generateNumberRead(&r.buf, name, t, 8, t[0] != 'i')
 		if origT == "float64" {
 			fmt.Fprintf(&r.buf, "%s = math.Float64frombits(%s)\n", origName, name)
 		}
@@ -133,7 +170,7 @@ func (r *reading) readNamed(t, name string, tag reflect.StructTag) {
 		fmt.Fprintf(&r.buf, "// TODO read to %s type %s\n", name, t)
 	}
 	if len(funcName) != 0 {
-		fmt.Fprintf(&r.buf, "if %s, err = %s(rr); err != nil { return err }\n", name, funcName)
+		fmt.Fprintf(&r.buf, "if %s, err = %s(rr); err != nil { return  }\n", name, funcName)
 	}
 }
 

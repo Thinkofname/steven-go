@@ -4,43 +4,43 @@
 package protocol
 
 import (
-	"bytes"
+	"io"
 )
 
 func (l *LoginStart) id() int { return 0 }
-func (l *LoginStart) write(ww *bytes.Buffer) (err error) {
+func (l *LoginStart) write(ww io.Writer) (err error) {
 	if err = writeString(ww, l.Username); err != nil {
-		return err
+		return
 	}
 	return
 }
-func (l *LoginStart) read(rr *bytes.Reader) (err error) {
+func (l *LoginStart) read(rr io.Reader) (err error) {
 	if l.Username, err = readString(rr); err != nil {
-		return err
+		return
 	}
 	return
 }
 
 func (e *EncryptionResponse) id() int { return 1 }
-func (e *EncryptionResponse) write(ww *bytes.Buffer) (err error) {
+func (e *EncryptionResponse) write(ww io.Writer) (err error) {
 	if err = writeVarInt(ww, VarInt(len(e.SharedSecret))); err != nil {
-		return err
+		return
 	}
 	if _, err = ww.Write(e.SharedSecret); err != nil {
 		return
 	}
 	if err = writeVarInt(ww, VarInt(len(e.VerifyToken))); err != nil {
-		return err
+		return
 	}
 	if _, err = ww.Write(e.VerifyToken); err != nil {
 		return
 	}
 	return
 }
-func (e *EncryptionResponse) read(rr *bytes.Reader) (err error) {
+func (e *EncryptionResponse) read(rr io.Reader) (err error) {
 	var tmp0 VarInt
 	if tmp0, err = readVarInt(rr); err != nil {
-		return err
+		return
 	}
 	e.SharedSecret = make([]byte, tmp0)
 	if _, err = rr.Read(e.SharedSecret); err != nil {
@@ -48,7 +48,7 @@ func (e *EncryptionResponse) read(rr *bytes.Reader) (err error) {
 	}
 	var tmp1 VarInt
 	if tmp1, err = readVarInt(rr); err != nil {
-		return err
+		return
 	}
 	e.VerifyToken = make([]byte, tmp1)
 	if _, err = rr.Read(e.VerifyToken); err != nil {

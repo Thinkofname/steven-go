@@ -17,7 +17,7 @@ func generateNumberRead(w *bytes.Buffer, name, t string, size int, unsigned bool
 	if !unsigned {
 		t = "u" + t
 	}
-	fmt.Fprintf(w, "if _, err = rr.Read(tmp[:%d]); err != nil { return err }\n", size)
+	fmt.Fprintf(w, "if _, err = rr.Read(tmp[:%d]); err != nil { return  }\n", size)
 	fmt.Fprintf(w, "%s = ", name)
 	if !unsigned {
 		fmt.Fprintf(w, "%s(", origT)
