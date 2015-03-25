@@ -18,7 +18,7 @@ func (a Array) Get(idx int) byte {
 	return val >> 4
 }
 
-// Sets the value a the index.
+// Set sets the value a the index.
 func (a Array) Set(idx int, val byte) {
 	i := idx >> 1
 	o := a[i]

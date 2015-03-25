@@ -29,7 +29,7 @@ type Buffer struct {
 	scratch [8]byte
 }
 
-// Creates a new buffer containing the passed
+// New creates a new buffer containing the passed
 // types.
 func New(types ...Type) *Buffer {
 	elemSize := 0
