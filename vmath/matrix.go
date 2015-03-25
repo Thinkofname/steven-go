@@ -7,6 +7,8 @@ import (
 // Matrix4 represents a 4x4 matrix
 type Matrix4 [4 * 4]float32
 
+// NewMatrix4 creates a new Matrix4 and sets it to the
+// identity matrix.
 func NewMatrix4() *Matrix4 {
 	m := new(Matrix4)
 	m.Identity()
