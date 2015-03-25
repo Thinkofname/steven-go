@@ -19,6 +19,7 @@ var (
 	syncChan = make(chan func(), 500)
 )
 
+// Start starts the renderer
 func Start() {
 	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 	gl.Enable(gl.DepthTest)
@@ -31,6 +32,7 @@ func Start() {
 	InitStruct(test, testProgram)
 }
 
+// Draw draws a single frame
 func Draw() {
 sync:
 	for {

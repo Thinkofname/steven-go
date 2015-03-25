@@ -4,6 +4,7 @@ import "github.com/thinkofdeath/steven/platform/gl"
 
 var buffers []*ChunkBuffer
 
+// ChunkBuffer is a renderable chunk section
 type ChunkBuffer struct {
 	X, Y, Z int
 
@@ -22,6 +23,7 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 	return c
 }
 
+// Upload uploads the passed vertex data to the buffer.
 func (cb *ChunkBuffer) Upload(data []byte, count int) {
 	sync(func() {
 		cb.buffer.Bind(gl.ArrayBuffer)
@@ -30,6 +32,7 @@ func (cb *ChunkBuffer) Upload(data []byte, count int) {
 	})
 }
 
+// Free removes the buffer and frees related resources.
 func (cb *ChunkBuffer) Free() {
 	for i, c := range buffers {
 		if c == cb {
