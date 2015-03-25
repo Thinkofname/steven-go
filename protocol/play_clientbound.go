@@ -813,6 +813,9 @@ type ResourcePackSend struct {
 	Hash string
 }
 
+// UpdateEntityNBT updates the nbt tag for an entity.
+//
+// Currently the packet id is: 0x49
 type UpdateEntityNBT struct {
 	EntityID VarInt
 	Tag      *nbt.Compound

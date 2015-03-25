@@ -58,6 +58,7 @@ type VarLong int64
 // Position is a location in the world packed into a 64 bit integer
 type Position uint64
 
+// NewPosition creates a Position for the given location.
 func NewPosition(x, y, z int) Position {
 	return ((Position(x) & 0x3FFFFFF) << 38) |
 		((Position(y) & 0xFFF) << 26) |
@@ -87,10 +88,13 @@ func (p Position) String() string {
 // UUID is an unique identifier
 type UUID [16]byte
 
+// Serialize serializes the uuid into the writer
 func (u *UUID) Serialize(w io.Writer) error {
 	_, err := w.Write(u[:])
 	return err
 }
+
+// Deserialize deserializes the uuid from the reader
 func (u *UUID) Deserialize(r io.Reader) error {
 	_, err := io.ReadFull(r, u[:])
 	return err

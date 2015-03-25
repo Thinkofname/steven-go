@@ -3699,6 +3699,26 @@ func (r *ResourcePackSend) read(rr io.Reader) (err error) {
 	return
 }
 
+func (u *UpdateEntityNBT) id() int { return 73 }
+func (u *UpdateEntityNBT) write(ww io.Writer) (err error) {
+	if err = writeVarInt(ww, u.EntityID); err != nil {
+		return
+	}
+	if err = writeNBT(ww, u.Tag); err != nil {
+		return
+	}
+	return
+}
+func (u *UpdateEntityNBT) read(rr io.Reader) (err error) {
+	if u.EntityID, err = readVarInt(rr); err != nil {
+		return
+	}
+	if u.Tag, err = readNBT(rr); err != nil {
+		return
+	}
+	return
+}
+
 func init() {
 	packetCreator[Play][clientbound][0] = func() Packet { return &KeepAliveClientbound{} }
 	packetCreator[Play][clientbound][1] = func() Packet { return &JoinGame{} }
@@ -3773,4 +3793,5 @@ func init() {
 	packetCreator[Play][clientbound][70] = func() Packet { return &SetCompression{} }
 	packetCreator[Play][clientbound][71] = func() Packet { return &PlayerListHeaderFooter{} }
 	packetCreator[Play][clientbound][72] = func() Packet { return &ResourcePackSend{} }
+	packetCreator[Play][clientbound][73] = func() Packet { return &UpdateEntityNBT{} }
 }

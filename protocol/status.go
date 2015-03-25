@@ -1,10 +1,13 @@
 package protocol
 
 import (
-	"github.com/thinkofdeath/steven/chat"
 	"time"
+
+	"github.com/thinkofdeath/steven/chat"
 )
 
+// StatusReply is the reply retrieved from a server when pinging
+// it.
 type StatusReply struct {
 	Version struct {
 		Name     string `json:"name"`
@@ -19,6 +22,7 @@ type StatusReply struct {
 	Favicon     string            `json:"favicon"`
 }
 
+// StatusPlayer is one of the sample players in a StatusReply
 type StatusPlayer struct {
 	Name string `json:"name"`
 	ID   string `json:"id"`
