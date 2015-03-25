@@ -18,6 +18,7 @@ type Handler struct {
 
 	Rotate func(x, y float64)
 	Move   func(f, s float64)
+	Action func(action Action)
 }
 
 // Size returns the size of the screen in pixels.

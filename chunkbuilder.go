@@ -10,12 +10,14 @@ type chunkVertex struct {
 	X, Y, Z int16
 }
 
+type buildPos struct {
+	X, Y, Z int
+}
+
 var chunkVertexF, chunkVertexType = builder.Struct(chunkVertex{})
 
-func (cs *chunkSection) build() {
-	cs.renderID++
-	rid := cs.renderID
-	ox, oy, oz := cs.chunk.X*16-1, cs.Y*16-1, cs.chunk.Z*16-1
+func (cs *chunkSection) build(complete chan<- buildPos) {
+	ox, oy, oz := (cs.chunk.X<<4)-1, (cs.Y<<4)-1, (cs.chunk.Z<<4)-1
 	bs := getSnapshot(ox, oy, oz, 18, 18, 18)
 	go func() {
 		b := builder.New(chunkVertexType...)
@@ -241,7 +243,8 @@ func (cs *chunkSection) build() {
 			}
 		}
 
-		cs.Buffer.Upload(b.Data(), b.Count(), rid)
+		cs.Buffer.Upload(b.Data(), b.Count())
+		complete <- buildPos{cs.chunk.X, cs.Y, cs.chunk.Z}
 	}()
 }
 
@@ -264,19 +267,19 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 	}
 
 	cx1 := int(math.Floor(float64(x) / 16.0))
-	cx2 := int(math.Ceil(float64(x) / 16.0))
+	cx2 := int(math.Ceil(float64(x+w) / 16.0))
 	cy1 := int(math.Floor(float64(y) / 16.0))
-	cy2 := int(math.Ceil(float64(y) / 16.0))
+	cy2 := int(math.Ceil(float64(y+h) / 16.0))
 	cz1 := int(math.Floor(float64(z) / 16.0))
-	cz2 := int(math.Ceil(float64(z) / 16.0))
+	cz2 := int(math.Ceil(float64(z+d) / 16.0))
 
-	for cx := cx1; cx <= cx2; cx++ {
-		for cz := cz1; cz <= cz2; cz++ {
+	for cx := cx1; cx < cx2; cx++ {
+		for cz := cz1; cz < cz2; cz++ {
 			chunk := chunkMap[chunkPosition{cx, cz}]
 			if chunk == nil {
 				continue
 			}
-			for cy := cy1; cy <= cy2; cy++ {
+			for cy := cy1; cy < cy2; cy++ {
 				if cy < 0 || cy > 15 {
 					continue
 				}
@@ -294,25 +297,25 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 				if x1 < 0 {
 					x1 = 0
 				}
-				if x2 > 15 {
-					x2 = 15
+				if x2 > 16 {
+					x2 = 16
 				}
 				if y1 < 0 {
 					y1 = 0
 				}
-				if y2 > 15 {
-					y2 = 15
+				if y2 > 16 {
+					y2 = 16
 				}
 				if z1 < 0 {
 					z1 = 0
 				}
-				if z2 > 15 {
-					z2 = 15
+				if z2 > 16 {
+					z2 = 16
 				}
 
-				for yy := y1; yy <= y2; yy++ {
-					for zz := z1; zz <= z2; zz++ {
-						for xx := x1; xx <= x2; xx++ {
+				for yy := y1; yy < y2; yy++ {
+					for zz := z1; zz < z2; zz++ {
+						for xx := x1; xx < x2; xx++ {
 							bl := cs.block(xx, yy, zz)
 							bs.setBlock(xx+(cx<<4), yy+(cy<<4), zz+(cz<<4), bl)
 						}

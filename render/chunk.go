@@ -7,9 +7,8 @@ var buffers []*ChunkBuffer
 type ChunkBuffer struct {
 	X, Y, Z int
 
-	buffer       gl.Buffer
-	count        int
-	lastRenderID int
+	buffer gl.Buffer
+	count  int
 }
 
 // AllocateChunkBuffer allocates a chunk buffer and adds it to the
@@ -23,14 +22,10 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 	return c
 }
 
-func (cb *ChunkBuffer) Upload(data []byte, count, rid int) {
+func (cb *ChunkBuffer) Upload(data []byte, count int) {
 	sync(func() {
-		if rid < cb.lastRenderID {
-			return
-		}
-		cb.lastRenderID = rid
 		cb.buffer.Bind(gl.ArrayBuffer)
-		cb.buffer.Data(data, gl.StaticDraw)
+		cb.buffer.Data(data, gl.DynamicDraw)
 		cb.count = count
 	})
 }

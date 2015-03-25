@@ -78,12 +78,14 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		lockMouse = false
 		w.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
 	case glfw.KeyW:
-		if handler.Move != nil {
-			if action == glfw.Press {
-				handler.Move(1, 0)
-			} else if action == glfw.Release {
-				handler.Move(0, 0)
-			}
+		if action == glfw.Press {
+			handler.Move(1, 0)
+		} else if action == glfw.Release {
+			handler.Move(0, 0)
+		}
+	case glfw.KeyH:
+		if action == glfw.Release {
+			handler.Action(DebugRefresh)
 		}
 	}
 }

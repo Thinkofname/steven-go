@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"sort"
 
 	"github.com/thinkofdeath/steven/nibble"
 	"github.com/thinkofdeath/steven/render"
@@ -36,8 +37,10 @@ type chunkSection struct {
 	BlockLight nibble.Array
 	SkyLight   nibble.Array
 
-	Buffer   *render.ChunkBuffer
-	renderID int
+	Buffer *render.ChunkBuffer
+
+	dirty    bool
+	building bool
 }
 
 func (cs *chunkSection) block(x, y, z int) uint16 {
@@ -101,12 +104,52 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, hasBiome bool) int {
 
 	chunkMap[c.chunkPosition] = c
 
-	for _, section := range c.Sections {
-		if section == nil {
-			continue
+	for xx := -1; xx <= 1; xx++ {
+		for zz := -1; zz <= 1; zz++ {
+			c := chunkMap[chunkPosition{x + xx, z + zz}]
+			if c != nil {
+				for _, section := range c.Sections {
+					if section == nil {
+						continue
+					}
+					section.dirty = true
+				}
+			}
 		}
-		section.build()
 	}
 
 	return offset
+}
+
+func sortedChunks() []*chunk {
+	out := make([]*chunk, len(chunkMap))
+	i := 0
+	for _, c := range chunkMap {
+		out[i] = c
+		i++
+	}
+	sort.Sort(chunkSorter(out))
+	return out
+}
+
+type chunkSorter []*chunk
+
+func (cs chunkSorter) Len() int {
+	return len(cs)
+}
+
+func (cs chunkSorter) Less(a, b int) bool {
+	ac := cs[a]
+	bc := cs[b]
+	xx := float64(ac.X<<4+8) - render.Camera.X
+	zz := float64(ac.Z<<4+8) - render.Camera.Z
+	adist := xx*xx + zz*zz
+	xx = float64(bc.X<<4+8) - render.Camera.X
+	zz = float64(bc.Z<<4+8) - render.Camera.Z
+	bdist := xx*xx + zz*zz
+	return adist < bdist
+}
+
+func (cs chunkSorter) Swap(a, b int) {
+	cs[a], cs[b] = cs[b], cs[a]
 }
