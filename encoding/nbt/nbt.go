@@ -26,21 +26,18 @@ func NewCompound() *Compound {
 
 func (c *Compound) Serialize(w io.Writer) error {
 	panic("TODO NBT Serialize")
-	return nil
 }
 
 func (c *Compound) Deserialize(r io.Reader) error {
-	id, err := readByte(r)
-	if err != nil {
-		return err
-	}
-	if id != 10 {
-		return ErrInvalidCompound
-	}
+	var err error
 	c.Name, err = readString(r)
 	if err != nil {
 		return err
 	}
+	return c.deserialize(r)
+}
+
+func (c *Compound) deserialize(r io.Reader) error {
 	for {
 		id, err := readByte(r)
 		if err != nil {
@@ -67,7 +64,7 @@ type List struct {
 	Elements []interface{}
 }
 
-func (l *List) Deserialize(r io.Reader) error {
+func (l *List) deserialize(r io.Reader) error {
 	t, err := readByte(r)
 	if err != nil {
 		return err
@@ -126,11 +123,11 @@ func readType(r io.Reader, id int) (interface{}, error) {
 		return readString(r)
 	case 9:
 		l := &List{}
-		err := l.Deserialize(r)
+		err := l.deserialize(r)
 		return l, err
 	case 10:
 		c := NewCompound()
-		err := c.Deserialize(r)
+		err := c.deserialize(r)
 		return c, err
 	case 11:
 		var l int32

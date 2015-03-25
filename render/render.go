@@ -1,21 +1,22 @@
 package render
 
 import (
-	"bytes"
-	"encoding/binary"
+	"math"
+
 	"github.com/thinkofdeath/steven/platform"
 	"github.com/thinkofdeath/steven/platform/gl"
 	"github.com/thinkofdeath/steven/vmath"
-	"math"
 )
 
 var (
 	testProgram gl.Program
 	test        *testShader
-	testBuffer  gl.Buffer
 
 	lastWidth, lastHeight int = -1, -1
 	perspectiveMatrix         = vmath.NewMatrix4()
+	cameraMatrix              = vmath.NewMatrix4()
+
+	syncChan = make(chan func(), 500)
 )
 
 func Start() {
@@ -23,29 +24,24 @@ func Start() {
 	gl.Enable(gl.DepthTest)
 	gl.Enable(gl.CullFaceFlag)
 	gl.CullFace(gl.Back)
-	gl.FrontFace(gl.CounterClockWise)
+	gl.FrontFace(gl.ClockWise)
 
 	testProgram = CreateProgram(vertex, fragment)
 	test = &testShader{}
 	InitStruct(test, testProgram)
-
-	testBuffer = gl.CreateBuffer()
-	testBuffer.Bind(gl.ArrayBuffer)
-	var buf bytes.Buffer
-	binary.Write(&buf, platform.NativeOrder, []float32{
-		0.0, 1.0, 0.0,
-		-1.0, -1.0, 0.0,
-		1.0, -1.0, 0.0,
-	})
-	testBuffer.Data(buf.Bytes(), gl.StaticDraw)
 }
 
-var (
-	offset float32
-	dir    float32 = 0.1
-)
-
 func Draw() {
+sync:
+	for {
+		select {
+		case f := <-syncChan:
+			f()
+		default:
+			break sync
+		}
+	}
+
 	width, height := platform.Size()
 	if lastHeight != height || lastWidth != width {
 		lastWidth = width
@@ -64,45 +60,66 @@ func Draw() {
 	gl.Viewport(0, 0, width, height)
 
 	testProgram.Use()
-
 	test.PerspectiveMatrix.Matrix4(perspectiveMatrix)
-	test.Offset.Float(offset)
-	offset += dir
-	if offset > 20.0 {
-		dir = -0.1
-	} else if offset < 1.0 {
-		dir = 0.1
-	}
+
+	cameraMatrix.Identity()
+	cameraMatrix.Translate(float32(Camera.X), float32(Camera.Y+1.62), float32(-Camera.Z))
+	cameraMatrix.RotateY(float32(Camera.Yaw))
+	cameraMatrix.RotateX(float32(Camera.Pitch))
+	cameraMatrix.Scale(-1.0, 1.0, 1.0)
+
+	test.CameraMatrix.Matrix4(cameraMatrix)
 
 	test.Position.Enable()
-	testBuffer.Bind(gl.ArrayBuffer)
-	test.Position.Pointer(3, gl.Float, false, 12, 0)
-	gl.DrawArrays(gl.Triangles, 0, 3)
+
+	for _, chunk := range buffers {
+		if chunk.count == 0 {
+			continue
+		}
+		test.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
+
+		chunk.buffer.Bind(gl.ArrayBuffer)
+		test.Position.Pointer(3, gl.Short, false, 6, 0)
+		gl.DrawArrays(gl.Triangles, 0, chunk.count)
+	}
 
 	test.Position.Disable()
+}
+
+func sync(f func()) {
+	syncChan <- f
 }
 
 type testShader struct {
 	Position          gl.Attribute `gl:"aPosition"`
 	PerspectiveMatrix gl.Uniform   `gl:"perspectiveMatrix"`
+	CameraMatrix      gl.Uniform   `gl:"cameraMatrix"`
 	Offset            gl.Uniform   `gl:"offset"`
 }
 
 var (
 	vertex = `
-
 attribute vec3 aPosition;
 
 uniform mat4 perspectiveMatrix;
-uniform float offset;
+uniform mat4 cameraMatrix;
+uniform vec3 offset;
+
+varying vec3 vPosition;
 
 void main() {
-	gl_Position = perspectiveMatrix * vec4(aPosition - vec3(0.0, 0.0, offset), 1.0);
+	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
+	vec3 o = vec3(offset.x, -offset.y, offset.z);
+	gl_Position = perspectiveMatrix * cameraMatrix * vec4((pos / 256.0) + o * 16.0, 1.0);
+	vPosition = aPosition / (256.0 * 16.0);
 }
 `
 	fragment = `
+
+varying vec3 vPosition;
+
 void main() {
- 	gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+ 	gl_FragColor = vec4(vPosition, 1.0);
 }
 `
 )

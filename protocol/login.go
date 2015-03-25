@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"errors"
+
 	"github.com/thinkofdeath/steven/protocol/mojang"
 )
 

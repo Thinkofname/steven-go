@@ -15,8 +15,6 @@ import (
 	"time"
 )
 
-var testBuffer = make([]byte, 1)
-
 // Conn is a connection from or to a Minecraft client.
 //
 // The Minecraft protocol as multiple states that it
@@ -152,7 +150,7 @@ func (c *Conn) ReadPacket() (Packet, error) {
 		return nil, err
 	}
 
-	var r io.Reader
+	var r *bytes.Reader
 	r = bytes.NewReader(buf)
 
 	// If compression is enabled then we may need to decompress the packet
@@ -197,16 +195,16 @@ func (c *Conn) ReadPacket() (Packet, error) {
 	// Direction is swapped as this is coming from the other way
 	packets := packetCreator[c.State][(c.direction+1)&1]
 	if id < 0 || int(id) > len(packets) || packets[id] == nil {
-		return nil, fmt.Errorf("Unknown packet %02X", id)
+		return nil, fmt.Errorf("Unknown packet %s:%02X", c.State, id)
 	}
 	packet := packets[id]()
 	if err := packet.read(r); err != nil {
-		return packet, err
+		return packet, fmt.Errorf("packet(%s:%02X): %s", c.State, id, err)
 	}
 	// If we haven't fully read the whole buffer then something went wrong.
 	// Mostly likely our packet definitions are out of date or incorrect
-	if _, err = r.Read(testBuffer); err != io.EOF {
-		return packet, fmt.Errorf("Didn't finish reading packet %02X", id)
+	if r.Len() > 0 {
+		return packet, fmt.Errorf("Didn't finish reading packet %s:%02X, have %d bytes left", c.State, id, r.Len())
 	}
 	return packet, nil
 }

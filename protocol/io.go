@@ -2,8 +2,9 @@ package protocol
 
 import (
 	"errors"
-	"github.com/thinkofdeath/steven/encoding/nbt"
 	"io"
+
+	"github.com/thinkofdeath/steven/encoding/nbt"
 )
 
 const varPart = uint32(0x7F)
@@ -165,7 +166,7 @@ func readNBT(r io.Reader) (*nbt.Compound, error) {
 		return nil, err
 	}
 	n := nbt.NewCompound()
-	err = n.Deserialize(&singleBufferedReader{R: r, B: b})
+	err = n.Deserialize(r)
 	return n, err
 }
 
@@ -174,21 +175,4 @@ func writeNBT(w io.Writer, n *nbt.Compound) error {
 		return writeByte(w, 0)
 	}
 	return n.Serialize(w)
-}
-
-type singleBufferedReader struct {
-	R    io.Reader
-	B    byte
-	read bool
-}
-
-func (s *singleBufferedReader) Read(b []byte) (int, error) {
-	if !s.read && len(b) != 0 {
-		n, err := s.R.Read(b[1:])
-		n++
-		b[0] = s.B
-		s.read = true
-		return n, err
-	}
-	return s.R.Read(b)
 }

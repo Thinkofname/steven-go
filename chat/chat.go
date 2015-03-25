@@ -1,9 +1,12 @@
 package chat
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 )
+
+var null = []byte("null")
 
 // AnyComponent can respresent any valid chat component. This
 // is designed to be used as a target for json unmarshalling
@@ -79,6 +82,11 @@ func (s *AnyComponent) UnmarshalJSON(b []byte) error {
 		var v string
 		err = json.Unmarshal(b, &v)
 		s.Value = &TextComponent{Text: v}
+	case 'n':
+		if bytes.Equal(b, null) {
+			break
+		}
+		fallthrough
 	default:
 		return errInvalid
 	}

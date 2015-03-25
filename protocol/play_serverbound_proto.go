@@ -237,23 +237,31 @@ func (p *PlayerLook) read(rr io.Reader) (err error) {
 func (p *PlayerPositionLook) id() int { return 6 }
 func (p *PlayerPositionLook) write(ww io.Writer) (err error) {
 	var tmp [8]byte
-	tmp0 := math.Float32bits(p.Yaw)
-	tmp[0] = byte(tmp0 >> 24)
-	tmp[1] = byte(tmp0 >> 16)
-	tmp[2] = byte(tmp0 >> 8)
-	tmp[3] = byte(tmp0 >> 0)
-	if _, err = ww.Write(tmp[:4]); err != nil {
+	tmp0 := math.Float64bits(p.X)
+	tmp[0] = byte(tmp0 >> 56)
+	tmp[1] = byte(tmp0 >> 48)
+	tmp[2] = byte(tmp0 >> 40)
+	tmp[3] = byte(tmp0 >> 32)
+	tmp[4] = byte(tmp0 >> 24)
+	tmp[5] = byte(tmp0 >> 16)
+	tmp[6] = byte(tmp0 >> 8)
+	tmp[7] = byte(tmp0 >> 0)
+	if _, err = ww.Write(tmp[:8]); err != nil {
 		return
 	}
-	tmp1 := math.Float32bits(p.Pitch)
-	tmp[0] = byte(tmp1 >> 24)
-	tmp[1] = byte(tmp1 >> 16)
-	tmp[2] = byte(tmp1 >> 8)
-	tmp[3] = byte(tmp1 >> 0)
-	if _, err = ww.Write(tmp[:4]); err != nil {
+	tmp1 := math.Float64bits(p.Y)
+	tmp[0] = byte(tmp1 >> 56)
+	tmp[1] = byte(tmp1 >> 48)
+	tmp[2] = byte(tmp1 >> 40)
+	tmp[3] = byte(tmp1 >> 32)
+	tmp[4] = byte(tmp1 >> 24)
+	tmp[5] = byte(tmp1 >> 16)
+	tmp[6] = byte(tmp1 >> 8)
+	tmp[7] = byte(tmp1 >> 0)
+	if _, err = ww.Write(tmp[:8]); err != nil {
 		return
 	}
-	tmp2 := math.Float64bits(p.X)
+	tmp2 := math.Float64bits(p.Z)
 	tmp[0] = byte(tmp2 >> 56)
 	tmp[1] = byte(tmp2 >> 48)
 	tmp[2] = byte(tmp2 >> 40)
@@ -265,28 +273,20 @@ func (p *PlayerPositionLook) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:8]); err != nil {
 		return
 	}
-	tmp3 := math.Float64bits(p.Y)
-	tmp[0] = byte(tmp3 >> 56)
-	tmp[1] = byte(tmp3 >> 48)
-	tmp[2] = byte(tmp3 >> 40)
-	tmp[3] = byte(tmp3 >> 32)
-	tmp[4] = byte(tmp3 >> 24)
-	tmp[5] = byte(tmp3 >> 16)
-	tmp[6] = byte(tmp3 >> 8)
-	tmp[7] = byte(tmp3 >> 0)
-	if _, err = ww.Write(tmp[:8]); err != nil {
+	tmp3 := math.Float32bits(p.Yaw)
+	tmp[0] = byte(tmp3 >> 24)
+	tmp[1] = byte(tmp3 >> 16)
+	tmp[2] = byte(tmp3 >> 8)
+	tmp[3] = byte(tmp3 >> 0)
+	if _, err = ww.Write(tmp[:4]); err != nil {
 		return
 	}
-	tmp4 := math.Float64bits(p.Z)
-	tmp[0] = byte(tmp4 >> 56)
-	tmp[1] = byte(tmp4 >> 48)
-	tmp[2] = byte(tmp4 >> 40)
-	tmp[3] = byte(tmp4 >> 32)
-	tmp[4] = byte(tmp4 >> 24)
-	tmp[5] = byte(tmp4 >> 16)
-	tmp[6] = byte(tmp4 >> 8)
-	tmp[7] = byte(tmp4 >> 0)
-	if _, err = ww.Write(tmp[:8]); err != nil {
+	tmp4 := math.Float32bits(p.Pitch)
+	tmp[0] = byte(tmp4 >> 24)
+	tmp[1] = byte(tmp4 >> 16)
+	tmp[2] = byte(tmp4 >> 8)
+	tmp[3] = byte(tmp4 >> 0)
+	if _, err = ww.Write(tmp[:4]); err != nil {
 		return
 	}
 	if err = writeBool(ww, p.OnGround); err != nil {
@@ -296,36 +296,36 @@ func (p *PlayerPositionLook) write(ww io.Writer) (err error) {
 }
 func (p *PlayerPositionLook) read(rr io.Reader) (err error) {
 	var tmp [8]byte
-	var tmp0 uint32
-	if _, err = rr.Read(tmp[:4]); err != nil {
+	var tmp0 uint64
+	if _, err = rr.Read(tmp[:8]); err != nil {
 		return
 	}
-	tmp0 = (uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24)
-	p.Yaw = math.Float32frombits(tmp0)
-	var tmp1 uint32
-	if _, err = rr.Read(tmp[:4]); err != nil {
+	tmp0 = (uint64(tmp[7]) << 0) | (uint64(tmp[6]) << 8) | (uint64(tmp[5]) << 16) | (uint64(tmp[4]) << 24) | (uint64(tmp[3]) << 32) | (uint64(tmp[2]) << 40) | (uint64(tmp[1]) << 48) | (uint64(tmp[0]) << 56)
+	p.X = math.Float64frombits(tmp0)
+	var tmp1 uint64
+	if _, err = rr.Read(tmp[:8]); err != nil {
 		return
 	}
-	tmp1 = (uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24)
-	p.Pitch = math.Float32frombits(tmp1)
+	tmp1 = (uint64(tmp[7]) << 0) | (uint64(tmp[6]) << 8) | (uint64(tmp[5]) << 16) | (uint64(tmp[4]) << 24) | (uint64(tmp[3]) << 32) | (uint64(tmp[2]) << 40) | (uint64(tmp[1]) << 48) | (uint64(tmp[0]) << 56)
+	p.Y = math.Float64frombits(tmp1)
 	var tmp2 uint64
 	if _, err = rr.Read(tmp[:8]); err != nil {
 		return
 	}
 	tmp2 = (uint64(tmp[7]) << 0) | (uint64(tmp[6]) << 8) | (uint64(tmp[5]) << 16) | (uint64(tmp[4]) << 24) | (uint64(tmp[3]) << 32) | (uint64(tmp[2]) << 40) | (uint64(tmp[1]) << 48) | (uint64(tmp[0]) << 56)
-	p.X = math.Float64frombits(tmp2)
-	var tmp3 uint64
-	if _, err = rr.Read(tmp[:8]); err != nil {
+	p.Z = math.Float64frombits(tmp2)
+	var tmp3 uint32
+	if _, err = rr.Read(tmp[:4]); err != nil {
 		return
 	}
-	tmp3 = (uint64(tmp[7]) << 0) | (uint64(tmp[6]) << 8) | (uint64(tmp[5]) << 16) | (uint64(tmp[4]) << 24) | (uint64(tmp[3]) << 32) | (uint64(tmp[2]) << 40) | (uint64(tmp[1]) << 48) | (uint64(tmp[0]) << 56)
-	p.Y = math.Float64frombits(tmp3)
-	var tmp4 uint64
-	if _, err = rr.Read(tmp[:8]); err != nil {
+	tmp3 = (uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24)
+	p.Yaw = math.Float32frombits(tmp3)
+	var tmp4 uint32
+	if _, err = rr.Read(tmp[:4]); err != nil {
 		return
 	}
-	tmp4 = (uint64(tmp[7]) << 0) | (uint64(tmp[6]) << 8) | (uint64(tmp[5]) << 16) | (uint64(tmp[4]) << 24) | (uint64(tmp[3]) << 32) | (uint64(tmp[2]) << 40) | (uint64(tmp[1]) << 48) | (uint64(tmp[0]) << 56)
-	p.Z = math.Float64frombits(tmp4)
+	tmp4 = (uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24)
+	p.Pitch = math.Float32frombits(tmp4)
 	if p.OnGround, err = readBool(rr); err != nil {
 		return
 	}

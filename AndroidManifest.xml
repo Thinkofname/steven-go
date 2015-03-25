@@ -11,7 +11,8 @@ license that can be found in the LICENSE file.
 	android:versionName="1.0">
 
 	<uses-sdk android:minSdkVersion="9" />
-	<application android:label="Basic" android:hasCode="false">
+    <uses-permission android:name="android.permission.INTERNET" />
+	<application android:label="Steven" android:hasCode="false">
 	<activity android:name="android.app.NativeActivity"
 		android:label="Steven"
 		android:configChanges="orientation|keyboardHidden"

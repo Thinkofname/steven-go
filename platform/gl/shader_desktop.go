@@ -3,9 +3,10 @@
 package gl
 
 import (
+	"unsafe"
+
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/thinkofdeath/steven/vmath"
-	"unsafe"
 )
 
 const (
@@ -64,8 +65,16 @@ func (u Uniform) Int(val int) {
 	gl.Uniform1i(int32(u), int32(val))
 }
 
+func (u Uniform) Int3(x, y, z int) {
+	gl.Uniform3i(int32(u), int32(x), int32(y), int32(z))
+}
+
 func (u Uniform) Float(val float32) {
 	gl.Uniform1f(int32(u), val)
+}
+
+func (u Uniform) Float3(x, y, z float32) {
+	gl.Uniform3f(int32(u), x, y, z)
 }
 
 func (a Attribute) Enable() {

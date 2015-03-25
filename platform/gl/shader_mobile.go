@@ -64,6 +64,14 @@ func (u Uniform) Float(val float32) {
 	gl.Uniform1f(gl.Uniform(u), val)
 }
 
+func (u Uniform) Int3(x, y, z int) {
+	gl.Uniform3i(gl.Uniform(u), int32(x), int32(y), int32(z))
+}
+
+func (u Uniform) Float3(x, y, z float32) {
+	gl.Uniform3f(gl.Uniform(u), x, y, z)
+}
+
 func (a Attribute) Enable() {
 	gl.EnableVertexAttribArray(gl.Attrib(a))
 }

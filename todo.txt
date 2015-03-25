@@ -1,0 +1,100 @@
+/home/matt/gopath/src/github.com/thinkofdeath/steven/chat/type_string.go:7:7: don't use underscores in Go names; const _Type_name should be _TypeName
+/home/matt/gopath/src/github.com/thinkofdeath/steven/chat/type_string.go:9:5: don't use underscores in Go names; var _Type_index should be _TypeIndex
+/home/matt/gopath/src/github.com/thinkofdeath/steven/encoding/nbt/nbt.go:13:2: exported var ErrInvalidCompound should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/encoding/nbt/nbt.go:16:6: exported type Compound should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/encoding/nbt/nbt.go:21:1: exported function NewCompound should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/encoding/nbt/nbt.go:27:1: exported method Compound.Serialize should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/encoding/nbt/nbt.go:31:1: exported method Compound.Deserialize should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/encoding/nbt/nbt.go:62:6: exported type List should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/nibble/nibble.go:21:1: comment on exported method Array.Set should be of the form "Set ..."
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/buffer_desktop.go:10:2: exported const ArrayBuffer should have comment (or a comment on this block) or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/buffer_desktop.go:16:6: exported type Buffer should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/buffer_desktop.go:20:6: exported type BufferTarget should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/buffer_desktop.go:21:6: exported type BufferUsage should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/buffer_desktop.go:23:1: exported function CreateBuffer should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/buffer_desktop.go:34:1: exported method Buffer.Bind should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/buffer_desktop.go:43:1: exported method Buffer.Data should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/buffer_desktop.go:53:1: exported method Buffer.Delete should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:12:2: exported const ColorBufferBit should have comment (or a comment on this block) or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:41:2: exported type ClearFlags should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:42:2: exported type Flag should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:43:2: exported type Face should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:44:2: exported type FaceDirection should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:45:2: exported type DrawType should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:46:2: exported type Func should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:47:2: exported type Op should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:50:1: exported function Viewport should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:54:1: exported function ClearColor should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:58:1: exported function Clear should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:62:1: exported function ActiveTexture should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:66:1: exported function Enable should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:70:1: exported function Disable should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:74:1: exported function CullFace should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:78:1: exported function FrontFace should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:82:1: exported function DrawArrays should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:93:1: exported function Flush should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:97:1: exported function DepthMask should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:101:1: exported function ColorMask should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:105:1: exported function StencilFunc should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:109:1: exported function StencilMask should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:113:1: exported function StencilOp should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/gl_desktop.go:117:1: exported function ClearStencil should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:13:2: exported const VertexShader should have comment (or a comment on this block) or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:21:2: exported type Program should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:22:2: exported type Attribute should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:23:2: exported type Uniform should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:26:1: exported function CreateProgram should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:30:1: exported method Program.AttachShader should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:34:1: exported method Program.Link should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:42:1: exported method Program.Use should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:50:1: exported method Program.AttributeLocation should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:55:1: exported method Program.UniformLocation should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:60:1: exported method Uniform.Matrix4 should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:64:1: exported method Uniform.Int should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:68:1: exported method Uniform.Int3 should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:72:1: exported method Uniform.Float should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:76:1: exported method Uniform.Float3 should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:80:1: exported method Attribute.Enable should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:84:1: exported method Attribute.Disable should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:88:1: exported method Attribute.Pointer should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:100:2: exported type Shader should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:101:2: exported type ShaderType should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:102:2: exported type ShaderParameter should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:105:1: exported function CreateShader should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:109:1: exported method Shader.Source should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:114:1: exported method Shader.Compile should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:118:1: exported method Shader.Parameter should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/shader_desktop.go:124:1: exported method Shader.InfoLog should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/texture_desktop.go:10:2: exported const Texture2D should have comment (or a comment on this block) or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/texture_desktop.go:34:6: exported type TextureTarget should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/texture_desktop.go:35:6: exported type TextureFormat should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/texture_desktop.go:36:6: exported type TextureParameter should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/texture_desktop.go:37:6: exported type TextureValue should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/texture_desktop.go:39:6: exported type Texture should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/texture_desktop.go:43:1: exported function CreateTexture should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/texture_desktop.go:49:1: exported method Texture.Bind should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/texture_desktop.go:58:1: exported method Texture.Image2D should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/texture_desktop.go:75:1: exported method Texture.Parameter should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/types_desktop.go:9:6: exported type Type should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/platform/gl/types_desktop.go:12:2: exported const UnsignedByte should have comment (or a comment on this block) or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/protocol/play_clientbound.go:816:6: exported type UpdateEntityNBT should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/protocol/state_string.go:7:7: don't use underscores in Go names; const _State_name should be _StateName
+/home/matt/gopath/src/github.com/thinkofdeath/steven/protocol/state_string.go:9:5: don't use underscores in Go names; var _State_index should be _StateIndex
+/home/matt/gopath/src/github.com/thinkofdeath/steven/protocol/status.go:8:6: exported type StatusReply should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/protocol/status.go:22:6: exported type StatusPlayer should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/protocol/types.go:61:1: exported function NewPosition should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/protocol/types.go:90:1: exported method UUID.Serialize should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/protocol/types.go:94:1: exported method UUID.Deserialize should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/protocol/protocol_builder/builder.go:81:4: var packetId should be packetID
+/home/matt/gopath/src/github.com/thinkofdeath/steven/render/camera.go:5:5: exported var Camera should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/render/camera.go:11:6: exported type ClientCamera should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/render/chunk.go:7:6: exported type ChunkBuffer should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/render/chunk.go:26:1: exported method ChunkBuffer.Upload should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/render/chunk.go:38:1: exported method ChunkBuffer.Free should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/render/render.go:22:1: exported function Start should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/render/render.go:34:1: exported function Draw should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/render/builder/builder.go:32:1: comment on exported function New should be of the form "New ..."
+/home/matt/gopath/src/github.com/thinkofdeath/steven/vmath/matrix.go:10:1: exported function NewMatrix4 should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/vmath/vector.go:3:6: exported type Vector3 should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/vmath/vector.go:7:1: exported method Vector3.Dot should have comment or be unexported
+/home/matt/gopath/src/github.com/thinkofdeath/steven/vmath/vector.go:11:1: exported method Vector3.Equals should have comment or be unexported

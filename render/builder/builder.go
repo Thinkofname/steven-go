@@ -3,8 +3,9 @@ package builder
 
 import (
 	"bytes"
-	"github.com/thinkofdeath/steven/platform"
 	"math"
+
+	"github.com/thinkofdeath/steven/platform"
 )
 
 // Types allowed to be used in a buffer.
@@ -38,7 +39,7 @@ func New(types ...Type) *Buffer {
 	b := &Buffer{
 		elemSize: elemSize,
 	}
-	b.buf.Grow(elemSize * 300)
+	b.buf.Grow(elemSize * 3000)
 	return b
 }
 

@@ -219,7 +219,7 @@ type EntityVelocity struct {
 //
 // Currently the packet id is: 0x13
 type EntityDestroy struct {
-	EntityIDs []int32 `length:"VarInt"`
+	EntityIDs []VarInt `length:"VarInt"`
 }
 
 // Entity does nothing. It is a result of subclassing used in Minecraft.
@@ -281,7 +281,7 @@ type EntityHeadLook struct {
 //
 // Currently the packet id is: 0x1A
 type EntityAction struct {
-	EntityID VarInt
+	EntityID int32
 	ActionID byte
 }
 

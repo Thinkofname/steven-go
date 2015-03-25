@@ -15,6 +15,9 @@ func Init(handler Handler) {
 type Handler struct {
 	Start func()
 	Draw  func()
+
+	Rotate func(x, y float64)
+	Move   func(f, s float64)
 }
 
 // Size returns the size of the screen in pixels.

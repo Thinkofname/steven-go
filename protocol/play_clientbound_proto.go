@@ -961,33 +961,26 @@ func (e *EntityVelocity) read(rr io.Reader) (err error) {
 
 func (e *EntityDestroy) id() int { return 19 }
 func (e *EntityDestroy) write(ww io.Writer) (err error) {
-	var tmp [4]byte
 	if err = writeVarInt(ww, VarInt(len(e.EntityIDs))); err != nil {
 		return
 	}
 	for tmp0 := range e.EntityIDs {
-		tmp[0] = byte(e.EntityIDs[tmp0] >> 24)
-		tmp[1] = byte(e.EntityIDs[tmp0] >> 16)
-		tmp[2] = byte(e.EntityIDs[tmp0] >> 8)
-		tmp[3] = byte(e.EntityIDs[tmp0] >> 0)
-		if _, err = ww.Write(tmp[:4]); err != nil {
+		if err = writeVarInt(ww, e.EntityIDs[tmp0]); err != nil {
 			return
 		}
 	}
 	return
 }
 func (e *EntityDestroy) read(rr io.Reader) (err error) {
-	var tmp [4]byte
 	var tmp0 VarInt
 	if tmp0, err = readVarInt(rr); err != nil {
 		return
 	}
-	e.EntityIDs = make([]int32, tmp0)
+	e.EntityIDs = make([]VarInt, tmp0)
 	for tmp1 := range e.EntityIDs {
-		if _, err = rr.Read(tmp[:4]); err != nil {
+		if e.EntityIDs[tmp1], err = readVarInt(rr); err != nil {
 			return
 		}
-		e.EntityIDs[tmp1] = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
 	}
 	return
 }
@@ -1249,8 +1242,12 @@ func (e *EntityHeadLook) read(rr io.Reader) (err error) {
 
 func (e *EntityAction) id() int { return 26 }
 func (e *EntityAction) write(ww io.Writer) (err error) {
-	var tmp [1]byte
-	if err = writeVarInt(ww, e.EntityID); err != nil {
+	var tmp [4]byte
+	tmp[0] = byte(e.EntityID >> 24)
+	tmp[1] = byte(e.EntityID >> 16)
+	tmp[2] = byte(e.EntityID >> 8)
+	tmp[3] = byte(e.EntityID >> 0)
+	if _, err = ww.Write(tmp[:4]); err != nil {
 		return
 	}
 	tmp[0] = byte(e.ActionID >> 0)
@@ -1260,10 +1257,11 @@ func (e *EntityAction) write(ww io.Writer) (err error) {
 	return
 }
 func (e *EntityAction) read(rr io.Reader) (err error) {
-	var tmp [1]byte
-	if e.EntityID, err = readVarInt(rr); err != nil {
+	var tmp [4]byte
+	if _, err = rr.Read(tmp[:4]); err != nil {
 		return
 	}
+	e.EntityID = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
 	if _, err = rr.Read(tmp[:1]); err != nil {
 		return
 	}
