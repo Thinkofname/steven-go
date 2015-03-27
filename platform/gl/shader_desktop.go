@@ -86,13 +86,13 @@ func (a Attribute) Disable() {
 }
 
 func (a Attribute) Pointer(size int, ty Type, normalized bool, stride, offset int) {
-	gl.VertexAttribPointer(
+	gl.VertexAttribPointerOffset(
 		uint32(a),
 		int32(size),
 		uint32(ty),
 		normalized,
 		int32(stride),
-		gl.PtrOffset(offset),
+		uintptr(offset),
 	)
 }
 

@@ -21,7 +21,7 @@ var (
 
 // Start starts the renderer
 func Start() {
-	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
+	gl.ClearColor(0.0, 1.0, 1.0, 1.0)
 	gl.Enable(gl.DepthTest)
 	gl.Enable(gl.CullFaceFlag)
 	gl.CullFace(gl.Back)
@@ -30,6 +30,8 @@ func Start() {
 	testProgram = CreateProgram(vertex, fragment)
 	test = &testShader{}
 	InitStruct(test, testProgram)
+
+	loadTextures()
 }
 
 // Draw draws a single frame
@@ -73,6 +75,7 @@ sync:
 	test.CameraMatrix.Matrix4(cameraMatrix)
 
 	test.Position.Enable()
+	test.Color.Enable()
 
 	for _, chunk := range buffers {
 		if chunk.count == 0 {
@@ -81,19 +84,22 @@ sync:
 		test.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
 
 		chunk.buffer.Bind(gl.ArrayBuffer)
-		test.Position.Pointer(3, gl.Short, false, 6, 0)
+		test.Position.Pointer(3, gl.Short, false, 9, 0)
+		test.Color.Pointer(3, gl.UnsignedByte, true, 9, 6)
 		gl.DrawArrays(gl.Triangles, 0, chunk.count)
 	}
 
+	test.Color.Disable()
 	test.Position.Disable()
 }
 
-func sync(f func()) {
+func renderSync(f func()) {
 	syncChan <- f
 }
 
 type testShader struct {
 	Position          gl.Attribute `gl:"aPosition"`
+	Color             gl.Attribute `gl:"aColor"`
 	PerspectiveMatrix gl.Uniform   `gl:"perspectiveMatrix"`
 	CameraMatrix      gl.Uniform   `gl:"cameraMatrix"`
 	Offset            gl.Uniform   `gl:"offset"`
@@ -102,26 +108,27 @@ type testShader struct {
 var (
 	vertex = `
 attribute vec3 aPosition;
+attribute vec3 aColor;
 
 uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
 uniform vec3 offset;
 
-varying vec3 vPosition;
+varying vec3 vColor;
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
 	vec3 o = vec3(offset.x, -offset.y, offset.z);
 	gl_Position = perspectiveMatrix * cameraMatrix * vec4((pos / 256.0) + o * 16.0, 1.0);
-	vPosition = aPosition / (256.0 * 16.0);
+	vColor = aColor;
 }
 `
 	fragment = `
 
-varying vec3 vPosition;
+varying vec3 vColor;
 
 void main() {
- 	gl_FragColor = vec4(vPosition, 1.0);
+ 	gl_FragColor = vec4(vColor, 1.0);
 }
 `
 )

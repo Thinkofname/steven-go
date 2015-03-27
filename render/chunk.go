@@ -25,7 +25,7 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 
 // Upload uploads the passed vertex data to the buffer.
 func (cb *ChunkBuffer) Upload(data []byte, count int) {
-	sync(func() {
+	renderSync(func() {
 		cb.buffer.Bind(gl.ArrayBuffer)
 		cb.buffer.Data(data, gl.DynamicDraw)
 		cb.count = count

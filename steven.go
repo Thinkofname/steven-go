@@ -83,8 +83,8 @@ const maxBuilders = 40
 var (
 	ready            bool
 	tick             int
-	freeBuilders     int = maxBuilders
-	completeBuilders     = make(chan buildPos, maxBuilders)
+	freeBuilders     = maxBuilders
+	completeBuilders = make(chan buildPos, maxBuilders)
 )
 
 func draw() {

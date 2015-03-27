@@ -8,6 +8,7 @@ import (
 
 type chunkVertex struct {
 	X, Y, Z int16
+	R, G, B byte
 }
 
 type buildPos struct {
@@ -22,221 +23,258 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 	go func() {
 		b := builder.New(chunkVertexType...)
 
-		block := func(x, y, z int) uint16 {
-			return bs.block(ox+1+x, oy+1+y, oz+1+z)
+		get := func(x, y, z int) Block {
+			return GetBlockByCombinedID(bs.block(ox+1+x, oy+1+y, oz+1+z))
 		}
 
 		for y := 0; y < 16; y++ {
 			for x := 0; x < 16; x++ {
 				for z := 0; z < 16; z++ {
-					bl := block(x, y, z)
-					if bl < 16 {
+					bl := get(x, y, z)
+					if bl.Is(BlockAir) {
 						continue
 					}
+					bb, gg, rr := byte(bl.Color()&0xFF), byte((bl.Color()>>8)&0xFF), byte((bl.Color()>>16)&0xFF)
 
 					// Shitty test code
 
-					if block(x, y+1, z) < 16 {
+					if get(x, y+1, z).Is(BlockAir) {
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 					}
 
-					if block(x, y-1, z) < 16 {
+					if get(x, y-1, z).Is(BlockAir) {
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 					}
 
-					if block(x-1, y, z) < 16 {
+					if get(x-1, y, z).Is(BlockAir) {
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 					}
 
-					if block(x+1, y, z) < 16 {
+					if get(x+1, y, z).Is(BlockAir) {
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 					}
 
-					if block(x, y, z-1) < 16 {
+					if get(x, y, z-1).Is(BlockAir) {
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z) * 256),
+							R: rr, G: gg, B: bb,
 						})
 					}
 
-					if block(x, y, z+1) < 16 {
+					if get(x, y, z+1).Is(BlockAir) {
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x + 1) * 256),
 							Y: int16((y) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 						chunkVertexF(b, chunkVertex{
 							X: int16((x) * 256),
 							Y: int16((y + 1) * 256),
 							Z: int16((z + 1) * 256),
+							R: rr, G: gg, B: bb,
 						})
 					}
 				}

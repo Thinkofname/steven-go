@@ -21,7 +21,6 @@ type Type struct {
 	pixelSize     int
 	freeSpace     []*Rect
 	padding       int
-	baked         bool
 }
 
 // Rect represents a location in a texture
@@ -67,10 +66,6 @@ func NewPadded(width, height, pixelSize, padding int) *Type {
 // returns the location in the atlas. This method
 // panics if the atlas has been baked.
 func (a *Type) Add(image []byte, width, height int) (*Rect, error) {
-	if a.baked {
-		panic("invalid state, atlas is baked")
-	}
-
 	// Double the padding since its for both
 	// sides
 	w := width + (a.padding * 2)
@@ -134,13 +129,6 @@ func (a *Type) Add(image []byte, width, height int) (*Rect, error) {
 		Width:  width,
 		Height: height,
 	}, nil
-}
-
-// Bake causes the atlas to be uneditable allowing
-// it to free up resources used in packing.
-func (a *Type) Bake() {
-	a.baked = true
-	a.freeSpace = nil
 }
 
 // helper method that allows for out of bounds access
