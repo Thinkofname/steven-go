@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // BlockLiquid is a liquid based block e.g. lava and water
 type BlockLiquid struct {
 	baseBlock
@@ -20,6 +22,10 @@ func initLiquid(name string, lava bool) *BlockSet {
 	set.state(newIntState("level", 0, 15))
 
 	return set
+}
+
+func (b *BlockLiquid) String() string {
+	return fmt.Sprintf("%s[level=%d]", b.baseBlock.String(), b.Level)
 }
 
 func (l *BlockLiquid) clone() Block {

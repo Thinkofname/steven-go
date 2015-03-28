@@ -63,15 +63,17 @@ func (handler) ChunkData(c *protocol.ChunkData) {
 		}
 		return
 	}
-	loadChunk(int(c.ChunkX), int(c.ChunkZ), c.Data, c.BitMask, true, c.New)
+	go loadChunk(int(c.ChunkX), int(c.ChunkZ), c.Data, c.BitMask, true, c.New)
 }
 
 func (handler) ChunkDataBulk(c *protocol.ChunkDataBulk) {
-	offset := 0
-	data := c.Data
-	for _, meta := range c.Meta {
-		offset += loadChunk(int(meta.ChunkX), int(meta.ChunkZ), data[offset:], meta.BitMask, c.SkyLight, true)
-	}
+	go func() {
+		offset := 0
+		data := c.Data
+		for _, meta := range c.Meta {
+			offset += loadChunk(int(meta.ChunkX), int(meta.ChunkZ), data[offset:], meta.BitMask, c.SkyLight, true)
+		}
+	}()
 }
 
 func (handler) Teleport(t *protocol.TeleportPlayer) {

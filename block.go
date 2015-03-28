@@ -1,13 +1,18 @@
 package main
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 var (
 	nextBlockID   int
 	blocks        [0x10000]Block
 	blockSetsByID [0x100]*BlockSet
 	missingBlock  = &baseBlock{
-		color: 0xFF00FF,
+		name:   "missing_block",
+		plugin: "steven",
+		color:  0xFF00FF,
 	}
 )
 
@@ -17,6 +22,14 @@ type Block interface {
 	// Is returns whether this block is a member of the passed Set
 	Is(s *BlockSet) bool
 	Color() uint32
+
+	Plugin() string
+	Name() string
+
+	ModelName() string
+	ModelVariant() string
+
+	String() string
 
 	setState(key string, val interface{})
 	clone() Block
@@ -55,6 +68,25 @@ func (b *baseBlock) init(name string) {
 	b.plugin = "minecraft"
 }
 
+func (b *baseBlock) String() string {
+	return fmt.Sprintf("%s:%s", b.plugin, b.name)
+}
+
+func (b *baseBlock) Plugin() string {
+	return b.plugin
+}
+
+func (b *baseBlock) Name() string {
+	return b.name
+}
+
+func (b *baseBlock) ModelName() string {
+	return b.name
+}
+func (b *baseBlock) ModelVariant() string {
+	return "normal"
+}
+
 func (b *baseBlock) toData() int {
 	return 0
 }
@@ -65,6 +97,8 @@ func (b *baseBlock) setState(key string, val interface{}) {
 
 func (b *baseBlock) clone() Block {
 	return &baseBlock{
+		plugin: b.plugin,
+		name:   b.name,
 		Parent: b.Parent,
 		color:  b.color,
 	}

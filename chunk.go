@@ -33,7 +33,7 @@ type chunkSection struct {
 	chunk *chunk
 	Y     int
 
-	Blocks     [16 * 16 * 16]uint16
+	Blocks     [16 * 16 * 16]Block
 	BlockLight nibble.Array
 	SkyLight   nibble.Array
 
@@ -43,18 +43,21 @@ type chunkSection struct {
 	building bool
 }
 
-func (cs *chunkSection) block(x, y, z int) uint16 {
+func (cs *chunkSection) block(x, y, z int) Block {
 	return cs.Blocks[(y<<8)|(z<<4)|x]
 }
 
-func newChunkSection(c *chunk, x, y, z int) *chunkSection {
-	return &chunkSection{
+func newChunkSection(c *chunk, y int) *chunkSection {
+	cs := &chunkSection{
 		chunk:      c,
 		Y:          y,
 		BlockLight: nibble.New(16 * 16 * 16),
 		SkyLight:   nibble.New(16 * 16 * 16),
-		Buffer:     render.AllocateChunkBuffer(x, y, z),
 	}
+	for i := range cs.Blocks {
+		cs.Blocks[i] = BlockAir.Blocks[0]
+	}
+	return cs
 }
 
 func loadChunk(x, z int, data []byte, mask uint16, sky, hasBiome bool) int {
@@ -63,11 +66,12 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, hasBiome bool) int {
 			X: x, Z: z,
 		},
 	}
+
 	for i := 0; i < 16; i++ {
 		if mask&(1<<uint(i)) == 0 {
 			continue
 		}
-		c.Sections[i] = newChunkSection(c, c.X, i, c.Z)
+		c.Sections[i] = newChunkSection(c, i)
 	}
 	offset := 0
 	for _, section := range c.Sections {
@@ -76,7 +80,7 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, hasBiome bool) int {
 		}
 
 		for i := 0; i < 16*16*16; i++ {
-			section.Blocks[i] = binary.LittleEndian.Uint16(data[offset:])
+			section.Blocks[i] = GetBlockByCombinedID(binary.LittleEndian.Uint16(data[offset:]))
 			offset += 2
 		}
 	}
@@ -102,17 +106,26 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, hasBiome bool) int {
 		offset += len(c.Biomes)
 	}
 
-	chunkMap[c.chunkPosition] = c
+	syncChan <- func() {
+		// Allocate the render buffers sync
+		for y, section := range c.Sections {
+			if section != nil {
+				section.Buffer = render.AllocateChunkBuffer(c.X, y, c.Z)
+			}
+		}
 
-	for xx := -1; xx <= 1; xx++ {
-		for zz := -1; zz <= 1; zz++ {
-			c := chunkMap[chunkPosition{x + xx, z + zz}]
-			if c != nil {
-				for _, section := range c.Sections {
-					if section == nil {
-						continue
+		chunkMap[c.chunkPosition] = c
+
+		for xx := -1; xx <= 1; xx++ {
+			for zz := -1; zz <= 1; zz++ {
+				c := chunkMap[chunkPosition{x + xx, z + zz}]
+				if c != nil {
+					for _, section := range c.Sections {
+						if section == nil {
+							continue
+						}
+						section.dirty = true
 					}
-					section.dirty = true
 				}
 			}
 		}

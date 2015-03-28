@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/davecheney/profile"
 	"github.com/thinkofdeath/steven/platform"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/protocol/mojang"
@@ -13,6 +14,10 @@ import (
 )
 
 func main() {
+	defer profile.Start(&profile.Config{
+		CPUProfile:  true,
+		ProfilePath: "./",
+	}).Stop()
 	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
 
 	// Can't use flags as we need to support a weird flag
@@ -78,13 +83,14 @@ func action(action platform.Action) {
 	}
 }
 
-const maxBuilders = 40
+const maxBuilders = 50
 
 var (
 	ready            bool
 	tick             int
 	freeBuilders     = maxBuilders
 	completeBuilders = make(chan buildPos, maxBuilders)
+	syncChan         = make(chan func(), 200)
 )
 
 func draw() {
@@ -104,14 +110,17 @@ handle:
 					s.building = false
 				}
 			}
+		case f := <-syncChan:
+			f()
 		default:
 			break handle
 		}
 	}
 
-	render.Camera.X += mf * math.Cos(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * (1.0 / 10.0)
-	render.Camera.Z -= mf * math.Sin(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * (1.0 / 10.0)
-	render.Camera.Y -= mf * math.Sin(render.Camera.Pitch) * (1.0 / 10.0)
+	// TODO(Think) Tidy up
+	render.Camera.X += mf * math.Cos(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * (1.0 / 7.0)
+	render.Camera.Z -= mf * math.Sin(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * (1.0 / 7.0)
+	render.Camera.Y -= mf * math.Sin(render.Camera.Pitch) * (1.0 / 7.0)
 	tick++
 	if ready && tick%3 == 0 {
 		writeChan <- &protocol.PlayerPositionLook{
