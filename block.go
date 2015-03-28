@@ -10,9 +10,9 @@ var (
 	blocks        [0x10000]Block
 	blockSetsByID [0x100]*BlockSet
 	missingBlock  = &baseBlock{
-		name:   "missing_block",
-		plugin: "steven",
-		color:  0xFF00FF,
+		name:        "missing_block", // TODO
+		plugin:      "steven",
+		cullAgainst: true,
 	}
 )
 
@@ -21,7 +21,6 @@ var (
 type Block interface {
 	// Is returns whether this block is a member of the passed Set
 	Is(s *BlockSet) bool
-	Color() uint32
 
 	Plugin() string
 	Name() string
@@ -30,6 +29,8 @@ type Block interface {
 	ModelVariant() string
 
 	String() string
+
+	ShouldCullAgainst() bool
 
 	setState(key string, val interface{})
 	clone() Block
@@ -48,7 +49,7 @@ type BlockSet struct {
 type baseBlock struct {
 	plugin, name string
 	Parent       *BlockSet
-	color        uint32
+	cullAgainst  bool
 }
 
 // Is returns whether this block is a member of the passed Set
@@ -66,6 +67,7 @@ func (b *baseBlock) init(name string) {
 	}
 	b.name = name
 	b.plugin = "minecraft"
+	b.cullAgainst = true
 }
 
 func (b *baseBlock) String() string {
@@ -91,6 +93,10 @@ func (b *baseBlock) toData() int {
 	return 0
 }
 
+func (b *baseBlock) ShouldCullAgainst() bool {
+	return b.cullAgainst
+}
+
 func (b *baseBlock) setState(key string, val interface{}) {
 	panic("base has no state")
 }
@@ -100,12 +106,7 @@ func (b *baseBlock) clone() Block {
 		plugin: b.plugin,
 		name:   b.name,
 		Parent: b.Parent,
-		color:  b.color,
 	}
-}
-
-func (b *baseBlock) Color() uint32 {
-	return b.color
 }
 
 // GetBlockByCombinedID returns the block with the matching combined id.

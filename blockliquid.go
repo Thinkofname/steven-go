@@ -13,19 +13,14 @@ func initLiquid(name string, lava bool) *BlockSet {
 	l.init(name)
 	set := alloc(l)
 	l.Parent = set
-	if lava {
-		l.color = 0xFF0000
-	} else {
-		l.color = 0x0000FF
-	}
 	set.supportsData = true
 	set.state(newIntState("level", 0, 15))
 
 	return set
 }
 
-func (b *BlockLiquid) String() string {
-	return fmt.Sprintf("%s[level=%d]", b.baseBlock.String(), b.Level)
+func (l *BlockLiquid) String() string {
+	return fmt.Sprintf("%s[level=%d]", l.baseBlock.String(), l.Level)
 }
 
 func (l *BlockLiquid) clone() Block {
@@ -39,7 +34,6 @@ func (l *BlockLiquid) setState(key string, val interface{}) {
 	switch key {
 	case "level":
 		l.Level = val.(int)
-		l.color = 0xFF - uint32(l.Level*(0xFF/15))
 	default:
 		panic("invalid state " + key)
 	}

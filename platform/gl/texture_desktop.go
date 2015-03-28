@@ -9,7 +9,8 @@ import (
 const (
 	Texture2D TextureTarget = gl.TEXTURE_2D
 
-	RGB TextureFormat = gl.RGB
+	RGB  TextureFormat = gl.RGB
+	RGBA TextureFormat = gl.RGBA
 
 	TextureMinFilter TextureParameter = gl.TEXTURE_MIN_FILTER
 	TextureMagFilter TextureParameter = gl.TEXTURE_MAG_FILTER

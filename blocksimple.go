@@ -6,7 +6,7 @@ type BlockSimple struct {
 }
 
 type simpleConfig struct {
-	Color uint32
+	NotCullAgainst bool
 }
 
 func initSimple(name string, config simpleConfig) *BlockSet {
@@ -15,6 +15,7 @@ func initSimple(name string, config simpleConfig) *BlockSet {
 	set := alloc(s)
 	s.Parent = set
 
-	s.color = config.Color
+	s.cullAgainst = !config.NotCullAgainst
+
 	return set
 }

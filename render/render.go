@@ -17,6 +17,8 @@ var (
 	cameraMatrix              = vmath.NewMatrix4()
 
 	syncChan = make(chan func(), 500)
+
+	glTextures []gl.Texture
 )
 
 // Start starts the renderer
@@ -32,6 +34,14 @@ func Start() {
 	InitStruct(test, testProgram)
 
 	loadTextures()
+
+	for _, tex := range textures {
+		glTextures = append(glTextures, createTexture(glTexture{
+			Data:  tex.Buffer,
+			Width: atlasSize, Height: atlasSize,
+			Format: gl.RGBA,
+		}))
+	}
 }
 
 // Draw draws a single frame
@@ -74,8 +84,16 @@ sync:
 
 	test.CameraMatrix.Matrix4(cameraMatrix)
 
+	ids := make([]int, len(glTextures))
+	for i, tex := range glTextures {
+		tex.Bind(gl.Texture2D)
+		gl.ActiveTexture(i)
+		ids[i] = i
+	}
+	test.Textures.IntV(ids...)
 	test.Position.Enable()
-	test.Color.Enable()
+	test.TextureInfo.Enable()
+	test.TextureOffset.Enable()
 
 	for _, chunk := range buffers {
 		if chunk.count == 0 {
@@ -84,12 +102,14 @@ sync:
 		test.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
 
 		chunk.buffer.Bind(gl.ArrayBuffer)
-		test.Position.Pointer(3, gl.Short, false, 9, 0)
-		test.Color.Pointer(3, gl.UnsignedByte, true, 9, 6)
+		test.Position.Pointer(3, gl.Short, false, 18, 0)
+		test.TextureInfo.Pointer(4, gl.UnsignedShort, false, 18, 6)
+		test.TextureOffset.Pointer(2, gl.Short, false, 18, 14)
 		gl.DrawArrays(gl.Triangles, 0, chunk.count)
 	}
 
-	test.Color.Disable()
+	test.TextureOffset.Disable()
+	test.TextureInfo.Disable()
 	test.Position.Disable()
 }
 
@@ -99,36 +119,54 @@ func renderSync(f func()) {
 
 type testShader struct {
 	Position          gl.Attribute `gl:"aPosition"`
-	Color             gl.Attribute `gl:"aColor"`
+	TextureInfo       gl.Attribute `gl:"aTextureInfo"`
+	TextureOffset     gl.Attribute `gl:"aTextureOffset"`
 	PerspectiveMatrix gl.Uniform   `gl:"perspectiveMatrix"`
 	CameraMatrix      gl.Uniform   `gl:"cameraMatrix"`
 	Offset            gl.Uniform   `gl:"offset"`
+	Textures          gl.Uniform   `gl:"textures"`
 }
 
 var (
 	vertex = `
 attribute vec3 aPosition;
-attribute vec3 aColor;
+attribute vec4 aTextureInfo;
+attribute vec2 aTextureOffset;
 
 uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
 uniform vec3 offset;
 
-varying vec3 vColor;
+varying vec3 vPosition;
+varying vec4 vTextureInfo;
+varying vec2 vTextureOffset;
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
 	vec3 o = vec3(offset.x, -offset.y, offset.z);
 	gl_Position = perspectiveMatrix * cameraMatrix * vec4((pos / 256.0) + o * 16.0, 1.0);
-	vColor = aColor;
+	vPosition = aPosition / (256.0 * 16.0);
+	vTextureInfo = aTextureInfo;
+	vTextureOffset = aTextureOffset;
 }
 `
 	fragment = `
 
-varying vec3 vColor;
+uniform sampler2D textures[5];
+
+varying vec3 vPosition;
+varying vec4 vTextureInfo;
+varying vec2 vTextureOffset;
 
 void main() {
- 	gl_FragColor = vec4(vColor, 1.0);
+	vec2 tPos = vTextureOffset / 16.0;
+	tPos = mod(tPos, vTextureInfo.zw);
+	vec2 offset = vec2(vTextureInfo.x, mod(vTextureInfo.y, 1024.0));
+	tPos += offset;
+	tPos /= 1024.0;
+ 	vec4 col = texture2D(textures[int(floor(vTextureInfo.y / 1024.0))], vec2(tPos.x, tPos.y));
+	if (col.a < 0.5) discard;
+	gl_FragColor = col;
 }
 `
 )

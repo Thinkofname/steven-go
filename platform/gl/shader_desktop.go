@@ -69,6 +69,10 @@ func (u Uniform) Int3(x, y, z int) {
 	gl.Uniform3i(int32(u), int32(x), int32(y), int32(z))
 }
 
+func (u Uniform) IntV(v ...int) {
+	gl.Uniform1iv(int32(u), int32(len(v)), (*int32)(gl.Ptr(v)))
+}
+
 func (u Uniform) Float(val float32) {
 	gl.Uniform1f(int32(u), val)
 }

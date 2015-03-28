@@ -28,3 +28,21 @@ func (is intState) values() []interface{} {
 	}
 	return vals
 }
+
+type boolState struct {
+	name string
+}
+
+func newBoolState(name string) boolState {
+	return boolState{
+		name: name,
+	}
+}
+
+func (is boolState) key() string {
+	return is.name
+}
+
+func (is boolState) values() []interface{} {
+	return []interface{}{false, true}
+}

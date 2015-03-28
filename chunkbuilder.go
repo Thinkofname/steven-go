@@ -8,8 +8,9 @@ import (
 )
 
 type chunkVertex struct {
-	X, Y, Z int16
-	R, G, B byte
+	X, Y, Z            int16
+	TX, TY, TW, TH     uint16
+	TOffsetX, TOffsetY int16
 }
 
 type buildPos struct {
@@ -36,254 +37,26 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 						continue
 					}
 
-					if model := findStateModel(bl.ModelName()); model != nil {
-						// model.render(x, y, z, bs)
-						continue
+					if model := findStateModel(bl.Plugin(), bl.ModelName()); model != nil {
+						seed := (cs.chunk.X<<4 + x) ^ (cs.Y + y) ^ (cs.chunk.Z<<4 + z)
+						if variant := model.variant(bl.ModelVariant(), seed); variant != nil {
+							for _, v := range variant.render(x, y, z, get) {
+								chunkVertexF(b, v)
+							}
+							continue
+						}
 					}
 					warnMissingModel(bl)
 
-					bb, gg, rr := byte(bl.Color()&0xFF), byte((bl.Color()>>8)&0xFF), byte((bl.Color()>>16)&0xFF)
-
-					// Shitty test code
-
-					if get(x, y+1, z).Is(BlockAir) {
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-					}
-
-					if get(x, y-1, z).Is(BlockAir) {
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-					}
-
-					if get(x-1, y, z).Is(BlockAir) {
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-					}
-
-					if get(x+1, y, z).Is(BlockAir) {
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-					}
-
-					if get(x, y, z-1).Is(BlockAir) {
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z) * 256),
-							R: rr, G: gg, B: bb,
-						})
-					}
-
-					if get(x, y, z+1).Is(BlockAir) {
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x + 1) * 256),
-							Y: int16((y) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
-						chunkVertexF(b, chunkVertex{
-							X: int16((x) * 256),
-							Y: int16((y + 1) * 256),
-							Z: int16((z + 1) * 256),
-							R: rr, G: gg, B: bb,
-						})
+					// TODO: Remove
+					if model := findStateModel("steven", "missing_block"); model != nil {
+						seed := (cs.chunk.X<<4 + x) ^ (cs.Y + y) ^ (cs.chunk.Z<<4 + z)
+						if variant := model.variant("normal", seed); variant != nil {
+							for _, v := range variant.render(x, y, z, get) {
+								chunkVertexF(b, v)
+							}
+							continue
+						}
 					}
 				}
 			}
