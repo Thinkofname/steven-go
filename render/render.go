@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	testProgram gl.Program
-	test        *testShader
+	chunkProgram gl.Program
+	shaderChunk  *chunkShader
 
 	lastWidth, lastHeight int = -1, -1
 	perspectiveMatrix         = vmath.NewMatrix4()
@@ -29,9 +29,9 @@ func Start() {
 	gl.CullFace(gl.Back)
 	gl.FrontFace(gl.ClockWise)
 
-	testProgram = CreateProgram(vertex, fragment)
-	test = &testShader{}
-	InitStruct(test, testProgram)
+	chunkProgram = CreateProgram(vertex, fragment)
+	shaderChunk = &chunkShader{}
+	InitStruct(shaderChunk, chunkProgram)
 
 	loadTextures()
 
@@ -73,8 +73,8 @@ sync:
 	gl.Clear(gl.ColorBufferBit | gl.DepthBufferBit)
 	gl.Viewport(0, 0, width, height)
 
-	testProgram.Use()
-	test.PerspectiveMatrix.Matrix4(perspectiveMatrix)
+	chunkProgram.Use()
+	shaderChunk.PerspectiveMatrix.Matrix4(perspectiveMatrix)
 
 	cameraMatrix.Identity()
 	cameraMatrix.Translate(float32(Camera.X), float32(Camera.Y+1.62), float32(-Camera.Z))
@@ -82,7 +82,7 @@ sync:
 	cameraMatrix.RotateX(float32(Camera.Pitch))
 	cameraMatrix.Scale(-1.0, 1.0, 1.0)
 
-	test.CameraMatrix.Matrix4(cameraMatrix)
+	shaderChunk.CameraMatrix.Matrix4(cameraMatrix)
 
 	ids := make([]int, len(glTextures))
 	for i, tex := range glTextures {
@@ -90,40 +90,40 @@ sync:
 		gl.ActiveTexture(i)
 		ids[i] = i
 	}
-	test.Textures.IntV(ids...)
-	test.Position.Enable()
-	test.TextureInfo.Enable()
-	test.TextureOffset.Enable()
-	test.Color.Enable()
-	test.Lighting.Enable()
+	shaderChunk.Textures.IntV(ids...)
+	shaderChunk.Position.Enable()
+	shaderChunk.TextureInfo.Enable()
+	shaderChunk.TextureOffset.Enable()
+	shaderChunk.Color.Enable()
+	shaderChunk.Lighting.Enable()
 
 	for _, chunk := range buffers {
 		if chunk.count == 0 {
 			continue
 		}
-		test.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
+		shaderChunk.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
 
 		chunk.buffer.Bind(gl.ArrayBuffer)
-		test.Position.Pointer(3, gl.Short, false, 23, 0)
-		test.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
-		test.TextureOffset.Pointer(2, gl.Short, false, 23, 14)
-		test.Color.Pointer(3, gl.UnsignedByte, true, 23, 18)
-		test.Lighting.Pointer(2, gl.UnsignedByte, false, 23, 21)
+		shaderChunk.Position.Pointer(3, gl.Short, false, 23, 0)
+		shaderChunk.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
+		shaderChunk.TextureOffset.Pointer(2, gl.Short, false, 23, 14)
+		shaderChunk.Color.Pointer(3, gl.UnsignedByte, true, 23, 18)
+		shaderChunk.Lighting.Pointer(2, gl.UnsignedByte, false, 23, 21)
 		gl.DrawArrays(gl.Triangles, 0, chunk.count)
 	}
 
-	test.Lighting.Disable()
-	test.Color.Disable()
-	test.TextureOffset.Disable()
-	test.TextureInfo.Disable()
-	test.Position.Disable()
+	shaderChunk.Lighting.Disable()
+	shaderChunk.Color.Disable()
+	shaderChunk.TextureOffset.Disable()
+	shaderChunk.TextureInfo.Disable()
+	shaderChunk.Position.Disable()
 }
 
 func renderSync(f func()) {
 	syncChan <- f
 }
 
-type testShader struct {
+type chunkShader struct {
 	Position          gl.Attribute `gl:"aPosition"`
 	TextureInfo       gl.Attribute `gl:"aTextureInfo"`
 	TextureOffset     gl.Attribute `gl:"aTextureOffset"`
