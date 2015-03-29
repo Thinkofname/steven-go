@@ -63,7 +63,7 @@ sync:
 
 		perspectiveMatrix.Identity()
 		perspectiveMatrix.Perspective(
-			(math.Pi/180)*75,
+			(math.Pi/180)*90,
 			float32(width)/float32(height),
 			0.1,
 			10000.0,
