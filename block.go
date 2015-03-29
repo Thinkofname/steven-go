@@ -244,7 +244,9 @@ func init() {
 			if data != -1 {
 				blocks[(bs.ID<<4)|data] = b
 			}
-			if _, ok := b.(*blockLiquid); ok {
+			// Liquids have custom rendering and air is never
+			// rendered
+			if _, ok := b.(*blockLiquid); ok || b.Is(BlockAir) {
 				continue
 			}
 			if model := findStateModel(b.Plugin(), b.ModelName()); model != nil {
