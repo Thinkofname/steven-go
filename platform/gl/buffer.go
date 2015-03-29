@@ -1,9 +1,7 @@
-// +build !mobile
-
 package gl
 
 import (
-	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/gl/v3.2-core/gl"
 )
 
 const (
@@ -38,6 +36,10 @@ func (b Buffer) Bind(target BufferTarget) {
 	gl.BindBuffer(uint32(target), b.internal)
 	currentBuffer = b
 	currentBufferTarget = target
+}
+
+func (b Buffer) BindVertex(index, offset, stride int) {
+	gl.BindVertexBuffer(uint32(index), b.internal, offset, int32(stride))
 }
 
 func (b Buffer) Data(data []byte, usage BufferUsage) {

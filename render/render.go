@@ -44,6 +44,8 @@ func Start() {
 	}
 }
 
+var textureIds []int
+
 // Draw draws a single frame
 func Draw() {
 sync:
@@ -68,10 +70,18 @@ sync:
 			0.1,
 			10000.0,
 		)
+		gl.Viewport(0, 0, width, height)
+	}
+	if len(textureIds) != len(glTextures) {
+		textureIds = make([]int, len(glTextures))
+		for i, tex := range glTextures {
+			tex.Bind(gl.Texture2D)
+			gl.ActiveTexture(i)
+			textureIds[i] = i
+		}
 	}
 
 	gl.Clear(gl.ColorBufferBit | gl.DepthBufferBit)
-	gl.Viewport(0, 0, width, height)
 
 	chunkProgram.Use()
 	shaderChunk.PerspectiveMatrix.Matrix4(perspectiveMatrix)
@@ -83,19 +93,7 @@ sync:
 	cameraMatrix.Scale(-1.0, 1.0, 1.0)
 
 	shaderChunk.CameraMatrix.Matrix4(cameraMatrix)
-
-	ids := make([]int, len(glTextures))
-	for i, tex := range glTextures {
-		tex.Bind(gl.Texture2D)
-		gl.ActiveTexture(i)
-		ids[i] = i
-	}
-	shaderChunk.Textures.IntV(ids...)
-	shaderChunk.Position.Enable()
-	shaderChunk.TextureInfo.Enable()
-	shaderChunk.TextureOffset.Enable()
-	shaderChunk.Color.Enable()
-	shaderChunk.Lighting.Enable()
+	shaderChunk.Textures.IntV(textureIds...)
 
 	for _, chunk := range buffers {
 		if chunk.count == 0 {
@@ -103,20 +101,9 @@ sync:
 		}
 		shaderChunk.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
 
-		chunk.buffer.Bind(gl.ArrayBuffer)
-		shaderChunk.Position.Pointer(3, gl.Short, false, 23, 0)
-		shaderChunk.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
-		shaderChunk.TextureOffset.Pointer(2, gl.Short, false, 23, 14)
-		shaderChunk.Color.Pointer(3, gl.UnsignedByte, true, 23, 18)
-		shaderChunk.Lighting.Pointer(2, gl.UnsignedByte, false, 23, 21)
+		chunk.array.Bind()
 		gl.DrawArrays(gl.Triangles, 0, chunk.count)
 	}
-
-	shaderChunk.Lighting.Disable()
-	shaderChunk.Color.Disable()
-	shaderChunk.TextureOffset.Disable()
-	shaderChunk.TextureInfo.Disable()
-	shaderChunk.Position.Disable()
 }
 
 func renderSync(f func()) {

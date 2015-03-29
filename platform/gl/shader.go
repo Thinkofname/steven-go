@@ -1,11 +1,9 @@
-// +build !mobile
-
 package gl
 
 import (
 	"unsafe"
 
-	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/thinkofdeath/steven/vmath"
 )
 
@@ -89,15 +87,12 @@ func (a Attribute) Disable() {
 	gl.DisableVertexAttribArray(uint32(a))
 }
 
-func (a Attribute) Pointer(size int, ty Type, normalized bool, stride, offset int) {
-	gl.VertexAttribPointerOffset(
-		uint32(a),
-		int32(size),
-		uint32(ty),
-		normalized,
-		int32(stride),
-		uintptr(offset),
-	)
+func (a Attribute) Binding(index int) {
+	gl.VertexAttribBinding(uint32(a), uint32(index))
+}
+
+func (a Attribute) Format(size int, ty Type, normalized bool, offset int) {
+	gl.VertexAttribFormat(uint32(a), int32(size), uint32(ty), normalized, uint32(offset))
 }
 
 type (

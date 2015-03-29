@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/davecheney/profile"
 	"github.com/thinkofdeath/steven/platform"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/protocol/mojang"
@@ -13,6 +14,10 @@ import (
 )
 
 func main() {
+	defer profile.Start(&profile.Config{
+		CPUProfile:  true,
+		ProfilePath: "./",
+	}).Stop()
 	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
 
 	// Can't use flags as we need to support a weird flag
@@ -78,7 +83,7 @@ func action(action platform.Action) {
 	}
 }
 
-const maxBuilders = 20
+var maxBuilders = runtime.NumCPU() * 2
 
 var (
 	ready            bool

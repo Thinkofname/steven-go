@@ -19,7 +19,7 @@ type buildPos struct {
 	X, Y, Z int
 }
 
-var chunkVertexF, chunkVertexType = builder.Struct(chunkVertex{})
+var _, chunkVertexType = builder.Struct(chunkVertex{})
 
 func (cs *chunkSection) build(complete chan<- buildPos) {
 	ox, oy, oz := (cs.chunk.X<<4)-2, (cs.Y<<4)-2, (cs.chunk.Z<<4)-2
@@ -41,7 +41,8 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 
 					if l, ok := bl.(*blockLiquid); ok {
 						for _, v := range l.renderLiquid(bs, x, y, z) {
-							chunkVertexF(b, v)
+							// chunkVertexF(b, v)
+							buildVertex(b, v)
 						}
 						continue
 					}
@@ -53,7 +54,8 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 					seed := (cs.chunk.X<<4 + x) ^ (cs.Y + y) ^ (cs.chunk.Z<<4 + z)
 					if variant := bl.Model().variant(bl.ModelVariant(), seed); variant != nil {
 						for _, v := range variant.render(x, y, z, bs) {
-							chunkVertexF(b, v)
+							// chunkVertexF(b, v)
+							buildVertex(b, v)
 						}
 						continue
 					}
@@ -64,6 +66,23 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 		cs.Buffer.Upload(b.Data(), b.Count())
 		complete <- buildPos{cs.chunk.X, cs.Y, cs.chunk.Z}
 	}()
+}
+
+func buildVertex(b *builder.Buffer, v chunkVertex) {
+	b.Short(v.X)
+	b.Short(v.Y)
+	b.Short(v.Z)
+	b.UnsignedShort(v.TX)
+	b.UnsignedShort(v.TY)
+	b.UnsignedShort(v.TW)
+	b.UnsignedShort(v.TH)
+	b.Short(v.TOffsetX)
+	b.Short(v.TOffsetY)
+	b.UnsignedByte(v.R)
+	b.UnsignedByte(v.G)
+	b.UnsignedByte(v.B)
+	b.UnsignedByte(v.BlockLight)
+	b.UnsignedByte(v.SkyLight)
 }
 
 var (

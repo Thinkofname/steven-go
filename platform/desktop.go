@@ -1,11 +1,9 @@
-// +build !mobile
-
 package platform
 
 import (
 	"runtime"
 
-	"github.com/go-gl/gl/v2.1/gl"
+	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
 
@@ -20,8 +18,9 @@ func run(h Handler) {
 	}
 	defer glfw.Terminate()
 
-	glfw.WindowHint(glfw.ContextVersionMajor, 2)
-	glfw.WindowHint(glfw.ContextVersionMajor, 1)
+	glfw.WindowHint(glfw.ContextVersionMajor, 3)
+	glfw.WindowHint(glfw.ContextVersionMinor, 2)
+	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 
 	var err error
 	window, err = glfw.CreateWindow(800, 480, "Steven", nil, nil)
