@@ -4,29 +4,21 @@ import "fmt"
 
 type blockLeaves struct {
 	baseBlock
-	Variant    string
-	Decayable  bool
-	CheckDecay bool
+	Variant    treeVariant
+	Decayable  bool `state:"decayable"`
+	CheckDecay bool `state:"check_decay"`
 }
 
 func initLeaves(name string) *BlockSet {
 	l := &blockLeaves{}
 	l.init(name)
-	set := alloc(l)
-	l.Parent = set
-
 	l.cullAgainst = false
-
-	set.supportsData = true
-	set.state(newIntState("variant", 0, 3))
-	set.state(newBoolState("decayable"))
-	set.state(newBoolState("check_decay"))
-
+	set := alloc(l)
 	return set
 }
 
 func (l *blockLeaves) String() string {
-	return fmt.Sprintf("%s[variant=%s,decayable=%t,check_decay]", l.baseBlock.String(), l.Variant, l.Decayable, l.CheckDecay)
+	return fmt.Sprintf("%s[variant=%s,decayable=%t,check_decay=%t]", l.baseBlock.String(), l.Variant, l.Decayable, l.CheckDecay)
 }
 
 func (l *blockLeaves) clone() Block {
@@ -38,33 +30,24 @@ func (l *blockLeaves) clone() Block {
 	}
 }
 
-func (l *blockLeaves) setState(key string, val interface{}) {
-	switch key {
-	case "variant":
-		l.Variant = logVariant(l.name, val.(int))
-	case "decayable":
-		l.Decayable = val.(bool)
-	case "check_decay":
-		l.CheckDecay = val.(bool)
-	default:
-		panic("invalid state " + key)
-	}
+func (l *blockLeaves) ModelName() string {
+	return l.Variant.String() + "_" + l.name
 }
 
-func (l *blockLeaves) ModelName() string {
-	return l.Variant + "_" + l.name
+func (l *blockLeaves) ForceShade() bool {
+	return true
 }
 
 func (l *blockLeaves) toData() int {
 	data := 0
 	switch l.Variant {
-	case "oak":
+	case treeOak:
 		data = 0
-	case "spurce":
+	case treeSpruce:
 		data = 1
-	case "birch":
+	case treeBirch:
 		data = 2
-	case "jungle":
+	case treeJungle:
 		data = 3
 	}
 	if l.Decayable {

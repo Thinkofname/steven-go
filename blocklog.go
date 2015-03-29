@@ -2,46 +2,67 @@ package main
 
 import "fmt"
 
-type Axis int
+type blockAxis int
 
 const (
-	AxisY Axis = iota
+	AxisY blockAxis = iota
 	AxisZ
 	AxisX
 	AxisNone
 )
 
+func (b blockAxis) String() string {
+	switch b {
+	case AxisNone:
+		return "none"
+	case AxisX:
+		return "x"
+	case AxisY:
+		return "y"
+	case AxisZ:
+		return "z"
+	}
+	return fmt.Sprintf("blockAxis(%d)", b)
+}
+
+type treeVariant int
+
+const (
+	treeOak treeVariant = iota
+	treeSpruce
+	treeBirch
+	treeJungle
+)
+
+func (t treeVariant) String() string {
+	switch t {
+	case treeOak:
+		return "oak"
+	case treeSpruce:
+		return "spruce"
+	case treeBirch:
+		return "birch"
+	case treeJungle:
+		return "jungle"
+	}
+	return fmt.Sprintf("treeVariant(%d)", t)
+}
+
 type blockLog struct {
 	baseBlock
-	Variant string
-	Axis    Axis
+	Variant treeVariant `state:"variant,0-3"`
+	Axis    blockAxis   `state:"axis,0-3"`
 }
 
 func initLog(name string) *BlockSet {
 	l := &blockLog{}
 	l.init(name)
 	set := alloc(l)
-	l.Parent = set
-	set.supportsData = true
-	set.state(newIntState("variant", 0, 3))
-	set.state(newIntState("axis", 0, 3))
-
 	return set
 }
 
 func (l *blockLog) String() string {
-	var axis string
-	switch l.Axis {
-	case AxisNone:
-		axis = "none"
-	case AxisX:
-		axis = "x"
-	case AxisY:
-		axis = "y"
-	case AxisZ:
-		axis = "z"
-	}
-	return fmt.Sprintf("%s[variant=%s,axis=%s]", l.baseBlock.String(), l.Variant, axis)
+	return fmt.Sprintf("%s[variant=%s,axis=%s]", l.baseBlock.String(), l.Variant, l.Axis)
 }
 
 func (l *blockLog) clone() Block {
@@ -52,46 +73,24 @@ func (l *blockLog) clone() Block {
 	}
 }
 
-func (l *blockLog) setState(key string, val interface{}) {
-	switch key {
-	case "variant":
-		l.Variant = logVariant(l.name, val.(int))
-	case "axis":
-		l.Axis = Axis(val.(int))
-	default:
-		panic("invalid state " + key)
-	}
-}
-
 func (l *blockLog) ModelName() string {
-	return l.Variant + "_" + l.name
+	return l.Variant.String() + "_" + l.name
 }
 
 func (l *blockLog) ModelVariant() string {
-	var axis string
-	switch l.Axis {
-	case AxisNone:
-		axis = "none"
-	case AxisX:
-		axis = "x"
-	case AxisY:
-		axis = "y"
-	case AxisZ:
-		axis = "z"
-	}
-	return fmt.Sprintf("axis=%s", axis)
+	return fmt.Sprintf("axis=%s", l.Axis)
 }
 
 func (l *blockLog) toData() int {
 	data := 0
 	switch l.Variant {
-	case "oak":
+	case treeOak:
 		data = 0
-	case "spurce":
+	case treeSpruce:
 		data = 1
-	case "birch":
+	case treeBirch:
 		data = 2
-	case "jungle":
+	case treeJungle:
 		data = 3
 	}
 	data |= int(l.Axis) << 2

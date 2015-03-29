@@ -8,9 +8,11 @@ import (
 )
 
 type chunkVertex struct {
-	X, Y, Z            int16
-	TX, TY, TW, TH     uint16
-	TOffsetX, TOffsetY int16
+	X, Y, Z              int16
+	TX, TY, TW, TH       uint16
+	TOffsetX, TOffsetY   int16
+	R, G, B              byte
+	BlockLight, SkyLight byte
 }
 
 type buildPos struct {
@@ -20,43 +22,33 @@ type buildPos struct {
 var chunkVertexF, chunkVertexType = builder.Struct(chunkVertex{})
 
 func (cs *chunkSection) build(complete chan<- buildPos) {
-	ox, oy, oz := (cs.chunk.X<<4)-1, (cs.Y<<4)-1, (cs.chunk.Z<<4)-1
-	bs := getSnapshot(ox, oy, oz, 18, 18, 18)
+	ox, oy, oz := (cs.chunk.X<<4)-2, (cs.Y<<4)-2, (cs.chunk.Z<<4)-2
+	bs := getSnapshot(ox, oy, oz, 20, 20, 20)
+	// Make relative
+	bs.x = -2
+	bs.y = -2
+	bs.z = -2
 	go func() {
 		b := builder.New(chunkVertexType...)
-
-		get := func(x, y, z int) Block {
-			return bs.block(ox+1+x, oy+1+y, oz+1+z)
-		}
 
 		for y := 0; y < 16; y++ {
 			for x := 0; x < 16; x++ {
 				for z := 0; z < 16; z++ {
-					bl := get(x, y, z)
+					bl := bs.block(x, y, z)
 					if bl.Is(BlockAir) {
 						continue
 					}
 
-					if model := findStateModel(bl.Plugin(), bl.ModelName()); model != nil {
-						seed := (cs.chunk.X<<4 + x) ^ (cs.Y + y) ^ (cs.chunk.Z<<4 + z)
-						if variant := model.variant(bl.ModelVariant(), seed); variant != nil {
-							for _, v := range variant.render(x, y, z, get) {
-								chunkVertexF(b, v)
-							}
-							continue
-						}
+					if bl.Model() == nil {
+						continue
 					}
-					warnMissingModel(bl)
 
-					// TODO: Remove
-					if model := findStateModel("steven", "missing_block"); model != nil {
-						seed := (cs.chunk.X<<4 + x) ^ (cs.Y + y) ^ (cs.chunk.Z<<4 + z)
-						if variant := model.variant("normal", seed); variant != nil {
-							for _, v := range variant.render(x, y, z, get) {
-								chunkVertexF(b, v)
-							}
-							continue
+					seed := (cs.chunk.X<<4 + x) ^ (cs.Y + y) ^ (cs.chunk.Z<<4 + z)
+					if variant := bl.Model().variant(bl.ModelVariant(), seed); variant != nil {
+						for _, v := range variant.render(x, y, z, bs) {
+							chunkVertexF(b, v)
 						}
+						continue
 					}
 				}
 			}

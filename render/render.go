@@ -94,6 +94,8 @@ sync:
 	test.Position.Enable()
 	test.TextureInfo.Enable()
 	test.TextureOffset.Enable()
+	test.Color.Enable()
+	test.Lighting.Enable()
 
 	for _, chunk := range buffers {
 		if chunk.count == 0 {
@@ -102,12 +104,16 @@ sync:
 		test.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
 
 		chunk.buffer.Bind(gl.ArrayBuffer)
-		test.Position.Pointer(3, gl.Short, false, 18, 0)
-		test.TextureInfo.Pointer(4, gl.UnsignedShort, false, 18, 6)
-		test.TextureOffset.Pointer(2, gl.Short, false, 18, 14)
+		test.Position.Pointer(3, gl.Short, false, 23, 0)
+		test.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
+		test.TextureOffset.Pointer(2, gl.Short, false, 23, 14)
+		test.Color.Pointer(3, gl.UnsignedByte, true, 23, 18)
+		test.Lighting.Pointer(2, gl.UnsignedByte, false, 23, 21)
 		gl.DrawArrays(gl.Triangles, 0, chunk.count)
 	}
 
+	test.Lighting.Disable()
+	test.Color.Disable()
 	test.TextureOffset.Disable()
 	test.TextureInfo.Disable()
 	test.Position.Disable()
@@ -121,6 +127,8 @@ type testShader struct {
 	Position          gl.Attribute `gl:"aPosition"`
 	TextureInfo       gl.Attribute `gl:"aTextureInfo"`
 	TextureOffset     gl.Attribute `gl:"aTextureOffset"`
+	Color             gl.Attribute `gl:"aColor"`
+	Lighting          gl.Attribute `gl:"aLighting"`
 	PerspectiveMatrix gl.Uniform   `gl:"perspectiveMatrix"`
 	CameraMatrix      gl.Uniform   `gl:"cameraMatrix"`
 	Offset            gl.Uniform   `gl:"offset"`
@@ -132,31 +140,39 @@ var (
 attribute vec3 aPosition;
 attribute vec4 aTextureInfo;
 attribute vec2 aTextureOffset;
+attribute vec3 aColor;
+attribute vec2 aLighting;
 
 uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
 uniform vec3 offset;
 
-varying vec3 vPosition;
+varying vec3 vColor;
 varying vec4 vTextureInfo;
 varying vec2 vTextureOffset;
+varying float vLighting;
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
 	vec3 o = vec3(offset.x, -offset.y, offset.z);
 	gl_Position = perspectiveMatrix * cameraMatrix * vec4((pos / 256.0) + o * 16.0, 1.0);
-	vPosition = aPosition / (256.0 * 16.0);
+	vColor = aColor;
 	vTextureInfo = aTextureInfo;
 	vTextureOffset = aTextureOffset;
+	
+    float light = max(aLighting.x, aLighting.y * 1.0);
+    float val = pow(0.9, 16.0 - light) * 2.0;
+    vLighting = clamp(pow(val, 1.5) * 0.5, 0.0, 1.0);
 }
 `
 	fragment = `
 
 uniform sampler2D textures[5];
 
-varying vec3 vPosition;
+varying vec3 vColor;
 varying vec4 vTextureInfo;
 varying vec2 vTextureOffset;
+varying float vLighting;
 
 void main() {
 	vec2 tPos = vTextureOffset / 16.0;
@@ -166,6 +182,8 @@ void main() {
 	tPos /= 1024.0;
  	vec4 col = texture2D(textures[int(floor(vTextureInfo.y / 1024.0))], vec2(tPos.x, tPos.y));
 	if (col.a < 0.5) discard;
+	col *= vec4(vColor, 1.0);
+	col.rgb *= vLighting;
 	gl_FragColor = col;
 }
 `

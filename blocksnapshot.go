@@ -1,9 +1,15 @@
 package main
 
-import "math"
+import (
+	"math"
+
+	"github.com/thinkofdeath/steven/nibble"
+)
 
 type blocksSnapshot struct {
-	Blocks []Block
+	Blocks     []Block
+	BlockLight nibble.Array
+	SkyLight   nibble.Array
 
 	x, y, z int
 	w, h, d int
@@ -11,13 +17,15 @@ type blocksSnapshot struct {
 
 func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 	bs := &blocksSnapshot{
-		Blocks: make([]Block, w*h*d),
-		x:      x,
-		y:      y,
-		z:      z,
-		w:      w,
-		h:      h,
-		d:      d,
+		Blocks:     make([]Block, w*h*d),
+		BlockLight: nibble.New(w * h * d),
+		SkyLight:   nibble.New(w * h * d),
+		x:          x,
+		y:          y,
+		z:          z,
+		w:          w,
+		h:          h,
+		d:          d,
 	}
 	for i := range bs.Blocks {
 		bs.Blocks[i] = BlockAir.Blocks[0]
@@ -74,7 +82,10 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 					for zz := z1; zz < z2; zz++ {
 						for xx := x1; xx < x2; xx++ {
 							bl := cs.block(xx, yy, zz)
-							bs.setBlock(xx+(cx<<4), yy+(cy<<4), zz+(cz<<4), bl)
+							ox, oy, oz := xx+(cx<<4), yy+(cy<<4), zz+(cz<<4)
+							bs.setBlock(ox, oy, oz, bl)
+							bs.setBlockLight(ox, oy, oz, cs.blockLight(xx, yy, zz))
+							bs.setSkyLight(ox, oy, oz, cs.skyLight(xx, yy, zz))
 						}
 					}
 				}
@@ -91,6 +102,22 @@ func (bs *blocksSnapshot) block(x, y, z int) Block {
 
 func (bs *blocksSnapshot) setBlock(x, y, z int, b Block) {
 	bs.Blocks[bs.index(x, y, z)] = b
+}
+
+func (bs *blocksSnapshot) blockLight(x, y, z int) byte {
+	return bs.BlockLight.Get(bs.index(x, y, z))
+}
+
+func (bs *blocksSnapshot) setBlockLight(x, y, z int, b byte) {
+	bs.BlockLight.Set(bs.index(x, y, z), b)
+}
+
+func (bs *blocksSnapshot) skyLight(x, y, z int) byte {
+	return bs.SkyLight.Get(bs.index(x, y, z))
+}
+
+func (bs *blocksSnapshot) setSkyLight(x, y, z int, b byte) {
+	bs.SkyLight.Set(bs.index(x, y, z), b)
 }
 
 func (bs *blocksSnapshot) index(x, y, z int) int {

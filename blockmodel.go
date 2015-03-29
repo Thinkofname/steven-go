@@ -4,16 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource"
 )
 
 var (
-	blockStateModels  = map[pluginKey]*blockStateModel{}
-	blockStateLock    sync.RWMutex
-	blockStateWaiters = map[pluginKey]*sync.WaitGroup{}
+	blockStateModels = map[pluginKey]*blockStateModel{}
 )
 
 type blockStateModel struct {
@@ -22,43 +19,9 @@ type blockStateModel struct {
 
 func findStateModel(plugin, name string) *blockStateModel {
 	key := pluginKey{plugin, name}
-	blockStateLock.RLock()
 	if bs, ok := blockStateModels[key]; ok {
-		blockStateLock.RUnlock()
 		return bs
 	}
-	if wg := blockStateWaiters[key]; wg != nil {
-		blockStateLock.RUnlock()
-		wg.Wait()
-
-		blockStateLock.RLock()
-		defer blockStateLock.RUnlock()
-		return blockStateModels[key]
-	}
-	blockStateLock.RUnlock()
-	blockStateLock.Lock()
-
-	// Re-run the above checks in case it was completed between switching
-	// locks
-	if bs := blockStateModels[key]; bs != nil {
-		blockStateLock.Unlock()
-		return bs
-	}
-	if wg := blockStateWaiters[key]; wg != nil {
-		blockStateLock.Unlock()
-		wg.Wait()
-
-		blockStateLock.RLock()
-		defer blockStateLock.RUnlock()
-		return blockStateModels[key]
-	}
-
-	var wg sync.WaitGroup
-	blockStateWaiters[key] = &wg
-	wg.Add(1)
-	// No need to continue blocking other builders which
-	// don't need this model
-	blockStateLock.Unlock()
 
 	fmt.Printf("Load for %s\n", key.String())
 	if plugin == "steven" && name == "missing_block" {
@@ -79,16 +42,7 @@ func findStateModel(plugin, name string) *blockStateModel {
 		key.Name = "missing_block"
 	}
 
-	// Store the model
-	blockStateLock.Lock()
 	blockStateModels[key] = bs
-	blockStateLock.Unlock()
-	// Free anyone waiting
-	wg.Done()
-	// No longer need the waiter
-	blockStateLock.Lock()
-	delete(blockStateWaiters, key)
-	blockStateLock.Unlock()
 	return bs
 }
 
@@ -208,8 +162,8 @@ func parseBlockElement(data map[string]interface{}) *blockElement {
 
 	if faces, ok := data["faces"].(map[string]interface{}); ok {
 		for i := range faceNames {
-			be.faces[i] = &blockFace{}
 			if data, ok := faces[faceNames[i]].(map[string]interface{}); ok {
+				be.faces[i] = &blockFace{}
 				be.faces[i].init(data)
 			}
 		}
@@ -228,8 +182,15 @@ func (bf *blockFace) init(data map[string]interface{}) {
 	}
 	bf.texture, _ = data["texture"].(string)
 	bf.cullFace, _ = data["cullface"].(string)
-	bf.rotation, _ = data["rotation"].(int)
-	bf.tintIndex, _ = data["tintindex"].(int)
+	rotation, ok := data["rotation"].(float64)
+	if ok {
+		bf.rotation = int(rotation)
+	}
+	bf.tintIndex = -1
+	tintIndex, ok := data["tintindex"].(float64)
+	if ok {
+		bf.tintIndex = int(tintIndex)
+	}
 }
 
 var faceVertices = [6][6]chunkVertex{
@@ -289,36 +250,39 @@ var faceVertices = [6][6]chunkVertex{
 	},
 }
 
-func (bm *blockModel) render(x, y, z int, get func(x, y, z int) Block) []chunkVertex {
-	this := get(x, y, z)
+func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
+	this := bs.block(x, y, z)
 	var out []chunkVertex
 	for _, el := range bm.elements {
 	faceLoop:
 		for i := range faceVertices {
 			face := el.faces[i]
+			if face == nil {
+				continue
+			}
 			switch face.cullFace {
 			case "up":
-				if b := get(x, y+1, z); b.ShouldCullAgainst() || b == this {
+				if b := bs.block(x, y+1, z); b.ShouldCullAgainst() || b == this {
 					continue faceLoop
 				}
 			case "down":
-				if b := get(x, y-1, z); b.ShouldCullAgainst() || b == this {
+				if b := bs.block(x, y-1, z); b.ShouldCullAgainst() || b == this {
 					continue faceLoop
 				}
 			case "north":
-				if b := get(x, y, z-1); b.ShouldCullAgainst() || b == this {
+				if b := bs.block(x, y, z-1); b.ShouldCullAgainst() || b == this {
 					continue faceLoop
 				}
 			case "south":
-				if b := get(x, y, z+1); b.ShouldCullAgainst() || b == this {
+				if b := bs.block(x, y, z+1); b.ShouldCullAgainst() || b == this {
 					continue faceLoop
 				}
 			case "east":
-				if b := get(x+1, y, z); b.ShouldCullAgainst() || b == this {
+				if b := bs.block(x+1, y, z); b.ShouldCullAgainst() || b == this {
 					continue faceLoop
 				}
 			case "west":
-				if b := get(x-1, y, z); b.ShouldCullAgainst() || b == this {
+				if b := bs.block(x-1, y, z); b.ShouldCullAgainst() || b == this {
 					continue faceLoop
 				}
 			}
@@ -326,6 +290,18 @@ func (bm *blockModel) render(x, y, z int, get func(x, y, z int) Block) []chunkVe
 			tex := face.textureInfo
 			if tex == nil {
 				tex = bm.lookupTexture(face.texture)
+			}
+
+			var cr, cg, cb byte
+			switch face.tintIndex {
+			case 0:
+				cr = 0
+				cg = 255
+				cb = 0
+			default:
+				cr = 255
+				cg = 255
+				cb = 255
 			}
 
 			ux1 := int16(face.uv[0] * tex.Width)
@@ -337,6 +313,9 @@ func (bm *blockModel) render(x, y, z int, get func(x, y, z int) Block) []chunkVe
 				vert[v].TY = uint16(tex.Y + tex.Atlas*1024.0)
 				vert[v].TW = uint16(tex.Width)
 				vert[v].TH = uint16(tex.Height)
+				vert[v].R = cr
+				vert[v].G = cg
+				vert[v].B = cb
 
 				if vert[v].X == 0 {
 					vert[v].X = int16(el.from[0]*16 + x*256)
@@ -354,6 +333,15 @@ func (bm *blockModel) render(x, y, z int, get func(x, y, z int) Block) []chunkVe
 					vert[v].Z = int16(el.to[2]*16 + z*256)
 				}
 
+				vert[v].BlockLight, vert[v].SkyLight = calculateLight(
+					bs,
+					x, y, z,
+					float64(vert[v].X)/256.0,
+					float64(vert[v].Y)/256.0,
+					float64(vert[v].Z)/256.0,
+					i, true, this.ForceShade(),
+				)
+
 				if vert[v].TOffsetX == 0 {
 					vert[v].TOffsetX = int16(ux1)
 				} else {
@@ -370,6 +358,76 @@ func (bm *blockModel) render(x, y, z int, get func(x, y, z int) Block) []chunkVe
 		}
 	}
 	return out
+}
+
+func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
+	x, y, z float64, face int, smooth, force bool) (byte, byte) {
+	blockLight := bs.blockLight(origX, origY, origZ)
+	skyLight := bs.skyLight(origX, origY, origZ)
+	if !smooth {
+		return blockLight, skyLight
+	}
+	count := 1
+
+	// TODO(Think) Document/cleanup this
+	// it was taken from and older renderer of mine
+	// (thinkmap).
+
+	var pox, poy, poz, nox, noy, noz int
+
+	switch face {
+	case 0: // Up
+		poz, pox = 0, 0
+		noz, nox = -1, -1
+		poy = 1
+		noy = 0
+	case 1: // Down
+		poz, pox = 0, 0
+		noz, nox = -1, -1
+		poy = -1
+		noy = -2
+	case 2: // North
+		poy, pox = 0, 0
+		noy, nox = -1, -1
+		poz = -1
+		noz = -2
+	case 3: // South
+		poy, pox = 0, 0
+		noy, nox = -1, -1
+		poz = 1
+		noz = 0
+	case 4: // West
+		poz, poy = 0, 0
+		noz, noy = -1, -1
+		pox = -1
+		nox = -2
+	case 5: // East
+		poz, poy = 0, 0
+		noz, noy = -1, -1
+		pox = 1
+		nox = 0
+	}
+	for ox := nox; ox <= pox; ox++ {
+		for oy := noy; oy <= poy; oy++ {
+			for oz := noz; oz <= poz; oz++ {
+				bx := int(x + float64(ox))
+				by := int(y + float64(oy))
+				bz := int(z + float64(oz))
+				count++
+				blockLight += bs.blockLight(bx, by, bz)
+				if !force {
+					skyLight += bs.skyLight(bx, by, bz)
+				} else {
+					if bl := bs.block(bx, by, bz); bl.Is(BlockAir) {
+						skyLight += 15
+					}
+				}
+			}
+		}
+
+	}
+
+	return blockLight / byte(count), skyLight / byte(count)
 }
 
 func (bm *blockModel) lookupTexture(name string) *render.TextureInfo {

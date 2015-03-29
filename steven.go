@@ -78,7 +78,7 @@ func action(action platform.Action) {
 	}
 }
 
-const maxBuilders = 50
+const maxBuilders = 20
 
 var (
 	ready            bool

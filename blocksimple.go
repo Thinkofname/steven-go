@@ -1,7 +1,6 @@
 package main
 
-// BlockSimple is a basic block with no special attributes
-type BlockSimple struct {
+type blockSimple struct {
 	baseBlock
 }
 
@@ -10,12 +9,18 @@ type simpleConfig struct {
 }
 
 func initSimple(name string, config simpleConfig) *BlockSet {
-	s := &BlockSimple{}
+	s := &blockSimple{}
 	s.init(name)
 	set := alloc(s)
-	s.Parent = set
 
 	s.cullAgainst = !config.NotCullAgainst
 
 	return set
+}
+
+func (b *blockSimple) toData() int {
+	if b == b.Parent.Base {
+		return 0
+	}
+	return -1
 }

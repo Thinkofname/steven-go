@@ -21,6 +21,10 @@ type chunk struct {
 	Biomes   [16 * 16]byte
 }
 
+func (c *chunk) biome(x, z int) byte {
+	return c.Biomes[z<<4|x]
+}
+
 func (c *chunk) free() {
 	for _, s := range c.Sections {
 		if s != nil {
@@ -45,6 +49,14 @@ type chunkSection struct {
 
 func (cs *chunkSection) block(x, y, z int) Block {
 	return cs.Blocks[(y<<8)|(z<<4)|x]
+}
+
+func (cs *chunkSection) blockLight(x, y, z int) byte {
+	return cs.BlockLight.Get((y << 8) | (z << 4) | x)
+}
+
+func (cs *chunkSection) skyLight(x, y, z int) byte {
+	return cs.SkyLight.Get((y << 8) | (z << 4) | x)
 }
 
 func newChunkSection(c *chunk, y int) *chunkSection {
