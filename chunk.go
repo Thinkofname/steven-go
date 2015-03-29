@@ -6,6 +6,7 @@ import (
 
 	"github.com/thinkofdeath/steven/nibble"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/world/biome"
 )
 
 var chunkMap = map[chunkPosition]*chunk{}
@@ -21,8 +22,8 @@ type chunk struct {
 	Biomes   [16 * 16]byte
 }
 
-func (c *chunk) biome(x, z int) byte {
-	return c.Biomes[z<<4|x]
+func (c *chunk) biome(x, z int) *biome.Type {
+	return biome.ById(c.Biomes[z<<4|x])
 }
 
 func (c *chunk) free() {

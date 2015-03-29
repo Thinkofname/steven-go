@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"image"
 	"reflect"
 	"strconv"
 	"strings"
@@ -33,6 +34,7 @@ type Block interface {
 	Model() *blockStateModel
 	ForceShade() bool
 	ShouldCullAgainst() bool
+	TintImage() *image.NRGBA
 
 	String() string
 
@@ -100,6 +102,10 @@ func (b *baseBlock) ShouldCullAgainst() bool {
 
 func (b *baseBlock) ForceShade() bool {
 	return false
+}
+
+func (b *baseBlock) TintImage() *image.NRGBA {
+	return nil
 }
 
 func (b *baseBlock) clone() Block {
@@ -237,6 +243,9 @@ func init() {
 			data := b.toData()
 			if data != -1 {
 				blocks[(bs.ID<<4)|data] = b
+			}
+			if _, ok := b.(*blockLiquid); ok {
+				continue
 			}
 			if model := findStateModel(b.Plugin(), b.ModelName()); model != nil {
 				reflect.ValueOf(b).Elem().FieldByName("StateModel").Set(

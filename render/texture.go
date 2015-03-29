@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"image"
+	"image/draw"
 	"image/png"
 	"sync"
 
@@ -58,8 +59,12 @@ func loadTextures() {
 		}
 		width, height := img.Bounds().Dx(), img.Bounds().Dy()
 		if width != height {
-			fmt.Printf("Skipping %s for now...\n", file)
-			continue
+			height = width
+			old := img
+			img := image.NewNRGBA(image.Rect(0, 0, width, width))
+			draw.Draw(img, img.Bounds(), old, image.ZP, draw.Over)
+
+			fmt.Printf("Skipping animation %s for now...\n", file)
 		}
 		var pix []byte
 		switch img := img.(type) {

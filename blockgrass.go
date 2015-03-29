@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"image"
+)
 
 type blockGrass struct {
 	baseBlock
@@ -15,7 +18,7 @@ func initGrass() *BlockSet {
 }
 
 func (g *blockGrass) String() string {
-	return fmt.Sprintf("%s[snowy=%t]", g.baseBlock.String(), g.Snowy)
+	return g.Parent.stringify(g)
 }
 
 func (g *blockGrass) clone() Block {
@@ -27,6 +30,10 @@ func (g *blockGrass) clone() Block {
 
 func (g *blockGrass) ModelVariant() string {
 	return fmt.Sprintf("snowy=%t", g.Snowy)
+}
+
+func (g *blockGrass) TintImage() *image.NRGBA {
+	return grassBiomeColors
 }
 
 func (g *blockGrass) toData() int {

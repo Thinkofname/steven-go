@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"image"
 	"strings"
 
 	"github.com/thinkofdeath/steven/render"
@@ -23,7 +24,6 @@ func findStateModel(plugin, name string) *blockStateModel {
 		return bs
 	}
 
-	fmt.Printf("Load for %s\n", key.String())
 	if plugin == "steven" && name == "missing_block" {
 		key.Plugin = "minecraft"
 		key.Name = "clay"
@@ -253,7 +253,8 @@ var faceVertices = [6][6]chunkVertex{
 func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 	this := bs.block(x, y, z)
 	var out []chunkVertex
-	for _, el := range bm.elements {
+	for ei := range bm.elements {
+		el := bm.elements[len(bm.elements)-1-ei]
 	faceLoop:
 		for i := range faceVertices {
 			face := el.faces[i]
@@ -295,9 +296,7 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 			var cr, cg, cb byte
 			switch face.tintIndex {
 			case 0:
-				cr = 0
-				cg = 255
-				cb = 0
+				cr, cg, cb = calculateBiome(bs, x, z, this.TintImage())
 			default:
 				cr = 255
 				cg = 255
@@ -358,6 +357,24 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 		}
 	}
 	return out
+}
+
+func calculateBiome(bs *blocksSnapshot, x, z int, img *image.NRGBA) (byte, byte, byte) {
+	count := 0
+	var r, g, b int
+	for xx := -2; xx <= 2; xx++ {
+		for zz := -2; zz <= 2; zz++ {
+			biome := bs.biome(x+xx, z+zz)
+			ix := biome.ColorIndex & 0xFF
+			iy := biome.ColorIndex >> 8
+			col := img.NRGBAAt(ix, iy)
+			r += int(col.R)
+			g += int(col.G)
+			b += int(col.B)
+			count++
+		}
+	}
+	return byte(r / count), byte(g / count), byte(b / count)
 }
 
 func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,

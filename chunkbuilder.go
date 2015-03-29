@@ -39,6 +39,13 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 						continue
 					}
 
+					if l, ok := bl.(*blockLiquid); ok {
+						for _, v := range l.renderLiquid(bs, x, y, z) {
+							chunkVertexF(b, v)
+						}
+						continue
+					}
+
 					if bl.Model() == nil {
 						continue
 					}

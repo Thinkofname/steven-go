@@ -62,7 +62,7 @@ func initLog(name string) *BlockSet {
 }
 
 func (l *blockLog) String() string {
-	return fmt.Sprintf("%s[variant=%s,axis=%s]", l.baseBlock.String(), l.Variant, l.Axis)
+	return l.Parent.stringify(l)
 }
 
 func (l *blockLog) clone() Block {
@@ -82,34 +82,7 @@ func (l *blockLog) ModelVariant() string {
 }
 
 func (l *blockLog) toData() int {
-	data := 0
-	switch l.Variant {
-	case treeOak:
-		data = 0
-	case treeSpruce:
-		data = 1
-	case treeBirch:
-		data = 2
-	case treeJungle:
-		data = 3
-	}
+	data := int(l.Variant)
 	data |= int(l.Axis) << 2
 	return data
-}
-
-func logVariant(name string, val int) string {
-	switch name {
-	case "log", "leaves":
-		switch val {
-		case 0:
-			return "oak"
-		case 1:
-			return "spruce"
-		case 2:
-			return "birch"
-		case 3:
-			return "jungle"
-		}
-	}
-	panic("unsupported log " + name)
 }

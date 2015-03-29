@@ -4,12 +4,14 @@ import (
 	"math"
 
 	"github.com/thinkofdeath/steven/nibble"
+	"github.com/thinkofdeath/steven/world/biome"
 )
 
 type blocksSnapshot struct {
 	Blocks     []Block
 	BlockLight nibble.Array
 	SkyLight   nibble.Array
+	Biome      []*biome.Type
 
 	x, y, z int
 	w, h, d int
@@ -20,6 +22,7 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 		Blocks:     make([]Block, w*h*d),
 		BlockLight: nibble.New(w * h * d),
 		SkyLight:   nibble.New(w * h * d),
+		Biome:      make([]*biome.Type, w*d),
 		x:          x,
 		y:          y,
 		z:          z,
@@ -29,6 +32,10 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 	}
 	for i := range bs.Blocks {
 		bs.Blocks[i] = BlockAir.Blocks[0]
+		bs.SkyLight.Set(i, 15)
+	}
+	for i := range bs.Biome {
+		bs.Biome[i] = biome.Invalid
 	}
 
 	cx1 := int(math.Floor(float64(x) / 16.0))
@@ -86,6 +93,8 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 							bs.setBlock(ox, oy, oz, bl)
 							bs.setBlockLight(ox, oy, oz, cs.blockLight(xx, yy, zz))
 							bs.setSkyLight(ox, oy, oz, cs.skyLight(xx, yy, zz))
+
+							bs.setBiome(ox, oz, chunk.biome(xx, zz))
 						}
 					}
 				}
@@ -118,6 +127,18 @@ func (bs *blocksSnapshot) skyLight(x, y, z int) byte {
 
 func (bs *blocksSnapshot) setSkyLight(x, y, z int, b byte) {
 	bs.SkyLight.Set(bs.index(x, y, z), b)
+}
+
+func (bs *blocksSnapshot) biome(x, z int) *biome.Type {
+	x -= bs.x
+	z -= bs.z
+	return bs.Biome[(z*bs.w)|x]
+}
+
+func (bs *blocksSnapshot) setBiome(x, z int, b *biome.Type) {
+	x -= bs.x
+	z -= bs.z
+	bs.Biome[(z*bs.w)|x] = b
 }
 
 func (bs *blocksSnapshot) index(x, y, z int) int {

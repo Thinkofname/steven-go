@@ -3,7 +3,7 @@ package main
 // Valid blocks.
 var (
 	BlockAir          = initSimple("air", simpleConfig{NotCullAgainst: true})
-	BlockStone        = initSimple("stone", simpleConfig{})
+	BlockStone        = initStone("stone")
 	BlockGrass        = initGrass()
 	BlockDirt         = initSimple("dirt", simpleConfig{})
 	BlockCobblestone  = initSimple("cobblestone", simpleConfig{})
