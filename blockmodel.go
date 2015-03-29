@@ -180,15 +180,16 @@ type blockElement struct {
 	from, to [3]int
 	shade    bool
 
-	faces [6]blockFace
+	faces [6]*blockFace
 }
 
 type blockFace struct {
-	uv        [4]int
-	texture   string
-	cullFace  string
-	rotation  int
-	tintIndex int
+	uv          [4]int
+	texture     string
+	textureInfo *render.TextureInfo
+	cullFace    string
+	rotation    int
+	tintIndex   int
 }
 
 var faceNames = []string{"up", "down", "north", "south", "west", "east"}
@@ -207,6 +208,7 @@ func parseBlockElement(data map[string]interface{}) *blockElement {
 
 	if faces, ok := data["faces"].(map[string]interface{}); ok {
 		for i := range faceNames {
+			be.faces[i] = &blockFace{}
 			if data, ok := faces[faceNames[i]].(map[string]interface{}); ok {
 				be.faces[i].init(data)
 			}
@@ -321,7 +323,10 @@ func (bm *blockModel) render(x, y, z int, get func(x, y, z int) Block) []chunkVe
 				}
 			}
 			vert := faceVertices[i]
-			tex := bm.lookupTexture(face.texture)
+			tex := face.textureInfo
+			if tex == nil {
+				tex = bm.lookupTexture(face.texture)
+			}
 
 			ux1 := int16(face.uv[0] * tex.Width)
 			ux2 := int16(face.uv[2] * tex.Width)
@@ -367,7 +372,7 @@ func (bm *blockModel) render(x, y, z int, get func(x, y, z int) Block) []chunkVe
 	return out
 }
 
-func (bm *blockModel) lookupTexture(name string) render.TextureInfo {
+func (bm *blockModel) lookupTexture(name string) *render.TextureInfo {
 	if len(name) > 0 && name[0] == '#' {
 		return bm.lookupTexture(bm.textureVars[name[1:]])
 	}

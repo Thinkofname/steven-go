@@ -1,11 +1,9 @@
 package render
 
 import (
-	"bytes"
 	"fmt"
 	"image"
 	"image/png"
-	"io/ioutil"
 	"sync"
 
 	"github.com/thinkofdeath/steven/platform/gl"
@@ -29,14 +27,14 @@ type TextureInfo struct {
 
 // GetTexture returns the related TextureInfo for the requested texture.
 // If the texture isn't found a placeholder is returned instead.
-func GetTexture(name string) TextureInfo {
+func GetTexture(name string) *TextureInfo {
 	textureLock.RLock()
 	defer textureLock.RUnlock()
 	t, ok := textureMap[name]
 	if !ok {
-		return textureMap["missing_texture"]
+		t = textureMap["missing_texture"]
 	}
-	return t
+	return &t
 }
 
 // TODO(Think) better error handling (if possible to recover?)
@@ -90,12 +88,6 @@ func loadTextures() {
 		Rect:  rect,
 		Atlas: at,
 	}
-
-	img := image.NewRGBA(image.Rect(0, 0, 1024, 1024))
-	img.Pix = textures[0].Buffer
-	var buf bytes.Buffer
-	png.Encode(&buf, img)
-	ioutil.WriteFile(".steven/atlas.png", buf.Bytes(), 0777)
 }
 
 func addTexture(pix []byte, width, height int) (int, *atlas.Rect) {
