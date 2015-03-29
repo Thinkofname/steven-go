@@ -76,7 +76,7 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int) []chunkVerte
 		case 5: // East
 			ox = 1
 		}
-		if b := bs.block(x+ox, y+oy, z+oz); !b.Is(b1) && !b.Is(b2) {
+		if b := bs.block(x+ox, y+oy, z+oz); !b.Is(b1) && !b.Is(b2) && !b.ShouldCullAgainst() {
 			vert := faceVertices[f]
 
 			var cr, cg, cb byte

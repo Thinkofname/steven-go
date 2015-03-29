@@ -22,4 +22,7 @@ var (
 	BlockLog          = initLog("log")
 	BlockLeaves       = initLeaves("leaves")
 	BlockSponge       = initSimple("sponge", simpleConfig{})
+	BlockGlass        = initSimple("glass", simpleConfig{NotCullAgainst: true})
+	BlockLapisOre     = initSimple("lapis_ore", simpleConfig{})
+	BlockLapisBlock   = initSimple("lapis_block", simpleConfig{})
 )
