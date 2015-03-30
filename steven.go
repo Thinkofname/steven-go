@@ -5,6 +5,7 @@ import (
 	"math"
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/thinkofdeath/steven/platform"
 	"github.com/thinkofdeath/steven/protocol"
@@ -82,10 +83,10 @@ var maxBuilders = runtime.NumCPU() * 2
 
 var (
 	ready            bool
-	tick             int
 	freeBuilders     = maxBuilders
 	completeBuilders = make(chan buildPos, maxBuilders)
 	syncChan         = make(chan func(), 200)
+	ticker           = time.NewTicker(time.Second / 20)
 )
 
 func draw() {
@@ -116,14 +117,11 @@ handle:
 	render.Camera.X += mf * math.Cos(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * (1.0 / 7.0)
 	render.Camera.Z -= mf * math.Sin(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * (1.0 / 7.0)
 	render.Camera.Y -= mf * math.Sin(render.Camera.Pitch) * (1.0 / 7.0)
-	tick++
-	if ready && tick%3 == 0 {
-		writeChan <- &protocol.PlayerPositionLook{
-			X:     render.Camera.X,
-			Y:     render.Camera.Y,
-			Z:     render.Camera.Z,
-			Yaw:   float32(-render.Camera.Yaw * (180 / math.Pi)),
-			Pitch: float32((-render.Camera.Pitch - math.Pi) * (180 / math.Pi)),
+	if ready {
+		select {
+		case <-ticker.C:
+			tick()
+		default:
 		}
 	}
 
@@ -146,4 +144,14 @@ dirtyClean:
 	}
 
 	render.Draw()
+}
+
+func tick() {
+	writeChan <- &protocol.PlayerPositionLook{
+		X:     render.Camera.X,
+		Y:     render.Camera.Y,
+		Z:     render.Camera.Z,
+		Yaw:   float32(-render.Camera.Yaw * (180 / math.Pi)),
+		Pitch: float32((-render.Camera.Pitch - math.Pi) * (180 / math.Pi)),
+	}
 }
