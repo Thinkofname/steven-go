@@ -24,11 +24,16 @@ func findStateModel(plugin, name string) *blockStateModel {
 		return bs
 	}
 
+	// Hack to add our 'missing block' into the game without a
+	// model for it. We hijack the clay model and then replace
+	// the textures for it with ours.
 	if plugin == "steven" && name == "missing_block" {
 		key.Plugin = "minecraft"
 		key.Name = "clay"
 	}
 	bs := loadStateModel(key)
+
+	// See above comment
 	if plugin == "steven" && name == "missing_block" {
 		v := bs.variants["normal"]
 		for _, m := range v {
@@ -141,12 +146,10 @@ type blockFace struct {
 	uv          [4]int
 	texture     string
 	textureInfo *render.TextureInfo
-	cullFace    string
+	cullFace    Direction
 	rotation    int
 	tintIndex   int
 }
-
-var faceNames = []string{"up", "down", "north", "south", "west", "east"}
 
 func parseBlockElement(data map[string]interface{}) *blockElement {
 	be := &blockElement{}
@@ -161,8 +164,8 @@ func parseBlockElement(data map[string]interface{}) *blockElement {
 	be.shade = !ok || shade
 
 	if faces, ok := data["faces"].(map[string]interface{}); ok {
-		for i := range faceNames {
-			if data, ok := faces[faceNames[i]].(map[string]interface{}); ok {
+		for i, d := range Directions {
+			if data, ok := faces[d.String()].(map[string]interface{}); ok {
 				be.faces[i] = &blockFace{}
 				be.faces[i].init(data)
 			}
@@ -181,7 +184,8 @@ func (bf *blockFace) init(data map[string]interface{}) {
 		bf.uv = [4]int{0, 0, 16, 16}
 	}
 	bf.texture, _ = data["texture"].(string)
-	bf.cullFace, _ = data["cullface"].(string)
+	cullFace, _ := data["cullface"].(string)
+	bf.cullFace = DirectionFromString(cullFace)
 	rotation, ok := data["rotation"].(float64)
 	if ok {
 		bf.rotation = int(rotation)
@@ -193,6 +197,7 @@ func (bf *blockFace) init(data map[string]interface{}) {
 	}
 }
 
+// Precomputed face vertices
 var faceVertices = [6][6]chunkVertex{
 	{ // Up
 		{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
@@ -261,29 +266,9 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 			if face == nil {
 				continue
 			}
-			switch face.cullFace {
-			case "up":
-				if b := bs.block(x, y+1, z); b.ShouldCullAgainst() || b == this {
-					continue faceLoop
-				}
-			case "down":
-				if b := bs.block(x, y-1, z); b.ShouldCullAgainst() || b == this {
-					continue faceLoop
-				}
-			case "north":
-				if b := bs.block(x, y, z-1); b.ShouldCullAgainst() || b == this {
-					continue faceLoop
-				}
-			case "south":
-				if b := bs.block(x, y, z+1); b.ShouldCullAgainst() || b == this {
-					continue faceLoop
-				}
-			case "east":
-				if b := bs.block(x+1, y, z); b.ShouldCullAgainst() || b == this {
-					continue faceLoop
-				}
-			case "west":
-				if b := bs.block(x-1, y, z); b.ShouldCullAgainst() || b == this {
+			if face.cullFace != -1 {
+				ox, oy, oz := face.cullFace.Offset()
+				if b := bs.block(x+ox, y+oy, z+oz); b.ShouldCullAgainst() || b == this {
 					continue faceLoop
 				}
 			}
@@ -291,6 +276,7 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 			tex := face.textureInfo
 			if tex == nil {
 				tex = bm.lookupTexture(face.texture)
+				face.textureInfo = tex
 			}
 
 			var cr, cg, cb byte
@@ -359,6 +345,7 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 	return out
 }
 
+// Takes an average of the biome colors of the surrounding area
 func calculateBiome(bs *blocksSnapshot, x, z int, img *image.NRGBA) (byte, byte, byte) {
 	count := 0
 	var r, g, b int

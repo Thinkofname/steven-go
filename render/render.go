@@ -59,6 +59,7 @@ sync:
 	}
 
 	width, height := platform.Size()
+	// Only update the viewport if the window was resized
 	if lastHeight != height || lastWidth != width {
 		lastWidth = width
 		lastHeight = height
@@ -72,6 +73,8 @@ sync:
 		)
 		gl.Viewport(0, 0, width, height)
 	}
+	// Only update the texture ids if we have new
+	// textures
 	if len(textureIds) != len(glTextures) {
 		textureIds = make([]int, len(glTextures))
 		for i, tex := range glTextures {
@@ -87,6 +90,8 @@ sync:
 	shaderChunk.PerspectiveMatrix.Matrix4(perspectiveMatrix)
 
 	cameraMatrix.Identity()
+	// +1.62 for the players height.
+	// TODO(Think) Change this?
 	cameraMatrix.Translate(float32(Camera.X), float32(Camera.Y+1.62), float32(-Camera.Z))
 	cameraMatrix.RotateY(float32(Camera.Yaw))
 	cameraMatrix.RotateX(float32(Camera.Pitch))
