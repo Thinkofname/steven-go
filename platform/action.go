@@ -8,5 +8,5 @@ type Action int
 
 const (
 	InvalidAction Action = iota
-	DebugRefresh
+	Debug
 )

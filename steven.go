@@ -65,17 +65,9 @@ func move(f, s float64) {
 }
 
 func action(action platform.Action) {
-	fmt.Println("action: ", action)
+	fmt.Println("action:", action)
 	switch action {
-	case platform.DebugRefresh:
-		fmt.Println(len(chunkMap))
-		for _, c := range chunkMap {
-			for _, s := range c.Sections {
-				if s != nil {
-					s.dirty = true
-				}
-			}
-		}
+	case platform.Debug:
 	}
 }
 

@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"sort"
 
-	"github.com/thinkofdeath/steven/nibble"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/type/nibble"
 	"github.com/thinkofdeath/steven/world/biome"
 )
 

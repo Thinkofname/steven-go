@@ -4,7 +4,7 @@ import (
 	"unsafe"
 
 	"github.com/go-gl/gl/v3.2-core/gl"
-	"github.com/thinkofdeath/steven/vmath"
+	"github.com/thinkofdeath/steven/type/vmath"
 )
 
 const (

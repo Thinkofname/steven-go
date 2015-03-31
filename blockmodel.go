@@ -8,6 +8,7 @@ import (
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource"
+	"github.com/thinkofdeath/steven/type/direction"
 )
 
 var (
@@ -146,7 +147,7 @@ type blockFace struct {
 	uv          [4]int
 	texture     string
 	textureInfo *render.TextureInfo
-	cullFace    Direction
+	cullFace    direction.Type
 	rotation    int
 	tintIndex   int
 }
@@ -164,7 +165,7 @@ func parseBlockElement(data map[string]interface{}) *blockElement {
 	be.shade = !ok || shade
 
 	if faces, ok := data["faces"].(map[string]interface{}); ok {
-		for i, d := range Directions {
+		for i, d := range direction.Values {
 			if data, ok := faces[d.String()].(map[string]interface{}); ok {
 				be.faces[i] = &blockFace{}
 				be.faces[i].init(data)
@@ -185,7 +186,7 @@ func (bf *blockFace) init(data map[string]interface{}) {
 	}
 	bf.texture, _ = data["texture"].(string)
 	cullFace, _ := data["cullface"].(string)
-	bf.cullFace = DirectionFromString(cullFace)
+	bf.cullFace = direction.FromString(cullFace)
 	rotation, ok := data["rotation"].(float64)
 	if ok {
 		bf.rotation = int(rotation)
@@ -266,7 +267,7 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 			if face == nil {
 				continue
 			}
-			if face.cullFace != -1 {
+			if face.cullFace != direction.Invalid {
 				ox, oy, oz := face.cullFace.Offset()
 				if b := bs.block(x+ox, y+oy, z+oz); b.ShouldCullAgainst() || b == this {
 					continue faceLoop

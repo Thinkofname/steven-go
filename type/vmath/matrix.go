@@ -26,6 +26,10 @@ func (m *Matrix4) Identity() {
 	m[k(3, 3)] = 1
 }
 
+func (m *Matrix4) Get(x, y int) float32 {
+	return m[k(y, x)]
+}
+
 // Perspective applies a perspective to the matrix
 func (m *Matrix4) Perspective(fovy, aspect, near, far float32) {
 	invDepth := 1 / (near - far)

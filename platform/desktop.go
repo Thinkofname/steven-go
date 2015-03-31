@@ -84,7 +84,7 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		}
 	case glfw.KeyH:
 		if action == glfw.Release {
-			handler.Action(DebugRefresh)
+			handler.Action(Debug)
 		}
 	}
 }

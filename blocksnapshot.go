@@ -3,7 +3,7 @@ package main
 import (
 	"math"
 
-	"github.com/thinkofdeath/steven/nibble"
+	"github.com/thinkofdeath/steven/type/nibble"
 	"github.com/thinkofdeath/steven/world/biome"
 )
 

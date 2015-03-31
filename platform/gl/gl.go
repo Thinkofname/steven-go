@@ -23,6 +23,7 @@ const (
 	CounterClockWise FaceDirection = gl.CCW
 
 	Triangles DrawType = gl.TRIANGLES
+	LineStrip DrawType = gl.LINE_STRIP
 
 	Never       Func = gl.NEVER
 	Less        Func = gl.LESS

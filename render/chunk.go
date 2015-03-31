@@ -1,33 +1,56 @@
 package render
 
-import "github.com/thinkofdeath/steven/platform/gl"
+import (
+	"github.com/thinkofdeath/steven/platform/gl"
+	"github.com/thinkofdeath/steven/type/direction"
+)
 
-var buffers []*ChunkBuffer
+var (
+	buffers       = make(map[position]*ChunkBuffer)
+	bufferColumns = make(map[positionC]int)
+)
 
 // ChunkBuffer is a renderable chunk section
 type ChunkBuffer struct {
-	X, Y, Z int
+	position
 
-	array  gl.VertexArray
-	buffer gl.Buffer
-	count  int
+	array    gl.VertexArray
+	buffer   gl.Buffer
+	count    int
+	cullBits uint64
+
+	renderedOn uint
+}
+
+func (cb *ChunkBuffer) IsVisible(from, to direction.Type) bool {
+	return (cb.cullBits & (1 << (from*6 + to))) != 0
+}
+
+type position struct {
+	X, Y, Z int
+}
+
+type positionC struct {
+	X, Z int
 }
 
 // AllocateChunkBuffer allocates a chunk buffer and adds it to the
 // render list.
 func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 	c := &ChunkBuffer{
-		X: x, Y: y, Z: z,
-		array:  gl.CreateVertexArray(),
-		buffer: gl.CreateBuffer(),
+		position: position{X: x, Y: y, Z: z},
+		array:    gl.CreateVertexArray(),
+		buffer:   gl.CreateBuffer(),
 	}
-	buffers = append(buffers, c)
+	buffers[c.position] = c
+	bufferColumns[positionC{x, z}]++
 	return c
 }
 
 // Upload uploads the passed vertex data to the buffer.
-func (cb *ChunkBuffer) Upload(data []byte, count int) {
+func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 	renderSync(func() {
+		cb.cullBits = cullBits
 		cb.array.Bind()
 		cb.buffer.Bind(gl.ArrayBuffer)
 		cb.buffer.Data(data, gl.DynamicDraw)
@@ -60,12 +83,16 @@ func (cb *ChunkBuffer) Upload(data []byte, count int) {
 
 // Free removes the buffer and frees related resources.
 func (cb *ChunkBuffer) Free() {
-	for i, c := range buffers {
-		if c == cb {
-			buffers = append(buffers[:i], buffers[i+1:]...)
-			return
-		}
+	delete(buffers, cb.position)
+	cpos := positionC{cb.position.X, cb.position.Z}
+	val := bufferColumns[cpos]
+	val--
+	if val <= 0 {
+		delete(bufferColumns, cpos)
+	} else {
+		bufferColumns[cpos] = val
 	}
+
 	cb.buffer.Delete()
 	cb.array.Delete()
 }
