@@ -1,6 +1,9 @@
 package main
 
-import "github.com/thinkofdeath/steven/render"
+import (
+	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/type/direction"
+)
 
 type blockLiquid struct {
 	baseBlock
@@ -60,23 +63,10 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int) []chunkVerte
 		br = l.averageLiquidLevel(bs, x+1, y, z+1)
 	}
 
-	for f := range faceVertices {
-		var ox, oy, oz int
-		switch f {
-		case 0: // Up
-			oy = 1
-		case 1: // Down
-			oy = -1
-		case 2: // North
-			oz = -1
-		case 3: // South
-			oz = 1
-		case 4: // West
-			ox = -1
-		case 5: // East
-			ox = 1
-		}
-		if b := bs.block(x+ox, y+oy, z+oz); !b.Is(b1) && !b.Is(b2) && !b.ShouldCullAgainst() {
+	for f, d := range direction.Values {
+		ox, oy, oz := d.Offset()
+		special := d == direction.Up && (tl < 8 || tr < 8 || bl < 8 || br < 8)
+		if b := bs.block(x+ox, y+oy, z+oz); special || (!b.Is(b1) && !b.Is(b2) && !b.ShouldCullAgainst()) {
 			vert := faceVertices[f]
 
 			var cr, cg, cb byte
