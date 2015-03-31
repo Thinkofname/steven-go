@@ -35,6 +35,7 @@ type Block interface {
 	ForceShade() bool
 	ShouldCullAgainst() bool
 	TintImage() *image.NRGBA
+	IsTranslucent() bool
 
 	String() string
 
@@ -49,6 +50,7 @@ type baseBlock struct {
 	Parent       *BlockSet
 	cullAgainst  bool
 	StateModel   *blockStateModel
+	translucent  bool
 }
 
 // Is returns whether this block is a member of the passed Set
@@ -108,12 +110,17 @@ func (b *baseBlock) TintImage() *image.NRGBA {
 	return nil
 }
 
+func (b *baseBlock) IsTranslucent() bool {
+	return b.translucent
+}
+
 func (b *baseBlock) clone() Block {
 	return &baseBlock{
 		plugin:      b.plugin,
 		name:        b.name,
 		Parent:      b.Parent,
 		cullAgainst: b.cullAgainst,
+		translucent: b.translucent,
 	}
 }
 

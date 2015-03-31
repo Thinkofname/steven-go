@@ -16,6 +16,9 @@ func initLiquid(name string, lava bool) *BlockSet {
 	l.init(name)
 	l.Lava = lava
 	l.cullAgainst = false
+	if !lava {
+		l.translucent = true
+	}
 	set := alloc(l)
 	return set
 }

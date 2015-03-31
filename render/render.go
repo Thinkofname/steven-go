@@ -2,6 +2,7 @@ package render
 
 import (
 	"math"
+	"sort"
 
 	"github.com/thinkofdeath/steven/platform"
 	"github.com/thinkofdeath/steven/platform/gl"
@@ -10,8 +11,10 @@ import (
 )
 
 var (
-	chunkProgram gl.Program
-	shaderChunk  *chunkShader
+	chunkProgram  gl.Program
+	shaderChunk   *chunkShader
+	chunkProgramT gl.Program
+	shaderChunkT  *chunkShader
 
 	lastWidth, lastHeight int = -1, -1
 	perspectiveMatrix         = vmath.NewMatrix4()
@@ -34,6 +37,10 @@ func Start() {
 	shaderChunk = &chunkShader{}
 	InitStruct(shaderChunk, chunkProgram)
 
+	chunkProgramT = CreateProgram(vertex, "#define alpha\n"+fragment)
+	shaderChunkT = &chunkShader{}
+	InitStruct(shaderChunkT, chunkProgramT)
+
 	loadTextures()
 
 	for _, tex := range textures {
@@ -43,6 +50,7 @@ func Start() {
 			Format: gl.RGBA,
 		}))
 	}
+	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
 }
 
 var (
@@ -94,7 +102,6 @@ sync:
 	gl.Clear(gl.ColorBufferBit | gl.DepthBufferBit)
 
 	chunkProgram.Use()
-	shaderChunk.PerspectiveMatrix.Matrix4(perspectiveMatrix)
 
 	cameraMatrix.Identity()
 	// +1.62 for the players height.
@@ -104,6 +111,7 @@ sync:
 	cameraMatrix.RotateX(float32(Camera.Pitch))
 	cameraMatrix.Scale(-1.0, 1.0, 1.0)
 
+	shaderChunk.PerspectiveMatrix.Matrix4(perspectiveMatrix)
 	shaderChunk.CameraMatrix.Matrix4(cameraMatrix)
 	shaderChunk.Textures.IntV(textureIds...)
 
@@ -125,12 +133,34 @@ sync:
 	viewVector.Y = -float32(math.Sin(float64(Camera.Pitch)))
 
 	colVisitMap = make(map[positionC]struct{})
+	renderOrder = renderOrder[:0]
 	if nearestBuffer != nil {
 		renderBuffer(nearestBuffer, nearestBuffer.position, direction.Invalid)
 	}
+
+	chunkProgramT.Use()
+	shaderChunkT.PerspectiveMatrix.Matrix4(perspectiveMatrix)
+	shaderChunkT.CameraMatrix.Matrix4(cameraMatrix)
+	shaderChunkT.Textures.IntV(textureIds...)
+	sort.Sort(renderOrder)
+
+	gl.Enable(gl.Blend)
+	for _, pos := range renderOrder {
+		chunk := buffers[pos]
+		if chunk != nil && chunk.countT > 0 {
+			shaderChunkT.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
+
+			chunk.arrayT.Bind()
+			gl.DrawArrays(gl.Triangles, 0, chunk.countT)
+		}
+	}
+	gl.Disable(gl.Blend)
 }
 
-var colVisitMap = make(map[positionC]struct{})
+var (
+	colVisitMap = make(map[positionC]struct{})
+	renderOrder transList
+)
 
 func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
 	v := vmath.Vector3{
@@ -147,6 +177,7 @@ func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
 			col := positionC{pos.X, pos.Z}
 			if _, ok := colVisitMap[col]; !ok && bufferColumns[col] > 0 {
 				colVisitMap[col] = struct{}{}
+				renderOrder = append(renderOrder, pos)
 				for _, dir := range direction.Values {
 					if dir != from {
 						ox, oy, oz := dir.Offset()
@@ -163,6 +194,7 @@ func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
 		return
 	}
 	chunk.renderedOn = frameID
+	renderOrder = append(renderOrder, pos)
 
 	if chunk.count > 0 {
 		shaderChunk.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))

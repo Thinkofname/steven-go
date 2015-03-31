@@ -15,6 +15,7 @@ const (
 	DepthTest    Flag = gl.DEPTH_TEST
 	CullFaceFlag Flag = gl.CULL_FACE
 	StencilTest  Flag = gl.STENCIL_TEST
+	Blend        Flag = gl.BLEND
 
 	Back  Face = gl.BACK
 	Front Face = gl.FRONT
@@ -35,6 +36,9 @@ const (
 	Replace Op = gl.REPLACE
 	Keep    Op = gl.KEEP
 	Zero    Op = gl.ZERO
+
+	SrcAlpha         Factor = gl.SRC_ALPHA
+	OneMinusSrcAlpha Factor = gl.ONE_MINUS_SRC_ALPHA
 )
 
 type (
@@ -45,6 +49,7 @@ type (
 	DrawType      uint32
 	Func          uint32
 	Op            uint32
+	Factor        uint32
 )
 
 func Viewport(x, y, width, height int) {
@@ -116,4 +121,8 @@ func StencilOp(op, fail, pass Op) {
 
 func ClearStencil(i int) {
 	gl.ClearStencil(int32(i))
+}
+
+func BlendFunc(sFactor, dFactor Factor) {
+	gl.BlendFunc(uint32(sFactor), uint32(dFactor))
 }

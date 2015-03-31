@@ -17,6 +17,9 @@ type ChunkBuffer struct {
 	array    gl.VertexArray
 	buffer   gl.Buffer
 	count    int
+	arrayT   gl.VertexArray
+	bufferT  gl.Buffer
+	countT   int
 	cullBits uint64
 
 	renderedOn uint
@@ -26,14 +29,6 @@ func (cb *ChunkBuffer) IsVisible(from, to direction.Type) bool {
 	return (cb.cullBits & (1 << (from*6 + to))) != 0
 }
 
-type position struct {
-	X, Y, Z int
-}
-
-type positionC struct {
-	X, Z int
-}
-
 // AllocateChunkBuffer allocates a chunk buffer and adds it to the
 // render list.
 func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
@@ -41,6 +36,8 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 		position: position{X: x, Y: y, Z: z},
 		array:    gl.CreateVertexArray(),
 		buffer:   gl.CreateBuffer(),
+		arrayT:   gl.CreateVertexArray(),
+		bufferT:  gl.CreateBuffer(),
 	}
 	buffers[c.position] = c
 	bufferColumns[positionC{x, z}]++
@@ -50,6 +47,7 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 // Upload uploads the passed vertex data to the buffer.
 func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 	renderSync(func() {
+		chunkProgram.Use()
 		cb.cullBits = cullBits
 		cb.array.Bind()
 		cb.buffer.Bind(gl.ArrayBuffer)
@@ -78,6 +76,40 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 		shaderChunk.Lighting.Binding(0)
 
 		cb.count = count
+	})
+}
+
+// UploadTrans uploads the passed vertex data to the translucent buffer.
+func (cb *ChunkBuffer) UploadTrans(data []byte, count int) {
+	renderSync(func() {
+		chunkProgramT.Use()
+		cb.arrayT.Bind()
+		cb.bufferT.Bind(gl.ArrayBuffer)
+		cb.bufferT.Data(data, gl.DynamicDraw)
+		shaderChunk.Position.Enable()
+		shaderChunk.TextureInfo.Enable()
+		shaderChunk.TextureOffset.Enable()
+		shaderChunk.Color.Enable()
+		shaderChunk.Lighting.Enable()
+
+		cb.bufferT.BindVertex(0, 0, 23)
+
+		shaderChunkT.Position.Format(3, gl.Short, false, 0)
+		shaderChunkT.Position.Binding(0)
+
+		shaderChunkT.TextureInfo.Format(4, gl.UnsignedShort, false, 6)
+		shaderChunkT.TextureInfo.Binding(0)
+
+		shaderChunkT.TextureOffset.Format(2, gl.Short, false, 14)
+		shaderChunkT.TextureOffset.Binding(0)
+
+		shaderChunkT.Color.Format(3, gl.UnsignedByte, true, 18)
+		shaderChunkT.Color.Binding(0)
+
+		shaderChunkT.Lighting.Format(2, gl.UnsignedByte, false, 21)
+		shaderChunkT.Lighting.Binding(0)
+
+		cb.countT = count
 	})
 }
 

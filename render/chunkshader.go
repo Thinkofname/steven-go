@@ -64,7 +64,9 @@ void main() {
 	tPos += offset;
 	tPos /= 1024.0;
  	vec4 col = texture2D(textures[int(floor(vTextureInfo.y / 1024.0))], vec2(tPos.x, tPos.y));
+	#ifndef alpha
 	if (col.a < 0.5) discard;
+	#endif
 	col *= vec4(vColor, 1.0);
 	col.rgb *= vLighting;
 	fragColor = col;

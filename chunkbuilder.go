@@ -30,7 +30,8 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 	bs.y = -2
 	bs.z = -2
 	go func() {
-		b := builder.New(chunkVertexType...)
+		bO := builder.New(chunkVertexType...)
+		bT := builder.New(chunkVertexType...)
 
 		for y := 0; y < 16; y++ {
 			for x := 0; x < 16; x++ {
@@ -38,6 +39,10 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 					bl := bs.block(x, y, z)
 					if bl.Is(BlockAir) {
 						continue
+					}
+					b := bO
+					if bl.IsTranslucent() {
+						b = bT
 					}
 
 					if l, ok := bl.(*blockLiquid); ok {
@@ -64,7 +69,8 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 
 		cullBits := buildCullBits(bs)
 
-		cs.Buffer.Upload(b.Data(), b.Count(), cullBits)
+		cs.Buffer.Upload(bO.Data(), bO.Count(), cullBits)
+		cs.Buffer.UploadTrans(bT.Data(), bT.Count())
 		complete <- buildPos{cs.chunk.X, cs.Y, cs.chunk.Z}
 	}()
 }
