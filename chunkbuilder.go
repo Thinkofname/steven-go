@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/type/direction"
 )
@@ -59,6 +61,8 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 							buildVertex(b, v)
 						}
 						continue
+					} else {
+						fmt.Printf("Missing variant %s for %s\n", bl.ModelVariant(), bl)
 					}
 				}
 			}

@@ -162,7 +162,8 @@ func alloc(initial Block) *BlockSet {
 
 	t := reflect.TypeOf(initial).Elem()
 
-	reflect.ValueOf(initial).Elem().FieldByName("Parent").Set(
+	v := reflect.ValueOf(initial).Elem()
+	v.FieldByName("Parent").Set(
 		reflect.ValueOf(bs),
 	)
 
@@ -181,9 +182,16 @@ func alloc(initial Block) *BlockSet {
 		case reflect.Bool:
 			vals = []interface{}{false, true}
 		case reflect.Int:
-			rnge := strings.Split(args[0], "-")
-			min, _ := strconv.Atoi(rnge[0])
-			max, _ := strconv.Atoi(rnge[1])
+			var min, max int
+			if args[0][0] != '@' {
+				rnge := strings.Split(args[0], "-")
+				min, _ = strconv.Atoi(rnge[0])
+				max, _ = strconv.Atoi(rnge[1])
+			} else {
+				ret := v.Addr().MethodByName(args[0][1:]).Call([]reflect.Value{})
+				min = int(ret[0].Int())
+				max = int(ret[1].Int())
+			}
 			vals = make([]interface{}, max-min+1)
 			for j := min; j <= max; j++ {
 				vals[j-min] = j
