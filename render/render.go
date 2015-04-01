@@ -134,7 +134,7 @@ sync:
 	viewVector.Z = -float32(math.Sin(float64(Camera.Yaw-math.Pi/2)) * -math.Cos(float64(Camera.Pitch)))
 	viewVector.Y = -float32(math.Sin(float64(Camera.Pitch)))
 
-	colVisitMap = make(map[positionC]struct{})
+	airVisitMap = make(map[position]struct{})
 	renderOrder = renderOrder[:0]
 	if nearestBuffer != nil {
 		renderBuffer(nearestBuffer, nearestBuffer.position, direction.Invalid)
@@ -160,7 +160,7 @@ sync:
 }
 
 var (
-	colVisitMap = make(map[positionC]struct{})
+	airVisitMap = make(map[position]struct{})
 	renderOrder transList
 )
 
@@ -177,8 +177,8 @@ func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
 		// Handle empty sections in columns
 		if pos.Y >= 0 && pos.Y <= 15 {
 			col := positionC{pos.X, pos.Z}
-			if _, ok := colVisitMap[col]; !ok && bufferColumns[col] > 0 {
-				colVisitMap[col] = struct{}{}
+			if _, ok := airVisitMap[pos]; !ok && bufferColumns[col] > 0 {
+				airVisitMap[pos] = struct{}{}
 				renderOrder = append(renderOrder, pos)
 				for _, dir := range direction.Values {
 					if dir != from {
