@@ -95,6 +95,10 @@ func (a Attribute) Format(size int, ty Type, normalized bool, offset int) {
 	gl.VertexAttribFormat(uint32(a), int32(size), uint32(ty), normalized, uint32(offset))
 }
 
+func (a Attribute) FormatInt(size int, ty Type, offset int) {
+	gl.VertexAttribIFormat(uint32(a), int32(size), uint32(ty), uint32(offset))
+}
+
 type (
 	Shader          uint32
 	ShaderType      uint32

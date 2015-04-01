@@ -17,7 +17,7 @@ type chunkShader struct {
 var (
 	vertex = `
 #version 150
-in vec3 aPosition;
+in ivec3 aPosition;
 in vec4 aTextureInfo;
 in vec2 aTextureOffset;
 in vec3 aColor;

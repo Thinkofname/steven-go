@@ -60,7 +60,7 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 
 		cb.buffer.BindVertex(0, 0, 23)
 
-		shaderChunk.Position.Format(3, gl.Short, false, 0)
+		shaderChunk.Position.FormatInt(3, gl.Short, 0)
 		shaderChunk.Position.Binding(0)
 
 		shaderChunk.TextureInfo.Format(4, gl.UnsignedShort, false, 6)
@@ -94,7 +94,7 @@ func (cb *ChunkBuffer) UploadTrans(data []byte, count int) {
 
 		cb.bufferT.BindVertex(0, 0, 23)
 
-		shaderChunkT.Position.Format(3, gl.Short, false, 0)
+		shaderChunkT.Position.FormatInt(3, gl.Short, 0)
 		shaderChunkT.Position.Binding(0)
 
 		shaderChunkT.TextureInfo.Format(4, gl.UnsignedShort, false, 6)
