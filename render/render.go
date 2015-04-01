@@ -3,6 +3,7 @@ package render
 import (
 	"math"
 	"sort"
+	"strings"
 
 	"github.com/thinkofdeath/steven/platform"
 	"github.com/thinkofdeath/steven/platform/gl"
@@ -37,12 +38,11 @@ func Start() {
 	shaderChunk = &chunkShader{}
 	InitStruct(shaderChunk, chunkProgram)
 
-	chunkProgramT = CreateProgram(vertex, "#define alpha\n"+fragment)
+	chunkProgramT = CreateProgram(vertex, strings.Replace(fragment, "#version 150", "#version 150\n#define alpha", 1))
 	shaderChunkT = &chunkShader{}
 	InitStruct(shaderChunkT, chunkProgramT)
 
-	loadTextures()
-
+	textureLock.Lock()
 	for _, tex := range textures {
 		glTextures = append(glTextures, createTexture(glTexture{
 			Data:  tex.Buffer,
@@ -50,6 +50,8 @@ func Start() {
 			Format: gl.RGBA,
 		}))
 	}
+	textureLock.Unlock()
+
 	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
 }
 

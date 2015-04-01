@@ -39,8 +39,7 @@ func GetTexture(name string) *TextureInfo {
 }
 
 // TODO(Think) better error handling (if possible to recover?)
-// TODO(Think) Store textures
-func loadTextures() {
+func LoadTextures() {
 	textureLock.Lock()
 	defer textureLock.Unlock()
 

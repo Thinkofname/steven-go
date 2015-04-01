@@ -13,6 +13,8 @@ import (
 	"github.com/thinkofdeath/steven/render"
 )
 
+var loadChan = make(chan struct{})
+
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
 
@@ -40,7 +42,11 @@ func main() {
 		AccessToken: accessToken,
 	}, server)
 
-	initBlocks()
+	go render.LoadTextures()
+	go func() {
+		initBlocks()
+		loadChan <- struct{}{}
+	}()
 
 	platform.Init(platform.Handler{
 		Start:  start,
@@ -52,6 +58,7 @@ func main() {
 }
 
 func start() {
+	<-loadChan
 	render.Start()
 }
 

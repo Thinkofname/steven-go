@@ -13,6 +13,7 @@ var handler Handler
 func run(h Handler) {
 	handler = h
 	runtime.LockOSThread()
+
 	if err := glfw.Init(); err != nil {
 		panic(err)
 	}
@@ -30,13 +31,13 @@ func run(h Handler) {
 	window.MakeContextCurrent()
 	glfw.SwapInterval(1)
 
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-
 	window.SetCursorPosCallback(onMouseMove)
 	window.SetMouseButtonCallback(onMouseClick)
 	window.SetKeyCallback(onKey)
+
+	if err := gl.Init(); err != nil {
+		panic(err)
+	}
 
 	handler.Start()
 
