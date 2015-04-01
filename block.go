@@ -262,7 +262,7 @@ func init() {
 				)
 				continue
 			}
-			warnMissingModel(b)
+			fmt.Printf("Missing block model for %s\n", b)
 			reflect.ValueOf(b).Elem().FieldByName("StateModel").Set(
 				reflect.ValueOf(missingModel),
 			)

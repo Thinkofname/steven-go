@@ -1,9 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"sync"
-
 	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/type/direction"
 )
@@ -161,28 +158,4 @@ func buildVertex(b *builder.Buffer, v chunkVertex) {
 	b.UnsignedByte(v.B)
 	b.UnsignedByte(v.BlockLight)
 	b.UnsignedByte(v.SkyLight)
-}
-
-var (
-	warnedBlockModels = map[Block]struct{}{}
-	warnLock          sync.RWMutex
-)
-
-func warnMissingModel(b Block) {
-	warnLock.RLock()
-	if _, ok := warnedBlockModels[b]; ok {
-		warnLock.RUnlock()
-		return
-	}
-	warnLock.RUnlock()
-	warnLock.Lock()
-	// Check again in case of another worker warning between switching
-	// locks
-	if _, ok := warnedBlockModels[b]; ok {
-		warnLock.Unlock()
-		return
-	}
-	fmt.Printf("Missing block model for %s\n", b)
-	warnedBlockModels[b] = struct{}{}
-	warnLock.Unlock()
 }
