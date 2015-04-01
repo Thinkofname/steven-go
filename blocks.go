@@ -33,7 +33,7 @@ var (
 	BlockDetectorRail               = initSimple("detector_rail")
 	BlockStickyPiston               = initSimple("sticky_piston")
 	BlockWeb                        = initSimple("web")
-	BlockTallGrass                  = initSimple("tallgrass")
+	BlockTallGrass                  = initTallGrass()
 	BlockDeadBush                   = initSimple("deadbush")
 	BlockPiston                     = initSimple("piston")
 	BlockPistonHead                 = initSimple("piston_head")

@@ -5,6 +5,8 @@ import (
 	"image"
 )
 
+// Stone
+
 type stoneVariant int
 
 const (
@@ -69,6 +71,8 @@ func (l *blockstone) toData() int {
 	return data
 }
 
+// Grass
+
 type blockGrass struct {
 	baseBlock
 	Snowy bool `state:"snowy"`
@@ -105,4 +109,62 @@ func (g *blockGrass) toData() int {
 		return -1
 	}
 	return 0
+}
+
+// Tall grass
+
+type tallGrassType int
+
+const (
+	tallGrassDeadBush = iota
+	tallGrass
+	tallGrassFern
+)
+
+func (t tallGrassType) String() string {
+	switch t {
+	case tallGrassDeadBush:
+		return "dead_bush"
+	case tallGrass:
+		return "tall_grass"
+	case tallGrassFern:
+		return "fern"
+	}
+	return fmt.Sprintf("tallGrassType(%d)", t)
+}
+
+type blockTallGrass struct {
+	baseBlock
+	Type tallGrassType `state:"type,0-2"`
+}
+
+func initTallGrass() *BlockSet {
+	t := &blockTallGrass{}
+	t.init("tallgrass")
+	t.cullAgainst = false
+	set := alloc(t)
+	return set
+}
+
+func (t *blockTallGrass) String() string {
+	return t.Parent.stringify(t)
+}
+
+func (t *blockTallGrass) clone() Block {
+	return &blockTallGrass{
+		baseBlock: *(t.baseBlock.clone().(*baseBlock)),
+		Type:      t.Type,
+	}
+}
+
+func (t *blockTallGrass) ModelName() string {
+	return t.Type.String()
+}
+
+func (t *blockTallGrass) TintImage() *image.NRGBA {
+	return grassBiomeColors
+}
+
+func (t *blockTallGrass) toData() int {
+	return int(t.Type)
 }
