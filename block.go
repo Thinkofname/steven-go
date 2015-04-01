@@ -268,6 +268,10 @@ func init() {
 				reflect.ValueOf(b).Elem().FieldByName("StateModel").Set(
 					reflect.ValueOf(model),
 				)
+				// Test to see if the variant exists
+				if variant := model.variant(b.ModelVariant(), 0); variant == nil {
+					fmt.Printf("Missing block variant (%s) for %s\n", b.ModelVariant(), b)
+				}
 				continue
 			}
 			fmt.Printf("Missing block model for %s\n", b)
