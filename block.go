@@ -242,7 +242,7 @@ func (bs *BlockSet) stringify(block Block) string {
 	return buf.String()
 }
 
-func init() {
+func initBlocks() {
 	var missingModel *blockStateModel
 	if missingModel = findStateModel("steven", "missing_block"); missingModel != nil {
 		reflect.ValueOf(missingBlock).Elem().FieldByName("StateModel").Set(

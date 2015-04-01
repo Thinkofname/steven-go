@@ -40,6 +40,8 @@ func main() {
 		AccessToken: accessToken,
 	}, server)
 
+	initBlocks()
+
 	platform.Init(platform.Handler{
 		Start:  start,
 		Draw:   draw,
