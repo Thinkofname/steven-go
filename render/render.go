@@ -117,16 +117,22 @@ sync:
 	shaderChunk.CameraMatrix.Matrix4(cameraMatrix)
 	shaderChunk.Textures.IntV(textureIds...)
 
-	nearestBuffer = nil
-	distance := math.MaxFloat64
-	for _, chunk := range buffers {
-		dx := Camera.X - float64((chunk.X<<4)+8)
-		dy := Camera.Y - float64((chunk.Y<<4)+8)
-		dz := Camera.Z - float64((chunk.Z<<4)+8)
-		dist := dx*dx + dy*dy + dz*dz
-		if nearestBuffer == nil || dist < distance {
-			nearestBuffer = chunk
-			distance = dist
+	nearestBuffer = buffers[position{
+		X: int(Camera.X) >> 4,
+		Y: int(Camera.Y) >> 4,
+		Z: int(Camera.Z) >> 4,
+	}]
+	if nearestBuffer == nil {
+		distance := math.MaxFloat64
+		for _, chunk := range buffers {
+			dx := Camera.X - float64((chunk.X<<4)+8)
+			dy := Camera.Y - float64((chunk.Y<<4)+8)
+			dz := Camera.Z - float64((chunk.Z<<4)+8)
+			dist := dx*dx + dy*dy + dz*dz
+			if nearestBuffer == nil || dist < distance {
+				nearestBuffer = chunk
+				distance = dist
+			}
 		}
 	}
 
