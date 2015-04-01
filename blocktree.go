@@ -32,7 +32,7 @@ func (b blockAxis) String() string {
 	return fmt.Sprintf("blockAxis(%d)", b)
 }
 
-// The tree variants are split across to log/leaves types
+// The tree variants are split across two log/leaves types
 // due to the size limits of the old data field.
 type treeVariant int
 
