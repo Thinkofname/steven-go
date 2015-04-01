@@ -8,7 +8,11 @@ type simpleConfig struct {
 	NotCullAgainst bool
 }
 
-func initSimple(name string, config simpleConfig) *BlockSet {
+func initSimple(name string) *BlockSet {
+	return initSimpleConfig(name, simpleConfig{})
+}
+
+func initSimpleConfig(name string, config simpleConfig) *BlockSet {
 	s := &blockSimple{}
 	s.init(name)
 	set := alloc(s)

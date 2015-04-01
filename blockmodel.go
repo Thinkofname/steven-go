@@ -281,13 +281,14 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 			}
 
 			var cr, cg, cb byte
-			switch face.tintIndex {
-			case 0:
-				cr, cg, cb = calculateBiome(bs, x, z, this.TintImage())
-			default:
-				cr = 255
-				cg = 255
-				cb = 255
+			cr = 255
+			cg = 255
+			cb = 255
+			if this.TintImage() != nil {
+				switch face.tintIndex {
+				case 0:
+					cr, cg, cb = calculateBiome(bs, x, z, this.TintImage())
+				}
 			}
 
 			ux1 := int16(face.uv[0] * tex.Width)

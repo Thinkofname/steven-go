@@ -173,7 +173,7 @@ func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
 	}
 	if chunk == nil {
 		// Handle empty sections in columns
-		if pos.Y >= 0 && pos.Y <= 16 {
+		if pos.Y >= 0 && pos.Y <= 15 {
 			col := positionC{pos.X, pos.Z}
 			if _, ok := colVisitMap[col]; !ok && bufferColumns[col] > 0 {
 				colVisitMap[col] = struct{}{}
