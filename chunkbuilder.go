@@ -53,7 +53,8 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 						continue
 					}
 
-					seed := (cs.chunk.X<<4 + x) ^ (cs.Y + y) ^ (cs.chunk.Z<<4 + z)
+					seed := (cs.chunk.X<<4 + x) ^ (cs.Y<<4+y)*31 ^ (cs.chunk.Z<<4+z)*5
+
 					if variant := bl.Model().variant(bl.ModelVariant(), seed); variant != nil {
 						for _, v := range variant.render(x, y, z, bs) {
 							buildVertex(b, v)

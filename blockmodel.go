@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	"math"
 	"strings"
 
 	"github.com/thinkofdeath/steven/render"
@@ -89,8 +90,12 @@ func (bs *blockStateModel) variant(key string, seed int) *blockModel {
 }
 
 type blockModel struct {
-	textureVars map[string]string
-	elements    []*blockElement
+	textureVars      map[string]string
+	elements         []*blockElement
+	ambientOcclusion bool
+	aoSet            bool
+
+	y, x float64
 }
 
 func parseBlockStateVariant(plugin string, data map[string]interface{}) *blockModel {
@@ -102,6 +107,9 @@ func parseBlockStateVariant(plugin string, data map[string]interface{}) *blockMo
 		return nil
 	}
 	bm := parseBlockModel(plugin, bdata)
+
+	bm.y, _ = data["y"].(float64)
+	bm.x, _ = data["x"].(float64)
 	return bm
 }
 
@@ -133,14 +141,30 @@ func parseBlockModel(plugin string, data map[string]interface{}) *blockModel {
 		}
 	}
 
+	ambientOcclusion, ok := data["ambientocclusion"].(bool)
+	if ok {
+		bm.ambientOcclusion = ambientOcclusion
+		bm.aoSet = true
+	} else if !bm.aoSet {
+		bm.ambientOcclusion = true
+	}
+
 	return bm
 }
 
 type blockElement struct {
-	from, to [3]int
+	from, to [3]float64
 	shade    bool
+	rotation *blockRotation
 
 	faces [6]*blockFace
+}
+
+type blockRotation struct {
+	origin  []float64
+	axis    string
+	angle   float64
+	rescale bool
 }
 
 type blockFace struct {
@@ -157,8 +181,8 @@ func parseBlockElement(data map[string]interface{}) *blockElement {
 	from := data["from"].([]interface{})
 	to := data["to"].([]interface{})
 	for i := 0; i < 3; i++ {
-		be.from[i] = int(from[i].(float64))
-		be.to[i] = int(to[i].(float64))
+		be.from[i] = from[i].(float64)
+		be.to[i] = to[i].(float64)
 	}
 
 	shade, ok := data["shade"].(bool)
@@ -171,6 +195,21 @@ func parseBlockElement(data map[string]interface{}) *blockElement {
 				be.faces[i].init(data)
 			}
 		}
+	}
+
+	if rotation, ok := data["rotation"].(map[string]interface{}); ok {
+		r := &blockRotation{}
+		be.rotation = r
+
+		r.origin = []float64{8, 8, 8}
+		if origin, ok := rotation["origin"].([]interface{}); ok {
+			r.origin[0] = origin[0].(float64)
+			r.origin[1] = origin[1].(float64)
+			r.origin[2] = origin[2].(float64)
+		}
+		r.axis = rotation["axis"].(string)
+		r.angle = rotation["angle"].(float64)
+		r.rescale, _ = rotation["rescale"].(bool)
 	}
 
 	return be
@@ -256,6 +295,13 @@ var faceVertices = [6][6]chunkVertex{
 	},
 }
 
+var faceRotation = [...]direction.Type{
+	direction.North,
+	direction.East,
+	direction.South,
+	direction.West,
+}
+
 func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 	this := bs.block(x, y, z)
 	var out []chunkVertex
@@ -263,12 +309,36 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 		el := bm.elements[len(bm.elements)-1-ei]
 	faceLoop:
 		for i := range faceVertices {
+			faceID := i
 			face := el.faces[i]
 			if face == nil {
 				continue
 			}
-			if face.cullFace != direction.Invalid {
-				ox, oy, oz := face.cullFace.Offset()
+			cullFace := face.cullFace
+			if bm.y > 0 {
+				if cullFace >= 2 {
+					var pos int
+					for di, d := range faceRotation {
+						if d == cullFace {
+							pos = di
+							break
+						}
+					}
+					cullFace = faceRotation[(pos+(int(bm.y)/90))%len(faceRotation)]
+				}
+				if faceID >= 2 {
+					var pos int
+					for di, d := range faceRotation {
+						if d == direction.Type(faceID) {
+							pos = di
+							break
+						}
+					}
+					faceID = int(faceRotation[(pos+(int(bm.y)/90))%len(faceRotation)])
+				}
+			}
+			if cullFace != direction.Invalid {
+				ox, oy, oz := cullFace.Offset()
 				if b := bs.block(x+ox, y+oy, z+oz); b.ShouldCullAgainst() || b == this {
 					continue faceLoop
 				}
@@ -295,6 +365,10 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 			ux2 := int16(face.uv[2] * tex.Width)
 			uy1 := int16(face.uv[1] * tex.Height)
 			uy2 := int16(face.uv[3] * tex.Height)
+
+			var minX, minY, minZ int16 = math.MaxInt16, math.MaxInt16, math.MaxInt16
+			var maxX, maxY, maxZ int16 = math.MinInt16, math.MinInt16, math.MinInt16
+
 			for v := range vert {
 				vert[v].TX = uint16(tex.X)
 				vert[v].TY = uint16(tex.Y + tex.Atlas*1024.0)
@@ -305,29 +379,48 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 				vert[v].B = cb
 
 				if vert[v].X == 0 {
-					vert[v].X = int16(el.from[0]*16 + x*256)
+					vert[v].X = int16(el.from[0] * 16)
 				} else {
-					vert[v].X = int16(el.to[0]*16 + x*256)
+					vert[v].X = int16(el.to[0] * 16)
 				}
 				if vert[v].Y == 0 {
-					vert[v].Y = int16(el.from[1]*16 + y*256)
+					vert[v].Y = int16(el.from[1] * 16)
 				} else {
-					vert[v].Y = int16(el.to[1]*16 + y*256)
+					vert[v].Y = int16(el.to[1] * 16)
 				}
 				if vert[v].Z == 0 {
-					vert[v].Z = int16(el.from[2]*16 + z*256)
+					vert[v].Z = int16(el.from[2] * 16)
 				} else {
-					vert[v].Z = int16(el.to[2]*16 + z*256)
+					vert[v].Z = int16(el.to[2] * 16)
 				}
 
-				vert[v].BlockLight, vert[v].SkyLight = calculateLight(
-					bs,
-					x, y, z,
-					float64(vert[v].X)/256.0,
-					float64(vert[v].Y)/256.0,
-					float64(vert[v].Z)/256.0,
-					i, true, this.ForceShade(),
-				)
+				if bm.y > 0 {
+					rotY := bm.y * (math.Pi / 180)
+					c := int16(math.Cos(rotY))
+					s := int16(math.Sin(rotY))
+					x := vert[v].X - 8*16
+					z := vert[v].Z - 8*16
+					vert[v].X = 8*16 + int16(x*c-z*s)
+					vert[v].Z = 8*16 + int16(z*c+x*s)
+				}
+
+				if el.rotation != nil {
+					r := el.rotation
+					switch r.axis {
+					case "y":
+						rotY := r.angle * (math.Pi / 180)
+						c := math.Cos(rotY)
+						s := math.Sin(rotY)
+						x := float64(vert[v].X) - r.origin[0]*16
+						z := float64(vert[v].Z) - r.origin[2]*16
+						vert[v].X = int16(r.origin[0] + (x*c - z*s))
+						vert[v].Z = int16(r.origin[2] + (z*c + x*s))
+					}
+				}
+
+				vert[v].X += int16(x * 256)
+				vert[v].Y += int16(y * 256)
+				vert[v].Z += int16(z * 256)
 
 				if vert[v].TOffsetX == 0 {
 					vert[v].TOffsetX = int16(ux1)
@@ -339,6 +432,47 @@ func (bm *blockModel) render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 				} else {
 					vert[v].TOffsetY = int16(uy2)
 				}
+
+				if el.rotation != nil && el.rotation.rescale {
+					if vert[v].X < minX {
+						minX = vert[v].X
+					} else if vert[v].X > maxX {
+						maxX = vert[v].X
+					}
+					if vert[v].Y < minY {
+						minY = vert[v].Y
+					} else if vert[v].Y > maxY {
+						maxY = vert[v].Y
+					}
+					if vert[v].Z < minZ {
+						minZ = vert[v].Z
+					} else if vert[v].Z > maxZ {
+						maxZ = vert[v].Z
+					}
+				}
+			}
+
+			if el.rotation != nil && el.rotation.rescale {
+				diffX := float64(maxX - minX)
+				diffY := float64(maxY - minY)
+				diffZ := float64(maxZ - minZ)
+				for v := range vert {
+					vert[v].X = int16(x*256) + int16((float64(vert[v].X-minX)/diffX)*256)
+					vert[v].Y = int16(y*256) + int16((float64(vert[v].Y-minY)/diffY)*256)
+					vert[v].Z = int16(z*256) + int16((float64(vert[v].Z-minZ)/diffZ)*256)
+				}
+			}
+
+			// Process lighting last, after all operations are applied
+			for v := range vert {
+				vert[v].BlockLight, vert[v].SkyLight = calculateLight(
+					bs,
+					x, y, z,
+					float64(vert[v].X)/256.0,
+					float64(vert[v].Y)/256.0,
+					float64(vert[v].Z)/256.0,
+					faceID, bm.ambientOcclusion, this.ForceShade(),
+				)
 			}
 
 			out = append(out, vert[:]...)
