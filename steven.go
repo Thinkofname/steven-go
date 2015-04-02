@@ -42,8 +42,8 @@ func main() {
 		AccessToken: accessToken,
 	}, server)
 
-	go render.LoadTextures()
 	go func() {
+		render.LoadTextures()
 		initBlocks()
 		loadChan <- struct{}{}
 	}()
