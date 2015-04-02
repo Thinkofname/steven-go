@@ -53,7 +53,7 @@ func loadStateModel(key pluginKey) *blockStateModel {
 	data := map[string]interface{}{}
 	err := loadJSON(key.Plugin, fmt.Sprintf("blockstates/%s.json", key.Name), &data)
 	if err != nil {
-		fmt.Printf("Error loading model: %s\n", err)
+		fmt.Printf("Error loading state %s: %s\n", key.Name, err)
 		return nil
 	}
 	bs := &blockStateModel{
@@ -99,7 +99,7 @@ func parseBlockStateVariant(plugin string, data map[string]interface{}) *blockMo
 	bdata := map[string]interface{}{}
 	err := loadJSON(plugin, "models/block/"+modelName+".json", &bdata)
 	if err != nil {
-		fmt.Printf("Error loading model: %s\n", err)
+		fmt.Printf("Error loading model %s: %s\n", modelName, err)
 		return nil
 	}
 	bm := parseBlockModel(plugin, bdata)
@@ -115,7 +115,7 @@ func parseBlockModel(plugin string, data map[string]interface{}) *blockModel {
 		pdata := map[string]interface{}{}
 		err := loadJSON(plugin, "models/"+parent+".json", &pdata)
 		if err != nil {
-			fmt.Printf("Error loading model: %s\n", err)
+			fmt.Printf("Error loading model %s: %s\n", parent, err)
 			return nil
 		}
 		bm = parseBlockModel(plugin, pdata)

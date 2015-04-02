@@ -75,14 +75,29 @@ func init() {
 	if os.IsNotExist(err) {
 		f = downloadDefault(defLocation)
 	}
+	fromFile(f)
 
+	if err := loadZip(".steven/pack.zip"); err != nil {
+		fmt.Printf("Couldn't load pack.zip: %s\n", err)
+	}
+}
+
+func loadZip(name string) error {
+	f, err := os.Open(name)
+	if err != nil {
+		return err
+	}
+	return fromFile(f)
+}
+
+func fromFile(f *os.File) error {
 	s, err := f.Stat()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	z, err := zip.NewReader(f, s.Size())
 	if err != nil {
-		panic(err)
+		return err
 	}
 	p := &pack{
 		zip:   z,
@@ -92,6 +107,7 @@ func init() {
 		p.files[f.Name] = f
 	}
 	packs = append(packs, p)
+	return nil
 }
 
 func downloadDefault(target string) *os.File {
