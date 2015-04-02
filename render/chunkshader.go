@@ -48,7 +48,7 @@ void main() {
 	fragment = `
 #version 150
 
-uniform sampler2D textures[5];
+uniform sampler2D textures[3];
 
 in vec3 vColor;
 in vec4 vTextureInfo;
@@ -65,11 +65,9 @@ void main() {
 	tPos /= 1024.0;
 	int texID = int(floor(vTextureInfo.y / 1024.0));
  	vec4 col = vec4(0.0);
-	for (int i = 0; i < 5; i++) {
-		if (i == texID) {
-			col += texture2D(textures[i], tPos);
-		}
-	}
+	col += texture2D(textures[0], tPos) * float(0 == texID);
+	col += texture2D(textures[1], tPos) * float(1 == texID);
+	col += texture2D(textures[2], tPos) * float(2 == texID);
 	#ifndef alpha
 	if (col.a < 0.5) discard;
 	#endif
