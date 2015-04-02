@@ -39,10 +39,10 @@ void main() {
 	vColor = aColor;
 	vTextureInfo = aTextureInfo;
 	vTextureOffset = aTextureOffset;
-	
-    float light = max(aLighting.x, aLighting.y * 1.0);
-    float val = pow(0.9, 16.0 - light) * 2.0;
-    vLighting = clamp(pow(val, 1.5) * 0.5, 0.0, 1.0);
+
+	float light = max(aLighting.x, aLighting.y * 1.0);
+	float val = pow(0.9, 16.0 - light) * 2.0;
+	vLighting = clamp(pow(val, 1.5) * 0.5, 0.0, 1.0);
 }
 `
 	fragment = `
@@ -64,7 +64,7 @@ void main() {
 	tPos += offset;
 	tPos /= 1024.0;
 	int texID = int(floor(vTextureInfo.y / 1024.0));
- 	vec4 col = vec4(0.0);
+	vec4 col = vec4(0.0);
 	col += texture2D(textures[0], tPos) * float(0 == texID);
 	col += texture2D(textures[1], tPos) * float(1 == texID);
 	col += texture2D(textures[2], tPos) * float(2 == texID);
