@@ -61,7 +61,7 @@ var (
 	DeepOcean                 = newBiome(24, 0.5, 0.5)
 	IceMountains              = newBiome(13, 0.0, 0.5)
 	DesertHills               = newBiome(17, 1.0, 0.0)
-	ForestHills               = newBiome(18, 0.8, 0.9)
+	ForestHills               = newBiome(18, 0.45, 0.3)
 	TaigaHills                = newBiome(19, 0.25, 0.8)
 	JungleHills               = newBiome(22, 0.95, 0.9)
 	BirchForestHills          = newBiome(28, 0.5, 0.5)
