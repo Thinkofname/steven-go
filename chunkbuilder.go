@@ -1,6 +1,8 @@
 package main
 
 import (
+	"math/rand"
+
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/type/direction"
@@ -31,12 +33,19 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 		bO := builder.New(chunkVertexType...)
 		bT := builder.New(chunkVertexType...)
 
+		r := rand.New(rand.NewSource(int64(cs.chunk.X) | (int64(cs.chunk.Z) << 32)))
+
 		for y := 0; y < 16; y++ {
 			for x := 0; x < 16; x++ {
 				for z := 0; z < 16; z++ {
+
 					bl := bs.block(x, y, z)
 					// Air will never have a model
 					if bl.Is(BlockAir) {
+						// Use one step of the rng so that
+						// if a block is placed in an empty
+						// location is variant doesn't change
+						r.Int()
 						continue
 					}
 					b := bO
@@ -51,14 +60,15 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 						for _, v := range l.renderLiquid(bs, x, y, z) {
 							buildVertex(b, v)
 						}
+						r.Int() // See the comment above for air
 						continue
 					}
 
-					// The seed is used to select a 'random' variant which is
+					// The index is used to select a 'random' variant which is
 					// constant for that position.
-					seed := (cs.chunk.X<<4 + x) ^ (cs.Y<<4+y)*31 ^ (cs.chunk.Z<<4+z)*5
+					index := r.Intn(len(bl.Models())) // (cs.chunk.X<<4 + x) ^ (cs.Y<<4+y)*31 ^ (cs.chunk.Z<<4+z)*5
 
-					if variant := bl.Models().selectModel(seed); variant != nil {
+					if variant := bl.Models().selectModel(index); variant != nil {
 						for _, v := range variant.render(x, y, z, bs) {
 							buildVertex(b, v)
 						}

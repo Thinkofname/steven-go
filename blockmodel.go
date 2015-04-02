@@ -87,8 +87,8 @@ func (bs *blockStateModel) variant(key string) blockVariants {
 	return bs.variants[key]
 }
 
-func (bv blockVariants) selectModel(seed int) *blockModel {
-	return bv[uint(seed)%uint(len(bv))]
+func (bv blockVariants) selectModel(index int) *blockModel {
+	return bv[uint(index)%uint(len(bv))]
 }
 
 type blockModel struct {
@@ -559,10 +559,8 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 				blockLight += bs.blockLight(bx, by, bz)
 				if !force {
 					skyLight += bs.skyLight(bx, by, bz)
-				} else {
-					if bl := bs.block(bx, by, bz); bl.Is(BlockAir) {
-						skyLight += 15
-					}
+				} else if bl := bs.block(bx, by, bz); bl.Is(BlockAir) {
+					skyLight += 15
 				}
 			}
 		}
