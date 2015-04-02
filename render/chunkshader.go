@@ -63,7 +63,13 @@ void main() {
 	vec2 offset = vec2(vTextureInfo.x, mod(vTextureInfo.y, 1024.0));
 	tPos += offset;
 	tPos /= 1024.0;
- 	vec4 col = texture2D(textures[int(floor(vTextureInfo.y / 1024.0))], vec2(tPos.x, tPos.y));
+	int texID = int(floor(vTextureInfo.y / 1024.0));
+ 	vec4 col = vec4(0.0);
+	for (int i = 0; i < 5; i++) {
+		if (i == texID) {
+			col += texture2D(textures[i], tPos);
+		}
+	}
 	#ifndef alpha
 	if (col.a < 0.5) discard;
 	#endif
