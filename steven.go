@@ -18,6 +18,11 @@ var loadChan = make(chan struct{})
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
 
+	if len(os.Args) == 0 {
+		fmt.Println("steven must be run via the mojang launcher")
+		return
+	}
+
 	// Can't use flags as we need to support a weird flag
 	// format
 	var username, uuid, accessToken, server string
