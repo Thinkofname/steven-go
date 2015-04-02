@@ -219,6 +219,9 @@ func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
 		}
 	}
 }
-func renderSync(f func()) {
+
+// Sync runs the passed function on the next frame on the same goroutine
+// as the renderer.
+func Sync(f func()) {
 	syncChan <- f
 }

@@ -17,8 +17,10 @@ var (
 )
 
 type blockStateModel struct {
-	variants map[string][]*blockModel
+	variants map[string]blockVariants
 }
+
+type blockVariants []*blockModel
 
 func findStateModel(plugin, name string) *blockStateModel {
 	key := pluginKey{plugin, name}
@@ -61,7 +63,7 @@ func loadStateModel(key pluginKey) *blockStateModel {
 		return nil
 	}
 	bs := &blockStateModel{
-		variants: map[string][]*blockModel{},
+		variants: map[string]blockVariants{},
 	}
 	variants := data["variants"].(map[string]interface{})
 	for k, v := range variants {
@@ -81,12 +83,12 @@ func loadStateModel(key pluginKey) *blockStateModel {
 	return bs
 }
 
-func (bs *blockStateModel) variant(key string, seed int) *blockModel {
-	v := bs.variants[key]
-	if v == nil {
-		return nil
-	}
-	return v[uint(seed)%uint(len(v))]
+func (bs *blockStateModel) variant(key string) blockVariants {
+	return bs.variants[key]
+}
+
+func (bv blockVariants) selectModel(seed int) *blockModel {
+	return bv[uint(seed)%uint(len(bv))]
 }
 
 type blockModel struct {

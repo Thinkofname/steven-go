@@ -31,7 +31,7 @@ type Block interface {
 
 	ModelName() string
 	ModelVariant() string
-	Model() *blockStateModel
+	Models() blockVariants
 	ForceShade() bool
 	ShouldCullAgainst() bool
 	TintImage() *image.NRGBA
@@ -45,12 +45,12 @@ type Block interface {
 
 // base of most (if not all) blocks
 type baseBlock struct {
-	self         Block
-	plugin, name string
-	Parent       *BlockSet
-	cullAgainst  bool
-	StateModel   *blockStateModel
-	translucent  bool
+	self          Block
+	plugin, name  string
+	Parent        *BlockSet
+	cullAgainst   bool
+	BlockVariants blockVariants
+	translucent   bool
 }
 
 // Is returns whether this block is a member of the passed Set
@@ -83,8 +83,8 @@ func (b *baseBlock) Name() string {
 	return b.name
 }
 
-func (b *baseBlock) Model() *blockStateModel {
-	return b.StateModel
+func (b *baseBlock) Models() blockVariants {
+	return b.BlockVariants
 }
 
 func (b *baseBlock) ModelName() string {
@@ -245,8 +245,8 @@ func (bs *BlockSet) stringify(block Block) string {
 func initBlocks() {
 	var missingModel *blockStateModel
 	if missingModel = findStateModel("steven", "missing_block"); missingModel != nil {
-		reflect.ValueOf(missingBlock).Elem().FieldByName("StateModel").Set(
-			reflect.ValueOf(missingModel),
+		reflect.ValueOf(missingBlock).Elem().FieldByName("BlockVariants").Set(
+			reflect.ValueOf(missingModel.variant("normal")),
 		)
 	}
 	// Flatten the ids
@@ -265,19 +265,18 @@ func initBlocks() {
 				continue
 			}
 			if model := findStateModel(b.Plugin(), b.ModelName()); model != nil {
-				reflect.ValueOf(b).Elem().FieldByName("StateModel").Set(
-					reflect.ValueOf(model),
-				)
-				// Test to see if the variant exists
-				if variant := model.variant(b.ModelVariant(), 0); variant != nil {
+				if variants := model.variant(b.ModelVariant()); variants != nil {
+					reflect.ValueOf(b).Elem().FieldByName("BlockVariants").Set(
+						reflect.ValueOf(variants),
+					)
 					continue
 				}
 				fmt.Printf("Missing block variant (%s) for %s\n", b.ModelVariant(), b)
 			} else {
 				fmt.Printf("Missing block model for %s\n", b)
 			}
-			reflect.ValueOf(b).Elem().FieldByName("StateModel").Set(
-				reflect.ValueOf(missingModel),
+			reflect.ValueOf(b).Elem().FieldByName("BlockVariants").Set(
+				reflect.ValueOf(missingModel.variant("normal")),
 			)
 
 		}
