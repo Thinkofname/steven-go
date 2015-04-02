@@ -552,9 +552,9 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 	for ox := nox; ox <= pox; ox++ {
 		for oy := noy; oy <= poy; oy++ {
 			for oz := noz; oz <= poz; oz++ {
-				bx := int(x + float64(ox))
-				by := int(y + float64(oy))
-				bz := int(z + float64(oz))
+				bx := round(x + float64(ox))
+				by := round(y + float64(oy))
+				bz := round(z + float64(oz))
 				count++
 				blockLight += bs.blockLight(bx, by, bz)
 				if !force {
@@ -570,6 +570,10 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 	}
 
 	return blockLight / byte(count), skyLight / byte(count)
+}
+
+func round(f float64) int {
+	return int(f + math.Copysign(0.5, f))
 }
 
 func (bm *blockModel) lookupTexture(name string) *render.TextureInfo {
