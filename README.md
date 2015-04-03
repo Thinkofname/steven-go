@@ -7,8 +7,8 @@ Don't expect it to go anywhere, just doing this for fun.
 
 To build:
 
-`export GOPATH='your/install/directory'`
-`go get "github.com/thinkofdeath/steven"`
+`export GOPATH=your/install/directory`
+`go get github.com/thinkofdeath/steven`
 
 To update, run `go get` with the `-u` option.
 
@@ -41,7 +41,3 @@ to steven with the location you built it at or downloaded it too and change the
 It is possible to run steven without the launcher, but you must obtain the access token,
 UUID (whithout dashes) and the username, and pass them as arguments to steven, as well as
 the server.
-
-## Controls
-
-Currently it is not possible to chat or interact with anything, but `w` will move you in the direction your cursor is pointing.
