@@ -27,6 +27,7 @@ var (
 // ChunkBuffer is a renderable chunk section
 type ChunkBuffer struct {
 	position
+	invalid bool
 
 	array    gl.VertexArray
 	buffer   gl.Buffer
@@ -56,6 +57,9 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 
 // Upload uploads the passed vertex data to the buffer.
 func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
+	if cb.invalid {
+		return
+	}
 	cb.cullBits = cullBits
 
 	if count == 0 {
@@ -91,6 +95,9 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 
 // UploadTrans uploads the passed vertex data to the translucent buffer.
 func (cb *ChunkBuffer) UploadTrans(data []byte, count int) {
+	if cb.invalid {
+		return
+	}
 	if count == 0 {
 		if cb.arrayT.IsValid() {
 			cb.arrayT.Delete()
@@ -123,6 +130,10 @@ func (cb *ChunkBuffer) UploadTrans(data []byte, count int) {
 
 // Free removes the buffer and frees related resources.
 func (cb *ChunkBuffer) Free() {
+	if cb.invalid {
+		return
+	}
+	cb.invalid = true
 	delete(buffers, cb.position)
 	cpos := positionC{cb.position.X, cb.position.Z}
 	val := bufferColumns[cpos]
