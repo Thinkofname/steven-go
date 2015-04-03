@@ -35,7 +35,7 @@ var (
 	BlockCoalOre                    = initSimple("coal_ore")
 	BlockLog                        = initLog("log", false)
 	BlockLeaves                     = initLeaves("leaves", false)
-	BlockSponge                     = initSimple("sponge")
+	BlockSponge                     = initSponge("sponge")
 	BlockGlass                      = initSimpleConfig("glass", simpleConfig{NotCullAgainst: true})
 	BlockLapisOre                   = initSimple("lapis_ore")
 	BlockLapisBlock                 = initSimple("lapis_block")

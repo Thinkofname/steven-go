@@ -256,3 +256,40 @@ func (b *blockBed) toData() int {
 	}
 	return data
 }
+
+// Sponge
+
+type blockSponge struct {
+	baseBlock
+	Wet bool `state:"wet"`
+}
+
+func initSponge(name string) *BlockSet {
+	b := &blockSponge{}
+	b.init(name)
+	set := alloc(b)
+	return set
+}
+
+func (b *blockSponge) String() string {
+	return b.Parent.stringify(b)
+}
+
+func (b *blockSponge) clone() Block {
+	return &blockSponge{
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+		Wet:       b.Wet,
+	}
+}
+
+func (b *blockSponge) ModelVariant() string {
+	return fmt.Sprintf("wet=%t", b.Wet)
+}
+
+func (b *blockSponge) toData() int {
+	data := 0
+	if b.Wet {
+		data = 1
+	}
+	return data
+}
