@@ -40,6 +40,8 @@ type ChunkBuffer struct {
 	renderedOn uint
 }
 
+// IsVisible returns whether the 'to' face is visible through
+// 'from' face.
 func (cb *ChunkBuffer) IsVisible(from, to direction.Type) bool {
 	return (cb.cullBits & (1 << (from*6 + to))) != 0
 }

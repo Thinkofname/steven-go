@@ -52,6 +52,7 @@ func GetTexture(name string) *TextureInfo {
 	return &t
 }
 
+// LoadTextures (re)loads all the block textures from the resource pack(s)
 // TODO(Think) better error handling (if possible to recover?)
 func LoadTextures() {
 	textureLock.Lock()

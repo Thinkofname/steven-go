@@ -20,9 +20,10 @@ import (
 	"github.com/thinkofdeath/steven/type/vmath"
 )
 
-// Type is a direction in the minecraft world
+// Type is a direction in the minecraft world.
 type Type uint
 
+// Possible direction values.
 const (
 	Up Type = iota
 	Down
@@ -33,6 +34,7 @@ const (
 	Invalid
 )
 
+// Values is all valid directions.
 var Values = []Type{
 	Up,
 	Down,
@@ -42,6 +44,8 @@ var Values = []Type{
 	East,
 }
 
+// FromString returns the direction that matches the passed
+// string if possible otherwise it will return Invalid.
 func FromString(str string) Type {
 	switch str {
 	case "up":
@@ -61,6 +65,7 @@ func FromString(str string) Type {
 	return Invalid
 }
 
+// Offset returns the x, y and z offset this direction points in.
 func (d Type) Offset() (x, y, z int) {
 	switch d {
 	case Up:
@@ -80,11 +85,14 @@ func (d Type) Offset() (x, y, z int) {
 
 }
 
+// AsVector returns a vector of the direction's offset.
 func (d Type) AsVector() vmath.Vector3 {
 	x, y, z := d.Offset()
 	return vmath.Vector3{float32(x), float32(y), float32(z)}
 }
 
+// Opposite returns the direction directly opposite to this
+// direction.
 func (d Type) Opposite() Type {
 	switch d {
 	case Up:
@@ -103,6 +111,7 @@ func (d Type) Opposite() Type {
 	return Invalid
 }
 
+// String returns a string representation of the direction.
 func (d Type) String() string {
 	switch d {
 	case Up:

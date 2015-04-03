@@ -20,6 +20,7 @@ package platform
 // can trigger.
 type Action int
 
+// Possible actions
 const (
 	InvalidAction Action = iota
 	Debug

@@ -69,19 +69,19 @@ func (b *blockstone) String() string {
 	return b.Parent.stringify(b)
 }
 
-func (l *blockstone) clone() Block {
+func (b *blockstone) clone() Block {
 	return &blockstone{
-		baseBlock: *(l.baseBlock.clone().(*baseBlock)),
-		Variant:   l.Variant,
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+		Variant:   b.Variant,
 	}
 }
 
-func (l *blockstone) ModelName() string {
-	return l.Variant.String()
+func (b *blockstone) ModelName() string {
+	return b.Variant.String()
 }
 
-func (l *blockstone) toData() int {
-	data := int(l.Variant)
+func (b *blockstone) toData() int {
+	data := int(b.Variant)
 	return data
 }
 

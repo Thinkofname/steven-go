@@ -76,7 +76,7 @@ func Start(debug bool) {
 
 var (
 	textureIds    []int
-	frameID       uint = 0
+	frameID       uint
 	nearestBuffer *ChunkBuffer
 	viewVector    vmath.Vector3
 )

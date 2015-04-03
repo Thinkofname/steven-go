@@ -92,12 +92,12 @@ func main() {
 				continue
 			}
 
-			packetId, err := strconv.ParseInt(strings.TrimSpace(doc[pos+len(idSearchString):]), 16, 32)
+			packetID, err := strconv.ParseInt(strings.TrimSpace(doc[pos+len(idSearchString):]), 16, 32)
 			if err != nil {
 				panic(err)
 			}
 			packets = append(packets, packet{
-				id:   int(packetId),
+				id:   int(packetID),
 				name: tSpec.Name.Name,
 			})
 		}
