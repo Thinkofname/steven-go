@@ -110,9 +110,15 @@ var (
 	completeBuilders = make(chan buildPos, maxBuilders)
 	syncChan         = make(chan func(), 200)
 	ticker           = time.NewTicker(time.Second / 20)
+	lastFrame        = time.Now()
 )
 
 func draw() {
+	now := time.Now()
+	diff := now.Sub(lastFrame)
+	lastFrame = now
+	delta := float64(diff.Nanoseconds()) / (float64(time.Second) / 60)
+	delta = math.Min(math.Max(delta, 0.3), 1.6)
 handle:
 	for {
 		select {
@@ -137,9 +143,9 @@ handle:
 	}
 
 	// TODO(Think) Tidy up
-	render.Camera.X += mf * math.Cos(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * (1.0 / 7.0)
-	render.Camera.Z -= mf * math.Sin(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * (1.0 / 7.0)
-	render.Camera.Y -= mf * math.Sin(render.Camera.Pitch) * (1.0 / 7.0)
+	render.Camera.X += mf * math.Cos(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * delta * 0.2
+	render.Camera.Z -= mf * math.Sin(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * delta * 0.2
+	render.Camera.Y -= mf * math.Sin(render.Camera.Pitch) * delta * 0.2
 	if ready {
 		select {
 		case <-ticker.C:
@@ -174,7 +180,7 @@ dirtyClean:
 		}
 	}
 
-	render.Draw()
+	render.Draw(delta)
 }
 
 // tick is called 20 times a second (bar any preformance issues).

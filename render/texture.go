@@ -15,6 +15,7 @@
 package render
 
 import (
+	"encoding/json"
 	"fmt"
 	"image"
 	"image/draw"
@@ -27,16 +28,19 @@ import (
 )
 
 var (
-	textures    []*atlas.Type
-	textureMap  = map[string]TextureInfo{}
-	textureLock sync.RWMutex
+	textures         []*atlas.Type
+	textureViews     []*image.NRGBA
+	textureMap       = map[string]TextureInfo{}
+	textureLock      sync.RWMutex
+	animatedTextures []*animatedTexture
 )
 
 const atlasSize = 1024
 
 // TextureInfo returns information about a texture in an atlas
 type TextureInfo struct {
-	Atlas int
+	Atlas     int
+	imageView *image.NRGBA
 	*atlas.Rect
 }
 
@@ -72,13 +76,15 @@ func LoadTextures() {
 			panic(err)
 		}
 		width, height := img.Bounds().Dx(), img.Bounds().Dy()
+		var ani *animatedTexture
 		if width != height {
 			height = width
 			old := img
 			img := image.NewNRGBA(image.Rect(0, 0, width, width))
 			draw.Draw(img, img.Bounds(), old, image.ZP, draw.Over)
-
-			fmt.Printf("Skipping animation %s for now...\n", file)
+			ani = loadAnimation(file, old.Bounds().Dy()/old.Bounds().Dx())
+			ani.Image = old
+			animatedTextures = append(animatedTextures, ani)
 		}
 		var pix []byte
 		switch img := img.(type) {
@@ -91,9 +97,13 @@ func LoadTextures() {
 		}
 		name := file[len("textures/blocks/") : len(file)-4]
 		at, rect := addTexture(pix, width, height)
-		textureMap[name] = TextureInfo{
+		info := TextureInfo{
 			Rect:  rect,
 			Atlas: at,
+		}
+		textureMap[name] = info
+		if ani != nil {
+			ani.Info = info
 		}
 	}
 
@@ -118,11 +128,111 @@ func addTexture(pix []byte, width, height int) (int, *atlas.Rect) {
 	}
 	a := atlas.New(atlasSize, atlasSize, 4)
 	textures = append(textures, a)
+	textureViews = append(textureViews, &image.NRGBA{
+		Pix:    a.Buffer,
+		Stride: 4 * atlasSize,
+		Rect:   image.Rect(0, 0, atlasSize, atlasSize),
+	})
 	rect, err := a.Add(pix, width, height)
 	if err != nil {
 		panic(err)
 	}
 	return len(textures) - 1, rect
+}
+
+type animatedTexture struct {
+	Info          TextureInfo
+	Image         image.Image
+	Interpolate   bool
+	Frames        []textureFrame
+	RemainingTime float64
+	CurrentFrame  int
+}
+
+type textureFrame struct {
+	Index int
+	Time  int
+}
+
+func tickAnimatedTextures(delta float64) {
+	delta /= 3 // default is 60 a second, minecraft is 20
+	for _, ani := range animatedTextures {
+		ani.RemainingTime -= delta
+		if ani.RemainingTime < 0 {
+			ani.CurrentFrame++
+			ani.CurrentFrame %= len(ani.Frames)
+			ani.RemainingTime += float64(ani.Frames[ani.CurrentFrame].Time)
+			img := textureViews[ani.Info.Atlas]
+			r := ani.Info.Rect
+			y := r.Width * ani.Frames[ani.CurrentFrame].Index
+			src := image.Rect(r.X, r.Y, r.X+r.Width, r.Y+r.Height)
+			draw.Draw(img, src, ani.Image, image.Pt(0, y), draw.Src)
+		}
+	}
+	for i, gt := range glTextures {
+		gt.Bind(gl.Texture2D)
+		gt.Image2D(0, atlasSize, atlasSize, gl.RGBA, gl.UnsignedByte, textures[i].Buffer)
+	}
+}
+
+func loadAnimation(file string, max int) *animatedTexture {
+	a := &animatedTexture{}
+	defer func() {
+		a.RemainingTime = float64(a.Frames[0].Time)
+	}()
+
+	type animation struct {
+		FrameTime   int
+		Interpolate bool
+		Frames      []json.RawMessage
+	}
+	type base struct {
+		Animation animation
+	}
+
+	meta, err := resource.Open("minecraft", file+".mcmeta")
+	if err != nil {
+		panic(err)
+	}
+	defer meta.Close()
+	b := &base{}
+	err = json.NewDecoder(meta).Decode(b)
+	if err != nil {
+		panic(err)
+	}
+	frameTime := b.Animation.FrameTime
+	if frameTime == 0 {
+		frameTime = 1
+	}
+	a.Interpolate = b.Animation.Interpolate
+
+	if len(b.Animation.Frames) == 0 {
+		a.Frames = make([]textureFrame, max)
+		for i := range a.Frames {
+			a.Frames[i] = textureFrame{
+				Index: i,
+				Time:  frameTime,
+			}
+		}
+		return a
+	}
+
+	a.Frames = make([]textureFrame, len(b.Animation.Frames))
+	for i := range a.Frames {
+		a.Frames[i].Time = frameTime
+		if b.Animation.Frames[i][0] == '{' {
+			if err = json.Unmarshal(b.Animation.Frames[i], &a.Frames[i]); err != nil {
+				panic(err)
+			}
+			a.Frames[i].Time *= frameTime
+			continue
+		}
+		if err = json.Unmarshal(b.Animation.Frames[i], &a.Frames[i].Index); err != nil {
+			panic(err)
+		}
+	}
+
+	return a
 }
 
 type glTexture struct {

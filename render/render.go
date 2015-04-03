@@ -82,7 +82,8 @@ var (
 )
 
 // Draw draws a single frame
-func Draw() {
+func Draw(delta float64) {
+	tickAnimatedTextures(delta)
 	frameID++
 sync:
 	for {
