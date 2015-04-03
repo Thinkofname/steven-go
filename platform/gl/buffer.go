@@ -35,6 +35,9 @@ type BufferUsage uint32
 func CreateBuffer() Buffer {
 	var buffer Buffer
 	gl.GenBuffers(1, &buffer.internal)
+	if buffer.internal == 0 {
+		panic("failed to create buffer")
+	}
 	return buffer
 }
 

@@ -27,6 +27,9 @@ var currentVertexArray VertexArray
 func CreateVertexArray() VertexArray {
 	var va VertexArray
 	gl.GenVertexArrays(1, &va.internal)
+	if va.internal == 0 {
+		panic("failed to create vertex array")
+	}
 	return va
 }
 
