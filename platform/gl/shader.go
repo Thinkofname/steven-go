@@ -17,7 +17,7 @@ package gl
 import (
 	"unsafe"
 
-	"github.com/go-gl/gl/v3.2-core/gl"
+	"github.com/thinkofdeath/gl/v3.2-core/gl"
 	"github.com/thinkofdeath/steven/type/vmath"
 )
 
@@ -102,13 +102,11 @@ func (a Attribute) Disable() {
 }
 
 func (a Attribute) Pointer(size int, ty Type, normalized bool, stride, offset int) {
-	ptr := ptrOffset(offset)
-	gl.VertexAttribPointer(uint32(a), int32(size), uint32(ty), normalized, int32(stride), ptr)
+	gl.VertexAttribPointer(uint32(a), int32(size), uint32(ty), normalized, int32(stride), uintptr(offset))
 }
 
 func (a Attribute) PointerInt(size int, ty Type, stride, offset int) {
-	ptr := ptrOffset(offset)
-	gl.VertexAttribIPointer(uint32(a), int32(size), uint32(ty), int32(stride), ptr)
+	gl.VertexAttribIPointer(uint32(a), int32(size), uint32(ty), int32(stride), uintptr(offset))
 }
 
 type (
