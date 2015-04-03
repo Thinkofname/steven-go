@@ -79,9 +79,9 @@ void main() {
 	tPos /= 1024.0;
 	int texID = int(floor(vTextureInfo.y / 1024.0));
 	vec4 col = vec4(0.0);
-	col += texture2D(textures[0], tPos) * float(0 == texID);
-	col += texture2D(textures[1], tPos) * float(1 == texID);
-	col += texture2D(textures[2], tPos) * float(2 == texID);
+	col += texture(textures[0], tPos) * float(0 == texID);
+	col += texture(textures[1], tPos) * float(1 == texID);
+	col += texture(textures[2], tPos) * float(2 == texID);
 	#ifndef alpha
 	if (col.a < 0.5) discard;
 	#endif
