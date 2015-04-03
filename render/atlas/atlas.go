@@ -126,7 +126,7 @@ func (a *Type) Add(image []byte, width, height int) (*Rect, error) {
 		if target.Height > h {
 			// Split by height
 			a.freeSpace = append(
-				[]*Rect{&Rect{
+				[]*Rect{{
 					target.X, target.Y + h,
 					w, target.Height - h,
 				}},
