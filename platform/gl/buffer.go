@@ -35,9 +35,6 @@ type BufferUsage uint32
 func CreateBuffer() Buffer {
 	var buffer Buffer
 	gl.GenBuffers(1, &buffer.internal)
-	if buffer.internal == 0 {
-		panic("failed to create buffer")
-	}
 	return buffer
 }
 
@@ -65,9 +62,14 @@ func (b Buffer) Data(data []byte, usage BufferUsage) {
 	gl.BufferData(uint32(currentBufferTarget), len(data), gl.Ptr(data), uint32(usage))
 }
 
-func (b Buffer) Delete() {
+func (b *Buffer) Delete() {
 	gl.DeleteBuffers(1, &b.internal)
-	if currentBuffer == b {
+	if currentBuffer == *b {
 		currentBuffer = Buffer{}
 	}
+	b.internal = 0
+}
+
+func (b Buffer) IsValid() bool {
+	return b.internal != 0
 }

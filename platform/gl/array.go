@@ -27,9 +27,6 @@ var currentVertexArray VertexArray
 func CreateVertexArray() VertexArray {
 	var va VertexArray
 	gl.GenVertexArrays(1, &va.internal)
-	if va.internal == 0 {
-		panic("failed to create vertex array")
-	}
 	return va
 }
 
@@ -41,9 +38,14 @@ func (va VertexArray) Bind() {
 	currentVertexArray = va
 }
 
-func (va VertexArray) Delete() {
+func (va *VertexArray) Delete() {
 	gl.DeleteVertexArrays(1, &va.internal)
-	if currentVertexArray == va {
+	if currentVertexArray == *va {
 		currentVertexArray = VertexArray{}
 	}
+	va.internal = 0
+}
+
+func (va VertexArray) IsValid() bool {
+	return va.internal != 0
 }

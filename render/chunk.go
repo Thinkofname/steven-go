@@ -48,10 +48,6 @@ func (cb *ChunkBuffer) IsVisible(from, to direction.Type) bool {
 func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 	c := &ChunkBuffer{
 		position: position{X: x, Y: y, Z: z},
-		array:    gl.CreateVertexArray(),
-		buffer:   gl.CreateBuffer(),
-		arrayT:   gl.CreateVertexArray(),
-		bufferT:  gl.CreateBuffer(),
 	}
 	buffers[c.position] = c
 	bufferColumns[positionC{x, z}]++
@@ -60,8 +56,21 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 
 // Upload uploads the passed vertex data to the buffer.
 func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
-	chunkProgram.Use()
 	cb.cullBits = cullBits
+
+	if count == 0 {
+		if cb.array.IsValid() {
+			cb.array.Delete()
+			cb.buffer.Delete()
+		}
+		return
+	}
+
+	if !cb.array.IsValid() {
+		cb.array = gl.CreateVertexArray()
+		cb.buffer = gl.CreateBuffer()
+	}
+
 	cb.array.Bind()
 	shaderChunk.Position.Enable()
 	shaderChunk.TextureInfo.Enable()
@@ -82,13 +91,24 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 
 // UploadTrans uploads the passed vertex data to the translucent buffer.
 func (cb *ChunkBuffer) UploadTrans(data []byte, count int) {
-	chunkProgramT.Use()
+	if count == 0 {
+		if cb.arrayT.IsValid() {
+			cb.arrayT.Delete()
+			cb.bufferT.Delete()
+		}
+		return
+	}
+
+	if !cb.arrayT.IsValid() {
+		cb.arrayT = gl.CreateVertexArray()
+		cb.bufferT = gl.CreateBuffer()
+	}
 	cb.arrayT.Bind()
-	shaderChunk.Position.Enable()
-	shaderChunk.TextureInfo.Enable()
-	shaderChunk.TextureOffset.Enable()
-	shaderChunk.Color.Enable()
-	shaderChunk.Lighting.Enable()
+	shaderChunkT.Position.Enable()
+	shaderChunkT.TextureInfo.Enable()
+	shaderChunkT.TextureOffset.Enable()
+	shaderChunkT.Color.Enable()
+	shaderChunkT.Lighting.Enable()
 
 	cb.bufferT.Bind(gl.ArrayBuffer)
 	cb.bufferT.Data(data, gl.DynamicDraw)
