@@ -210,6 +210,23 @@ func alloc(initial Block) *BlockSet {
 			for j := min; j <= max; j++ {
 				vals[j-min] = j
 			}
+		case reflect.Uint:
+			var min, max uint
+			if args[0][0] != '@' {
+				rnge := strings.Split(args[0], "-")
+				mint, _ := strconv.Atoi(rnge[0])
+				maxt, _ := strconv.Atoi(rnge[1])
+				min = uint(mint)
+				max = uint(maxt)
+			} else {
+				ret := v.Addr().MethodByName(args[0][1:]).Call([]reflect.Value{})
+				min = uint(ret[0].Uint())
+				max = uint(ret[1].Uint())
+			}
+			vals = make([]interface{}, max-min+1)
+			for j := min; j <= max; j++ {
+				vals[j-min] = j
+			}
 		default:
 			panic("invalid state kind " + f.Type.Kind().String())
 		}

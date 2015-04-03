@@ -192,3 +192,74 @@ func (l *blockLeaves) toData() int {
 	}
 	return data
 }
+
+type blockPlanks struct {
+	baseBlock
+	Variant treeVariant `state:"variant,0-5"`
+}
+
+func initPlanks(name string) *BlockSet {
+	b := &blockPlanks{}
+	b.init(name)
+	set := alloc(b)
+	return set
+}
+
+func (b *blockPlanks) String() string {
+	return b.Parent.stringify(b)
+}
+
+func (b *blockPlanks) clone() Block {
+	return &blockPlanks{
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+		Variant:   b.Variant,
+	}
+}
+
+func (b *blockPlanks) ModelName() string {
+	return b.Variant.String() + "_planks"
+}
+
+func (b *blockPlanks) toData() int {
+	return int(b.Variant)
+}
+
+type blockSapling struct {
+	baseBlock
+	Variant treeVariant `state:"type,0-5"`
+	Stage   int         `state:"stage,0-1"`
+}
+
+func initSapling(name string) *BlockSet {
+	b := &blockSapling{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockSapling) String() string {
+	return b.Parent.stringify(b)
+}
+
+func (b *blockSapling) clone() Block {
+	return &blockSapling{
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+		Variant:   b.Variant,
+		Stage:     b.Stage,
+	}
+}
+
+func (b *blockSapling) ModelName() string {
+	return b.Variant.String() + "_sapling"
+}
+
+func (b *blockSapling) ModelVariant() string {
+	return fmt.Sprintf("stage=%d", b.Stage)
+}
+
+func (b *blockSapling) toData() int {
+	data := int(b.Variant)
+	data |= b.Stage << 3
+	return data
+}

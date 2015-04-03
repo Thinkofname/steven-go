@@ -17,6 +17,8 @@ package main
 import (
 	"fmt"
 	"image"
+
+	"github.com/thinkofdeath/steven/type/direction"
 )
 
 // Stone
@@ -181,4 +183,76 @@ func (t *blockTallGrass) TintImage() *image.NRGBA {
 
 func (t *blockTallGrass) toData() int {
 	return int(t.Type)
+}
+
+// Bed
+
+type bedPart int
+
+const (
+	bedHead bedPart = iota
+	bedFoot
+)
+
+func (b bedPart) String() string {
+	switch b {
+	case bedHead:
+		return "head"
+	case bedFoot:
+		return "foot"
+	}
+	return fmt.Sprintf("bedPart(%d)", b)
+}
+
+type blockBed struct {
+	baseBlock
+	Facing   direction.Type `state:"facing,2-5"`
+	Occupied bool           `state:"occupied"`
+	Part     bedPart        `state:"part,0-1"`
+}
+
+func initBed(name string) *BlockSet {
+	b := &blockBed{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockBed) String() string {
+	return b.Parent.stringify(b)
+}
+
+func (b *blockBed) clone() Block {
+	return &blockBed{
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+		Facing:    b.Facing,
+		Occupied:  b.Occupied,
+		Part:      b.Part,
+	}
+}
+
+func (b *blockBed) ModelVariant() string {
+	return fmt.Sprintf("facing=%s,part=%s", b.Facing, b.Part)
+}
+
+func (b *blockBed) toData() int {
+	data := 0
+	switch b.Facing {
+	case direction.South:
+		data = 0
+	case direction.West:
+		data = 1
+	case direction.North:
+		data = 2
+	case direction.East:
+		data = 3
+	}
+	if b.Occupied {
+		data |= 0x4
+	}
+	if b.Part == bedHead {
+		data |= 0x8
+	}
+	return data
 }
