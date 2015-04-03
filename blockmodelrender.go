@@ -151,6 +151,16 @@ func precomputeModel(bm *blockModel) *processedModel {
 					vert[v].TOffsetY = int16(uy2)
 				}
 
+				if face.rotation > 0 {
+					rotY := float64(face.rotation) * (math.Pi / 180)
+					c := int16(math.Cos(rotY))
+					s := int16(math.Sin(rotY))
+					x := vert[v].TOffsetX - 8*16
+					y := vert[v].TOffsetY - 8*16
+					vert[v].TOffsetX = 8*16 + int16(x*c-y*s)
+					vert[v].TOffsetY = 8*16 + int16(y*c+x*s)
+				}
+
 				if el.rotation != nil && el.rotation.rescale {
 					if vert[v].X < minX {
 						minX = vert[v].X
