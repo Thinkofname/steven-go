@@ -101,16 +101,14 @@ func (a Attribute) Disable() {
 	gl.DisableVertexAttribArray(uint32(a))
 }
 
-func (a Attribute) Binding(index int) {
-	gl.VertexAttribBinding(uint32(a), uint32(index))
+func (a Attribute) Pointer(size int, ty Type, normalized bool, stride, offset int) {
+	ptr := ptrOffset(offset)
+	gl.VertexAttribPointer(uint32(a), int32(size), uint32(ty), normalized, int32(stride), ptr)
 }
 
-func (a Attribute) Format(size int, ty Type, normalized bool, offset int) {
-	gl.VertexAttribFormat(uint32(a), int32(size), uint32(ty), normalized, uint32(offset))
-}
-
-func (a Attribute) FormatInt(size int, ty Type, offset int) {
-	gl.VertexAttribIFormat(uint32(a), int32(size), uint32(ty), uint32(offset))
+func (a Attribute) PointerInt(size int, ty Type, stride, offset int) {
+	ptr := ptrOffset(offset)
+	gl.VertexAttribIPointer(uint32(a), int32(size), uint32(ty), int32(stride), ptr)
 }
 
 type (

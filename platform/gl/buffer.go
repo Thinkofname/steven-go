@@ -55,10 +55,6 @@ func (b Buffer) Bind(target BufferTarget) {
 	currentBufferTarget = target
 }
 
-func (b Buffer) BindVertex(index, offset, stride int) {
-	gl.BindVertexBuffer(uint32(index), b.internal, offset, int32(stride))
-}
-
 func (b Buffer) Data(data []byte, usage BufferUsage) {
 	if currentBuffer != b {
 		panic("buffer not bound")

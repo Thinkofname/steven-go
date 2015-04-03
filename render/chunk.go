@@ -71,22 +71,12 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 	shaderChunk.Color.Enable()
 	shaderChunk.Lighting.Enable()
 
-	cb.buffer.BindVertex(0, 0, 23)
-
-	shaderChunk.Position.FormatInt(3, gl.Short, 0)
-	shaderChunk.Position.Binding(0)
-
-	shaderChunk.TextureInfo.Format(4, gl.UnsignedShort, false, 6)
-	shaderChunk.TextureInfo.Binding(0)
-
-	shaderChunk.TextureOffset.Format(2, gl.Short, false, 14)
-	shaderChunk.TextureOffset.Binding(0)
-
-	shaderChunk.Color.Format(3, gl.UnsignedByte, true, 18)
-	shaderChunk.Color.Binding(0)
-
-	shaderChunk.Lighting.Format(2, gl.UnsignedByte, false, 21)
-	shaderChunk.Lighting.Binding(0)
+	cb.buffer.Bind(gl.ArrayBuffer)
+	shaderChunk.Position.PointerInt(3, gl.Short, 23, 0)
+	shaderChunk.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
+	shaderChunk.TextureOffset.Pointer(2, gl.Short, false, 23, 14)
+	shaderChunk.Color.Pointer(3, gl.UnsignedByte, true, 23, 18)
+	shaderChunk.Lighting.Pointer(2, gl.UnsignedByte, false, 23, 21)
 
 	cb.count = count
 }
@@ -103,22 +93,12 @@ func (cb *ChunkBuffer) UploadTrans(data []byte, count int) {
 	shaderChunk.Color.Enable()
 	shaderChunk.Lighting.Enable()
 
-	cb.bufferT.BindVertex(0, 0, 23)
-
-	shaderChunkT.Position.FormatInt(3, gl.Short, 0)
-	shaderChunkT.Position.Binding(0)
-
-	shaderChunkT.TextureInfo.Format(4, gl.UnsignedShort, false, 6)
-	shaderChunkT.TextureInfo.Binding(0)
-
-	shaderChunkT.TextureOffset.Format(2, gl.Short, false, 14)
-	shaderChunkT.TextureOffset.Binding(0)
-
-	shaderChunkT.Color.Format(3, gl.UnsignedByte, true, 18)
-	shaderChunkT.Color.Binding(0)
-
-	shaderChunkT.Lighting.Format(2, gl.UnsignedByte, false, 21)
-	shaderChunkT.Lighting.Binding(0)
+	cb.bufferT.Bind(gl.ArrayBuffer)
+	shaderChunkT.Position.PointerInt(3, gl.Short, 23, 0)
+	shaderChunkT.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
+	shaderChunkT.TextureOffset.Pointer(2, gl.Short, false, 23, 14)
+	shaderChunkT.Color.Pointer(3, gl.UnsignedByte, true, 23, 18)
+	shaderChunkT.Lighting.Pointer(2, gl.UnsignedByte, false, 23, 21)
 
 	cb.countT = count
 }
