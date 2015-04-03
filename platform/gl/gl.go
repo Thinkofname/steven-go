@@ -17,6 +17,7 @@ package gl
 
 import (
 	"fmt"
+	"unsafe"
 
 	"github.com/go-gl/gl/v3.2-core/gl"
 )
@@ -30,6 +31,7 @@ const (
 	CullFaceFlag Flag = gl.CULL_FACE
 	StencilTest  Flag = gl.STENCIL_TEST
 	Blend        Flag = gl.BLEND
+	DebugOutput  Flag = gl.DEBUG_OUTPUT
 
 	Back  Face = gl.BACK
 	Front Face = gl.FRONT
@@ -139,4 +141,17 @@ func ClearStencil(i int) {
 
 func BlendFunc(sFactor, dFactor Factor) {
 	gl.BlendFunc(uint32(sFactor), uint32(dFactor))
+}
+
+func DebugLog() {
+	gl.DebugMessageCallback(func(
+		source uint32,
+		gltype uint32,
+		id uint32,
+		severity uint32,
+		length int32,
+		message string,
+		userParam unsafe.Pointer) {
+		fmt.Printf("GL: %d, %d, %d, %d: %s\n", source, gltype, id, severity, message)
+	}, nil)
 }

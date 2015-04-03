@@ -41,7 +41,12 @@ var (
 )
 
 // Start starts the renderer
-func Start() {
+func Start(debug bool) {
+	if debug {
+		gl.Enable(gl.DebugOutput)
+		gl.DebugLog()
+	}
+
 	gl.ClearColor(0.0, 1.0, 1.0, 1.0)
 	gl.Enable(gl.DepthTest)
 	gl.Enable(gl.CullFaceFlag)

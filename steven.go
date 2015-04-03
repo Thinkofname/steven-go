@@ -28,6 +28,7 @@ import (
 )
 
 var loadChan = make(chan struct{})
+var debug bool
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
@@ -51,6 +52,8 @@ func main() {
 			accessToken = os.Args[i+1]
 		case "--server":
 			server = os.Args[i+1]
+		case "--debug":
+			debug = true
 		}
 	}
 
@@ -78,7 +81,7 @@ func main() {
 
 func start() {
 	<-loadChan
-	render.Start()
+	render.Start(debug)
 }
 
 func rotate(x, y float64) {
