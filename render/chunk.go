@@ -63,8 +63,6 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 	chunkProgram.Use()
 	cb.cullBits = cullBits
 	cb.array.Bind()
-	cb.buffer.Bind(gl.ArrayBuffer)
-	cb.buffer.Data(data, gl.DynamicDraw)
 	shaderChunk.Position.Enable()
 	shaderChunk.TextureInfo.Enable()
 	shaderChunk.TextureOffset.Enable()
@@ -72,6 +70,7 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 	shaderChunk.Lighting.Enable()
 
 	cb.buffer.Bind(gl.ArrayBuffer)
+	cb.buffer.Data(data, gl.DynamicDraw)
 	shaderChunk.Position.PointerInt(3, gl.Short, 23, 0)
 	shaderChunk.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
 	shaderChunk.TextureOffset.Pointer(2, gl.Short, false, 23, 14)
@@ -85,8 +84,6 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 func (cb *ChunkBuffer) UploadTrans(data []byte, count int) {
 	chunkProgramT.Use()
 	cb.arrayT.Bind()
-	cb.bufferT.Bind(gl.ArrayBuffer)
-	cb.bufferT.Data(data, gl.DynamicDraw)
 	shaderChunk.Position.Enable()
 	shaderChunk.TextureInfo.Enable()
 	shaderChunk.TextureOffset.Enable()
@@ -94,6 +91,7 @@ func (cb *ChunkBuffer) UploadTrans(data []byte, count int) {
 	shaderChunk.Lighting.Enable()
 
 	cb.bufferT.Bind(gl.ArrayBuffer)
+	cb.bufferT.Data(data, gl.DynamicDraw)
 	shaderChunkT.Position.PointerInt(3, gl.Short, 23, 0)
 	shaderChunkT.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
 	shaderChunkT.TextureOffset.Pointer(2, gl.Short, false, 23, 14)
@@ -117,4 +115,6 @@ func (cb *ChunkBuffer) Free() {
 
 	cb.buffer.Delete()
 	cb.array.Delete()
+	cb.bufferT.Delete()
+	cb.arrayT.Delete()
 }
