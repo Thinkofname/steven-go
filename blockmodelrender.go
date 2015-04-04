@@ -78,11 +78,6 @@ func precomputeModel(bm *blockModel) *processedModel {
 			vert := faceVertices[i]
 			tex := bm.lookupTexture(face.texture)
 
-			var cr, cg, cb byte
-			cr = 255
-			cg = 255
-			cb = 255
-
 			ux1 := int16(face.uv[0] * tex.Width)
 			ux2 := int16(face.uv[2] * tex.Width)
 			uy1 := int16(face.uv[1] * tex.Height)
@@ -96,9 +91,6 @@ func precomputeModel(bm *blockModel) *processedModel {
 				vert[v].TY = uint16(tex.Y + tex.Atlas*1024.0)
 				vert[v].TW = uint16(tex.Width)
 				vert[v].TH = uint16(tex.Height)
-				vert[v].R = cr
-				vert[v].G = cg
-				vert[v].B = cb
 
 				if vert[v].X == 0 {
 					vert[v].X = int16(el.from[0] * 16)
@@ -223,6 +215,11 @@ func (p processedModel) Render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 			case 0:
 				cr, cg, cb = calculateBiome(bs, x, z, this.TintImage())
 			}
+		}
+		if f.facing == direction.West || f.facing == direction.East {
+			cr = byte(float64(cr) * 0.8)
+			cg = byte(float64(cg) * 0.8)
+			cb = byte(float64(cb) * 0.8)
 		}
 
 		for i := range verts {
