@@ -209,7 +209,7 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 	syncChan <- func() {
 		// Allocate the render buffers sync
 		for y, section := range c.Sections {
-			if section != nil {
+			if section != nil && section.Buffer == nil {
 				section.Buffer = render.AllocateChunkBuffer(c.X, y, c.Z)
 			}
 		}
