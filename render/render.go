@@ -225,7 +225,6 @@ itQueue:
 						if dir != from {
 							ox, oy, oz := dir.Offset()
 							pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
-							// renderBuffer(buffers[pos], pos, dir.Opposite())
 							queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite(), req.dist + 1})
 						}
 					}
@@ -251,7 +250,6 @@ itQueue:
 			if dir != from && (from == direction.Invalid || chunk.IsVisible(from, dir)) {
 				ox, oy, oz := dir.Offset()
 				pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
-				// renderBuffer(buffers[pos], pos, dir.Opposite())
 				queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite(), req.dist + 1})
 			}
 		}
