@@ -80,7 +80,7 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 
 					// The index is used to select a 'random' variant which is
 					// constant for that position.
-					index := r.Intn(len(bl.Models())) // (cs.chunk.X<<4 + x) ^ (cs.Y<<4+y)*31 ^ (cs.chunk.Z<<4+z)*5
+					index := r.Intn(len(bl.Models()))
 
 					if variant := bl.Models().selectModel(index); variant != nil {
 						for _, v := range variant.Render(x, y, z, bs) {

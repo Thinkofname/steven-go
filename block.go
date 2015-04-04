@@ -305,6 +305,7 @@ func alloc(initial Block) *BlockSet {
 			}
 		}
 	}
+	bs.Base = bs.Blocks[0]
 	return bs
 }
 
