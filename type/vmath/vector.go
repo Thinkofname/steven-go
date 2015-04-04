@@ -30,14 +30,18 @@ func (v Vector3) Dot(other Vector3) float32 {
 }
 
 func (v *Vector3) Normalize() {
-	l := float32(math.Sqrt(float64(v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
+	l := v.Length()
 	v.X /= l
 	v.Y /= l
 	v.Z /= l
 }
 
-func (v *Vector3) LengthSquared() float32 {
+func (v Vector3) LengthSquared() float32 {
 	return v.X*v.X + v.Y*v.Y + v.Z*v.Z
+}
+
+func (v Vector3) Length() float32 {
+	return float32(math.Sqrt(float64(v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
 }
 
 func (v *Vector3) Apply(m *Matrix4) float32 {
@@ -53,4 +57,8 @@ func (v *Vector3) Apply(m *Matrix4) float32 {
 	v.Y = (m[1]*x + m[5]*y + m[9]*z + m[13]) / w
 	v.Z = (m[2]*x + m[6]*y + m[10]*z + m[14]) / w
 	return w
+}
+
+func (v Vector3) AngleTo(other Vector3) float32 {
+	return v.Dot(other) / (v.Length() + other.Length())
 }
