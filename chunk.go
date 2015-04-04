@@ -197,6 +197,43 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, hasBiome bool) int {
 						if section == nil {
 							continue
 						}
+						cx, cy, cz := c.X<<4, section.Y<<4, c.Z<<4
+						for y := 0; y < 16; y++ {
+							if !(xx != 0 && zz != 0) {
+								// Row/Col
+								for i := 0; i < 16; i++ {
+									var bx, bz int
+									if xx != 0 {
+										bz = i
+										if xx == -1 {
+											bx = 15
+										}
+									} else {
+										bx = i
+										if zz == -1 {
+											bz = 15
+										}
+									}
+									section.setBlock(
+										section.block(bx, y, bz).UpdateState(cx+bx, cy+y, cz+bz),
+										bx, y, bz,
+									)
+								}
+							} else {
+								// Just the corner
+								var bx, bz int
+								if xx == -1 {
+									bx = 15
+								}
+								if zz == -1 {
+									bz = 15
+								}
+								section.setBlock(
+									section.block(bx, y, bz).UpdateState(cx+bx, cy+y, cz+bz),
+									bx, y, bz,
+								)
+							}
+						}
 						section.dirty = true
 					}
 				}
