@@ -190,52 +190,69 @@ var (
 	renderOrder transList
 )
 
+type renderRequest struct {
+	chunk *ChunkBuffer
+	pos   position
+	from  direction.Type
+}
+
 func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
-	v := vmath.Vector3{
-		float32((pos.X<<4)+8) - float32(Camera.X),
-		float32((pos.Y<<4)+8) - float32(Camera.Y),
-		float32((pos.Z<<4)+8) - float32(Camera.Z),
+	queue := []renderRequest{
+		{chunk, pos, from},
 	}
-	if v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0 {
-		return
-	}
-	if chunk == nil {
-		// Handle empty sections in columns
-		if pos.Y >= 0 && pos.Y <= 15 {
-			col := positionC{pos.X, pos.Z}
-			if _, ok := airVisitMap[pos]; !ok && bufferColumns[col] > 0 {
-				airVisitMap[pos] = struct{}{}
-				renderOrder = append(renderOrder, pos)
-				for _, dir := range direction.Values {
-					if dir != from {
-						ox, oy, oz := dir.Offset()
-						pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
-						renderBuffer(buffers[pos], pos, dir.Opposite())
-					}
-				}
-
-			}
+itQueue:
+	for len(queue) > 0 {
+		req := queue[0]
+		queue = queue[1:]
+		chunk, pos, from = req.chunk, req.pos, req.from
+		v := vmath.Vector3{
+			float32((pos.X<<4)+8) - float32(Camera.X),
+			float32((pos.Y<<4)+8) - float32(Camera.Y),
+			float32((pos.Z<<4)+8) - float32(Camera.Z),
 		}
-		return
-	}
-	if chunk.renderedOn == frameID {
-		return
-	}
-	chunk.renderedOn = frameID
-	renderOrder = append(renderOrder, pos)
+		if v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0 {
+			continue itQueue
+		}
+		if chunk == nil {
+			// Handle empty sections in columns
+			if pos.Y >= 0 && pos.Y <= 15 {
+				col := positionC{pos.X, pos.Z}
+				if _, ok := airVisitMap[pos]; !ok && bufferColumns[col] > 0 {
+					airVisitMap[pos] = struct{}{}
+					renderOrder = append(renderOrder, pos)
+					for _, dir := range direction.Values {
+						if dir != from {
+							ox, oy, oz := dir.Offset()
+							pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
+							// renderBuffer(buffers[pos], pos, dir.Opposite())
+							queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite()})
+						}
+					}
 
-	if chunk.count > 0 {
-		shaderChunk.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
+				}
+			}
+			continue itQueue
+		}
+		if chunk.renderedOn == frameID {
+			continue itQueue
+		}
+		chunk.renderedOn = frameID
+		renderOrder = append(renderOrder, pos)
 
-		chunk.array.Bind()
-		gl.DrawArrays(gl.Triangles, 0, chunk.count)
-	}
+		if chunk.count > 0 {
+			shaderChunk.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
 
-	for _, dir := range direction.Values {
-		if dir != from && (from == direction.Invalid || chunk.IsVisible(from, dir)) {
-			ox, oy, oz := dir.Offset()
-			pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
-			renderBuffer(buffers[pos], pos, dir.Opposite())
+			chunk.array.Bind()
+			gl.DrawArrays(gl.Triangles, 0, chunk.count)
+		}
+
+		for _, dir := range direction.Values {
+			if dir != from && (from == direction.Invalid || chunk.IsVisible(from, dir)) {
+				ox, oy, oz := dir.Offset()
+				pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
+				// renderBuffer(buffers[pos], pos, dir.Opposite())
+				queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite()})
+			}
 		}
 	}
 }
