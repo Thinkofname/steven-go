@@ -90,6 +90,25 @@ func (handler) ChunkDataBulk(c *protocol.ChunkDataBulk) {
 	}()
 }
 
+func (handler) SetBlock(b *protocol.BlockChange) {
+	block := GetBlockByCombinedID(uint16(b.BlockID))
+	chunkMap.SetBlock(block, b.Location.X(), b.Location.Y(), b.Location.Z())
+	chunkMap.UpdateBlock(b.Location.X(), b.Location.Y(), b.Location.Z())
+}
+
+func (handler) SetBlockBatch(b *protocol.MultiBlockChange) {
+	chunk := chunkMap[chunkPosition{int(b.ChunkX), int(b.ChunkZ)}]
+	if chunk == nil {
+		return
+	}
+	for _, r := range b.Records {
+		block := GetBlockByCombinedID(uint16(r.BlockID))
+		x, y, z := int(r.XZ>>4), int(r.Y), int(r.XZ&0xF)
+		chunk.setBlock(block, x, y, z)
+		chunkMap.UpdateBlock((chunk.X<<4)+x, y, (chunk.Z<<4)+z)
+	}
+}
+
 func (handler) Teleport(t *protocol.TeleportPlayer) {
 	render.Camera.X = t.X
 	render.Camera.Y = t.Y

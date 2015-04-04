@@ -37,6 +37,27 @@ func (w world) Block(x, y, z int) Block {
 	return chunk.block(x&0xF, y, z&0xF)
 }
 
+func (w world) SetBlock(b Block, x, y, z int) {
+	cx := x >> 4
+	cz := z >> 4
+	chunk := w[chunkPosition{cx, cz}]
+	if chunk == nil {
+		return
+	}
+	chunk.setBlock(b, x&0xF, y, z&0xF)
+}
+
+func (w world) UpdateBlock(x, y, z int) {
+	for yy := -1; yy <= 1; yy++ {
+		for zz := -1; zz <= 1; zz++ {
+			for xx := -1; xx <= 1; xx++ {
+				bx, by, bz := x+xx, y+yy, z+zz
+				w.SetBlock(w.Block(bx, by, bz).UpdateState(bx, by, bz), bx, by, bz)
+			}
+		}
+	}
+}
+
 type chunkPosition struct {
 	X, Z int
 }
@@ -58,6 +79,17 @@ func (c *chunk) block(x, y, z int) Block {
 		return BlockAir.Base
 	}
 	return sec.block(x, y&0xF, z)
+}
+func (c *chunk) setBlock(b Block, x, y, z int) {
+	s := y >> 4
+	if s < 0 || s > 15 {
+		return
+	}
+	sec := c.Sections[s]
+	if sec == nil {
+		return
+	}
+	sec.setBlock(b, x, y&0xF, z)
 }
 
 func (c *chunk) biome(x, z int) *biome.Type {
@@ -92,6 +124,7 @@ func (cs *chunkSection) block(x, y, z int) Block {
 
 func (cs *chunkSection) setBlock(b Block, x, y, z int) {
 	cs.Blocks[(y<<8)|(z<<4)|x] = b
+	cs.dirty = true
 }
 
 func (cs *chunkSection) blockLight(x, y, z int) byte {
