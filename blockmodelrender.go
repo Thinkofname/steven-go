@@ -108,16 +108,6 @@ func precomputeModel(bm *blockModel) *processedModel {
 					vert[v].Z = int16(el.to[2] * 16)
 				}
 
-				if bm.y > 0 {
-					rotY := bm.y * (math.Pi / 180)
-					c := int16(math.Cos(rotY))
-					s := int16(math.Sin(rotY))
-					x := vert[v].X - 8*16
-					z := vert[v].Z - 8*16
-					vert[v].X = 8*16 + int16(x*c-z*s)
-					vert[v].Z = 8*16 + int16(z*c+x*s)
-				}
-
 				if el.rotation != nil {
 					r := el.rotation
 					switch r.axis {
@@ -146,6 +136,16 @@ func precomputeModel(bm *blockModel) *processedModel {
 						vert[v].X = int16(r.origin[0] + (x*c - y*s))
 						vert[v].Y = int16(r.origin[1] + (y*c + x*s))
 					}
+				}
+
+				if bm.y > 0 {
+					rotY := bm.y * (math.Pi / 180)
+					c := int16(math.Cos(rotY))
+					s := int16(math.Sin(rotY))
+					x := vert[v].X - 8*16
+					z := vert[v].Z - 8*16
+					vert[v].X = 8*16 + int16(x*c-z*s)
+					vert[v].Z = 8*16 + int16(z*c+x*s)
 				}
 
 				if vert[v].TOffsetX == 0 {
