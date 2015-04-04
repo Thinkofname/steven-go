@@ -27,11 +27,6 @@ var (
 	nextBlockID   int
 	blocks        [0x10000]Block
 	blockSetsByID [0x100]*BlockSet
-	missingBlock  = &baseBlock{
-		name:        "missing_block",
-		plugin:      "steven",
-		cullAgainst: true,
-	}
 )
 
 // Block is a type of tile in the world. All blocks, excluding the special
@@ -42,6 +37,8 @@ type Block interface {
 
 	Plugin() string
 	Name() string
+	Set(key string, val interface{}) Block
+	UpdateState(x, y, z int) Block
 
 	ModelName() string
 	ModelVariant() string
@@ -62,6 +59,7 @@ type baseBlock struct {
 	self          Block
 	plugin, name  string
 	Parent        *BlockSet
+	Index         int
 	cullAgainst   bool
 	BlockVariants blockVariants
 	translucent   bool
@@ -138,13 +136,69 @@ func (b *baseBlock) clone() Block {
 	}
 }
 
+func (b *baseBlock) UpdateState(x, y, z int) Block {
+	return b.Parent.Blocks[b.Index]
+}
+
+func (b *baseBlock) Set(key string, val interface{}) Block {
+	index := 0
+	cur := reflect.ValueOf(b.Parent.Blocks[b.Index]).Elem()
+	for i := range b.Parent.states {
+		state := b.Parent.states[len(b.Parent.states)-1-i]
+		index *= state.count
+		var sval reflect.Value
+		// Need to lookup the current value if this isn't the
+		// state we are changing
+		if state.name != key {
+			sval = reflect.ValueOf(cur.FieldByIndex(state.field.Index).Interface())
+		} else {
+			sval = reflect.ValueOf(val)
+		}
+		args := strings.Split(state.field.Tag.Get("state"), ",")
+		args = args[1:]
+		switch state.field.Type.Kind() {
+		case reflect.Bool:
+			if sval.Bool() {
+				index += 1
+			}
+		case reflect.Int:
+			var min int
+			if args[0][0] != '@' {
+				rnge := strings.Split(args[0], "-")
+				min, _ = strconv.Atoi(rnge[0])
+			} else {
+				ret := cur.Addr().MethodByName(args[0][1:]).Call([]reflect.Value{})
+				min = int(ret[0].Int())
+			}
+			v := int(sval.Int())
+			index += v - min
+		case reflect.Uint:
+			var min uint
+			if args[0][0] != '@' {
+				rnge := strings.Split(args[0], "-")
+				mint, _ := strconv.Atoi(rnge[0])
+				min = uint(mint)
+			} else {
+				ret := cur.Addr().MethodByName(args[0][1:]).Call([]reflect.Value{})
+				min = uint(ret[0].Uint())
+			}
+			v := uint(sval.Uint())
+			index += int(v - min)
+		default:
+			panic("invalid state kind " + state.field.Type.Kind().String())
+		}
+
+	}
+	return b.Parent.Blocks[index]
+}
+
 // GetBlockByCombinedID returns the block with the matching combined id.
 // The combined id is:
 //     block id << 4 | data
 func GetBlockByCombinedID(id uint16) Block {
 	b := blocks[id]
 	if b == nil {
-		return missingBlock
+		return BlockStone.Base
 	}
 	return b
 }
@@ -274,18 +328,15 @@ func (bs *BlockSet) stringify(block Block) string {
 }
 
 func initBlocks() {
-	var missingModel *blockStateModel
-	if missingModel = findStateModel("steven", "missing_block"); missingModel != nil {
-		reflect.ValueOf(missingBlock).Elem().FieldByName("BlockVariants").Set(
-			reflect.ValueOf(missingModel.variant("normal")),
-		)
-	}
+	missingModel := findStateModel("minecraft", "clay")
 	// Flatten the ids
 	for _, bs := range blockSetsByID {
 		if bs == nil {
 			continue
 		}
-		for _, b := range bs.Blocks {
+		for i, b := range bs.Blocks {
+			br := reflect.ValueOf(b).Elem()
+			br.FieldByName("Index").SetInt(int64(i))
 			data := b.toData()
 			if data != -1 {
 				blocks[(bs.ID<<4)|data] = b
@@ -297,7 +348,7 @@ func initBlocks() {
 			}
 			if model := findStateModel(b.Plugin(), b.ModelName()); model != nil {
 				if variants := model.variant(b.ModelVariant()); variants != nil {
-					reflect.ValueOf(b).Elem().FieldByName("BlockVariants").Set(
+					br.FieldByName("BlockVariants").Set(
 						reflect.ValueOf(variants),
 					)
 					continue
@@ -306,7 +357,7 @@ func initBlocks() {
 			} else {
 				fmt.Printf("Missing block model for %s\n", b)
 			}
-			reflect.ValueOf(b).Elem().FieldByName("BlockVariants").Set(
+			br.FieldByName("BlockVariants").Set(
 				reflect.ValueOf(missingModel.variant("normal")),
 			)
 

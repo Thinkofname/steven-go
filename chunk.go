@@ -23,7 +23,19 @@ import (
 	"github.com/thinkofdeath/steven/world/biome"
 )
 
-var chunkMap = map[chunkPosition]*chunk{}
+var chunkMap world = map[chunkPosition]*chunk{}
+
+type world map[chunkPosition]*chunk
+
+func (w world) Block(x, y, z int) Block {
+	cx := x >> 4
+	cz := z >> 4
+	chunk := w[chunkPosition{cx, cz}]
+	if chunk == nil {
+		return BlockBedrock.Base
+	}
+	return chunk.block(x&0xF, y, z&0xF)
+}
 
 type chunkPosition struct {
 	X, Z int
@@ -34,6 +46,18 @@ type chunk struct {
 
 	Sections [16]*chunkSection
 	Biomes   [16 * 16]byte
+}
+
+func (c *chunk) block(x, y, z int) Block {
+	s := y >> 4
+	if s < 0 || s > 15 {
+		return BlockAir.Base
+	}
+	sec := c.Sections[s]
+	if sec == nil {
+		return BlockAir.Base
+	}
+	return sec.block(x, y&0xF, z)
 }
 
 func (c *chunk) biome(x, z int) *biome.Type {
@@ -64,6 +88,10 @@ type chunkSection struct {
 
 func (cs *chunkSection) block(x, y, z int) Block {
 	return cs.Blocks[(y<<8)|(z<<4)|x]
+}
+
+func (cs *chunkSection) setBlock(b Block, x, y, z int) {
+	cs.Blocks[(y<<8)|(z<<4)|x] = b
 }
 
 func (cs *chunkSection) blockLight(x, y, z int) byte {
@@ -142,6 +170,24 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, hasBiome bool) int {
 		}
 
 		chunkMap[c.chunkPosition] = c
+		for _, section := range c.Sections {
+			if section == nil {
+				continue
+			}
+			cx := c.X << 4
+			cy := section.Y << 4
+			cz := c.Z << 4
+			for y := 0; y < 16; y++ {
+				for z := 0; z < 16; z++ {
+					for x := 0; x < 16; x++ {
+						section.setBlock(
+							section.block(x, y, z).UpdateState(cx+x, cy+y, cz+z),
+							x, y, z,
+						)
+					}
+				}
+			}
+		}
 
 		for xx := -1; xx <= 1; xx++ {
 			for zz := -1; zz <= 1; zz++ {

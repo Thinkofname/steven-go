@@ -293,3 +293,120 @@ func (b *blockSponge) toData() int {
 	}
 	return data
 }
+
+// Door
+
+type doorHalf int
+
+const (
+	doorUpper doorHalf = iota
+	doorLower
+)
+
+func (d doorHalf) String() string {
+	switch d {
+	case doorUpper:
+		return "upper"
+	case doorLower:
+		return "lower"
+	}
+	return fmt.Sprintf("doorLower(%d)", d)
+}
+
+type doorHinge int
+
+const (
+	doorLeft doorHinge = iota
+	doorRight
+)
+
+func (d doorHinge) String() string {
+	switch d {
+	case doorLeft:
+		return "left"
+	case doorRight:
+		return "right"
+	}
+	return fmt.Sprintf("doorRight(%d)", d)
+}
+
+type blockDoor struct {
+	baseBlock
+	Facing  direction.Type `state:"facing,2-5"`
+	Half    doorHalf       `state:"half,0-1"`
+	Hinge   doorHinge      `state:"hinge,0-1"`
+	Open    bool           `state:"open"`
+	Powered bool           `state:"powered"`
+}
+
+func initDoor(name string) *BlockSet {
+	b := &blockDoor{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockDoor) String() string {
+	return b.Parent.stringify(b)
+}
+
+func (b *blockDoor) clone() Block {
+	return &blockDoor{
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+		Facing:    b.Facing,
+		Half:      b.Half,
+		Hinge:     b.Hinge,
+		Open:      b.Open,
+		Powered:   b.Powered,
+	}
+}
+
+func (b *blockDoor) ModelVariant() string {
+	return fmt.Sprintf("facing=%s,half=%s,hinge=%s,open=%t", b.Facing, b.Half, b.Hinge, b.Open)
+}
+
+func (b *blockDoor) UpdateState(x, y, z int) Block {
+	if b.Half == doorUpper {
+		o := chunkMap.Block(x, y-1, z)
+		if d, ok := o.(*blockDoor); ok {
+			return b.
+				Set("facing", d.Facing).
+				Set("open", d.Open)
+		}
+		return b
+	}
+	o := chunkMap.Block(x, y+1, z)
+	if d, ok := o.(*blockDoor); ok {
+		return b.Set("hinge", d.Hinge)
+	}
+	return b
+}
+
+func (b *blockDoor) toData() int {
+	data := 0
+	if b.Half == doorUpper {
+		data |= 0x8
+		if b.Hinge == doorRight {
+			data |= 0x1
+		}
+		if b.Powered {
+			data |= 0x2
+		}
+	} else {
+		switch b.Facing {
+		case direction.East:
+			data = 0
+		case direction.South:
+			data = 1
+		case direction.West:
+			data = 2
+		case direction.North:
+			data = 3
+		}
+		if b.Open {
+			data |= 0x4
+		}
+	}
+	return data
+}

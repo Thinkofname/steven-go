@@ -39,20 +39,7 @@ func findStateModel(plugin, name string) *blockStateModel {
 	if bs, ok := blockStateModels[key]; ok {
 		return bs
 	}
-
-	// Hack to add our 'missing block' into the game without a
-	// model for it.
-	if plugin == "steven" && name == "missing_block" {
-		key.Plugin = "minecraft"
-		key.Name = "clay"
-	}
 	bs := loadStateModel(key)
-
-	// See above comment
-	if plugin == "steven" && name == "missing_block" {
-		key.Plugin = "steven"
-		key.Name = "missing_block"
-	}
 
 	if bs == nil {
 		blockStateModels[key] = nil
