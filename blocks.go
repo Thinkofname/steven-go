@@ -212,6 +212,6 @@ var (
 	BlockSpruceDoor                 = initDoor("spruce_door")
 	BlockBirchDoor                  = initDoor("birch_door")
 	BlockJungleDoor                 = initDoor("jungle_door")
-	BlockDarkOakDoor                = initDoor("dark_oak_door")
 	BlockAcaciaDoor                 = initDoor("acacia_door")
+	BlockDarkOakDoor                = initDoor("dark_oak_door")
 )
