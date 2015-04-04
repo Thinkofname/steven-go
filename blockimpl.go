@@ -410,3 +410,171 @@ func (b *blockDoor) toData() int {
 	}
 	return data
 }
+
+// Dispenser
+
+type blockDispenser struct {
+	baseBlock
+	Facing    direction.Type `state:"facing,0-5"`
+	Triggered bool           `state:"triggered"`
+}
+
+func initDispenser(name string) *BlockSet {
+	b := &blockDispenser{}
+	b.init(name)
+	set := alloc(b)
+	return set
+}
+
+func (b *blockDispenser) String() string {
+	return b.Parent.stringify(b)
+}
+
+func (b *blockDispenser) clone() Block {
+	return &blockDispenser{
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+		Facing:    b.Facing,
+		Triggered: b.Triggered,
+	}
+}
+
+func (b *blockDispenser) ModelVariant() string {
+	return fmt.Sprintf("facing=%s", b.Facing)
+}
+
+func (b *blockDispenser) toData() int {
+	data := 0
+	switch b.Facing {
+	case direction.Down:
+		data = 0
+	case direction.Up:
+		data = 1
+	case direction.North:
+		data = 2
+	case direction.South:
+		data = 3
+	case direction.West:
+		data = 4
+	case direction.East:
+		data = 5
+	}
+	if b.Triggered {
+		data |= 0x8
+	}
+	return data
+}
+
+// Powered rail
+
+type railShape int
+
+const (
+	rsNorthSouth railShape = iota
+	rsEastWest
+	rsAscendingEast
+	rsAscendingWest
+	rsAscendingNorth
+	rsAscendingSouth
+	rsSouthEast
+	rsSouthWest
+	rsNorthWest
+	rsNorthEast
+)
+
+func (r railShape) String() string {
+	switch r {
+	case rsNorthSouth:
+		return "north_south"
+	case rsEastWest:
+		return "east_west"
+	case rsAscendingNorth:
+		return "ascending_north"
+	case rsAscendingSouth:
+		return "ascending_south"
+	case rsAscendingEast:
+		return "ascending_east"
+	case rsAscendingWest:
+		return "ascending_west"
+	case rsSouthEast:
+		return "south_east"
+	case rsSouthWest:
+		return "south_west"
+	case rsNorthWest:
+		return "north_west"
+	case rsNorthEast:
+		return "north_east"
+	}
+	return fmt.Sprintf("railShape(%d)", r)
+}
+
+type blockPoweredRail struct {
+	baseBlock
+	Shape   railShape `state:"shape,0-5"`
+	Powered bool      `state:"powered"`
+}
+
+func initPoweredRail(name string) *BlockSet {
+	b := &blockPoweredRail{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockPoweredRail) String() string {
+	return b.Parent.stringify(b)
+}
+
+func (b *blockPoweredRail) clone() Block {
+	return &blockPoweredRail{
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+		Shape:     b.Shape,
+		Powered:   b.Powered,
+	}
+}
+
+func (b *blockPoweredRail) ModelVariant() string {
+	return fmt.Sprintf("powered=%t,shape=%s", b.Powered, b.Shape)
+}
+
+func (b *blockPoweredRail) toData() int {
+	data := int(b.Shape)
+	if b.Powered {
+		data |= 0x8
+	}
+	return data
+}
+
+// Rail
+
+type blockRail struct {
+	baseBlock
+	Shape railShape `state:"shape,0-9"`
+}
+
+func initRail(name string) *BlockSet {
+	b := &blockRail{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockRail) String() string {
+	return b.Parent.stringify(b)
+}
+
+func (b *blockRail) clone() Block {
+	return &blockRail{
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+		Shape:     b.Shape,
+	}
+}
+
+func (b *blockRail) ModelVariant() string {
+	return fmt.Sprintf("shape=%s", b.Shape)
+}
+
+func (b *blockRail) toData() int {
+	return int(b.Shape)
+}
