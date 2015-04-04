@@ -53,7 +53,11 @@ func (w world) UpdateBlock(x, y, z int) {
 		for zz := -1; zz <= 1; zz++ {
 			for xx := -1; xx <= 1; xx++ {
 				bx, by, bz := x+xx, y+yy, z+zz
-				w.SetBlock(w.Block(bx, by, bz).UpdateState(bx, by, bz), bx, by, bz)
+				b := w.Block(bx, by, bz)
+				nb := b.UpdateState(bx, by, bz)
+				if b != nb {
+					w.SetBlock(nb, bx, by, bz)
+				}
 			}
 		}
 	}
