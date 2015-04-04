@@ -194,11 +194,12 @@ type renderRequest struct {
 	chunk *ChunkBuffer
 	pos   position
 	from  direction.Type
+	dist  int
 }
 
 func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
 	queue := []renderRequest{
-		{chunk, pos, from},
+		{chunk, pos, from, 1},
 	}
 itQueue:
 	for len(queue) > 0 {
@@ -210,7 +211,7 @@ itQueue:
 			float32((pos.Y<<4)+8) - float32(Camera.Y),
 			float32((pos.Z<<4)+8) - float32(Camera.Z),
 		}
-		if v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0 {
+		if (v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0) || req.dist > 16 {
 			continue itQueue
 		}
 		if chunk == nil {
@@ -225,7 +226,7 @@ itQueue:
 							ox, oy, oz := dir.Offset()
 							pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
 							// renderBuffer(buffers[pos], pos, dir.Opposite())
-							queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite()})
+							queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite(), req.dist + 1})
 						}
 					}
 
@@ -251,7 +252,7 @@ itQueue:
 				ox, oy, oz := dir.Offset()
 				pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
 				// renderBuffer(buffers[pos], pos, dir.Opposite())
-				queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite()})
+				queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite(), req.dist + 1})
 			}
 		}
 	}
