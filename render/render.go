@@ -160,6 +160,10 @@ sync:
 	viewVector.Z = -float32(math.Sin(float64(Camera.Yaw-math.Pi/2)) * -math.Cos(float64(Camera.Pitch)))
 	viewVector.Y = -float32(math.Sin(float64(Camera.Pitch)))
 
+	for _, dir := range direction.Values {
+		validDirs[dir] = viewVector.Dot(dir.AsVector()) > -0.8
+	}
+
 	airVisitMap = make(map[position]struct{})
 	renderOrder = renderOrder[:0]
 	if nearestBuffer != nil {
@@ -188,6 +192,7 @@ sync:
 var (
 	airVisitMap = make(map[position]struct{})
 	renderOrder transList
+	validDirs   = make([]bool, len(direction.Values))
 )
 
 type renderRequest struct {
@@ -222,7 +227,7 @@ itQueue:
 					airVisitMap[pos] = struct{}{}
 					renderOrder = append(renderOrder, pos)
 					for _, dir := range direction.Values {
-						if dir != from {
+						if dir != from && validDirs[dir] {
 							ox, oy, oz := dir.Offset()
 							pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
 							queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite(), req.dist + 1})
@@ -247,7 +252,7 @@ itQueue:
 		}
 
 		for _, dir := range direction.Values {
-			if dir != from && (from == direction.Invalid || chunk.IsVisible(from, dir)) {
+			if dir != from && (from == direction.Invalid || (chunk.IsVisible(from, dir) && validDirs[dir])) {
 				ox, oy, oz := dir.Offset()
 				pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
 				queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite(), req.dist + 1})
