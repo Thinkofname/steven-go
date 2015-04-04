@@ -7,8 +7,10 @@ Don't expect it to go anywhere, just doing this for fun.
 
 To build:
 
-`export GOPATH=your/install/directory`
-`go get github.com/thinkofdeath/steven`
+```
+export GOPATH=your/install/directory
+go get github.com/thinkofdeath/steven
+```
 
 To update, run `go get` with the `-u` option.
 
