@@ -148,22 +148,34 @@ func newChunkSection(c *chunk, y int) *chunkSection {
 	return cs
 }
 
-func loadChunk(x, z int, data []byte, mask uint16, sky, hasBiome bool) int {
-	c := &chunk{
-		chunkPosition: chunkPosition{
+func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
+	var c *chunk
+	if isNew {
+		c = &chunk{
+			chunkPosition: chunkPosition{
+				X: x, Z: z,
+			},
+		}
+	} else {
+		c = chunkMap[chunkPosition{
 			X: x, Z: z,
-		},
+		}]
+		if c == nil {
+			return 0
+		}
 	}
 
 	for i := 0; i < 16; i++ {
 		if mask&(1<<uint(i)) == 0 {
 			continue
 		}
-		c.Sections[i] = newChunkSection(c, i)
+		if c.Sections[i] == nil {
+			c.Sections[i] = newChunkSection(c, i)
+		}
 	}
 	offset := 0
-	for _, section := range c.Sections {
-		if section == nil {
+	for i, section := range c.Sections {
+		if section == nil || mask&(1<<uint(i)) == 0 {
 			continue
 		}
 
@@ -172,16 +184,16 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, hasBiome bool) int {
 			offset += 2
 		}
 	}
-	for _, section := range c.Sections {
-		if section == nil {
+	for i, section := range c.Sections {
+		if section == nil || mask&(1<<uint(i)) == 0 {
 			continue
 		}
 		copy(section.BlockLight, data[offset:])
 		offset += len(section.BlockLight)
 	}
 	if sky {
-		for _, section := range c.Sections {
-			if section == nil {
+		for i, section := range c.Sections {
+			if section == nil || mask&(1<<uint(i)) == 0 {
 				continue
 			}
 			copy(section.SkyLight, data[offset:])
@@ -189,7 +201,7 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, hasBiome bool) int {
 		}
 	}
 
-	if hasBiome {
+	if isNew {
 		copy(c.Biomes[:], data[offset:])
 		offset += len(c.Biomes)
 	}

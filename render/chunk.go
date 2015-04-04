@@ -85,7 +85,7 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 	shaderChunk.Lighting.Enable()
 
 	cb.buffer.Bind(gl.ArrayBuffer)
-	cb.buffer.Data(data, gl.DynamicDraw)
+	cb.buffer.Data(data, gl.StaticDraw)
 	shaderChunk.Position.PointerInt(3, gl.Short, 23, 0)
 	shaderChunk.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
 	shaderChunk.TextureOffset.Pointer(2, gl.Short, false, 23, 14)
@@ -120,7 +120,7 @@ func (cb *ChunkBuffer) UploadTrans(data []byte, count int) {
 	shaderChunkT.Lighting.Enable()
 
 	cb.bufferT.Bind(gl.ArrayBuffer)
-	cb.bufferT.Data(data, gl.DynamicDraw)
+	cb.bufferT.Data(data, gl.StaticDraw)
 	shaderChunkT.Position.PointerInt(3, gl.Short, 23, 0)
 	shaderChunkT.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
 	shaderChunkT.TextureOffset.Pointer(2, gl.Short, false, 23, 14)
