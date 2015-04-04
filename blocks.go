@@ -48,7 +48,7 @@ var (
 	BlockStickyPiston               = initSimple("sticky_piston")
 	BlockWeb                        = initSimple("web")
 	BlockTallGrass                  = initTallGrass()
-	BlockDeadBush                   = initSimple("deadbush")
+	BlockDeadBush                   = initDeadBush("deadbush")
 	BlockPiston                     = initSimple("piston")
 	BlockPistonHead                 = initSimple("piston_head")
 	BlockWool                       = initSimple("wool")

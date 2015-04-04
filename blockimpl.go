@@ -578,3 +578,35 @@ func (b *blockRail) ModelVariant() string {
 func (b *blockRail) toData() int {
 	return int(b.Shape)
 }
+
+// Dead bush
+
+type blockDeadBush struct {
+	baseBlock
+}
+
+func initDeadBush(name string) *BlockSet {
+	b := &blockDeadBush{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockDeadBush) String() string {
+	return b.Parent.stringify(b)
+}
+
+func (b *blockDeadBush) clone() Block {
+	return &blockDeadBush{
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+	}
+}
+
+func (b *blockDeadBush) ModelName() string {
+	return "dead_bush"
+}
+
+func (b *blockDeadBush) toData() int {
+	return 0
+}
