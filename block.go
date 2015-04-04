@@ -48,6 +48,8 @@ type Block interface {
 	TintImage() *image.NRGBA
 	IsTranslucent() bool
 
+	LightReduction() int
+	LightEmitted() int
 	String() string
 
 	clone() Block
@@ -108,6 +110,17 @@ func (b *baseBlock) ModelVariant() string {
 
 func (b *baseBlock) toData() int {
 	panic("toData on baseBlock")
+}
+
+func (b *baseBlock) LightReduction() int {
+	if b.ShouldCullAgainst() {
+		return 15
+	}
+	return 0
+}
+
+func (b *baseBlock) LightEmitted() int {
+	return 0
 }
 
 func (b *baseBlock) ShouldCullAgainst() bool {

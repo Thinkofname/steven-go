@@ -19,6 +19,7 @@ import (
 	"sort"
 
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/nibble"
 	"github.com/thinkofdeath/steven/world/biome"
 )
@@ -80,6 +81,7 @@ func (c *chunk) block(x, y, z int) Block {
 	}
 	return sec.block(x, y&0xF, z)
 }
+
 func (c *chunk) setBlock(b Block, x, y, z int) {
 	s := y >> 4
 	if s < 0 || s > 15 {
@@ -87,9 +89,142 @@ func (c *chunk) setBlock(b Block, x, y, z int) {
 	}
 	sec := c.Sections[s]
 	if sec == nil {
-		return
+		sec = newChunkSection(c, s)
+		sec.Buffer = render.AllocateChunkBuffer(c.X, s, c.Z)
 	}
 	sec.setBlock(b, x, y&0xF, z)
+	var maxB, maxS int8
+	for _, d := range direction.Values {
+		ox, oy, oz := d.Offset()
+		l := int8(c.relLight(x+ox, y+oy, z+oz, (*chunkSection).blockLight, false)) - 1
+		if l > maxB {
+			maxB = l
+		}
+		l = int8(c.relLight(x+ox, y+oy, z+oz, (*chunkSection).skyLight, true))
+		if !(l == 15 && d == direction.Up) {
+			l--
+		}
+		if l > maxS {
+			maxS = l
+		}
+	}
+	updateLight(c, specialLight, maxB, x, y, z, (*chunkSection).blockLight, (*chunkSection).setBlockLight, false)
+	updateLight(c, specialLight, maxS, x, y, z, (*chunkSection).skyLight, (*chunkSection).setSkyLight, true)
+}
+
+const specialLight int8 = -55
+
+type getLight func(cs *chunkSection, x, y, z int) byte
+type setLight func(cs *chunkSection, l byte, x, y, z int)
+
+func clampInt8(x, min, max int8) int8 {
+	if x < min {
+		return min
+	}
+	if x > max {
+		return max
+	}
+	return x
+}
+
+type lightState struct {
+	chunk      *chunk
+	exLight, l int8
+	x, y, z    int
+}
+
+func updateLight(c *chunk, exLight, l int8, x, y, z int, get getLight, set setLight, sky bool) {
+	queue := []lightState{
+		{c, exLight, l, x, y, z},
+	}
+itQueue:
+	for len(queue) > 0 {
+		// Take the first item from the queue
+		state := queue[0]
+		queue = queue[1:]
+		c := state.chunk
+		exLight, l, x, y, z = state.exLight, state.l, state.x, state.y, state.z
+		// Handle neighbor chunks
+		if x < 0 || x > 15 || z < 0 || z > 15 {
+			ch := chunkMap[chunkPosition{c.X + (x >> 4), c.Z + (z >> 4)}]
+			if ch == nil {
+				continue itQueue
+			}
+			x &= 0xF
+			z &= 0xF
+			// ch.updateLight(exLight, l, x, y, z, get, set, sky)
+			queue = append(queue, lightState{ch, exLight, l, x, y, z})
+			continue itQueue
+		}
+		s := y >> 4
+		sec := c.Sections[s]
+		if sec == nil {
+			continue itQueue
+		}
+		// Needs a redraw after changing the lighting
+		sec.dirty = true
+		y &= 0xF
+		b := sec.block(x, y, z)
+		curL := int8(get(sec, x, y, z))
+		l -= int8(b.LightReduction())
+		if !sky {
+			l += int8(b.LightEmitted())
+		}
+		l = clampInt8(l, 0, 15)
+		ex := exLight - int8(b.LightReduction())
+		if !sky {
+			ex += int8(b.LightEmitted())
+		}
+		ex = clampInt8(ex, 0, 15)
+		// If the light isn't what we expect it to be or its already
+		// at the value we want to change it too then don't update
+		// this position.
+		if (exLight != specialLight && ex != curL) || curL == l {
+			continue itQueue
+		}
+		set(sec, byte(l), x, y, z)
+		// Update the surrounding blocks
+		for _, d := range direction.Values {
+			ox, oy, oz := d.Offset()
+			nl := l
+			ex := curL
+			if !(sky && d == direction.Down && nl == 15) {
+				nl--
+				if nl < 0 {
+					nl = 0
+				}
+			}
+			if !(sky && d == direction.Down && ex == 15) {
+				ex--
+				if ex < 0 {
+					ex = 0
+				}
+			}
+			// c.updateLight(ex, nl, x+ox, (sec.Y<<4)+y+oy, z+oz, get, set, sky)
+			queue = append(queue, lightState{c, ex, nl, x + ox, (sec.Y << 4) + y + oy, z + oz})
+		}
+	}
+}
+
+func (c *chunk) relLight(x, y, z int, f getLight, sky bool) byte {
+	ch := c
+	if x < 0 || x > 15 || z < 0 || z > 15 {
+		ch = chunkMap[chunkPosition{c.X + (x >> 4), c.Z + (z >> 4)}]
+		x &= 0xF
+		z &= 0xF
+	}
+	if ch == nil || y < 0 || y > 255 {
+		return 0
+	}
+	s := y >> 4
+	sec := ch.Sections[s]
+	if sec == nil {
+		if sky {
+			return 15
+		}
+		return 0
+	}
+	return f(sec, x&0xF, y&0xF, z&0xF)
 }
 
 func (c *chunk) biome(x, z int) *biome.Type {
@@ -131,8 +266,15 @@ func (cs *chunkSection) blockLight(x, y, z int) byte {
 	return cs.BlockLight.Get((y << 8) | (z << 4) | x)
 }
 
+func (cs *chunkSection) setBlockLight(l byte, x, y, z int) {
+	cs.BlockLight.Set((y<<8)|(z<<4)|x, l)
+}
+
 func (cs *chunkSection) skyLight(x, y, z int) byte {
 	return cs.SkyLight.Get((y << 8) | (z << 4) | x)
+}
+func (cs *chunkSection) setSkyLight(l byte, x, y, z int) {
+	cs.SkyLight.Set((y<<8)|(z<<4)|x, l)
 }
 
 func newChunkSection(c *chunk, y int) *chunkSection {

@@ -49,6 +49,20 @@ func (l *blockLiquid) clone() Block {
 	}
 }
 
+func (l *blockLiquid) LightReduction() int {
+	if l.Lava {
+		return 0
+	}
+	return 1
+}
+
+func (l *blockLiquid) LightEmitted() int {
+	if l.Lava {
+		return 15
+	}
+	return 0
+}
+
 func (l *blockLiquid) toData() int {
 	return l.Level
 }
