@@ -49,7 +49,7 @@ func precomputeModel(bm *blockModel) *processedModel {
 			pFace := processedFace{}
 			cullFace := face.cullFace
 			if bm.y > 0 {
-				if cullFace >= 2 {
+				if cullFace >= 2 && cullFace != direction.Invalid {
 					var pos int
 					for di, d := range faceRotation {
 						if d == cullFace {
