@@ -610,3 +610,66 @@ func (b *blockDeadBush) ModelName() string {
 func (b *blockDeadBush) toData() int {
 	return 0
 }
+
+// Fence
+
+type blockFence struct {
+	baseBlock
+	Wood  bool
+	North bool `state:"north"`
+	South bool `state:"south"`
+	East  bool `state:"east"`
+	West  bool `state:"west"`
+}
+
+func initFence(name string, wood bool) *BlockSet {
+	b := &blockFence{}
+	b.init(name)
+	b.Wood = wood
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockFence) String() string {
+	return b.Parent.stringify(b)
+}
+
+func (b *blockFence) clone() Block {
+	return &blockFence{
+		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
+		North:     b.North,
+		South:     b.South,
+		East:      b.East,
+		West:      b.West,
+		Wood:      b.Wood,
+	}
+}
+
+func (b *blockFence) UpdateState(x, y, z int) Block {
+	var block Block = b
+	for _, d := range direction.Values {
+		if d < 2 {
+			continue
+		}
+		ox, oy, oz := d.Offset()
+		bl := chunkMap.Block(x+ox, y+oy, z+oz)
+		if fence, ok := bl.(*blockFence); bl.ShouldCullAgainst() || (ok && fence.Wood == b.Wood) {
+			block = block.Set(d.String(), true)
+		} else {
+			block = block.Set(d.String(), false)
+		}
+	}
+	return block
+}
+
+func (b *blockFence) ModelVariant() string {
+	return fmt.Sprintf("east=%t,north=%t,south=%t,west=%t", b.East, b.North, b.South, b.West)
+}
+
+func (b *blockFence) toData() int {
+	if !b.North && !b.South && !b.East && !b.West {
+		return 0
+	}
+	return -1
+}
