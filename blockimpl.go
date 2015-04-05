@@ -71,13 +71,6 @@ func (b *blockstone) String() string {
 	return b.Parent.stringify(b)
 }
 
-func (b *blockstone) clone() Block {
-	return &blockstone{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-		Variant:   b.Variant,
-	}
-}
-
 func (b *blockstone) ModelName() string {
 	return b.Variant.String()
 }
@@ -103,13 +96,6 @@ func initGrass() *BlockSet {
 
 func (g *blockGrass) String() string {
 	return g.Parent.stringify(g)
-}
-
-func (g *blockGrass) clone() Block {
-	return &blockGrass{
-		baseBlock: *(g.baseBlock.clone().(*baseBlock)),
-		Snowy:     g.Snowy,
-	}
 }
 
 func (g *blockGrass) ModelVariant() string {
@@ -166,13 +152,6 @@ func (t *blockTallGrass) String() string {
 	return t.Parent.stringify(t)
 }
 
-func (t *blockTallGrass) clone() Block {
-	return &blockTallGrass{
-		baseBlock: *(t.baseBlock.clone().(*baseBlock)),
-		Type:      t.Type,
-	}
-}
-
 func (t *blockTallGrass) ModelName() string {
 	return t.Type.String()
 }
@@ -223,15 +202,6 @@ func (b *blockBed) String() string {
 	return b.Parent.stringify(b)
 }
 
-func (b *blockBed) clone() Block {
-	return &blockBed{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-		Facing:    b.Facing,
-		Occupied:  b.Occupied,
-		Part:      b.Part,
-	}
-}
-
 func (b *blockBed) ModelVariant() string {
 	return fmt.Sprintf("facing=%s,part=%s", b.Facing, b.Part)
 }
@@ -273,13 +243,6 @@ func initSponge(name string) *BlockSet {
 
 func (b *blockSponge) String() string {
 	return b.Parent.stringify(b)
-}
-
-func (b *blockSponge) clone() Block {
-	return &blockSponge{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-		Wet:       b.Wet,
-	}
 }
 
 func (b *blockSponge) ModelVariant() string {
@@ -351,17 +314,6 @@ func (b *blockDoor) String() string {
 	return b.Parent.stringify(b)
 }
 
-func (b *blockDoor) clone() Block {
-	return &blockDoor{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-		Facing:    b.Facing,
-		Half:      b.Half,
-		Hinge:     b.Hinge,
-		Open:      b.Open,
-		Powered:   b.Powered,
-	}
-}
-
 func (b *blockDoor) ModelVariant() string {
 	return fmt.Sprintf("facing=%s,half=%s,hinge=%s,open=%t", b.Facing, b.Half, b.Hinge, b.Open)
 }
@@ -428,14 +380,6 @@ func initDispenser(name string) *BlockSet {
 
 func (b *blockDispenser) String() string {
 	return b.Parent.stringify(b)
-}
-
-func (b *blockDispenser) clone() Block {
-	return &blockDispenser{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-		Facing:    b.Facing,
-		Triggered: b.Triggered,
-	}
 }
 
 func (b *blockDispenser) ModelVariant() string {
@@ -525,14 +469,6 @@ func (b *blockPoweredRail) String() string {
 	return b.Parent.stringify(b)
 }
 
-func (b *blockPoweredRail) clone() Block {
-	return &blockPoweredRail{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-		Shape:     b.Shape,
-		Powered:   b.Powered,
-	}
-}
-
 func (b *blockPoweredRail) ModelVariant() string {
 	return fmt.Sprintf("powered=%t,shape=%s", b.Powered, b.Shape)
 }
@@ -564,13 +500,6 @@ func (b *blockRail) String() string {
 	return b.Parent.stringify(b)
 }
 
-func (b *blockRail) clone() Block {
-	return &blockRail{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-		Shape:     b.Shape,
-	}
-}
-
 func (b *blockRail) ModelVariant() string {
 	return fmt.Sprintf("shape=%s", b.Shape)
 }
@@ -595,12 +524,6 @@ func initDeadBush(name string) *BlockSet {
 
 func (b *blockDeadBush) String() string {
 	return b.Parent.stringify(b)
-}
-
-func (b *blockDeadBush) clone() Block {
-	return &blockDeadBush{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-	}
 }
 
 func (b *blockDeadBush) ModelName() string {
@@ -633,17 +556,6 @@ func initFence(name string, wood bool) *BlockSet {
 
 func (b *blockFence) String() string {
 	return b.Parent.stringify(b)
-}
-
-func (b *blockFence) clone() Block {
-	return &blockFence{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-		North:     b.North,
-		South:     b.South,
-		East:      b.East,
-		West:      b.West,
-		Wood:      b.Wood,
-	}
 }
 
 func (b *blockFence) UpdateState(x, y, z int) Block {

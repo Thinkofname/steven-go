@@ -80,20 +80,20 @@ func (t treeVariant) String() string {
 type blockLog struct {
 	baseBlock
 	Variant treeVariant `state:"variant,@VariantRange"`
-	second  bool
+	Second  bool
 	Axis    blockAxis `state:"axis,0-3"`
 }
 
 func initLog(name string, second bool) *BlockSet {
 	l := &blockLog{}
 	l.init(name)
-	l.second = second
+	l.Second = second
 	set := alloc(l)
 	return set
 }
 
 func (l *blockLog) VariantRange() (int, int) {
-	if l.second {
+	if l.Second {
 		return 4, 5
 	}
 	return 0, 3
@@ -101,15 +101,6 @@ func (l *blockLog) VariantRange() (int, int) {
 
 func (l *blockLog) String() string {
 	return l.Parent.stringify(l)
-}
-
-func (l *blockLog) clone() Block {
-	return &blockLog{
-		baseBlock: *(l.baseBlock.clone().(*baseBlock)),
-		Variant:   l.Variant,
-		second:    l.second,
-		Axis:      l.Axis,
-	}
 }
 
 func (l *blockLog) ModelName() string {
@@ -122,7 +113,7 @@ func (l *blockLog) ModelVariant() string {
 
 func (l *blockLog) toData() int {
 	data := int(l.Variant)
-	if l.second {
+	if l.Second {
 		data -= 4
 	}
 	data |= int(l.Axis) << 2
@@ -132,7 +123,7 @@ func (l *blockLog) toData() int {
 type blockLeaves struct {
 	baseBlock
 	Variant    treeVariant `state:"variant,@VariantRange"`
-	second     bool
+	Second     bool
 	Decayable  bool `state:"decayable"`
 	CheckDecay bool `state:"check_decay"`
 }
@@ -140,14 +131,14 @@ type blockLeaves struct {
 func initLeaves(name string, second bool) *BlockSet {
 	l := &blockLeaves{}
 	l.init(name)
-	l.second = second
+	l.Second = second
 	l.cullAgainst = false
 	set := alloc(l)
 	return set
 }
 
 func (l *blockLeaves) VariantRange() (int, int) {
-	if l.second {
+	if l.Second {
 		return 4, 5
 	}
 	return 0, 3
@@ -155,16 +146,6 @@ func (l *blockLeaves) VariantRange() (int, int) {
 
 func (l *blockLeaves) String() string {
 	return l.Parent.stringify(l)
-}
-
-func (l *blockLeaves) clone() Block {
-	return &blockLeaves{
-		baseBlock:  *(l.baseBlock.clone().(*baseBlock)),
-		Variant:    l.Variant,
-		second:     l.second,
-		Decayable:  l.Decayable,
-		CheckDecay: l.CheckDecay,
-	}
 }
 
 func (l *blockLeaves) ModelName() string {
@@ -181,7 +162,7 @@ func (l *blockLeaves) TintImage() *image.NRGBA {
 
 func (l *blockLeaves) toData() int {
 	data := int(l.Variant)
-	if l.second {
+	if l.Second {
 		data -= 4
 	}
 	if l.Decayable {
@@ -209,13 +190,6 @@ func (b *blockPlanks) String() string {
 	return b.Parent.stringify(b)
 }
 
-func (b *blockPlanks) clone() Block {
-	return &blockPlanks{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-		Variant:   b.Variant,
-	}
-}
-
 func (b *blockPlanks) ModelName() string {
 	return b.Variant.String() + "_planks"
 }
@@ -240,14 +214,6 @@ func initSapling(name string) *BlockSet {
 
 func (b *blockSapling) String() string {
 	return b.Parent.stringify(b)
-}
-
-func (b *blockSapling) clone() Block {
-	return &blockSapling{
-		baseBlock: *(b.baseBlock.clone().(*baseBlock)),
-		Variant:   b.Variant,
-		Stage:     b.Stage,
-	}
 }
 
 func (b *blockSapling) ModelName() string {

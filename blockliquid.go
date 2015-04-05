@@ -41,14 +41,6 @@ func (l *blockLiquid) String() string {
 	return l.Parent.stringify(l)
 }
 
-func (l *blockLiquid) clone() Block {
-	return &blockLiquid{
-		baseBlock: *(l.baseBlock.clone().(*baseBlock)),
-		Level:     l.Level,
-		Lava:      l.Lava,
-	}
-}
-
 func (l *blockLiquid) LightReduction() int {
 	if l.Lava {
 		return 0

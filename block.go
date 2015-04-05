@@ -52,13 +52,11 @@ type Block interface {
 	LightEmitted() int
 	String() string
 
-	clone() Block
 	toData() int
 }
 
 // base of most (if not all) blocks
 type baseBlock struct {
-	self          Block
 	plugin, name  string
 	Parent        *BlockSet
 	Index         int
@@ -137,16 +135,6 @@ func (b *baseBlock) TintImage() *image.NRGBA {
 
 func (b *baseBlock) IsTranslucent() bool {
 	return b.translucent
-}
-
-func (b *baseBlock) clone() Block {
-	return &baseBlock{
-		plugin:      b.plugin,
-		name:        b.name,
-		Parent:      b.Parent,
-		cullAgainst: b.cullAgainst,
-		translucent: b.translucent,
-	}
 }
 
 func (b *baseBlock) UpdateState(x, y, z int) Block {
@@ -309,7 +297,7 @@ func alloc(initial Block) *BlockSet {
 			rval := reflect.ValueOf(val)
 			for _, o := range old {
 				// allocate a new block
-				nb := o.clone()
+				nb := cloneBlock(o)
 				// set the new state
 				ff := reflect.ValueOf(nb).Elem().Field(i)
 				ff.Set(rval.Convert(ff.Type()))
@@ -320,6 +308,16 @@ func alloc(initial Block) *BlockSet {
 	}
 	bs.Base = bs.Blocks[0]
 	return bs
+}
+
+func cloneBlock(b Block) Block {
+	v := reflect.ValueOf(b).Elem()
+	nv := reflect.New(v.Type()).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+		nv.Field(i).Set(f)
+	}
+	return nv.Addr().Interface().(Block)
 }
 
 func (bs *BlockSet) stringify(block Block) string {
