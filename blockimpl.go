@@ -541,3 +541,86 @@ func (b *blockFence) toData() int {
 	}
 	return -1
 }
+
+// Stained glass
+
+type color int
+
+const (
+	cWhite color = iota
+	cOrange
+	cMagenta
+	cLightBlue
+	cYellow
+	cLime
+	cPink
+	cGray
+	cSilver
+	cCyan
+	cPurple
+	cBlue
+	cBrown
+	cGreen
+	cRed
+	cBlack
+)
+
+func (c color) String() string {
+	switch c {
+	case cWhite:
+		return "white"
+	case cOrange:
+		return "orange"
+	case cMagenta:
+		return "magenta"
+	case cLightBlue:
+		return "light_blue"
+	case cYellow:
+		return "yellow"
+	case cLime:
+		return "lime"
+	case cPink:
+		return "pink"
+	case cGray:
+		return "gray"
+	case cSilver:
+		return "silver"
+	case cCyan:
+		return "cyan"
+	case cPurple:
+		return "purple"
+	case cBlue:
+		return "blue"
+	case cBrown:
+		return "brown"
+	case cGreen:
+		return "green"
+	case cRed:
+		return "red"
+	case cBlack:
+		return "black"
+	}
+	return fmt.Sprintf("color(%d)", c)
+}
+
+type blockStainedGlass struct {
+	baseBlock
+	Color color `state:"color,0-15"`
+}
+
+func initStainedGlass(name string) *BlockSet {
+	b := &blockStainedGlass{}
+	b.init(name)
+	b.translucent = true
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockStainedGlass) ModelName() string {
+	return b.Color.String() + "_stained_glass"
+}
+
+func (b *blockStainedGlass) toData() int {
+	return int(b.Color)
+}

@@ -111,7 +111,7 @@ var (
 	BlockCake                       = initSimple("cake")
 	BlockRepeaterUnpowered          = initSimple("unpowered_repeater")
 	BlockRepeaterPowered            = initSimple("powered_repeater")
-	BlockStainedGlass               = initSimple("stained_glass")
+	BlockStainedGlass               = initStainedGlass("stained_glass")
 	BlockTrapDoor                   = initSimple("trapdoor")
 	BlockMonsterEgg                 = initSimple("monster_egg")
 	BlockStoneBrick                 = initSimple("stonebrick")
