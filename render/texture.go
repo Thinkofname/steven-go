@@ -84,6 +84,14 @@ func LoadTextures() {
 			draw.Draw(img, img.Bounds(), old, image.ZP, draw.Over)
 			ani = loadAnimation(file, old.Bounds().Dy()/old.Bounds().Dx())
 			ani.Image = old
+			switch old := old.(type) {
+			case *image.NRGBA:
+				ani.Buffer = old.Pix
+			case *image.RGBA:
+				ani.Buffer = old.Pix
+			default:
+				panic(fmt.Sprintf("unsupported image type %T", old))
+			}
 			animatedTextures = append(animatedTextures, ani)
 		}
 		var pix []byte
@@ -143,6 +151,7 @@ func addTexture(pix []byte, width, height int) (int, *atlas.Rect) {
 type animatedTexture struct {
 	Info          TextureInfo
 	Image         image.Image
+	Buffer        []byte
 	Interpolate   bool
 	Frames        []textureFrame
 	RemainingTime float64
@@ -162,16 +171,13 @@ func tickAnimatedTextures(delta float64) {
 			ani.CurrentFrame++
 			ani.CurrentFrame %= len(ani.Frames)
 			ani.RemainingTime += float64(ani.Frames[ani.CurrentFrame].Time)
-			img := textureViews[ani.Info.Atlas]
+			gt := glTextures[ani.Info.Atlas]
 			r := ani.Info.Rect
-			y := r.Width * ani.Frames[ani.CurrentFrame].Index
-			src := image.Rect(r.X, r.Y, r.X+r.Width, r.Y+r.Height)
-			draw.Draw(img, src, ani.Image, image.Pt(0, y), draw.Src)
+			gt.Bind(gl.Texture2D)
+			offset := r.Width * r.Width * ani.Frames[ani.CurrentFrame].Index * 4
+			offset2 := offset + r.Height*r.Width*4
+			gt.SubImage2D(0, r.X, r.Y, r.Width, r.Height, gl.RGBA, gl.UnsignedByte, ani.Buffer[offset:offset2])
 		}
-	}
-	for i, gt := range glTextures {
-		gt.Bind(gl.Texture2D)
-		gt.SubImage2D(0, 0, 0, atlasSize, atlasSize, gl.RGBA, gl.UnsignedByte, textures[i].Buffer)
 	}
 }
 
