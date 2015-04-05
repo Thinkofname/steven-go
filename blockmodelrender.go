@@ -34,6 +34,20 @@ type processedFace struct {
 	tintIndex int
 }
 
+var faceRotation = [...]direction.Type{
+	direction.North,
+	direction.East,
+	direction.South,
+	direction.West,
+}
+
+var faceRotationX = [...]direction.Type{
+	direction.North,
+	direction.Down,
+	direction.South,
+	direction.Up,
+}
+
 func precomputeModel(bm *blockModel) *processedModel {
 	p := &processedModel{}
 	p.ambientOcclusion = bm.ambientOcclusion
@@ -48,6 +62,28 @@ func precomputeModel(bm *blockModel) *processedModel {
 			}
 			pFace := processedFace{}
 			cullFace := face.cullFace
+			if bm.x > 0 {
+				if cullFace != direction.East && cullFace != direction.West && cullFace != direction.Invalid {
+					var pos int
+					for di, d := range faceRotationX {
+						if d == cullFace {
+							pos = di
+							break
+						}
+					}
+					cullFace = faceRotationX[(pos+(int(bm.x)/90))%len(faceRotationX)]
+				}
+				if faceID != int(direction.East) && faceID != int(direction.West) {
+					var pos int
+					for di, d := range faceRotationX {
+						if d == direction.Type(faceID) {
+							pos = di
+							break
+						}
+					}
+					faceID = int(faceRotationX[(pos+(int(bm.x)/90))%len(faceRotationX)])
+				}
+			}
 			if bm.y > 0 {
 				if cullFace >= 2 && cullFace != direction.Invalid {
 					var pos int
@@ -138,6 +174,16 @@ func precomputeModel(bm *blockModel) *processedModel {
 					}
 				}
 
+				if bm.x > 0 {
+					rotX := bm.x * (math.Pi / 180)
+					c := int16(math.Cos(rotX))
+					s := int16(math.Sin(rotX))
+					z := vert[v].Z - 8*16
+					y := vert[v].Y - 8*16
+					vert[v].Z = 8*16 + int16(z*c-y*s)
+					vert[v].Y = 8*16 + int16(y*c+z*s)
+				}
+
 				if bm.y > 0 {
 					rotY := bm.y * (math.Pi / 180)
 					c := int16(math.Cos(rotY))
@@ -159,19 +205,27 @@ func precomputeModel(bm *blockModel) *processedModel {
 					vert[v].TOffsetY = int16(uy2)
 				}
 
-				// We don't seem to need to do this
-				// keep it here in case
-				/*
-					if face.rotation > 0 {
-						rotY := float64(face.rotation) * (math.Pi / 180)
-						c := int16(math.Cos(rotY))
-						s := int16(math.Sin(rotY))
-						x := vert[v].TOffsetX - 8*16
-						y := vert[v].TOffsetY - 8*16
-						vert[v].TOffsetX = 8*16 + int16(x*c-y*s)
-						vert[v].TOffsetY = 8*16 + int16(y*c+x*s)
-					}
-				*/
+				if bm.uvLock && bm.y > 0 &&
+					(pFace.facing == direction.Up || pFace.facing == direction.Down) {
+					rotY := float64(bm.y) * (math.Pi / 180)
+					c := int16(math.Cos(-rotY))
+					s := int16(math.Sin(-rotY))
+					x := vert[v].TOffsetX - 8*16
+					y := vert[v].TOffsetY - 8*16
+					vert[v].TOffsetX = 8*16 + int16(x*c+y*s)
+					vert[v].TOffsetY = 8*16 + int16(y*c-x*s)
+				}
+
+				if bm.uvLock && bm.x > 0 &&
+					(pFace.facing != direction.Up && pFace.facing != direction.Down) {
+					rotY := float64(bm.x) * (math.Pi / 180)
+					c := int16(math.Cos(-rotY))
+					s := int16(math.Sin(-rotY))
+					x := vert[v].TOffsetX - 8*16
+					y := vert[v].TOffsetY - 8*16
+					vert[v].TOffsetX = 8*16 + int16(x*c+y*s)
+					vert[v].TOffsetY = 8*16 + int16(y*c-x*s)
+				}
 
 				if el.rotation != nil && el.rotation.rescale {
 					if vert[v].X < minX {

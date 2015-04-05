@@ -92,7 +92,8 @@ type blockModel struct {
 	ambientOcclusion bool
 	aoSet            bool
 
-	y, x float64
+	uvLock bool
+	y, x   float64
 }
 
 func parseBlockStateVariant(plugin string, data map[string]interface{}) *blockModel {
@@ -107,6 +108,7 @@ func parseBlockStateVariant(plugin string, data map[string]interface{}) *blockMo
 
 	bm.y, _ = data["y"].(float64)
 	bm.x, _ = data["x"].(float64)
+	bm.uvLock, _ = data["uvlock"].(bool)
 	return bm
 }
 
@@ -290,13 +292,6 @@ var faceVertices = [6][6]chunkVertex{
 		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
 		{X: 1, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
 	},
-}
-
-var faceRotation = [...]direction.Type{
-	direction.North,
-	direction.East,
-	direction.South,
-	direction.West,
 }
 
 func (bm *blockModel) lookupTexture(name string) *render.TextureInfo {
