@@ -253,7 +253,7 @@ func regenMipMaps(g gl.Texture, buffer []byte, width, height, level int) {
 	}
 	nw, nh, data := shrinkTexture(buffer, width, height)
 	g.SubImage2D(level, 0, 0, nw, nh, gl.RGBA, gl.UnsignedByte, data)
-	genMipMaps(g, data, nw, nh, level+1)
+	regenMipMaps(g, data, nw, nh, level+1)
 }
 
 func shrinkTexture(buffer []byte, width, height int) (nw, nh int, data []byte) {
