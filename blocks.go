@@ -46,7 +46,7 @@ var (
 	BlockGoldenRail                 = initPoweredRail("golden_rail")
 	BlockDetectorRail               = initPoweredRail("detector_rail")
 	BlockStickyPiston               = initSimple("sticky_piston")
-	BlockWeb                        = initSimple("web")
+	BlockWeb                        = initSimpleConfig("web", simpleConfig{NotCullAgainst: true})
 	BlockTallGrass                  = initTallGrass()
 	BlockDeadBush                   = initDeadBush("deadbush")
 	BlockPiston                     = initSimple("piston")
