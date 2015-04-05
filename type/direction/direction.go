@@ -111,6 +111,46 @@ func (d Type) Opposite() Type {
 	return Invalid
 }
 
+// Clockwise returns the direction directly in a clockwise rotation to
+// this direction.
+func (d Type) Clockwise() Type {
+	switch d {
+	case Up:
+		return Up
+	case Down:
+		return Down
+	case East:
+		return South
+	case West:
+		return North
+	case North:
+		return East
+	case South:
+		return West
+	}
+	return Invalid
+}
+
+// CounterClockwise returns the direction directly in a counter clockwise
+// rotation to this direction.
+func (d Type) CounterClockwise() Type {
+	switch d {
+	case Up:
+		return Up
+	case Down:
+		return Down
+	case East:
+		return North
+	case West:
+		return South
+	case North:
+		return West
+	case South:
+		return East
+	}
+	return Invalid
+}
+
 // String returns a string representation of the direction.
 func (d Type) String() string {
 	switch d {

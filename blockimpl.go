@@ -732,3 +732,124 @@ func (b *blockStainedGlassPane) toData() int {
 	}
 	return -1
 }
+
+// Stairs
+
+type stairHalf int
+
+const (
+	shTop stairHalf = iota
+	shBottom
+)
+
+func (sh stairHalf) String() string {
+	switch sh {
+	case shTop:
+		return "top"
+	case shBottom:
+		return "bottom"
+	}
+	return fmt.Sprintf("stairHalf(%s)", sh)
+}
+
+type stairShape int
+
+const (
+	ssStraight stairShape = iota
+	ssInnerLeft
+	ssInnerRight
+	ssOuterLeft
+	ssOuterRight
+)
+
+func (sh stairShape) String() string {
+	switch sh {
+	case ssStraight:
+		return "straight"
+	case ssInnerLeft:
+		return "inner_left"
+	case ssInnerRight:
+		return "inner_right"
+	case ssOuterLeft:
+		return "outer_left"
+	case ssOuterRight:
+		return "outer_right"
+	}
+	return fmt.Sprintf("stairShape(%s)", sh)
+}
+
+type blockStairs struct {
+	baseBlock
+	Facing direction.Type `state:"facing,2-5"`
+	Half   stairHalf      `state:"half,0-1"`
+	Shape  stairShape     `state:"shape,0-4"`
+}
+
+func initStairs(name string) *BlockSet {
+	b := &blockStairs{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockStairs) ModelVariant() string {
+	return fmt.Sprintf("facing=%s,half=%s,shape=%s", b.Facing, b.Half, b.Shape)
+}
+
+func (b *blockStairs) UpdateState(x, y, z int) Block {
+	// Facing is the side of the back of the stairs
+	// If the stair in front of the back doesn't have the
+	// same facing as this one or the opposite facing then
+	// it will join in the 'outer' shape.
+	// If it didn't join with the backface then the front
+	// is tested in the same way but forming an 'inner' shape
+
+	ox, oy, oz := b.Facing.Offset()
+	if s, ok := chunkMap.Block(x+ox, y+oy, z+oz).(*blockStairs); ok &&
+		s.Facing != b.Facing && s.Facing != b.Facing.Opposite() {
+		r := false
+		if s.Facing == b.Facing.Clockwise() {
+			r = true
+		}
+		if r == (b.Half == shBottom) {
+			return b.Set("shape", ssOuterRight)
+		}
+		return b.Set("shape", ssOuterLeft)
+	}
+
+	ox, oy, oz = b.Facing.Opposite().Offset()
+	if s, ok := chunkMap.Block(x+ox, y+oy, z+oz).(*blockStairs); ok &&
+		s.Facing != b.Facing && s.Facing != b.Facing.Opposite() {
+		r := false
+		if s.Facing == b.Facing.Clockwise() {
+			r = true
+		}
+		if r == (b.Half == shBottom) {
+			return b.Set("shape", ssInnerRight)
+		}
+		return b.Set("shape", ssInnerLeft)
+	}
+	return b
+}
+
+func (b *blockStairs) toData() int {
+	if b.Shape != ssStraight {
+		return -1
+	}
+	data := 0
+	switch b.Facing {
+	case direction.East:
+		data = 0
+	case direction.West:
+		data = 1
+	case direction.South:
+		data = 2
+	case direction.North:
+		data = 3
+	}
+	if b.Half == shTop {
+		data |= 0x4
+	}
+	return data
+}
