@@ -29,6 +29,7 @@ const (
 	TextureMagFilter TextureParameter = gl.TEXTURE_MAG_FILTER
 	TextureWrapS     TextureParameter = gl.TEXTURE_WRAP_S
 	TextureWrapT     TextureParameter = gl.TEXTURE_WRAP_T
+	TextureMaxLevel  TextureParameter = gl.TEXTURE_MAX_LEVEL
 
 	Nearest              TextureValue = gl.NEAREST
 	Linear               TextureValue = gl.LINEAR

@@ -45,6 +45,7 @@ out vec3 vColor;
 out vec4 vTextureInfo;
 out vec2 vTextureOffset;
 out float vLighting;
+out float dist;
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
@@ -57,6 +58,7 @@ void main() {
 	float light = max(aLighting.x, aLighting.y * 1.0);
 	float val = pow(0.9, 16.0 - light) * 2.0;
 	vLighting = clamp(pow(val, 1.5) * 0.5, 0.0, 1.0);
+	dist = gl_Position.z;
 }
 `
 	fragment = `
@@ -68,6 +70,7 @@ in vec3 vColor;
 in vec4 vTextureInfo;
 in vec2 vTextureOffset;
 in float vLighting;
+in float dist;
 
 out vec4 fragColor;
 
@@ -79,9 +82,10 @@ void main() {
 	tPos /= 1024.0;
 	int texID = int(floor(vTextureInfo.y / 1024.0));
 	vec4 col = vec4(0.0);
-	col += texture(textures[0], tPos) * float(0 == texID);
-	col += texture(textures[1], tPos) * float(1 == texID);
-	col += texture(textures[2], tPos) * float(2 == texID);
+	float mipLevel = max(0.0, (dist * 0.002) * 4.0);
+	col += textureLod(textures[0], tPos, mipLevel) * float(0 == texID);
+	col += textureLod(textures[1], tPos, mipLevel) * float(1 == texID);
+	col += textureLod(textures[2], tPos, mipLevel) * float(2 == texID);
 	#ifndef alpha
 	if (col.a < 0.5) discard;
 	#endif

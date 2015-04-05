@@ -172,6 +172,7 @@ func tickAnimatedTextures(delta float64) {
 	for i, gt := range glTextures {
 		gt.Bind(gl.Texture2D)
 		gt.SubImage2D(0, 0, 0, atlasSize, atlasSize, gl.RGBA, gl.UnsignedByte, textures[i].Buffer)
+		regenMipMaps(gt, textures[i].Buffer, atlasSize, atlasSize, 1)
 	}
 }
 
@@ -233,6 +234,43 @@ func loadAnimation(file string, max int) *animatedTexture {
 	}
 
 	return a
+}
+
+func genMipMaps(g gl.Texture, buffer []byte, width, height, level int) {
+	if level > 4 {
+		g.Parameter(gl.TextureMaxLevel, gl.TextureValue(level-1))
+		return
+	}
+	nw, nh, data := shrinkTexture(buffer, width, height)
+	g.Image2D(level, nw, nh, gl.RGBA, gl.UnsignedByte, data)
+	genMipMaps(g, data, nw, nh, level+1)
+}
+
+func regenMipMaps(g gl.Texture, buffer []byte, width, height, level int) {
+	if level > 4 {
+		g.Parameter(gl.TextureMaxLevel, gl.TextureValue(level-1))
+		return
+	}
+	nw, nh, data := shrinkTexture(buffer, width, height)
+	g.SubImage2D(level, 0, 0, nw, nh, gl.RGBA, gl.UnsignedByte, data)
+	genMipMaps(g, data, nw, nh, level+1)
+}
+
+func shrinkTexture(buffer []byte, width, height int) (nw, nh int, data []byte) {
+	nw = width >> 1
+	nh = height >> 1
+	data = make([]byte, nw*nh*4)
+	for x := 0; x < nw; x++ {
+		for y := 0; y < nh; y++ {
+			i := (y*nw + x) * 4
+			i2 := ((y<<1)*width + (x << 1)) * 4
+			data[i] = buffer[i2]
+			data[i+1] = buffer[i2+1]
+			data[i+2] = buffer[i2+2]
+			data[i+3] = buffer[i2+3]
+		}
+	}
+	return
 }
 
 type glTexture struct {

@@ -63,11 +63,14 @@ func Start(debug bool) {
 
 	textureLock.Lock()
 	for _, tex := range textures {
-		glTextures = append(glTextures, createTexture(glTexture{
+		t := createTexture(glTexture{
 			Data:  tex.Buffer,
 			Width: atlasSize, Height: atlasSize,
-			Format: gl.RGBA,
-		}))
+			Format:    gl.RGBA,
+			MinFilter: gl.NearestMipmapNearest,
+		})
+		glTextures = append(glTextures, t)
+		genMipMaps(t, tex.Buffer, atlasSize, atlasSize, 1)
 	}
 	textureLock.Unlock()
 
