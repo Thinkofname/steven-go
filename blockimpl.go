@@ -624,3 +624,111 @@ func (b *blockStainedGlass) ModelName() string {
 func (b *blockStainedGlass) toData() int {
 	return int(b.Color)
 }
+
+// Connectable
+
+type blockConnectable struct {
+	baseBlock
+	North bool `state:"north"`
+	South bool `state:"south"`
+	East  bool `state:"east"`
+	West  bool `state:"west"`
+}
+
+func initConnectable(name string) *BlockSet {
+	b := &blockConnectable{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (blockConnectable) connectable() {}
+
+func (b *blockConnectable) UpdateState(x, y, z int) Block {
+	type connectable interface {
+		connectable()
+	}
+	var block Block = b
+	for _, d := range direction.Values {
+		if d < 2 {
+			continue
+		}
+		ox, oy, oz := d.Offset()
+		bl := chunkMap.Block(x+ox, y+oy, z+oz)
+		if _, ok := bl.(connectable); bl.ShouldCullAgainst() || ok {
+			block = block.Set(d.String(), true)
+		} else {
+			block = block.Set(d.String(), false)
+		}
+	}
+	return block
+}
+
+func (b *blockConnectable) ModelVariant() string {
+	return fmt.Sprintf("east=%t,north=%t,south=%t,west=%t", b.East, b.North, b.South, b.West)
+}
+
+func (b *blockConnectable) toData() int {
+	if !b.North && !b.South && !b.East && !b.West {
+		return 0
+	}
+	return -1
+}
+
+// Stained Glass Pane
+
+type blockStainedGlassPane struct {
+	baseBlock
+	Color color `state:"color,0-15"`
+	North bool  `state:"north"`
+	South bool  `state:"south"`
+	East  bool  `state:"east"`
+	West  bool  `state:"west"`
+}
+
+func initStainedGlassPane(name string) *BlockSet {
+	b := &blockStainedGlassPane{}
+	b.init(name)
+	b.translucent = true
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockStainedGlassPane) ModelName() string {
+	return b.Color.String() + "_" + b.name
+}
+
+func (b *blockStainedGlassPane) ModelVariant() string {
+	return fmt.Sprintf("east=%t,north=%t,south=%t,west=%t", b.East, b.North, b.South, b.West)
+}
+
+func (blockStainedGlassPane) connectable() {}
+
+func (b *blockStainedGlassPane) UpdateState(x, y, z int) Block {
+	type connectable interface {
+		connectable()
+	}
+	var block Block = b
+	for _, d := range direction.Values {
+		if d < 2 {
+			continue
+		}
+		ox, oy, oz := d.Offset()
+		bl := chunkMap.Block(x+ox, y+oy, z+oz)
+		if _, ok := bl.(connectable); bl.ShouldCullAgainst() || ok {
+			block = block.Set(d.String(), true)
+		} else {
+			block = block.Set(d.String(), false)
+		}
+	}
+	return block
+}
+
+func (b *blockStainedGlassPane) toData() int {
+	if !b.North && !b.South && !b.East && !b.West {
+		return int(b.Color)
+	}
+	return -1
+}
