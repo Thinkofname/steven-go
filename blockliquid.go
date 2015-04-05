@@ -37,10 +37,6 @@ func initLiquid(name string, lava bool) *BlockSet {
 	return set
 }
 
-func (l *blockLiquid) String() string {
-	return l.Parent.stringify(l)
-}
-
 func (l *blockLiquid) LightReduction() int {
 	if l.Lava {
 		return 0

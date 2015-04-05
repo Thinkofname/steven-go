@@ -67,10 +67,6 @@ func initStone(name string) *BlockSet {
 	return set
 }
 
-func (b *blockstone) String() string {
-	return b.Parent.stringify(b)
-}
-
 func (b *blockstone) ModelName() string {
 	return b.Variant.String()
 }
@@ -92,10 +88,6 @@ func initGrass() *BlockSet {
 	g.init("grass")
 	set := alloc(g)
 	return set
-}
-
-func (g *blockGrass) String() string {
-	return g.Parent.stringify(g)
 }
 
 func (g *blockGrass) ModelVariant() string {
@@ -148,10 +140,6 @@ func initTallGrass() *BlockSet {
 	return set
 }
 
-func (t *blockTallGrass) String() string {
-	return t.Parent.stringify(t)
-}
-
 func (t *blockTallGrass) ModelName() string {
 	return t.Type.String()
 }
@@ -198,10 +186,6 @@ func initBed(name string) *BlockSet {
 	return set
 }
 
-func (b *blockBed) String() string {
-	return b.Parent.stringify(b)
-}
-
 func (b *blockBed) ModelVariant() string {
 	return fmt.Sprintf("facing=%s,part=%s", b.Facing, b.Part)
 }
@@ -239,10 +223,6 @@ func initSponge(name string) *BlockSet {
 	b.init(name)
 	set := alloc(b)
 	return set
-}
-
-func (b *blockSponge) String() string {
-	return b.Parent.stringify(b)
 }
 
 func (b *blockSponge) ModelVariant() string {
@@ -310,10 +290,6 @@ func initDoor(name string) *BlockSet {
 	return set
 }
 
-func (b *blockDoor) String() string {
-	return b.Parent.stringify(b)
-}
-
 func (b *blockDoor) ModelVariant() string {
 	return fmt.Sprintf("facing=%s,half=%s,hinge=%s,open=%t", b.Facing, b.Half, b.Hinge, b.Open)
 }
@@ -376,10 +352,6 @@ func initDispenser(name string) *BlockSet {
 	b.init(name)
 	set := alloc(b)
 	return set
-}
-
-func (b *blockDispenser) String() string {
-	return b.Parent.stringify(b)
 }
 
 func (b *blockDispenser) ModelVariant() string {
@@ -465,10 +437,6 @@ func initPoweredRail(name string) *BlockSet {
 	return set
 }
 
-func (b *blockPoweredRail) String() string {
-	return b.Parent.stringify(b)
-}
-
 func (b *blockPoweredRail) ModelVariant() string {
 	return fmt.Sprintf("powered=%t,shape=%s", b.Powered, b.Shape)
 }
@@ -496,10 +464,6 @@ func initRail(name string) *BlockSet {
 	return set
 }
 
-func (b *blockRail) String() string {
-	return b.Parent.stringify(b)
-}
-
 func (b *blockRail) ModelVariant() string {
 	return fmt.Sprintf("shape=%s", b.Shape)
 }
@@ -520,10 +484,6 @@ func initDeadBush(name string) *BlockSet {
 	b.cullAgainst = false
 	set := alloc(b)
 	return set
-}
-
-func (b *blockDeadBush) String() string {
-	return b.Parent.stringify(b)
 }
 
 func (b *blockDeadBush) ModelName() string {
@@ -552,10 +512,6 @@ func initFence(name string, wood bool) *BlockSet {
 	b.cullAgainst = false
 	set := alloc(b)
 	return set
-}
-
-func (b *blockFence) String() string {
-	return b.Parent.stringify(b)
 }
 
 func (b *blockFence) UpdateState(x, y, z int) Block {

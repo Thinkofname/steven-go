@@ -99,10 +99,6 @@ func (l *blockLog) VariantRange() (int, int) {
 	return 0, 3
 }
 
-func (l *blockLog) String() string {
-	return l.Parent.stringify(l)
-}
-
 func (l *blockLog) ModelName() string {
 	return l.Variant.String() + "_log"
 }
@@ -144,10 +140,6 @@ func (l *blockLeaves) VariantRange() (int, int) {
 	return 0, 3
 }
 
-func (l *blockLeaves) String() string {
-	return l.Parent.stringify(l)
-}
-
 func (l *blockLeaves) ModelName() string {
 	return l.Variant.String() + "_leaves"
 }
@@ -186,10 +178,6 @@ func initPlanks(name string) *BlockSet {
 	return set
 }
 
-func (b *blockPlanks) String() string {
-	return b.Parent.stringify(b)
-}
-
 func (b *blockPlanks) ModelName() string {
 	return b.Variant.String() + "_planks"
 }
@@ -210,10 +198,6 @@ func initSapling(name string) *BlockSet {
 	b.cullAgainst = false
 	set := alloc(b)
 	return set
-}
-
-func (b *blockSapling) String() string {
-	return b.Parent.stringify(b)
 }
 
 func (b *blockSapling) ModelName() string {

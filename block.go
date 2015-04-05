@@ -84,7 +84,7 @@ func (b *baseBlock) init(name string) {
 }
 
 func (b *baseBlock) String() string {
-	return fmt.Sprintf("%s:%s", b.plugin, b.name)
+	return b.Parent.stringify(b.Parent.Blocks[b.Index])
 }
 
 func (b *baseBlock) Plugin() string {
