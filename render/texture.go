@@ -171,7 +171,7 @@ func tickAnimatedTextures(delta float64) {
 	}
 	for i, gt := range glTextures {
 		gt.Bind(gl.Texture2D)
-		gt.Image2D(0, atlasSize, atlasSize, gl.RGBA, gl.UnsignedByte, textures[i].Buffer)
+		gt.SubImage2D(0, 0, 0, atlasSize, atlasSize, gl.RGBA, gl.UnsignedByte, textures[i].Buffer)
 	}
 }
 

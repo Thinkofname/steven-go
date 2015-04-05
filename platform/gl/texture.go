@@ -21,8 +21,9 @@ import (
 const (
 	Texture2D TextureTarget = gl.TEXTURE_2D
 
-	RGB  TextureFormat = gl.RGB
-	RGBA TextureFormat = gl.RGBA
+	RGB   TextureFormat = gl.RGB
+	RGBA  TextureFormat = gl.RGBA
+	RGBA8 TextureFormat = gl.RGBA8
 
 	TextureMinFilter TextureParameter = gl.TEXTURE_MIN_FILTER
 	TextureMagFilter TextureParameter = gl.TEXTURE_MAG_FILTER
@@ -79,6 +80,23 @@ func (t Texture) Image2D(level int, width, height int, format TextureFormat, ty 
 		int32(width),
 		int32(height),
 		0,
+		uint32(format),
+		uint32(ty),
+		gl.Ptr(pix),
+	)
+}
+
+func (t Texture) SubImage2D(level int, x, y, width, height int, format TextureFormat, ty Type, pix []byte) {
+	if t != currentTexture {
+		panic("texture not bound")
+	}
+	gl.TexSubImage2D(
+		uint32(currentTextureTarget),
+		int32(level),
+		int32(x),
+		int32(y),
+		int32(width),
+		int32(height),
 		uint32(format),
 		uint32(ty),
 		gl.Ptr(pix),
