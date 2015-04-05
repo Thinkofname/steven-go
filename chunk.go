@@ -46,6 +46,24 @@ func (w world) SetBlock(b Block, x, y, z int) {
 		return
 	}
 	chunk.setBlock(b, x&0xF, y, z&0xF)
+	for _, d := range direction.Values {
+		ox, oy, oz := d.Offset()
+		w.dirty(x+ox, y+oy, z+oz)
+	}
+}
+
+func (w world) dirty(x, y, z int) {
+	cx := x >> 4
+	cz := z >> 4
+	chunk := w[chunkPosition{cx, cz}]
+	if chunk == nil || y < 0 || y > 255 {
+		return
+	}
+	cs := chunk.Sections[y>>4]
+	if cs == nil {
+		return
+	}
+	cs.dirty = true
 }
 
 func (w world) UpdateBlock(x, y, z int) {
