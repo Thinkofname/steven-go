@@ -137,24 +137,12 @@ sync:
 	shaderChunk.CameraMatrix.Matrix4(cameraMatrix)
 	shaderChunk.Textures.IntV(textureIds...)
 
-	nearestBuffer = buffers[position{
+	chunkPos := position{
 		X: int(Camera.X) >> 4,
 		Y: int(Camera.Y) >> 4,
 		Z: int(Camera.Z) >> 4,
-	}]
-	if nearestBuffer == nil {
-		distance := math.MaxFloat64
-		for _, chunk := range buffers {
-			dx := Camera.X - float64((chunk.X<<4)+8)
-			dy := Camera.Y - float64((chunk.Y<<4)+8)
-			dz := Camera.Z - float64((chunk.Z<<4)+8)
-			dist := dx*dx + dy*dy + dz*dz
-			if nearestBuffer == nil || dist < distance {
-				nearestBuffer = chunk
-				distance = dist
-			}
-		}
 	}
+	nearestBuffer = buffers[chunkPos]
 
 	viewVector.X = float32(math.Cos(float64(Camera.Yaw-math.Pi/2)) * -math.Cos(float64(Camera.Pitch)))
 	viewVector.Z = -float32(math.Sin(float64(Camera.Yaw-math.Pi/2)) * -math.Cos(float64(Camera.Pitch)))
@@ -166,9 +154,7 @@ sync:
 
 	airVisitMap = make(map[position]struct{})
 	renderOrder = renderOrder[:0]
-	if nearestBuffer != nil {
-		renderBuffer(nearestBuffer, nearestBuffer.position, direction.Invalid)
-	}
+	renderBuffer(nearestBuffer, chunkPos, direction.Invalid)
 
 	chunkProgramT.Use()
 	shaderChunkT.PerspectiveMatrix.Matrix4(perspectiveMatrix)
@@ -227,7 +213,7 @@ itQueue:
 					airVisitMap[pos] = struct{}{}
 					renderOrder = append(renderOrder, pos)
 					for _, dir := range direction.Values {
-						if dir != from && validDirs[dir] {
+						if dir != from && (from == direction.Invalid || validDirs[dir]) {
 							ox, oy, oz := dir.Offset()
 							pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
 							queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite(), req.dist + 1})
