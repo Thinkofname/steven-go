@@ -139,7 +139,7 @@ sync:
 
 	chunkPos := position{
 		X: int(Camera.X) >> 4,
-		Y: int(Camera.Y) >> 4,
+		Y: int(Camera.Y+1.62) >> 4,
 		Z: int(Camera.Z) >> 4,
 	}
 	nearestBuffer = buffers[chunkPos]
@@ -160,15 +160,23 @@ sync:
 	shaderChunkT.PerspectiveMatrix.Matrix4(perspectiveMatrix)
 	shaderChunkT.CameraMatrix.Matrix4(cameraMatrix)
 	shaderChunkT.Textures.IntV(textureIds...)
-	sort.Sort(renderOrder)
 
 	gl.Enable(gl.Blend)
-	for _, pos := range renderOrder {
+	for i := range renderOrder {
+		pos := renderOrder[len(renderOrder)-1-i]
 		chunk := buffers[pos]
 		if chunk != nil && chunk.countT > 0 {
 			shaderChunkT.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
 
 			chunk.arrayT.Bind()
+			chunk.bufferT.Bind(gl.ArrayBuffer)
+			data := chunk.transBuffer
+			offset := 0
+			sort.Sort(chunk.transInfo)
+			for _, i := range chunk.transInfo {
+				offset += copy(data[offset:], chunk.transData[i.Offset:i.Offset+i.Count])
+			}
+			chunk.bufferT.SubData(0, data)
 			gl.DrawArrays(gl.Triangles, 0, chunk.countT)
 		}
 	}
@@ -177,7 +185,7 @@ sync:
 
 var (
 	airVisitMap = make(map[position]struct{})
-	renderOrder transList
+	renderOrder []position
 	validDirs   = make([]bool, len(direction.Values))
 )
 
@@ -199,7 +207,7 @@ itQueue:
 		chunk, pos, from = req.chunk, req.pos, req.from
 		v := vmath.Vector3{
 			float32((pos.X<<4)+8) - float32(Camera.X),
-			float32((pos.Y<<4)+8) - float32(Camera.Y),
+			float32((pos.Y<<4)+8) - float32(Camera.Y+1.62),
 			float32((pos.Z<<4)+8) - float32(Camera.Z),
 		}
 		if (v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0) || req.dist > 16 {

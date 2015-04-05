@@ -48,6 +48,7 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 		bT := builder.New(chunkVertexType...)
 
 		r := rand.New(rand.NewSource(int64(cs.chunk.X) | (int64(cs.chunk.Z) << 32)))
+		var tInfo []render.ObjectInfo
 
 		for y := 0; y < 16; y++ {
 			for x := 0; x < 16; x++ {
@@ -67,6 +68,7 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 					if bl.IsTranslucent() {
 						b = bT
 					}
+					offset := len(b.Data())
 
 					// Liquid can't be represented by the model system
 					// due to the number of possible states they have
@@ -75,6 +77,16 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 							buildVertex(b, v)
 						}
 						r.Int() // See the comment above for air
+						count := len(b.Data()) - offset
+						if bl.IsTranslucent() && count > 0 {
+							tInfo = append(tInfo, render.ObjectInfo{
+								X:      (cs.chunk.X << 4) + x,
+								Y:      (cs.Y << 4) + y,
+								Z:      (cs.chunk.Z << 4) + z,
+								Offset: offset,
+								Count:  count,
+							})
+						}
 						continue
 					}
 
@@ -86,7 +98,16 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 						for _, v := range variant.Render(x, y, z, bs) {
 							buildVertex(b, v)
 						}
-						continue
+						count := len(b.Data()) - offset
+						if bl.IsTranslucent() && count > 0 {
+							tInfo = append(tInfo, render.ObjectInfo{
+								X:      (cs.chunk.X << 4) + x,
+								Y:      (cs.Y << 4) + y,
+								Z:      (cs.chunk.Z << 4) + z,
+								Offset: offset,
+								Count:  count,
+							})
+						}
 					}
 				}
 			}
@@ -98,7 +119,7 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 		// Upload the buffers on the render goroutine
 		render.Sync(func() {
 			cs.Buffer.Upload(bO.Data(), bO.Count(), cullBits)
-			cs.Buffer.UploadTrans(bT.Data(), bT.Count())
+			cs.Buffer.UploadTrans(tInfo, bT.Data(), bT.Count())
 		})
 		// Free up the builder
 		complete <- buildPos{cs.chunk.X, cs.Y, cs.chunk.Z}

@@ -62,6 +62,16 @@ func (b Buffer) Data(data []byte, usage BufferUsage) {
 	gl.BufferData(uint32(currentBufferTarget), len(data), gl.Ptr(data), uint32(usage))
 }
 
+func (b Buffer) SubData(offset int, data []byte) {
+	if currentBuffer != b {
+		panic("buffer not bound")
+	}
+	if len(data) == 0 {
+		return
+	}
+	gl.BufferSubData(uint32(currentBufferTarget), offset, len(data), gl.Ptr(data))
+}
+
 func (b *Buffer) Delete() {
 	gl.DeleteBuffers(1, &b.internal)
 	if currentBuffer == *b {
