@@ -749,7 +749,7 @@ func (sh stairHalf) String() string {
 	case shBottom:
 		return "bottom"
 	}
-	return fmt.Sprintf("stairHalf(%s)", sh)
+	return fmt.Sprintf("stairHalf(%d)", sh)
 }
 
 type stairShape int
@@ -775,7 +775,7 @@ func (sh stairShape) String() string {
 	case ssOuterRight:
 		return "outer_right"
 	}
-	return fmt.Sprintf("stairShape(%s)", sh)
+	return fmt.Sprintf("stairShape(%d)", sh)
 }
 
 type blockStairs struct {
