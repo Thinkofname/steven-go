@@ -155,7 +155,6 @@ sync:
 		validDirs[dir] = viewVector.Dot(dir.AsVector()) > -0.8
 	}
 
-	airVisitMap = make(map[position]struct{})
 	renderOrder = renderOrder[:0]
 	renderBuffer(nearestBuffer, chunkPos, direction.Invalid)
 
@@ -166,8 +165,7 @@ sync:
 
 	gl.Enable(gl.Blend)
 	for i := range renderOrder {
-		pos := renderOrder[len(renderOrder)-1-i]
-		chunk := buffers[pos]
+		chunk := renderOrder[len(renderOrder)-1-i]
 		if chunk != nil && chunk.countT > 0 {
 			shaderChunkT.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
 
@@ -187,8 +185,7 @@ sync:
 }
 
 var (
-	airVisitMap = make(map[position]struct{})
-	renderOrder []position
+	renderOrder []*ChunkBuffer
 	validDirs   = make([]bool, len(direction.Values))
 )
 
@@ -216,30 +213,11 @@ itQueue:
 		if (v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0) || req.dist > 16 {
 			continue itQueue
 		}
-		if chunk == nil {
-			// Handle empty sections in columns
-			if pos.Y >= 0 && pos.Y <= 15 {
-				col := positionC{pos.X, pos.Z}
-				if _, ok := airVisitMap[pos]; !ok && bufferColumns[col] > 0 {
-					airVisitMap[pos] = struct{}{}
-					renderOrder = append(renderOrder, pos)
-					for _, dir := range direction.Values {
-						if dir != from && (from == direction.Invalid || validDirs[dir]) {
-							ox, oy, oz := dir.Offset()
-							pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
-							queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite(), req.dist + 1})
-						}
-					}
-
-				}
-			}
-			continue itQueue
-		}
-		if chunk.renderedOn == frameID {
+		if chunk == nil || chunk.renderedOn == frameID {
 			continue itQueue
 		}
 		chunk.renderedOn = frameID
-		renderOrder = append(renderOrder, pos)
+		renderOrder = append(renderOrder, chunk)
 
 		if chunk.count > 0 {
 			shaderChunk.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
@@ -252,7 +230,7 @@ itQueue:
 			if dir != from && (from == direction.Invalid || (chunk.IsVisible(from, dir) && validDirs[dir])) {
 				ox, oy, oz := dir.Offset()
 				pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
-				queue = append(queue, renderRequest{buffers[pos], pos, dir.Opposite(), req.dist + 1})
+				queue = append(queue, renderRequest{chunk.neighborChunks[dir], pos, dir.Opposite(), req.dist + 1})
 			}
 		}
 	}

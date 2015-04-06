@@ -15,6 +15,8 @@
 package render
 
 import (
+	"math"
+
 	"github.com/thinkofdeath/steven/platform/gl"
 	"github.com/thinkofdeath/steven/type/direction"
 )
@@ -44,6 +46,8 @@ type ChunkBuffer struct {
 	transBuffer []byte
 	transData   []byte
 	transInfo   objectInfoList
+
+	neighborChunks [6]*ChunkBuffer
 }
 
 // IsVisible returns whether the 'to' face is visible through
@@ -55,11 +59,30 @@ func (cb *ChunkBuffer) IsVisible(from, to direction.Type) bool {
 // AllocateChunkBuffer allocates a chunk buffer and adds it to the
 // render list.
 func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
-	c := &ChunkBuffer{
-		position: position{X: x, Y: y, Z: z},
+	if _, ok := bufferColumns[positionC{x, z}]; !ok {
+		for i := 0; i < 16; i++ {
+			buffers[position{x, i, z}] = &ChunkBuffer{
+				position: position{X: x, Y: i, Z: z},
+				cullBits: math.MaxUint64,
+				invalid:  true,
+			}
+		}
+		// Update neighbors
+		for i := 0; i < 16; i++ {
+			c := buffers[position{x, i, z}]
+			for _, d := range direction.Values {
+				ox, oy, oz := d.Offset()
+				o := buffers[position{x + ox, i + oy, z + oz}]
+				if o != nil {
+					c.neighborChunks[d] = o
+					o.neighborChunks[d.Opposite()] = c
+				}
+			}
+		}
 	}
-	buffers[c.position] = c
 	bufferColumns[positionC{x, z}]++
+	c := buffers[position{x, y, z}]
+	c.invalid = false
 	return c
 }
 
@@ -162,21 +185,50 @@ func (cb *ChunkBuffer) Free() {
 	if cb.invalid {
 		return
 	}
+	// Clear state
 	cb.invalid = true
-	delete(buffers, cb.position)
+	cb.count = 0
+	cb.countT = 0
+	cb.transBuffer = nil
+	cb.transData = nil
+	cb.transInfo = nil
 	cpos := positionC{cb.position.X, cb.position.Z}
 	val := bufferColumns[cpos]
 	val--
 	if val <= 0 {
 		delete(bufferColumns, cpos)
+		for i := 0; i < 16; i++ {
+			// Update neighbors
+			x, z := cb.X, cb.Z
+			for i := 0; i < 16; i++ {
+				c := buffers[position{x, i, z}]
+				for _, d := range direction.Values {
+					ox, oy, oz := d.Offset()
+					o := buffers[position{x + ox, i + oy, oz + oz}]
+					if o != nil {
+						c.neighborChunks[d] = nil
+						o.neighborChunks[d.Opposite()] = nil
+					}
+				}
+			}
+			delete(buffers, position{cb.X, i, cb.Z})
+		}
 	} else {
 		bufferColumns[cpos] = val
 	}
 
-	cb.buffer.Delete()
-	cb.array.Delete()
-	cb.bufferT.Delete()
-	cb.arrayT.Delete()
+	if cb.buffer.IsValid() {
+		cb.buffer.Delete()
+	}
+	if cb.array.IsValid() {
+		cb.array.Delete()
+	}
+	if cb.bufferT.IsValid() {
+		cb.bufferT.Delete()
+	}
+	if cb.arrayT.IsValid() {
+		cb.arrayT.Delete()
+	}
 }
 
 // ObjectInfo contains information about an renderable object that needs
