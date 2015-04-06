@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -27,6 +28,7 @@ var (
 	nextBlockID   int
 	blocks        [0x10000]Block
 	blockSetsByID [0x100]*BlockSet
+	allBlocks     = make([]Block, 0, math.MaxUint16)
 )
 
 // Block is a type of tile in the world. All blocks, excluding the special
@@ -37,6 +39,7 @@ type Block interface {
 
 	Plugin() string
 	Name() string
+	SID() uint16
 	Set(key string, val interface{}) Block
 	UpdateState(x, y, z int) Block
 
@@ -60,6 +63,7 @@ type baseBlock struct {
 	plugin, name  string
 	Parent        *BlockSet
 	Index         int
+	StevenID      uint16
 	cullAgainst   bool
 	BlockVariants blockVariants
 	translucent   bool
@@ -93,6 +97,10 @@ func (b *baseBlock) Plugin() string {
 
 func (b *baseBlock) Name() string {
 	return b.name
+}
+
+func (b *baseBlock) SID() uint16 {
+	return b.StevenID
 }
 
 func (b *baseBlock) Models() blockVariants {
@@ -349,6 +357,11 @@ func initBlocks() {
 		for i, b := range bs.Blocks {
 			br := reflect.ValueOf(b).Elem()
 			br.FieldByName("Index").SetInt(int64(i))
+			br.FieldByName("StevenID").SetUint(uint64(len(allBlocks)))
+			allBlocks = append(allBlocks, b)
+			if len(allBlocks) > math.MaxUint16 {
+				panic("ran out of ids, time to do this correctly :(")
+			}
 			data := b.toData()
 			if data != -1 {
 				blocks[(bs.ID<<4)|data] = b

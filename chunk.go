@@ -265,7 +265,7 @@ type chunkSection struct {
 	chunk *chunk
 	Y     int
 
-	Blocks     [16 * 16 * 16]Block
+	Blocks     [16 * 16 * 16]uint16
 	BlockLight nibble.Array
 	SkyLight   nibble.Array
 
@@ -276,11 +276,11 @@ type chunkSection struct {
 }
 
 func (cs *chunkSection) block(x, y, z int) Block {
-	return cs.Blocks[(y<<8)|(z<<4)|x]
+	return allBlocks[cs.Blocks[(y<<8)|(z<<4)|x]]
 }
 
 func (cs *chunkSection) setBlock(b Block, x, y, z int) {
-	cs.Blocks[(y<<8)|(z<<4)|x] = b
+	cs.Blocks[(y<<8)|(z<<4)|x] = b.SID()
 	cs.dirty = true
 }
 
@@ -307,7 +307,7 @@ func newChunkSection(c *chunk, y int) *chunkSection {
 		SkyLight:   nibble.New(16 * 16 * 16),
 	}
 	for i := range cs.Blocks {
-		cs.Blocks[i] = BlockAir.Blocks[0]
+		cs.Blocks[i] = BlockAir.Blocks[0].SID()
 	}
 	return cs
 }
@@ -344,7 +344,7 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 		}
 
 		for i := 0; i < 16*16*16; i++ {
-			section.Blocks[i] = GetBlockByCombinedID(binary.LittleEndian.Uint16(data[offset:]))
+			section.Blocks[i] = GetBlockByCombinedID(binary.LittleEndian.Uint16(data[offset:])).SID()
 			offset += 2
 		}
 	}
