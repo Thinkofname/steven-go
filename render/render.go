@@ -196,14 +196,17 @@ type renderRequest struct {
 	dist  int
 }
 
+const (
+	renderQueueSize = 5000
+)
+
+var rQueue renderQueue
+
 func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
-	queue := []renderRequest{
-		{chunk, pos, from, 1},
-	}
+	rQueue.Append(renderRequest{chunk, pos, from, 1})
 itQueue:
-	for len(queue) > 0 {
-		req := queue[0]
-		queue = queue[1:]
+	for !rQueue.Empty() {
+		req := rQueue.Take()
 		chunk, pos, from = req.chunk, req.pos, req.from
 		v := vmath.Vector3{
 			float32((pos.X<<4)+8) - float32(Camera.X),
@@ -230,7 +233,7 @@ itQueue:
 			if dir != from && (from == direction.Invalid || (chunk.IsVisible(from, dir) && validDirs[dir])) {
 				ox, oy, oz := dir.Offset()
 				pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
-				queue = append(queue, renderRequest{chunk.neighborChunks[dir], pos, dir.Opposite(), req.dist + 1})
+				rQueue.Append(renderRequest{chunk.neighborChunks[dir], pos, dir.Opposite(), req.dist + 1})
 			}
 		}
 	}
