@@ -171,18 +171,11 @@ func tickAnimatedTextures(delta float64) {
 			ani.CurrentFrame++
 			ani.CurrentFrame %= len(ani.Frames)
 			ani.RemainingTime += float64(ani.Frames[ani.CurrentFrame].Time)
-			gt := glTextures[ani.Info.Atlas]
 			r := ani.Info.Rect
-			gt.Bind(gl.Texture2D)
+			glTexture.Bind(gl.Texture2DArray)
 			offset := r.Width * r.Width * ani.Frames[ani.CurrentFrame].Index * 4
 			offset2 := offset + r.Height*r.Width*4
-			gt.SubImage2D(0, r.X, r.Y, r.Width, r.Height, gl.RGBA, gl.UnsignedByte, ani.Buffer[offset:offset2])
-			width, height := r.Width, r.Height
-			for i := 1; i <= 2; i++ {
-				var data []byte
-				width, height, data = shrinkTexture(ani.Buffer[offset:offset2], width, height)
-				gt.SubImage2D(i, r.X>>uint(i), r.Y>>uint(i), width, height, gl.RGBA, gl.UnsignedByte, data)
-			}
+			glTexture.SubImage3D(0, r.X, r.Y, ani.Info.Atlas, r.Width, r.Height, 1, gl.RGBA, gl.UnsignedByte, ani.Buffer[offset:offset2])
 		}
 	}
 }
@@ -247,16 +240,6 @@ func loadAnimation(file string, max int) *animatedTexture {
 	return a
 }
 
-func genMipMaps(g gl.Texture, buffer []byte, width, height, level int) {
-	if level > 2 {
-		g.Parameter(gl.TextureMaxLevel, gl.TextureValue(level-1))
-		return
-	}
-	nw, nh, data := shrinkTexture(buffer, width, height)
-	g.Image2D(level, nw, nh, gl.RGBA, gl.UnsignedByte, data)
-	genMipMaps(g, data, nw, nh, level+1)
-}
-
 func shrinkTexture(buffer []byte, width, height int) (nw, nh int, data []byte) {
 	nw = width >> 1
 	nh = height >> 1
@@ -272,41 +255,4 @@ func shrinkTexture(buffer []byte, width, height int) (nw, nh int, data []byte) {
 		}
 	}
 	return
-}
-
-type glTexture struct {
-	Data          []byte
-	Width, Height int
-	Format        gl.TextureFormat
-	Type          gl.Type
-	Filter        gl.TextureValue
-	MinFilter     gl.TextureValue
-	Wrap          gl.TextureValue
-}
-
-func createTexture(t glTexture) gl.Texture {
-	if t.Format == 0 {
-		t.Format = gl.RGB
-	}
-	if t.Type == 0 {
-		t.Type = gl.UnsignedByte
-	}
-	if t.Filter == 0 {
-		t.Filter = gl.Nearest
-	}
-	if t.MinFilter == 0 {
-		t.MinFilter = t.Filter
-	}
-	if t.Wrap == 0 {
-		t.Wrap = gl.ClampToEdge
-	}
-
-	texture := gl.CreateTexture()
-	texture.Bind(gl.Texture2D)
-	texture.Image2D(0, t.Width, t.Height, t.Format, t.Type, t.Data)
-	texture.Parameter(gl.TextureMagFilter, t.Filter)
-	texture.Parameter(gl.TextureMinFilter, t.MinFilter)
-	texture.Parameter(gl.TextureWrapS, t.Wrap)
-	texture.Parameter(gl.TextureWrapT, t.Wrap)
-	return texture
 }

@@ -19,7 +19,8 @@ import (
 )
 
 const (
-	Texture2D TextureTarget = gl.TEXTURE_2D
+	Texture2D      TextureTarget = gl.TEXTURE_2D
+	Texture2DArray TextureTarget = gl.TEXTURE_2D_ARRAY
 
 	RGB   TextureFormat = gl.RGB
 	RGBA  TextureFormat = gl.RGBA
@@ -69,8 +70,20 @@ func (t Texture) Bind(target TextureTarget) {
 	currentTexture = t
 	currentTextureTarget = target
 }
+func (t Texture) Image3D(level, width, height, depth int, format TextureFormat, ty Type, pix []byte) {
+	if t != currentTexture {
+		panic("texture not bound")
+	}
+	gl.TexImage3D(uint32(currentTextureTarget), int32(level), int32(format), int32(width), int32(height), int32(depth), int32(0), uint32(format), uint32(ty), gl.Ptr(pix))
+}
+func (t Texture) SubImage3D(level, x, y, z, width, height, depth int, format TextureFormat, ty Type, pix []byte) {
+	if t != currentTexture {
+		panic("texture not bound")
+	}
+	gl.TexSubImage3D(uint32(currentTextureTarget), int32(level), int32(x), int32(y), int32(z), int32(width), int32(height), int32(depth), uint32(format), uint32(ty), gl.Ptr(pix))
+}
 
-func (t Texture) Image2D(level int, width, height int, format TextureFormat, ty Type, pix []byte) {
+func (t Texture) Image2D(level, width, height int, format TextureFormat, ty Type, pix []byte) {
 	if t != currentTexture {
 		panic("texture not bound")
 	}

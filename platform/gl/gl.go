@@ -104,7 +104,7 @@ func DrawArrays(ty DrawType, offset, count int) {
 	gl.DrawArrays(uint32(ty), int32(offset), int32(count))
 }
 
-func checkError() {
+func CheckError() {
 	err := gl.GetError()
 	if err != 0 {
 		panic(fmt.Sprintf("gl error: %d", err))

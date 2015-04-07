@@ -37,7 +37,7 @@ var (
 
 	syncChan = make(chan func(), 500)
 
-	glTextures []gl.Texture
+	glTexture gl.Texture
 )
 
 // Start starts the renderer
@@ -62,15 +62,15 @@ func Start(debug bool) {
 	InitStruct(shaderChunkT, chunkProgramT)
 
 	textureLock.Lock()
-	for _, tex := range textures {
-		t := createTexture(glTexture{
-			Data:  tex.Buffer,
-			Width: atlasSize, Height: atlasSize,
-			Format:    gl.RGBA,
-			MinFilter: gl.NearestMipmapNearest,
-		})
-		glTextures = append(glTextures, t)
-		genMipMaps(t, tex.Buffer, atlasSize, atlasSize, 1)
+	glTexture = gl.CreateTexture()
+	glTexture.Bind(gl.Texture2DArray)
+	glTexture.Image3D(0, atlasSize, atlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, 1))
+	glTexture.Parameter(gl.TextureMagFilter, gl.Nearest)
+	glTexture.Parameter(gl.TextureMinFilter, gl.Nearest)
+	glTexture.Parameter(gl.TextureWrapS, gl.ClampToEdge)
+	glTexture.Parameter(gl.TextureWrapT, gl.ClampToEdge)
+	for i, tex := range textures {
+		glTexture.SubImage3D(0, 0, 0, i, atlasSize, atlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
 	}
 	textureLock.Unlock()
 
@@ -113,16 +113,9 @@ sync:
 		)
 		gl.Viewport(0, 0, width, height)
 	}
-	// Only update the texture ids if we have new
-	// textures
-	if len(textureIds) != len(glTextures) {
-		textureIds = make([]int, len(glTextures))
-		for i, tex := range glTextures {
-			tex.Bind(gl.Texture2D)
-			gl.ActiveTexture(i)
-			textureIds[i] = i
-		}
-	}
+
+	glTexture.Bind(gl.Texture2DArray)
+	gl.ActiveTexture(0)
 
 	gl.Clear(gl.ColorBufferBit | gl.DepthBufferBit)
 
@@ -138,7 +131,7 @@ sync:
 
 	shaderChunk.PerspectiveMatrix.Matrix4(perspectiveMatrix)
 	shaderChunk.CameraMatrix.Matrix4(cameraMatrix)
-	shaderChunk.Textures.IntV(textureIds...)
+	shaderChunk.Texture.Int(0)
 
 	chunkPos := position{
 		X: int(Camera.X) >> 4,
@@ -161,7 +154,7 @@ sync:
 	chunkProgramT.Use()
 	shaderChunkT.PerspectiveMatrix.Matrix4(perspectiveMatrix)
 	shaderChunkT.CameraMatrix.Matrix4(cameraMatrix)
-	shaderChunkT.Textures.IntV(textureIds...)
+	shaderChunkT.Texture.Int(0)
 
 	gl.Enable(gl.Blend)
 	for i := range renderOrder {

@@ -25,7 +25,7 @@ type chunkShader struct {
 	PerspectiveMatrix gl.Uniform   `gl:"perspectiveMatrix"`
 	CameraMatrix      gl.Uniform   `gl:"cameraMatrix"`
 	Offset            gl.Uniform   `gl:"offset"`
-	Textures          gl.Uniform   `gl:"textures"`
+	Texture           gl.Uniform   `gl:"texture"`
 }
 
 var (
@@ -64,7 +64,7 @@ void main() {
 	fragment = `
 #version 150
 
-uniform sampler2D textures[3];
+uniform sampler2DArray textures;
 
 in vec3 vColor;
 in vec4 vTextureInfo;
@@ -80,12 +80,9 @@ void main() {
 	vec2 offset = vec2(vTextureInfo.x, mod(vTextureInfo.y, 1024.0));
 	tPos += offset;
 	tPos /= 1024.0;
-	int texID = int(floor(vTextureInfo.y / 1024.0));
-	vec4 col = vec4(0.0);
+	float texID = floor(vTextureInfo.y / 1024.0);
 	float mipLevel = max(0.0, (dist * 0.002) * 4.0);
-	col += textureLod(textures[0], tPos, mipLevel) * float(0 == texID);
-	col += textureLod(textures[1], tPos, mipLevel) * float(1 == texID);
-	col += textureLod(textures[2], tPos, mipLevel) * float(2 == texID);
+	vec4 col = textureLod(textures, vec3(tPos, texID), mipLevel) ;
 	#ifndef alpha
 	if (col.a < 0.5) discard;
 	#endif
