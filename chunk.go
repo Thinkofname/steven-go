@@ -254,11 +254,13 @@ func (c *chunk) biome(x, z int) *biome.Type {
 }
 
 func (c *chunk) free() {
-	for _, s := range c.Sections {
-		if s != nil {
-			s.Buffer.Free()
+	render.Sync(func() {
+		for _, s := range c.Sections {
+			if s != nil {
+				s.Buffer.Free()
+			}
 		}
-	}
+	})
 }
 
 type chunkSection struct {

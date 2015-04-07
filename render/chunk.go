@@ -248,12 +248,12 @@ func (o objectInfoList) Less(aa, bb int) bool {
 	a := o[aa]
 	b := o[bb]
 	dx := float64(a.X) + 0.5 - Camera.X
-	dy := float64(a.Y) + 0.5 - (Camera.Y + 1.62)
+	dy := float64(a.Y) + 0.5 - Camera.Y
 	dz := float64(a.Z) + 0.5 - Camera.Z
 	adist := dx*dx + dy*dy + dz*dz
 
 	dx = float64(b.X) + 0.5 - Camera.X
-	dy = float64(b.Y) + 0.5 - (Camera.Y + 1.62)
+	dy = float64(b.Y) + 0.5 - Camera.Y
 	dz = float64(b.Z) + 0.5 - Camera.Z
 	bdist := dx*dx + dy*dy + dz*dz
 	return adist > bdist

@@ -87,11 +87,15 @@ func main() {
 func start() {
 	<-loadChan
 	render.Start(debug)
+	for !ready {
+		packet := <-readChan
+		defaultHandler.Handle(packet)
+	}
 }
 
 func rotate(x, y float64) {
-	render.Camera.Yaw -= x
-	render.Camera.Pitch -= y
+	Client.Yaw -= x
+	Client.Pitch -= y
 }
 
 var mf, ms float64
@@ -107,7 +111,7 @@ func action(action platform.Action) {
 	}
 }
 
-var maxBuilders = runtime.NumCPU() * 2
+var maxBuilders = runtime.NumCPU() * 6
 
 var (
 	ready            bool
@@ -124,74 +128,72 @@ func draw() {
 	lastFrame = now
 	delta := float64(diff.Nanoseconds()) / (float64(time.Second) / 60)
 	delta = math.Min(math.Max(delta, 0.3), 1.6)
-handle:
-	for {
-		select {
-		case err := <-errorChan:
-			panic(err)
-		case packet := <-readChan:
-			defaultHandler.Handle(packet)
-		case pos := <-completeBuilders:
-			c := chunkMap[chunkPosition{pos.X, pos.Z}]
-			freeBuilders++
-			if c != nil {
-				s := c.Sections[pos.Y]
-				if s != nil {
-					s.building = false
-				}
-			}
-		case f := <-syncChan:
-			f()
-		default:
-			break handle
-		}
-	}
 
-	// TODO(Think) Tidy up
-	render.Camera.X += mf * math.Cos(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * delta * 0.2
-	render.Camera.Z -= mf * math.Sin(render.Camera.Yaw-math.Pi/2) * -math.Cos(render.Camera.Pitch) * delta * 0.2
-	render.Camera.Y -= mf * math.Sin(render.Camera.Pitch) * delta * 0.2
-	if ready {
-		select {
-		case <-ticker.C:
-			tick()
-		default:
-		}
-	}
-
-	// Search for 'dirty' chunk sections and start building
-	// them if we have any builders free. To prevent race conditions
-	// two flags are used, dirty and building, to allow a second
-	// build to be requested whilst the chunk is still building
-	// without either losing the change or having two builds
-	// for the same section going on at once (where the second
-	// could finish quicker causing the old version to be
-	// displayed.
-dirtyClean:
-	for _, c := range sortedChunks() {
-		for _, s := range c.Sections {
-			if s == nil {
-				continue
-			}
-			if freeBuilders <= 0 {
-				break dirtyClean
-			}
-			if s.dirty && !s.building {
-				freeBuilders--
-				s.dirty = false
-				s.building = true
-				s.build(completeBuilders)
-			}
-		}
-	}
+	Client.renderTick(delta)
 
 	render.Draw(delta)
+}
+
+func tickHandler() {
+	for {
+		<-ticker.C
+	handle:
+		for {
+			select {
+			case err := <-errorChan:
+				panic(err)
+			case packet := <-readChan:
+				defaultHandler.Handle(packet)
+			case pos := <-completeBuilders:
+				c := chunkMap[chunkPosition{pos.X, pos.Z}]
+				freeBuilders++
+				if c != nil {
+					s := c.Sections[pos.Y]
+					if s != nil {
+						s.building = false
+					}
+				}
+			case f := <-syncChan:
+				f()
+			default:
+				break handle
+			}
+		}
+		tick()
+
+		// Search for 'dirty' chunk sections and start building
+		// them if we have any builders free. To prevent race conditions
+		// two flags are used, dirty and building, to allow a second
+		// build to be requested whilst the chunk is still building
+		// without either losing the change or having two builds
+		// for the same section going on at once (where the second
+		// could finish quicker causing the old version to be
+		// displayed.
+	dirtyClean:
+		for _, c := range sortedChunks() {
+			for _, s := range c.Sections {
+				if s == nil {
+					continue
+				}
+				if freeBuilders <= 0 {
+					break dirtyClean
+				}
+				if s.dirty && !s.building {
+					freeBuilders--
+					s.dirty = false
+					s.building = true
+					s.build(completeBuilders)
+				}
+			}
+		}
+	}
 }
 
 // tick is called 20 times a second (bar any preformance issues).
 // Minecraft is built around this fact so we have to follow it
 // as well.
 func tick() {
+	Client.tick()
 	// Now you may be wondering why we have to spam movement
 	// packets (any of the Player* move/look packets) 20 times
 	// a second instead of only sending when something changes.
@@ -206,10 +208,10 @@ func tick() {
 	// what did you expect?
 	// TODO(Think) Use the smaller packets when possible
 	writeChan <- &protocol.PlayerPositionLook{
-		X:     render.Camera.X,
-		Y:     render.Camera.Y,
-		Z:     render.Camera.Z,
-		Yaw:   float32(-render.Camera.Yaw * (180 / math.Pi)),
-		Pitch: float32((-render.Camera.Pitch - math.Pi) * (180 / math.Pi)),
+		X:     Client.X,
+		Y:     Client.Y,
+		Z:     Client.Z,
+		Yaw:   float32(-Client.Yaw * (180 / math.Pi)),
+		Pitch: float32((-Client.Pitch - math.Pi) * (180 / math.Pi)),
 	}
 }

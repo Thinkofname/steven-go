@@ -131,7 +131,7 @@ sync:
 	cameraMatrix.Identity()
 	// +1.62 for the players height.
 	// TODO(Think) Change this?
-	cameraMatrix.Translate(float32(Camera.X), float32(Camera.Y+1.62), float32(-Camera.Z))
+	cameraMatrix.Translate(float32(Camera.X), float32(Camera.Y), float32(-Camera.Z))
 	cameraMatrix.RotateY(float32(Camera.Yaw))
 	cameraMatrix.RotateX(float32(Camera.Pitch))
 	cameraMatrix.Scale(-1.0, 1.0, 1.0)
@@ -142,7 +142,7 @@ sync:
 
 	chunkPos := position{
 		X: int(Camera.X) >> 4,
-		Y: int(Camera.Y+1.62) >> 4,
+		Y: int(Camera.Y) >> 4,
 		Z: int(Camera.Z) >> 4,
 	}
 	nearestBuffer = buffers[chunkPos]
@@ -210,10 +210,10 @@ itQueue:
 		chunk, pos, from = req.chunk, req.pos, req.from
 		v := vmath.Vector3{
 			float64((pos.X<<4)+8) - Camera.X,
-			float64((pos.Y<<4)+8) - (Camera.Y + 1.62),
+			float64((pos.Y<<4)+8) - Camera.Y,
 			float64((pos.Z<<4)+8) - Camera.Z,
 		}
-		if (v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0) || req.dist > 16 {
+		if (v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0) || req.dist > 20 {
 			continue itQueue
 		}
 		if chunk == nil || chunk.renderedOn == frameID {

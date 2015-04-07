@@ -21,7 +21,6 @@ import (
 	"reflect"
 
 	"github.com/thinkofdeath/steven/protocol"
-	"github.com/thinkofdeath/steven/render"
 )
 
 type handler map[reflect.Type]reflect.Value
@@ -112,10 +111,11 @@ func (handler) SetBlockBatch(b *protocol.MultiBlockChange) {
 }
 
 func (handler) JoinGame(j *protocol.JoinGame) {
-	ready = true
 	sendPluginMessage(&pmMinecraftBrand{
 		Brand: "Steven",
 	})
+	ready = true
+	go tickHandler()
 }
 
 func (h handler) PluginMessage(p *protocol.PluginMessageClientbound) {
@@ -127,11 +127,11 @@ func (h handler) ServerBrand(b *pmMinecraftBrand) {
 }
 
 func (handler) Teleport(t *protocol.TeleportPlayer) {
-	render.Camera.X = t.X
-	render.Camera.Y = t.Y
-	render.Camera.Z = t.Z
-	render.Camera.Yaw = float64(-t.Yaw) * (math.Pi / 180)
-	render.Camera.Pitch = -float64(t.Pitch)*(math.Pi/180) + math.Pi
+	Client.X = t.X
+	Client.Y = t.Y
+	Client.Z = t.Z
+	Client.Yaw = float64(-t.Yaw) * (math.Pi / 180)
+	Client.Pitch = -float64(t.Pitch)*(math.Pi/180) + math.Pi
 	writeChan <- &protocol.PlayerPositionLook{
 		X:     t.X,
 		Y:     t.Y,
