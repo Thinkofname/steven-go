@@ -53,7 +53,7 @@ var (
 	BlockPistonHead                 = initSimple("piston_head")
 	BlockWool                       = initSimple("wool")
 	BlockPistonExtension            = initSimple("piston_extension")
-	BlockYellowFlower               = initSimple("yellow_follow")
+	BlockYellowFlower               = initSimple("yellow_flower")
 	BlockRedFlower                  = initSimple("red_flower")
 	BlockBrownMushroom              = initSimpleConfig("brown_mushroom", simpleConfig{NotCullAgainst: true})
 	BlockRedMushrrom                = initSimpleConfig("red_mushroom", simpleConfig{NotCullAgainst: true})
