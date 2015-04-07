@@ -122,7 +122,7 @@ var (
 	BlockMelonBlock                 = initSimple("melon_block")
 	BlockPumpkinStem                = initSimple("pumpkin_stem")
 	BlockMelonStem                  = initSimple("melon_stem")
-	BlockVine                       = initSimple("vine")
+	BlockVine                       = initVines("vine")
 	BlockFenceGate                  = initSimple("fence_gate")
 	BlockBrickStairs                = initStairs("brick_stairs")
 	BlockStoneBrickStairs           = initStairs("stone_brick_stairs")

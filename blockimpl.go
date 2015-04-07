@@ -853,3 +853,54 @@ func (b *blockStairs) toData() int {
 	}
 	return data
 }
+
+// Vines
+
+type blockVines struct {
+	baseBlock
+	Up    bool `state:"up"`
+	North bool `state:"north"`
+	South bool `state:"south"`
+	East  bool `state:"east"`
+	West  bool `state:"west"`
+}
+
+func initVines(name string) *BlockSet {
+	b := &blockVines{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockVines) ModelVariant() string {
+	return fmt.Sprintf("east=%t,north=%t,south=%t,up=%t,west=%t", b.East, b.North, b.South, b.Up, b.West)
+}
+
+func (b *blockVines) UpdateState(x, y, z int) Block {
+	if b := chunkMap.Block(x, y+1, z); b.ShouldCullAgainst() {
+		return b.Set("up", true)
+	}
+	return b.Set("up", false)
+}
+
+func (b *blockVines) TintImage() *image.NRGBA {
+	return foliageBiomeColors
+}
+
+func (b *blockVines) toData() int {
+	data := 0
+	if b.South {
+		data |= 0x1
+	}
+	if b.West {
+		data |= 0x2
+	}
+	if b.North {
+		data |= 0x4
+	}
+	if b.East {
+		data |= 0x8
+	}
+	return data
+}
