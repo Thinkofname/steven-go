@@ -64,13 +64,13 @@ func Start(debug bool) {
 	textureLock.Lock()
 	glTexture = gl.CreateTexture()
 	glTexture.Bind(gl.Texture2DArray)
-	glTexture.Image3D(0, atlasSize, atlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, 1))
+	glTexture.Image3D(0, BlockAtlasSize, BlockAtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, 1))
 	glTexture.Parameter(gl.TextureMagFilter, gl.Nearest)
 	glTexture.Parameter(gl.TextureMinFilter, gl.Nearest)
 	glTexture.Parameter(gl.TextureWrapS, gl.ClampToEdge)
 	glTexture.Parameter(gl.TextureWrapT, gl.ClampToEdge)
 	for i, tex := range textures {
-		glTexture.SubImage3D(0, 0, 0, i, atlasSize, atlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
+		glTexture.SubImage3D(0, 0, 0, i, BlockAtlasSize, BlockAtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
 	}
 	textureLock.Unlock()
 

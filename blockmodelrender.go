@@ -18,6 +18,7 @@ import (
 	"image"
 	"math"
 
+	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/type/direction"
 )
 
@@ -124,7 +125,7 @@ func precomputeModel(bm *blockModel) *processedModel {
 
 			for v := range vert {
 				vert[v].TX = uint16(tex.X)
-				vert[v].TY = uint16(tex.Y + tex.Atlas*1024.0)
+				vert[v].TY = uint16(tex.Y + tex.Atlas*render.BlockAtlasSize)
 				vert[v].TW = uint16(tex.Width)
 				vert[v].TH = uint16(tex.Height)
 

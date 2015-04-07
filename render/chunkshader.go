@@ -28,7 +28,7 @@ type chunkShader struct {
 	Texture           gl.Uniform   `gl:"texture"`
 }
 
-var (
+const (
 	vertex = `
 #version 150
 in ivec3 aPosition;
@@ -64,6 +64,8 @@ void main() {
 	fragment = `
 #version 150
 
+const float atlasSize = ` + blockAtlasSizeStr + `;
+
 uniform sampler2DArray textures;
 
 in vec3 vColor;
@@ -77,10 +79,10 @@ out vec4 fragColor;
 void main() {
 	vec2 tPos = vTextureOffset / 16.0;
 	tPos = mod(tPos, vTextureInfo.zw);
-	vec2 offset = vec2(vTextureInfo.x, mod(vTextureInfo.y, 1024.0));
+	vec2 offset = vec2(vTextureInfo.x, mod(vTextureInfo.y, atlasSize));
 	tPos += offset;
-	tPos /= 1024.0;
-	float texID = floor(vTextureInfo.y / 1024.0);
+	tPos /= atlasSize;
+	float texID = floor(vTextureInfo.y / atlasSize);
 	float mipLevel = max(0.0, (dist * 0.002) * 4.0);
 	vec4 col = textureLod(textures, vec3(tPos, texID), mipLevel) ;
 	#ifndef alpha

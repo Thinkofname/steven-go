@@ -35,7 +35,10 @@ var (
 	animatedTextures []*animatedTexture
 )
 
-const atlasSize = 1024
+const (
+	BlockAtlasSize    = 512
+	blockAtlasSizeStr = "512"
+)
 
 // TextureInfo returns information about a texture in an atlas
 type TextureInfo struct {
@@ -134,12 +137,12 @@ func addTexture(pix []byte, width, height int) (int, *atlas.Rect) {
 			return i, rect
 		}
 	}
-	a := atlas.New(atlasSize, atlasSize, 4)
+	a := atlas.New(BlockAtlasSize, BlockAtlasSize, 4)
 	textures = append(textures, a)
 	textureViews = append(textureViews, &image.NRGBA{
 		Pix:    a.Buffer,
-		Stride: 4 * atlasSize,
-		Rect:   image.Rect(0, 0, atlasSize, atlasSize),
+		Stride: 4 * BlockAtlasSize,
+		Rect:   image.Rect(0, 0, BlockAtlasSize, BlockAtlasSize),
 	})
 	rect, err := a.Add(pix, width, height)
 	if err != nil {
