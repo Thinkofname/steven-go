@@ -75,6 +75,9 @@ func (c *ClientState) renderTick(delta float64) {
 		c.Y = render.Camera.Y - playerHeight
 		c.Z = render.Camera.Z
 
+		// We handle each axis separately to allow for a sliding
+		// effect when pushing up against walls.
+
 		bounds, _ := c.checkCollisions(c.Bounds)
 		c.X = bounds.Min.X + 0.3
 
