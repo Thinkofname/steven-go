@@ -161,6 +161,10 @@ func (w *writing) writeNamed(t, name string, tag reflect.StructTag) {
 		fmt.Fprintf(&w.buf, "// TODO write to %s type %s\n", name, t)
 	}
 	if len(funcName) != 0 {
+		if notProtocol {
+			funcName = "protocol." + funcName
+			imports["github.com/thinkofdeath/steven/protocol"] = struct{}{}
+		}
 		fmt.Fprintf(&w.buf, "if err = %s(ww, %s); err != nil { return  }\n", funcName, name)
 	}
 }

@@ -30,10 +30,12 @@ import (
 
 const (
 	idSearchString = "Currently the packet id is: 0x"
+	searchString   = "This is a packet"
 )
 
 var (
 	protocol, dir string
+	notProtocol   bool
 
 	structs = map[string]*ast.TypeSpec{}
 	packets []packet
@@ -46,20 +48,23 @@ type packet struct {
 }
 
 func main() {
-	if len(os.Args) != 4 {
+	if len(os.Args) < 2 {
 		log.Println("Missing target, protocol or dir")
 		os.Exit(4)
 	}
 
 	input := os.Args[1]
-	protocol = os.Args[2]
-	dir = os.Args[3]
+	if len(os.Args) >= 4 {
+		protocol = os.Args[2]
+		dir = os.Args[3]
+	}
 
 	fs := token.NewFileSet()
 	parsedFile, err := parser.ParseFile(fs, input, nil, parser.ParseComments)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	notProtocol = parsedFile.Name.String() != "protocol"
 
 	for _, decl := range parsedFile.Decls {
 		switch decl := decl.(type) {
@@ -88,13 +93,21 @@ func main() {
 			}
 			doc := decl.Doc.Text()
 			pos := strings.Index(doc, idSearchString)
+			noId := false
 			if pos == -1 {
-				continue
+				pos = strings.Index(doc, searchString)
+				noId = true
+				if pos == -1 {
+					continue
+				}
 			}
 
-			packetID, err := strconv.ParseInt(strings.TrimSpace(doc[pos+len(idSearchString):]), 16, 32)
-			if err != nil {
-				panic(err)
+			var packetID int64 = -1
+			if !noId {
+				packetID, err = strconv.ParseInt(strings.TrimSpace(doc[pos+len(idSearchString):]), 16, 32)
+				if err != nil {
+					panic(err)
+				}
 			}
 			packets = append(packets, packet{
 				id:   int(packetID),
@@ -110,7 +123,9 @@ func main() {
 		imports["io"] = struct{}{}
 		short := string(strings.ToLower(p.name)[0])
 
-		fmt.Fprintf(&buf, "func (%s *%s) id() int { return %d; }\n", short, p.name, p.id)
+		if p.id >= 0 {
+			fmt.Fprintf(&buf, "func (%s *%s) id() int { return %d; }\n", short, p.name, p.id)
+		}
 
 		fmt.Fprintf(&buf, "func (%s *%s) write(ww io.Writer) (err error) { \n", short, p.name)
 		w := &writing{
@@ -134,11 +149,13 @@ func main() {
 	}
 
 	// Packet constructors
-	buf.WriteString("func init() {\n")
-	for _, p := range packets {
-		fmt.Fprintf(&buf, "packetCreator[%s][%s][%d] = func () Packet { return &%s{} }\n", protocol, dir, p.id, p.name)
+	if protocol != "" && dir != "" {
+		buf.WriteString("func init() {\n")
+		for _, p := range packets {
+			fmt.Fprintf(&buf, "packetCreator[%s][%s][%d] = func () Packet { return &%s{} }\n", protocol, dir, p.id, p.name)
+		}
+		buf.WriteString("}\n")
 	}
-	buf.WriteString("}\n")
 
 	// Write the header last because of imports
 
