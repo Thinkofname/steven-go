@@ -210,7 +210,7 @@ itQueue:
 		chunk, pos, from = req.chunk, req.pos, req.from
 		v := vmath.Vector3{
 			float64((pos.X<<4)+8) - Camera.X,
-			float64((pos.Y<<4)+8) - Camera.Y + 1.62,
+			float64((pos.Y<<4)+8) - (Camera.Y + 1.62),
 			float64((pos.Z<<4)+8) - Camera.Z,
 		}
 		if (v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0) || req.dist > 16 {
