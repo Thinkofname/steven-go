@@ -16,29 +16,82 @@ package main
 
 import (
 	"math"
-	"sync"
 
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/type/vmath"
 )
 
 const (
 	playerHeight = 1.62
 )
 
-var Client ClientState
-
-type ClientState struct {
-	sync.Mutex
-	X, Y, Z    float64
-	Yaw, Pitch float64
+var Client = ClientState{
+	Bounds: vmath.AABB{
+		Min: vmath.Vector3{-0.3, 0, -0.3},
+		Max: vmath.Vector3{0.3, 1.8, 0.3},
+	},
 }
 
+type ClientState struct {
+	X, Y, Z    float64
+	Yaw, Pitch float64
+
+	Jumping  bool
+	VSpeed   float64
+	OnGround bool
+
+	GameMode gameMode
+	HardCore bool
+
+	Bounds vmath.AABB
+}
+
+// The render tick needs to remain pretty light so it
+// doesn't hold the lock for too long.
 func (c *ClientState) renderTick(delta float64) {
-	c.Lock()
-	defer c.Unlock()
-	c.X += mf * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
-	c.Z -= mf * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
-	c.Y -= mf * math.Sin(c.Pitch) * delta * 0.2
+	if c.GameMode.Fly() {
+		c.X += mf * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
+		c.Z -= mf * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
+		c.Y -= mf * math.Sin(c.Pitch) * delta * 0.2
+	} else {
+		c.X += mf * math.Cos(c.Yaw-math.Pi/2) * delta * 0.1
+		c.Z -= mf * math.Sin(c.Yaw-math.Pi/2) * delta * 0.1
+		if !c.OnGround {
+			c.VSpeed -= 0.01 * delta
+			if c.VSpeed < -0.3 {
+				c.VSpeed = -0.3
+			}
+		} else if c.Jumping {
+			c.VSpeed = 0.15
+		} else {
+			c.VSpeed = 0
+		}
+		c.Y += c.VSpeed * delta
+	}
+
+	if !c.GameMode.NoClip() && chunkMap[chunkPosition{int(c.X) >> 4, int(c.Z) >> 4}] != nil {
+		cy := c.Y
+		cz := c.Z
+		c.Y = render.Camera.Y - playerHeight
+		c.Z = render.Camera.Z
+
+		bounds, _ := c.checkCollisions(c.Bounds)
+		c.X = bounds.Min.X + 0.3
+
+		c.Z = cz
+		bounds, _ = c.checkCollisions(c.Bounds)
+		c.Z = bounds.Min.Z + 0.3
+
+		c.Y = cy
+		bounds, _ = c.checkCollisions(c.Bounds)
+		c.Y = bounds.Min.Y
+
+		ground := vmath.AABB{
+			Min: vmath.Vector3{-0.3, -0.05, -0.3},
+			Max: vmath.Vector3{0.3, 0, 0.3},
+		}
+		_, c.OnGround = c.checkCollisions(ground)
+	}
 
 	// Copy to the camera
 	render.Camera.X = c.X
@@ -48,7 +101,63 @@ func (c *ClientState) renderTick(delta float64) {
 	render.Camera.Pitch = c.Pitch
 }
 
+func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
+	bounds.Shift(c.X, c.Y, c.Z)
+
+	dir := &vmath.Vector3{
+		X: -(render.Camera.X - c.X),
+		Y: -(render.Camera.Y - playerHeight - c.Y),
+		Z: -(render.Camera.Z - c.Z),
+	}
+
+	minX, minY, minZ := int(bounds.Min.X-1), int(bounds.Min.Y-1), int(bounds.Min.Z-1)
+	maxX, maxY, maxZ := int(bounds.Max.X+1), int(bounds.Max.Y+1), int(bounds.Max.Z+1)
+
+	hit := false
+	for y := minY; y < maxY; y++ {
+		for z := minZ; z < maxZ; z++ {
+			for x := minX; x < maxX; x++ {
+				b := chunkMap.Block(x, y, z)
+
+				// TODO: Fixme
+				if b.ShouldCullAgainst() {
+					bb := vmath.NewAABB(0, 0, 0, 1.0, 1.0, 1.0)
+					bb.Shift(float64(x), float64(y), float64(z))
+					if bb.Intersects(&bounds) {
+						bounds.MoveOutOf(bb, dir)
+						hit = true
+					}
+				}
+			}
+		}
+	}
+	return bounds, hit
+}
+
 func (c *ClientState) tick() {
-	c.Lock()
-	defer c.Unlock()
+}
+
+type gameMode int
+
+const (
+	gmSurvival gameMode = iota
+	gmCreative
+	gmAdventure
+	gmSpecator
+)
+
+func (g gameMode) Fly() bool {
+	switch g {
+	case gmCreative, gmSpecator:
+		return true
+	}
+	return false
+}
+
+func (g gameMode) NoClip() bool {
+	switch g {
+	case gmSpecator:
+		return true
+	}
+	return false
 }

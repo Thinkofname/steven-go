@@ -14,9 +14,20 @@
 
 package vmath
 
+import (
+	"fmt"
+)
+
 type AABB struct {
 	Min Vector3
 	Max Vector3
+}
+
+func NewAABB(x1, y1, z1, x2, y2, z2 float64) *AABB {
+	return &AABB{
+		Min: Vector3{x1, y1, z1},
+		Max: Vector3{x2, y2, z2},
+	}
 }
 
 func (a *AABB) Intersects(o *AABB) bool {
@@ -72,4 +83,8 @@ func (a *AABB) MoveOutOf(o *AABB, dir *Vector3) {
 			a.Max.Z += a.Min.Z - oz
 		}
 	}
+}
+
+func (a AABB) String() string {
+	return fmt.Sprintf("[%s->%s]", a.Min, a.Max)
 }

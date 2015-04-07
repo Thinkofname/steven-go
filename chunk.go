@@ -254,13 +254,11 @@ func (c *chunk) biome(x, z int) *biome.Type {
 }
 
 func (c *chunk) free() {
-	render.Sync(func() {
-		for _, s := range c.Sections {
-			if s != nil {
-				s.Buffer.Free()
-			}
+	for _, s := range c.Sections {
+		if s != nil {
+			s.Buffer.Free()
 		}
-	})
+	}
 }
 
 type chunkSection struct {
@@ -475,11 +473,11 @@ func (cs chunkSorter) Len() int {
 func (cs chunkSorter) Less(a, b int) bool {
 	ac := cs[a]
 	bc := cs[b]
-	xx := float64(ac.X<<4+8) - render.Camera.X
-	zz := float64(ac.Z<<4+8) - render.Camera.Z
+	xx := float64(ac.X<<4+8) - Client.X
+	zz := float64(ac.Z<<4+8) - Client.Z
 	adist := xx*xx + zz*zz
-	xx = float64(bc.X<<4+8) - render.Camera.X
-	zz = float64(bc.Z<<4+8) - render.Camera.Z
+	xx = float64(bc.X<<4+8) - Client.X
+	zz = float64(bc.Z<<4+8) - Client.Z
 	bdist := xx*xx + zz*zz
 	return adist < bdist
 }

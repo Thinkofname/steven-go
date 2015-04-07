@@ -24,4 +24,5 @@ type Action int
 const (
 	InvalidAction Action = iota
 	Debug
+	JumpToggle
 )

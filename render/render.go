@@ -47,7 +47,7 @@ func Start(debug bool) {
 		gl.DebugLog()
 	}
 
-	gl.ClearColor(0.0, 1.0, 1.0, 1.0)
+	gl.ClearColor(122.0/255.0, 165.0/255.0, 247.0/255.0, 1.0)
 	gl.Enable(gl.DepthTest)
 	gl.Enable(gl.CullFaceFlag)
 	gl.CullFace(gl.Back)

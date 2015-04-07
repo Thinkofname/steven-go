@@ -61,11 +61,44 @@ func (handler) ServerMessage(msg *protocol.ServerMessage) {
 	fmt.Printf("MSG(%d): %s\n", msg.Type, msg.Message.Value)
 }
 
-func (handler) Respawn(c *protocol.Respawn) {
+func (handler) JoinGame(j *protocol.JoinGame) {
+	sendPluginMessage(&pmMinecraftBrand{
+		Brand: "Steven",
+	})
+	Client.GameMode = gameMode(j.Gamemode & 0x7)
+	Client.HardCore = j.Gamemode&0x8 != 0
+	ready = true
+}
+
+func (handler) Respawn(r *protocol.Respawn) {
 	for _, c := range chunkMap {
 		c.free()
 	}
 	chunkMap = map[chunkPosition]*chunk{}
+	Client.GameMode = gameMode(r.Gamemode & 0x7)
+	Client.HardCore = r.Gamemode&0x8 != 0
+}
+func (handler) ChangeGameState(c *protocol.ChangeGameState) {
+	switch c.Reason {
+	case 3: // Change game mode
+		Client.GameMode = gameMode(c.Value)
+	}
+}
+
+func (handler) Teleport(t *protocol.TeleportPlayer) {
+	Client.X = t.X
+	Client.Y = t.Y
+	Client.Z = t.Z
+	Client.Yaw = float64(-t.Yaw) * (math.Pi / 180)
+	Client.Pitch = -float64(t.Pitch)*(math.Pi/180) + math.Pi
+	writeChan <- &protocol.PlayerPositionLook{
+		X:        t.X,
+		Y:        t.Y,
+		Z:        t.Z,
+		Yaw:      t.Yaw,
+		Pitch:    t.Pitch,
+		OnGround: Client.OnGround,
+	}
 }
 
 func (handler) ChunkData(c *protocol.ChunkData) {
@@ -109,34 +142,10 @@ func (handler) SetBlockBatch(b *protocol.MultiBlockChange) {
 		chunkMap.UpdateBlock((chunk.X<<4)+x, y, (chunk.Z<<4)+z)
 	}
 }
-
-func (handler) JoinGame(j *protocol.JoinGame) {
-	sendPluginMessage(&pmMinecraftBrand{
-		Brand: "Steven",
-	})
-	ready = true
-	go tickHandler()
-}
-
 func (h handler) PluginMessage(p *protocol.PluginMessageClientbound) {
 	h.handlePluginMessage(p.Channel, bytes.NewReader(p.Data), false)
 }
 
 func (h handler) ServerBrand(b *pmMinecraftBrand) {
 	fmt.Printf("The server is running: %s\n", b.Brand)
-}
-
-func (handler) Teleport(t *protocol.TeleportPlayer) {
-	Client.X = t.X
-	Client.Y = t.Y
-	Client.Z = t.Z
-	Client.Yaw = float64(-t.Yaw) * (math.Pi / 180)
-	Client.Pitch = -float64(t.Pitch)*(math.Pi/180) + math.Pi
-	writeChan <- &protocol.PlayerPositionLook{
-		X:     t.X,
-		Y:     t.Y,
-		Z:     t.Z,
-		Yaw:   t.Yaw,
-		Pitch: t.Pitch,
-	}
 }

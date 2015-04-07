@@ -102,5 +102,9 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		if action == glfw.Release {
 			handler.Action(Debug)
 		}
+	case glfw.KeySpace:
+		if action == glfw.Release || action == glfw.Press {
+			handler.Action(JumpToggle)
+		}
 	}
 }

@@ -15,6 +15,7 @@
 package vmath
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -61,4 +62,8 @@ func (v *Vector3) Apply(m *Matrix4) float64 {
 
 func (v Vector3) AngleTo(other Vector3) float64 {
 	return v.Dot(other) / (v.Length() + other.Length())
+}
+
+func (v Vector3) String() string {
+	return fmt.Sprintf("(%f,%f,%f)", v.X, v.Y, v.Z)
 }
