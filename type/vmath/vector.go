@@ -20,12 +20,12 @@ import (
 
 // Vector3 is a 3 component vector
 type Vector3 struct {
-	X, Y, Z float32
+	X, Y, Z float64
 }
 
 // Dot returns the result of preforming the dot operation on this
 // vector and the passed vector.
-func (v Vector3) Dot(other Vector3) float32 {
+func (v Vector3) Dot(other Vector3) float64 {
 	return v.X*other.X + v.Y*other.Y + v.Z*other.Z
 }
 
@@ -36,29 +36,29 @@ func (v *Vector3) Normalize() {
 	v.Z /= l
 }
 
-func (v Vector3) LengthSquared() float32 {
+func (v Vector3) LengthSquared() float64 {
 	return v.X*v.X + v.Y*v.Y + v.Z*v.Z
 }
 
-func (v Vector3) Length() float32 {
-	return float32(math.Sqrt(float64(v.X*v.X + v.Y*v.Y + v.Z*v.Z)))
+func (v Vector3) Length() float64 {
+	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
 }
 
-func (v *Vector3) Apply(m *Matrix4) float32 {
+func (v *Vector3) Apply(m *Matrix4) float64 {
 	x := v.X
 	y := v.Y
 	z := v.Z
-	w := m[3]*x + m[7]*y + m[11]*z + m[15]
+	w := float64(m[3])*x + float64(m[7])*y + float64(m[11])*z + float64(m[15])
 	if w == 0 {
 		w = 1
 	}
 
-	v.X = (m[0]*x + m[4]*y + m[8]*z + m[12]) / w
-	v.Y = (m[1]*x + m[5]*y + m[9]*z + m[13]) / w
-	v.Z = (m[2]*x + m[6]*y + m[10]*z + m[14]) / w
+	v.X = (float64(m[0])*x + float64(m[4])*y + float64(m[8])*z + float64(m[12])) / w
+	v.Y = (float64(m[1])*x + float64(m[5])*y + float64(m[9])*z + float64(m[13])) / w
+	v.Z = (float64(m[2])*x + float64(m[6])*y + float64(m[10])*z + float64(m[14])) / w
 	return w
 }
 
-func (v Vector3) AngleTo(other Vector3) float32 {
+func (v Vector3) AngleTo(other Vector3) float64 {
 	return v.Dot(other) / (v.Length() + other.Length())
 }

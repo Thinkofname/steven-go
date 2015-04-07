@@ -88,7 +88,7 @@ func (d Type) Offset() (x, y, z int) {
 // AsVector returns a vector of the direction's offset.
 func (d Type) AsVector() vmath.Vector3 {
 	x, y, z := d.Offset()
-	return vmath.Vector3{float32(x), float32(y), float32(z)}
+	return vmath.Vector3{float64(x), float64(y), float64(z)}
 }
 
 // Opposite returns the direction directly opposite to this

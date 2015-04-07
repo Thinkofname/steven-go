@@ -20,7 +20,7 @@ type Frustum struct {
 
 type fPlane struct {
 	N Vector3
-	D float32
+	D float64
 }
 
 func (f *Frustum) FromMatrix(m *Matrix4) {
@@ -28,11 +28,11 @@ func (f *Frustum) FromMatrix(m *Matrix4) {
 		off := i >> 1
 		f.planes[i] = fPlane{
 			N: Vector3{
-				X: m.Get(0, 3) - m.Get(0, off),
-				Y: m.Get(1, 3) - m.Get(1, off),
-				Z: m.Get(2, 3) - m.Get(2, off),
+				X: float64(m.Get(0, 3) - m.Get(0, off)),
+				Y: float64(m.Get(1, 3) - m.Get(1, off)),
+				Z: float64(m.Get(2, 3) - m.Get(2, off)),
 			},
-			D: m.Get(3, 3) - m.Get(3, off),
+			D: float64(m.Get(3, 3) - m.Get(3, off)),
 		}
 	}
 
@@ -41,7 +41,7 @@ func (f *Frustum) FromMatrix(m *Matrix4) {
 	}
 }
 
-func (f *Frustum) IsSphereInside(x, y, z, radius float32) bool {
+func (f *Frustum) IsSphereInside(x, y, z, radius float64) bool {
 	center := Vector3{x, y, z}
 	for i := 0; i < 6; i++ {
 		if center.Dot(f.planes[i].N)+f.planes[i].D+radius <= 0 {

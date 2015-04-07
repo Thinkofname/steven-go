@@ -147,9 +147,9 @@ sync:
 	}
 	nearestBuffer = buffers[chunkPos]
 
-	viewVector.X = float32(math.Cos(float64(Camera.Yaw-math.Pi/2)) * -math.Cos(float64(Camera.Pitch)))
-	viewVector.Z = -float32(math.Sin(float64(Camera.Yaw-math.Pi/2)) * -math.Cos(float64(Camera.Pitch)))
-	viewVector.Y = -float32(math.Sin(float64(Camera.Pitch)))
+	viewVector.X = math.Cos(Camera.Yaw-math.Pi/2) * -math.Cos(Camera.Pitch)
+	viewVector.Z = -math.Sin(Camera.Yaw-math.Pi/2) * -math.Cos(Camera.Pitch)
+	viewVector.Y = -math.Sin(Camera.Pitch)
 
 	for _, dir := range direction.Values {
 		validDirs[dir] = viewVector.Dot(dir.AsVector()) > -0.8
@@ -209,9 +209,9 @@ itQueue:
 		req := rQueue.Take()
 		chunk, pos, from = req.chunk, req.pos, req.from
 		v := vmath.Vector3{
-			float32((pos.X<<4)+8) - float32(Camera.X),
-			float32((pos.Y<<4)+8) - float32(Camera.Y+1.62),
-			float32((pos.Z<<4)+8) - float32(Camera.Z),
+			float64((pos.X<<4)+8) - Camera.X,
+			float64((pos.Y<<4)+8) - Camera.Y + 1.62,
+			float64((pos.Z<<4)+8) - Camera.Z,
 		}
 		if (v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0) || req.dist > 16 {
 			continue itQueue
