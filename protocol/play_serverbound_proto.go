@@ -12,13 +12,13 @@ import (
 
 func (k *KeepAliveServerbound) id() int { return 0 }
 func (k *KeepAliveServerbound) write(ww io.Writer) (err error) {
-	if err = writeVarInt(ww, k.ID); err != nil {
+	if err = WriteVarInt(ww, k.ID); err != nil {
 		return
 	}
 	return
 }
 func (k *KeepAliveServerbound) read(rr io.Reader) (err error) {
-	if k.ID, err = readVarInt(rr); err != nil {
+	if k.ID, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	return
@@ -26,13 +26,13 @@ func (k *KeepAliveServerbound) read(rr io.Reader) (err error) {
 
 func (c *ChatMessage) id() int { return 1 }
 func (c *ChatMessage) write(ww io.Writer) (err error) {
-	if err = writeString(ww, c.Message); err != nil {
+	if err = WriteString(ww, c.Message); err != nil {
 		return
 	}
 	return
 }
 func (c *ChatMessage) read(rr io.Reader) (err error) {
-	if c.Message, err = readString(rr); err != nil {
+	if c.Message, err = ReadString(rr); err != nil {
 		return
 	}
 	return
@@ -41,10 +41,10 @@ func (c *ChatMessage) read(rr io.Reader) (err error) {
 func (u *UseEntity) id() int { return 2 }
 func (u *UseEntity) write(ww io.Writer) (err error) {
 	var tmp [4]byte
-	if err = writeVarInt(ww, u.TargetID); err != nil {
+	if err = WriteVarInt(ww, u.TargetID); err != nil {
 		return
 	}
-	if err = writeVarInt(ww, u.Type); err != nil {
+	if err = WriteVarInt(ww, u.Type); err != nil {
 		return
 	}
 	if u.Type == 2 {
@@ -77,10 +77,10 @@ func (u *UseEntity) write(ww io.Writer) (err error) {
 }
 func (u *UseEntity) read(rr io.Reader) (err error) {
 	var tmp [4]byte
-	if u.TargetID, err = readVarInt(rr); err != nil {
+	if u.TargetID, err = ReadVarInt(rr); err != nil {
 		return
 	}
-	if u.Type, err = readVarInt(rr); err != nil {
+	if u.Type, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	if u.Type == 2 {
@@ -108,13 +108,13 @@ func (u *UseEntity) read(rr io.Reader) (err error) {
 
 func (p *Player) id() int { return 3 }
 func (p *Player) write(ww io.Writer) (err error) {
-	if err = writeBool(ww, p.OnGround); err != nil {
+	if err = WriteBool(ww, p.OnGround); err != nil {
 		return
 	}
 	return
 }
 func (p *Player) read(rr io.Reader) (err error) {
-	if p.OnGround, err = readBool(rr); err != nil {
+	if p.OnGround, err = ReadBool(rr); err != nil {
 		return
 	}
 	return
@@ -159,7 +159,7 @@ func (p *PlayerPosition) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:8]); err != nil {
 		return
 	}
-	if err = writeBool(ww, p.OnGround); err != nil {
+	if err = WriteBool(ww, p.OnGround); err != nil {
 		return
 	}
 	return
@@ -184,7 +184,7 @@ func (p *PlayerPosition) read(rr io.Reader) (err error) {
 	}
 	tmp2 = (uint64(tmp[7]) << 0) | (uint64(tmp[6]) << 8) | (uint64(tmp[5]) << 16) | (uint64(tmp[4]) << 24) | (uint64(tmp[3]) << 32) | (uint64(tmp[2]) << 40) | (uint64(tmp[1]) << 48) | (uint64(tmp[0]) << 56)
 	p.Z = math.Float64frombits(tmp2)
-	if p.OnGround, err = readBool(rr); err != nil {
+	if p.OnGround, err = ReadBool(rr); err != nil {
 		return
 	}
 	return
@@ -209,7 +209,7 @@ func (p *PlayerLook) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:4]); err != nil {
 		return
 	}
-	if err = writeBool(ww, p.OnGround); err != nil {
+	if err = WriteBool(ww, p.OnGround); err != nil {
 		return
 	}
 	return
@@ -228,7 +228,7 @@ func (p *PlayerLook) read(rr io.Reader) (err error) {
 	}
 	tmp1 = (uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24)
 	p.Pitch = math.Float32frombits(tmp1)
-	if p.OnGround, err = readBool(rr); err != nil {
+	if p.OnGround, err = ReadBool(rr); err != nil {
 		return
 	}
 	return
@@ -289,7 +289,7 @@ func (p *PlayerPositionLook) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:4]); err != nil {
 		return
 	}
-	if err = writeBool(ww, p.OnGround); err != nil {
+	if err = WriteBool(ww, p.OnGround); err != nil {
 		return
 	}
 	return
@@ -326,7 +326,7 @@ func (p *PlayerPositionLook) read(rr io.Reader) (err error) {
 	}
 	tmp4 = (uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24)
 	p.Pitch = math.Float32frombits(tmp4)
-	if p.OnGround, err = readBool(rr); err != nil {
+	if p.OnGround, err = ReadBool(rr); err != nil {
 		return
 	}
 	return
@@ -465,25 +465,25 @@ func (a *ArmSwing) read(rr io.Reader) (err error) {
 
 func (p *PlayerAction) id() int { return 11 }
 func (p *PlayerAction) write(ww io.Writer) (err error) {
-	if err = writeVarInt(ww, p.EntityID); err != nil {
+	if err = WriteVarInt(ww, p.EntityID); err != nil {
 		return
 	}
-	if err = writeVarInt(ww, p.ActionID); err != nil {
+	if err = WriteVarInt(ww, p.ActionID); err != nil {
 		return
 	}
-	if err = writeVarInt(ww, p.JumpBoost); err != nil {
+	if err = WriteVarInt(ww, p.JumpBoost); err != nil {
 		return
 	}
 	return
 }
 func (p *PlayerAction) read(rr io.Reader) (err error) {
-	if p.EntityID, err = readVarInt(rr); err != nil {
+	if p.EntityID, err = ReadVarInt(rr); err != nil {
 		return
 	}
-	if p.ActionID, err = readVarInt(rr); err != nil {
+	if p.ActionID, err = ReadVarInt(rr); err != nil {
 		return
 	}
-	if p.JumpBoost, err = readVarInt(rr); err != nil {
+	if p.JumpBoost, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	return
@@ -623,7 +623,7 @@ func (c *ConfirmTransactionServerbound) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:2]); err != nil {
 		return
 	}
-	if err = writeBool(ww, c.Accepted); err != nil {
+	if err = WriteBool(ww, c.Accepted); err != nil {
 		return
 	}
 	return
@@ -638,7 +638,7 @@ func (c *ConfirmTransactionServerbound) read(rr io.Reader) (err error) {
 		return
 	}
 	c.ActionNumber = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
-	if c.Accepted, err = readBool(rr); err != nil {
+	if c.Accepted, err = ReadBool(rr); err != nil {
 		return
 	}
 	return
@@ -714,7 +714,7 @@ func (s *SetSign) write(ww io.Writer) (err error) {
 		return
 	}
 	tmp1 := string(tmp0)
-	if err = writeString(ww, tmp1); err != nil {
+	if err = WriteString(ww, tmp1); err != nil {
 		return
 	}
 	var tmp2 []byte
@@ -722,7 +722,7 @@ func (s *SetSign) write(ww io.Writer) (err error) {
 		return
 	}
 	tmp3 := string(tmp2)
-	if err = writeString(ww, tmp3); err != nil {
+	if err = WriteString(ww, tmp3); err != nil {
 		return
 	}
 	var tmp4 []byte
@@ -730,7 +730,7 @@ func (s *SetSign) write(ww io.Writer) (err error) {
 		return
 	}
 	tmp5 := string(tmp4)
-	if err = writeString(ww, tmp5); err != nil {
+	if err = WriteString(ww, tmp5); err != nil {
 		return
 	}
 	var tmp6 []byte
@@ -738,7 +738,7 @@ func (s *SetSign) write(ww io.Writer) (err error) {
 		return
 	}
 	tmp7 := string(tmp6)
-	if err = writeString(ww, tmp7); err != nil {
+	if err = WriteString(ww, tmp7); err != nil {
 		return
 	}
 	return
@@ -750,28 +750,28 @@ func (s *SetSign) read(rr io.Reader) (err error) {
 	}
 	s.Location = (Position(tmp[7]) << 0) | (Position(tmp[6]) << 8) | (Position(tmp[5]) << 16) | (Position(tmp[4]) << 24) | (Position(tmp[3]) << 32) | (Position(tmp[2]) << 40) | (Position(tmp[1]) << 48) | (Position(tmp[0]) << 56)
 	var tmp0 string
-	if tmp0, err = readString(rr); err != nil {
+	if tmp0, err = ReadString(rr); err != nil {
 		return err
 	}
 	if err = json.Unmarshal([]byte(tmp0), &s.Line1); err != nil {
 		return
 	}
 	var tmp1 string
-	if tmp1, err = readString(rr); err != nil {
+	if tmp1, err = ReadString(rr); err != nil {
 		return err
 	}
 	if err = json.Unmarshal([]byte(tmp1), &s.Line2); err != nil {
 		return
 	}
 	var tmp2 string
-	if tmp2, err = readString(rr); err != nil {
+	if tmp2, err = ReadString(rr); err != nil {
 		return err
 	}
 	if err = json.Unmarshal([]byte(tmp2), &s.Line3); err != nil {
 		return
 	}
 	var tmp3 string
-	if tmp3, err = readString(rr); err != nil {
+	if tmp3, err = ReadString(rr); err != nil {
 		return err
 	}
 	if err = json.Unmarshal([]byte(tmp3), &s.Line4); err != nil {
@@ -829,10 +829,10 @@ func (c *ClientAbilities) read(rr io.Reader) (err error) {
 func (t *TabComplete) id() int { return 20 }
 func (t *TabComplete) write(ww io.Writer) (err error) {
 	var tmp [8]byte
-	if err = writeString(ww, t.Text); err != nil {
+	if err = WriteString(ww, t.Text); err != nil {
 		return
 	}
-	if err = writeBool(ww, t.HasTarget); err != nil {
+	if err = WriteBool(ww, t.HasTarget); err != nil {
 		return
 	}
 	if t.HasTarget == true {
@@ -852,10 +852,10 @@ func (t *TabComplete) write(ww io.Writer) (err error) {
 }
 func (t *TabComplete) read(rr io.Reader) (err error) {
 	var tmp [8]byte
-	if t.Text, err = readString(rr); err != nil {
+	if t.Text, err = ReadString(rr); err != nil {
 		return
 	}
-	if t.HasTarget, err = readBool(rr); err != nil {
+	if t.HasTarget, err = ReadBool(rr); err != nil {
 		return
 	}
 	if t.HasTarget == true {
@@ -870,7 +870,7 @@ func (t *TabComplete) read(rr io.Reader) (err error) {
 func (c *ClientSettings) id() int { return 21 }
 func (c *ClientSettings) write(ww io.Writer) (err error) {
 	var tmp [1]byte
-	if err = writeString(ww, c.Locale); err != nil {
+	if err = WriteString(ww, c.Locale); err != nil {
 		return
 	}
 	tmp[0] = byte(c.ViewDistance >> 0)
@@ -881,7 +881,7 @@ func (c *ClientSettings) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:1]); err != nil {
 		return
 	}
-	if err = writeBool(ww, c.ChatColors); err != nil {
+	if err = WriteBool(ww, c.ChatColors); err != nil {
 		return
 	}
 	tmp[0] = byte(c.DisplayedSkinParts >> 0)
@@ -892,7 +892,7 @@ func (c *ClientSettings) write(ww io.Writer) (err error) {
 }
 func (c *ClientSettings) read(rr io.Reader) (err error) {
 	var tmp [1]byte
-	if c.Locale, err = readString(rr); err != nil {
+	if c.Locale, err = ReadString(rr); err != nil {
 		return
 	}
 	if _, err = rr.Read(tmp[:1]); err != nil {
@@ -903,7 +903,7 @@ func (c *ClientSettings) read(rr io.Reader) (err error) {
 		return
 	}
 	c.ChatMode = (byte(tmp[0]) << 0)
-	if c.ChatColors, err = readBool(rr); err != nil {
+	if c.ChatColors, err = ReadBool(rr); err != nil {
 		return
 	}
 	if _, err = rr.Read(tmp[:1]); err != nil {
@@ -915,13 +915,13 @@ func (c *ClientSettings) read(rr io.Reader) (err error) {
 
 func (c *ClientStatus) id() int { return 22 }
 func (c *ClientStatus) write(ww io.Writer) (err error) {
-	if err = writeVarInt(ww, c.ActionID); err != nil {
+	if err = WriteVarInt(ww, c.ActionID); err != nil {
 		return
 	}
 	return
 }
 func (c *ClientStatus) read(rr io.Reader) (err error) {
-	if c.ActionID, err = readVarInt(rr); err != nil {
+	if c.ActionID, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	return
@@ -929,7 +929,7 @@ func (c *ClientStatus) read(rr io.Reader) (err error) {
 
 func (p *PluginMessageServerbound) id() int { return 23 }
 func (p *PluginMessageServerbound) write(ww io.Writer) (err error) {
-	if err = writeString(ww, p.Channel); err != nil {
+	if err = WriteString(ww, p.Channel); err != nil {
 		return
 	}
 	if _, err = ww.Write(p.Data); err != nil {
@@ -938,7 +938,7 @@ func (p *PluginMessageServerbound) write(ww io.Writer) (err error) {
 	return
 }
 func (p *PluginMessageServerbound) read(rr io.Reader) (err error) {
-	if p.Channel, err = readString(rr); err != nil {
+	if p.Channel, err = ReadString(rr); err != nil {
 		return
 	}
 	if p.Data, err = ioutil.ReadAll(rr); err != nil {

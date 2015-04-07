@@ -10,10 +10,10 @@ import (
 func (h *Handshake) id() int { return 0 }
 func (h *Handshake) write(ww io.Writer) (err error) {
 	var tmp [2]byte
-	if err = writeVarInt(ww, h.ProtocolVersion); err != nil {
+	if err = WriteVarInt(ww, h.ProtocolVersion); err != nil {
 		return
 	}
-	if err = writeString(ww, h.Host); err != nil {
+	if err = WriteString(ww, h.Host); err != nil {
 		return
 	}
 	tmp[0] = byte(h.Port >> 8)
@@ -21,24 +21,24 @@ func (h *Handshake) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:2]); err != nil {
 		return
 	}
-	if err = writeVarInt(ww, h.Next); err != nil {
+	if err = WriteVarInt(ww, h.Next); err != nil {
 		return
 	}
 	return
 }
 func (h *Handshake) read(rr io.Reader) (err error) {
 	var tmp [2]byte
-	if h.ProtocolVersion, err = readVarInt(rr); err != nil {
+	if h.ProtocolVersion, err = ReadVarInt(rr); err != nil {
 		return
 	}
-	if h.Host, err = readString(rr); err != nil {
+	if h.Host, err = ReadString(rr); err != nil {
 		return
 	}
 	if _, err = rr.Read(tmp[:2]); err != nil {
 		return
 	}
 	h.Port = (uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8)
-	if h.Next, err = readVarInt(rr); err != nil {
+	if h.Next, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	return

@@ -100,11 +100,15 @@ func (w *writing) writeNamed(t, name string, tag reflect.StructTag) {
 			imports["encoding/json"] = struct{}{}
 			tmp1 := w.tmp()
 			tmp2 := w.tmp()
+			writeString := "WriteString"
+			if notProtocol {
+				writeString = "protocol.WriteString"
+			}
 			fmt.Fprintf(&w.buf, `var %[1]s []byte
 				if %[1]s, err = json.Marshal(&%[2]s); err != nil { return }
 				%[3]s := string(%[1]s)
-				if err = writeString(ww, %[3]s); err != nil { return  }
-			`, tmp1, name, tmp2)
+				if err = %[4]s(ww, %[3]s); err != nil { return  }
+			`, tmp1, name, tmp2, writeString)
 		case "raw":
 			fmt.Fprintf(&w.buf, "if err = %s.Serialize(ww); err != nil { return  }\n", name)
 		default:
@@ -120,17 +124,17 @@ func (w *writing) writeNamed(t, name string, tag reflect.StructTag) {
 
 	switch t {
 	case "VarInt":
-		funcName = "writeVarInt"
+		funcName = "WriteVarInt"
 	case "VarLong":
-		funcName = "writeVarLong"
+		funcName = "WriteVarLong"
 	case "string":
-		funcName = "writeString"
+		funcName = "WriteString"
 	case "bool":
-		funcName = "writeBool"
+		funcName = "WriteBool"
 	case "Metadata":
 		funcName = "writeMetadata"
 	case "nbt.Compound":
-		funcName = "writeNBT"
+		funcName = "WriteNBT"
 	case "int8", "uint8", "byte":
 		w.scratch(1)
 		generateNumberWrite(&w.buf, name, t, 1, t[0] != 'i')

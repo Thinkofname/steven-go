@@ -46,14 +46,15 @@ func varIntSize(i VarInt) int {
 
 }
 
-func writeVarInt(w io.Writer, i VarInt) error {
+// WriteVarInt encodes the passed VarInt into the writer.
+func WriteVarInt(w io.Writer, i VarInt) error {
 	ui := uint32(i)
 	for {
 		if (ui & ^varPart) == 0 {
-			err := writeByte(w, byte(ui))
+			err := WriteByte(w, byte(ui))
 			return err
 		}
-		err := writeByte(w, byte((ui&varPart)|0x80))
+		err := WriteByte(w, byte((ui&varPart)|0x80))
 		if err != nil {
 			return err
 		}
@@ -61,11 +62,12 @@ func writeVarInt(w io.Writer, i VarInt) error {
 	}
 }
 
-func readVarInt(r io.Reader) (VarInt, error) {
+// ReadVarInt reads a VarInt encoded integer from the reader.
+func ReadVarInt(r io.Reader) (VarInt, error) {
 	var size uint
 	var val uint32
 	for {
-		b, err := readByte(r)
+		b, err := ReadByte(r)
 		if err != nil {
 			return VarInt(val), err
 		}
@@ -83,14 +85,15 @@ func readVarInt(r io.Reader) (VarInt, error) {
 	return VarInt(val), nil
 }
 
-func writeVarLong(w io.Writer, i VarLong) error {
+// WriteVarLong encodes the passed VarLong into the writer.
+func WriteVarLong(w io.Writer, i VarLong) error {
 	ui := uint64(i)
 	for {
 		if (ui & ^varPartLong) == 0 {
-			err := writeByte(w, byte(ui))
+			err := WriteByte(w, byte(ui))
 			return err
 		}
-		err := writeByte(w, byte((ui&varPartLong)|0x80))
+		err := WriteByte(w, byte((ui&varPartLong)|0x80))
 		if err != nil {
 			return err
 		}
@@ -98,11 +101,12 @@ func writeVarLong(w io.Writer, i VarLong) error {
 	}
 }
 
-func readVarLong(r io.Reader) (VarLong, error) {
+// ReadVarLong reads a VarLong encoded 64 bit integer from the reader.
+func ReadVarLong(r io.Reader) (VarLong, error) {
 	var size uint
 	var val uint64
 	for {
-		b, err := readByte(r)
+		b, err := ReadByte(r)
 		if err != nil {
 			return VarLong(val), err
 		}
@@ -120,9 +124,11 @@ func readVarLong(r io.Reader) (VarLong, error) {
 	return VarLong(val), nil
 }
 
-func writeString(w io.Writer, str string) error {
+// WriteString writes a VarInt prefixed utf-8 string to the
+// writer.
+func WriteString(w io.Writer, str string) error {
 	b := []byte(str)
-	err := writeVarInt(w, VarInt(len(b)))
+	err := WriteVarInt(w, VarInt(len(b)))
 	if err != nil {
 		return err
 	}
@@ -130,8 +136,10 @@ func writeString(w io.Writer, str string) error {
 	return err
 }
 
-func readString(r io.Reader) (string, error) {
-	l, err := readVarInt(r)
+// ReadString reads a VarInt prefixed utf-8 string to the
+// reader.
+func ReadString(r io.Reader) (string, error) {
+	l, err := ReadVarInt(r)
 	if err != nil {
 		return "", nil
 	}
@@ -140,22 +148,26 @@ func readString(r io.Reader) (string, error) {
 	return string(buf), err
 }
 
-func writeBool(w io.Writer, b bool) error {
+// WriteBool writes a bool to the writer as a single byte.
+func WriteBool(w io.Writer, b bool) error {
 	if b {
-		return writeByte(w, 1)
+		return WriteByte(w, 1)
 	}
-	return writeByte(w, 0)
+	return WriteByte(w, 0)
 }
 
-func readBool(r io.Reader) (bool, error) {
-	b, err := readByte(r)
+// ReadBool reads a single byte from the reader as a bool.
+func ReadBool(r io.Reader) (bool, error) {
+	b, err := ReadByte(r)
 	if b == 0 {
 		return false, err
 	}
 	return true, err
 }
 
-func writeByte(w io.Writer, b byte) error {
+// WriteByte writes a single byte to the writer. If the
+// Writer is a ByteWriter then that will be used instead.
+func WriteByte(w io.Writer, b byte) error {
 	if bw, ok := w.(io.ByteWriter); ok {
 		return bw.WriteByte(b)
 	}
@@ -165,7 +177,9 @@ func writeByte(w io.Writer, b byte) error {
 	return err
 }
 
-func readByte(r io.Reader) (byte, error) {
+// ReadByte reads a single byte from the Reader. If the
+// Reader is a ByteReader then that will be used instead.
+func ReadByte(r io.Reader) (byte, error) {
 	if br, ok := r.(io.ByteReader); ok {
 		return br.ReadByte()
 	}
@@ -174,8 +188,10 @@ func readByte(r io.Reader) (byte, error) {
 	return buf[0], err
 }
 
-func readNBT(r io.Reader) (*nbt.Compound, error) {
-	b, err := readByte(r)
+// ReadNBT reads an nbt tag from the reader.
+// Returns nil if there is no tag.
+func ReadNBT(r io.Reader) (*nbt.Compound, error) {
+	b, err := ReadByte(r)
 	if err != nil || b == 0 { // 0 == No tag
 		return nil, err
 	}
@@ -184,9 +200,11 @@ func readNBT(r io.Reader) (*nbt.Compound, error) {
 	return n, err
 }
 
-func writeNBT(w io.Writer, n *nbt.Compound) error {
+// WriteNBT writes an nbt tag to the wrtier.
+// nil can be used to specify that there isn't a tag.
+func WriteNBT(w io.Writer, n *nbt.Compound) error {
 	if n == nil {
-		return writeByte(w, 0)
+		return WriteByte(w, 0)
 	}
 	return n.Serialize(w)
 }

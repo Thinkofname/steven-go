@@ -44,7 +44,7 @@ func (i *ItemStack) Serialize(w io.Writer) error {
 	if err := binary.Write(w, binary.BigEndian, i.Damage); err != nil {
 		return err
 	}
-	return writeNBT(w, i.NBT)
+	return WriteNBT(w, i.NBT)
 }
 
 // Deserialize reads an item stack from the reader into this item stack.
@@ -62,6 +62,6 @@ func (i *ItemStack) Deserialize(r io.Reader) error {
 		return err
 	}
 	var err error
-	i.NBT, err = readNBT(r)
+	i.NBT, err = ReadNBT(r)
 	return err
 }

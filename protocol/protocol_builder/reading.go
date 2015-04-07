@@ -118,10 +118,14 @@ func (r *reading) readNamed(t, name string, tag reflect.StructTag) {
 		case "json":
 			imports["encoding/json"] = struct{}{}
 			tmp1 := r.tmp()
+			readString := "ReadString"
+			if notProtocol {
+				readString = "protocol.ReadString"
+			}
 			fmt.Fprintf(&r.buf, `var %[1]s string 
-			if %[1]s, err = readString(rr); err != nil { return err }
+			if %[1]s, err = %[3]s(rr); err != nil { return err }
 			if err = json.Unmarshal([]byte(%[1]s), &%[2]s); err != nil { return  }
-			`, tmp1, name)
+			`, tmp1, name, readString)
 		case "raw":
 			fmt.Fprintf(&r.buf, "if err = %s.Deserialize(rr); err != nil { return  }\n", name)
 		default:
@@ -139,17 +143,17 @@ func (r *reading) readNamed(t, name string, tag reflect.StructTag) {
 
 	switch t {
 	case "VarInt":
-		funcName = "readVarInt"
+		funcName = "ReadVarInt"
 	case "VarLong":
-		funcName = "readVarLong"
+		funcName = "ReadVarLong"
 	case "string":
-		funcName = "readString"
+		funcName = "ReadString"
 	case "bool":
-		funcName = "readBool"
+		funcName = "ReadBool"
 	case "Metadata":
 		funcName = "readMetadata"
 	case "nbt.Compound":
-		funcName = "readNBT"
+		funcName = "ReadNBT"
 	case "int8", "uint8", "byte":
 		r.scratch(1)
 		generateNumberRead(&r.buf, name, t, 1, t[0] != 'i')

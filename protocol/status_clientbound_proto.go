@@ -15,14 +15,14 @@ func (s *StatusResponse) write(ww io.Writer) (err error) {
 		return
 	}
 	tmp1 := string(tmp0)
-	if err = writeString(ww, tmp1); err != nil {
+	if err = WriteString(ww, tmp1); err != nil {
 		return
 	}
 	return
 }
 func (s *StatusResponse) read(rr io.Reader) (err error) {
 	var tmp0 string
-	if tmp0, err = readString(rr); err != nil {
+	if tmp0, err = ReadString(rr); err != nil {
 		return err
 	}
 	if err = json.Unmarshal([]byte(tmp0), &s.Status); err != nil {

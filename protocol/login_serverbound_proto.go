@@ -9,13 +9,13 @@ import (
 
 func (l *LoginStart) id() int { return 0 }
 func (l *LoginStart) write(ww io.Writer) (err error) {
-	if err = writeString(ww, l.Username); err != nil {
+	if err = WriteString(ww, l.Username); err != nil {
 		return
 	}
 	return
 }
 func (l *LoginStart) read(rr io.Reader) (err error) {
-	if l.Username, err = readString(rr); err != nil {
+	if l.Username, err = ReadString(rr); err != nil {
 		return
 	}
 	return
@@ -23,13 +23,13 @@ func (l *LoginStart) read(rr io.Reader) (err error) {
 
 func (e *EncryptionResponse) id() int { return 1 }
 func (e *EncryptionResponse) write(ww io.Writer) (err error) {
-	if err = writeVarInt(ww, VarInt(len(e.SharedSecret))); err != nil {
+	if err = WriteVarInt(ww, VarInt(len(e.SharedSecret))); err != nil {
 		return
 	}
 	if _, err = ww.Write(e.SharedSecret); err != nil {
 		return
 	}
-	if err = writeVarInt(ww, VarInt(len(e.VerifyToken))); err != nil {
+	if err = WriteVarInt(ww, VarInt(len(e.VerifyToken))); err != nil {
 		return
 	}
 	if _, err = ww.Write(e.VerifyToken); err != nil {
@@ -39,7 +39,7 @@ func (e *EncryptionResponse) write(ww io.Writer) (err error) {
 }
 func (e *EncryptionResponse) read(rr io.Reader) (err error) {
 	var tmp0 VarInt
-	if tmp0, err = readVarInt(rr); err != nil {
+	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	e.SharedSecret = make([]byte, tmp0)
@@ -47,7 +47,7 @@ func (e *EncryptionResponse) read(rr io.Reader) (err error) {
 		return
 	}
 	var tmp1 VarInt
-	if tmp1, err = readVarInt(rr); err != nil {
+	if tmp1, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	e.VerifyToken = make([]byte, tmp1)

@@ -35,7 +35,7 @@ type Metadata map[int]interface{}
 func readMetadata(r io.Reader) (Metadata, error) {
 	m := make(Metadata)
 	for {
-		b, err := readByte(r)
+		b, err := ReadByte(r)
 		if err != nil || b == 0x7F {
 			return m, err
 		}
@@ -60,7 +60,7 @@ func readMetadata(r io.Reader) (Metadata, error) {
 			err = binary.Read(r, binary.BigEndian, &val)
 			m[index] = val
 		case 4:
-			m[index], err = readString(r)
+			m[index], err = ReadString(r)
 		case 5:
 			i := ItemStack{}
 			err = i.Deserialize(r)
@@ -109,7 +109,7 @@ func writeMetadata(w io.Writer, m Metadata) error {
 		default:
 			return errors.New("invalid metadata type")
 		}
-		if err := writeByte(w, byte(index)|(byte(t)<<5)); err != nil {
+		if err := WriteByte(w, byte(index)|(byte(t)<<5)); err != nil {
 			return err
 		}
 		var err error
@@ -118,7 +118,7 @@ func writeMetadata(w io.Writer, m Metadata) error {
 		} else {
 			switch v := v.(type) {
 			case string:
-				err = writeString(w, v)
+				err = WriteString(w, v)
 			case ItemStack:
 				err = v.Serialize(w)
 			}
@@ -127,5 +127,5 @@ func writeMetadata(w io.Writer, m Metadata) error {
 			return err
 		}
 	}
-	return writeByte(w, 0x7F)
+	return WriteByte(w, 0x7F)
 }

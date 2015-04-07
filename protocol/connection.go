@@ -99,7 +99,7 @@ func (c *Conn) WritePacket(packet Packet) error {
 	buf := &bytes.Buffer{}
 
 	// Contents of the packet (ID + Data)
-	if err := writeVarInt(buf, VarInt(packet.id())); err != nil {
+	if err := WriteVarInt(buf, VarInt(packet.id())); err != nil {
 		return err
 	}
 	if err := packet.write(buf); err != nil {
@@ -134,13 +134,13 @@ func (c *Conn) WritePacket(packet Packet) error {
 	}
 
 	// Write the length prefix followed by the buffer
-	if err := writeVarInt(c.w, VarInt(buf.Len()+extra)); err != nil {
+	if err := WriteVarInt(c.w, VarInt(buf.Len()+extra)); err != nil {
 		return err
 	}
 
 	// Write the uncompressed packet size
 	if c.compressionThreshold >= 0 {
-		if err := writeVarInt(c.w, VarInt(uncompessedSize)); err != nil {
+		if err := WriteVarInt(c.w, VarInt(uncompessedSize)); err != nil {
 			return err
 		}
 	}
@@ -155,7 +155,7 @@ func (c *Conn) ReadPacket() (Packet, error) {
 	// 15 second timeout
 	c.net.SetReadDeadline(time.Now().Add(15 * time.Second))
 	// Length prefix
-	size, err := readVarInt(c.r)
+	size, err := ReadVarInt(c.r)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (c *Conn) ReadPacket() (Packet, error) {
 	if c.compressionThreshold >= 0 {
 		// With compression enabled an extra length prefix is added
 		// which is the length of the packet when uncompressed.
-		uncompSize, err := readVarInt(r)
+		uncompSize, err := ReadVarInt(r)
 		if err != nil {
 			return nil, err
 		}
@@ -202,7 +202,7 @@ func (c *Conn) ReadPacket() (Packet, error) {
 	}
 
 	// Packet ID
-	id, err := readVarInt(r)
+	id, err := ReadVarInt(r)
 	if err != nil {
 		return nil, err
 	}

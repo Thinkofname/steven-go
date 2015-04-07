@@ -15,14 +15,14 @@ func (l *LoginDisconnect) write(ww io.Writer) (err error) {
 		return
 	}
 	tmp1 := string(tmp0)
-	if err = writeString(ww, tmp1); err != nil {
+	if err = WriteString(ww, tmp1); err != nil {
 		return
 	}
 	return
 }
 func (l *LoginDisconnect) read(rr io.Reader) (err error) {
 	var tmp0 string
-	if tmp0, err = readString(rr); err != nil {
+	if tmp0, err = ReadString(rr); err != nil {
 		return err
 	}
 	if err = json.Unmarshal([]byte(tmp0), &l.Reason); err != nil {
@@ -33,16 +33,16 @@ func (l *LoginDisconnect) read(rr io.Reader) (err error) {
 
 func (e *EncryptionRequest) id() int { return 1 }
 func (e *EncryptionRequest) write(ww io.Writer) (err error) {
-	if err = writeString(ww, e.ServerID); err != nil {
+	if err = WriteString(ww, e.ServerID); err != nil {
 		return
 	}
-	if err = writeVarInt(ww, VarInt(len(e.PublicKey))); err != nil {
+	if err = WriteVarInt(ww, VarInt(len(e.PublicKey))); err != nil {
 		return
 	}
 	if _, err = ww.Write(e.PublicKey); err != nil {
 		return
 	}
-	if err = writeVarInt(ww, VarInt(len(e.VerifyToken))); err != nil {
+	if err = WriteVarInt(ww, VarInt(len(e.VerifyToken))); err != nil {
 		return
 	}
 	if _, err = ww.Write(e.VerifyToken); err != nil {
@@ -51,11 +51,11 @@ func (e *EncryptionRequest) write(ww io.Writer) (err error) {
 	return
 }
 func (e *EncryptionRequest) read(rr io.Reader) (err error) {
-	if e.ServerID, err = readString(rr); err != nil {
+	if e.ServerID, err = ReadString(rr); err != nil {
 		return
 	}
 	var tmp0 VarInt
-	if tmp0, err = readVarInt(rr); err != nil {
+	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	e.PublicKey = make([]byte, tmp0)
@@ -63,7 +63,7 @@ func (e *EncryptionRequest) read(rr io.Reader) (err error) {
 		return
 	}
 	var tmp1 VarInt
-	if tmp1, err = readVarInt(rr); err != nil {
+	if tmp1, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	e.VerifyToken = make([]byte, tmp1)
@@ -75,19 +75,19 @@ func (e *EncryptionRequest) read(rr io.Reader) (err error) {
 
 func (l *LoginSuccess) id() int { return 2 }
 func (l *LoginSuccess) write(ww io.Writer) (err error) {
-	if err = writeString(ww, l.UUID); err != nil {
+	if err = WriteString(ww, l.UUID); err != nil {
 		return
 	}
-	if err = writeString(ww, l.Username); err != nil {
+	if err = WriteString(ww, l.Username); err != nil {
 		return
 	}
 	return
 }
 func (l *LoginSuccess) read(rr io.Reader) (err error) {
-	if l.UUID, err = readString(rr); err != nil {
+	if l.UUID, err = ReadString(rr); err != nil {
 		return
 	}
-	if l.Username, err = readString(rr); err != nil {
+	if l.Username, err = ReadString(rr); err != nil {
 		return
 	}
 	return
@@ -95,13 +95,13 @@ func (l *LoginSuccess) read(rr io.Reader) (err error) {
 
 func (s *SetInitialCompression) id() int { return 3 }
 func (s *SetInitialCompression) write(ww io.Writer) (err error) {
-	if err = writeVarInt(ww, s.Threshold); err != nil {
+	if err = WriteVarInt(ww, s.Threshold); err != nil {
 		return
 	}
 	return
 }
 func (s *SetInitialCompression) read(rr io.Reader) (err error) {
-	if s.Threshold, err = readVarInt(rr); err != nil {
+	if s.Threshold, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	return
