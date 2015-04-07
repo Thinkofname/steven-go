@@ -22,6 +22,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/thinkofdeath/steven/type/vmath"
 )
 
 var (
@@ -42,6 +44,9 @@ type Block interface {
 	SID() uint16
 	Set(key string, val interface{}) Block
 	UpdateState(x, y, z int) Block
+
+	Collidable() bool
+	CollisionBounds() []vmath.AABB
 
 	ModelName() string
 	ModelVariant() string
@@ -67,6 +72,8 @@ type baseBlock struct {
 	cullAgainst   bool
 	BlockVariants blockVariants
 	translucent   bool
+	collidable    bool
+	bounds        []vmath.AABB
 }
 
 // Is returns whether this block is a member of the passed Set
@@ -85,6 +92,7 @@ func (b *baseBlock) init(name string) {
 	b.name = name
 	b.plugin = "minecraft"
 	b.cullAgainst = true
+	b.collidable = true
 }
 
 func (b *baseBlock) String() string {
@@ -101,6 +109,19 @@ func (b *baseBlock) Name() string {
 
 func (b *baseBlock) SID() uint16 {
 	return b.StevenID
+}
+
+func (b *baseBlock) Collidable() bool {
+	return b.collidable
+}
+
+func (b *baseBlock) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			*vmath.NewAABB(0, 0, 0, 1.0, 1.0, 1.0),
+		}
+	}
+	return b.bounds
 }
 
 func (b *baseBlock) Models() blockVariants {

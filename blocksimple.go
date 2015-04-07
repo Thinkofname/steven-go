@@ -20,6 +20,7 @@ type blockSimple struct {
 
 type simpleConfig struct {
 	NotCullAgainst bool
+	NoCollision    bool
 }
 
 func initSimple(name string) *BlockSet {
@@ -32,6 +33,7 @@ func initSimpleConfig(name string, config simpleConfig) *BlockSet {
 	set := alloc(s)
 
 	s.cullAgainst = !config.NotCullAgainst
+	s.collidable = !config.NoCollision
 
 	return set
 }

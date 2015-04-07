@@ -119,13 +119,13 @@ func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
 			for x := minX; x < maxX; x++ {
 				b := chunkMap.Block(x, y, z)
 
-				// TODO: Fixme
-				if b.ShouldCullAgainst() {
-					bb := vmath.NewAABB(0, 0, 0, 1.0, 1.0, 1.0)
-					bb.Shift(float64(x), float64(y), float64(z))
-					if bb.Intersects(&bounds) {
-						bounds.MoveOutOf(bb, dir)
-						hit = true
+				if b.Collidable() {
+					for _, bb := range b.CollisionBounds() {
+						bb.Shift(float64(x), float64(y), float64(z))
+						if bb.Intersects(&bounds) {
+							bounds.MoveOutOf(&bb, dir)
+							hit = true
+						}
 					}
 				}
 			}

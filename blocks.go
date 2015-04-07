@@ -16,7 +16,7 @@ package main
 
 // Valid blocks.
 var (
-	BlockAir                        = initSimpleConfig("air", simpleConfig{NotCullAgainst: true})
+	BlockAir                        = initSimpleConfig("air", simpleConfig{NotCullAgainst: true, NoCollision: true})
 	BlockStone                      = initStone("stone")
 	BlockGrass                      = initGrass()
 	BlockDirt                       = initSimple("dirt")
@@ -46,7 +46,7 @@ var (
 	BlockGoldenRail                 = initPoweredRail("golden_rail")
 	BlockDetectorRail               = initPoweredRail("detector_rail")
 	BlockStickyPiston               = initSimple("sticky_piston")
-	BlockWeb                        = initSimpleConfig("web", simpleConfig{NotCullAgainst: true})
+	BlockWeb                        = initSimpleConfig("web", simpleConfig{NotCullAgainst: true, NoCollision: true})
 	BlockTallGrass                  = initTallGrass()
 	BlockDeadBush                   = initDeadBush("deadbush")
 	BlockPiston                     = initSimple("piston")
@@ -55,8 +55,8 @@ var (
 	BlockPistonExtension            = initSimple("piston_extension")
 	BlockYellowFlower               = initSimple("yellow_flower")
 	BlockRedFlower                  = initSimple("red_flower")
-	BlockBrownMushroom              = initSimpleConfig("brown_mushroom", simpleConfig{NotCullAgainst: true})
-	BlockRedMushrrom                = initSimpleConfig("red_mushroom", simpleConfig{NotCullAgainst: true})
+	BlockBrownMushroom              = initSimpleConfig("brown_mushroom", simpleConfig{NotCullAgainst: true, NoCollision: true})
+	BlockRedMushrrom                = initSimpleConfig("red_mushroom", simpleConfig{NotCullAgainst: true, NoCollision: true})
 	BlockGoldBlock                  = initSimple("gold_block")
 	BlockIronBlock                  = initSimple("iron_block")
 	BlockDoubleStoneSlab            = initSimple("double_stone_slab")
@@ -99,7 +99,7 @@ var (
 	BlockSnow                       = initSimple("snow")
 	BlockCactus                     = initSimpleConfig("cactus", simpleConfig{NotCullAgainst: true})
 	BlockClay                       = initSimple("clay")
-	BlockReeds                      = initSimpleConfig("reeds", simpleConfig{NotCullAgainst: true})
+	BlockReeds                      = initSimpleConfig("reeds", simpleConfig{NotCullAgainst: true, NoCollision: true})
 	BlockJukebox                    = initSimple("jukebox")
 	BlockFence                      = initFence("fence", true)
 	BlockPumpkin                    = initSimple("pumpkin")
