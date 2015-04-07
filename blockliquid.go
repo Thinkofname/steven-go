@@ -142,7 +142,7 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int) []chunkVerte
 					float64(vert[v].X)/256.0,
 					float64(vert[v].Y)/256.0,
 					float64(vert[v].Z)/256.0,
-					1, true, l.ForceShade(),
+					1, !l.Lava, l.ForceShade(),
 				)
 
 				if vert[v].TOffsetX == 0 {
