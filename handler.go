@@ -86,11 +86,11 @@ func (handler) ChangeGameState(c *protocol.ChangeGameState) {
 }
 
 func (handler) Teleport(t *protocol.TeleportPlayer) {
-	Client.X = t.X
-	Client.Y = t.Y
-	Client.Z = t.Z
-	Client.Yaw = float64(-t.Yaw) * (math.Pi / 180)
-	Client.Pitch = -float64(t.Pitch)*(math.Pi/180) + math.Pi
+	Client.X = calculateTeleport(teleportRelX, t.Flags, Client.X, t.X)
+	Client.Y = calculateTeleport(teleportRelY, t.Flags, Client.Y, t.Y)
+	Client.Z = calculateTeleport(teleportRelZ, t.Flags, Client.Z, t.Z)
+	Client.Yaw = calculateTeleport(teleportRelYaw, t.Flags, Client.Yaw, float64(-t.Yaw)*(math.Pi/180))
+	Client.Pitch = calculateTeleport(teleportRelPitch, t.Flags, Client.Pitch, -float64(t.Pitch)*(math.Pi/180)+math.Pi)
 	writeChan <- &protocol.PlayerPositionLook{
 		X:        t.X,
 		Y:        t.Y,

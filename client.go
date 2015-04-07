@@ -164,3 +164,20 @@ func (g gameMode) NoClip() bool {
 	}
 	return false
 }
+
+type teleportFlag byte
+
+const (
+	teleportRelX teleportFlag = 1 << iota
+	teleportRelY
+	teleportRelZ
+	teleportRelYaw
+	teleportRelPitch
+)
+
+func calculateTeleport(flag teleportFlag, flags byte, base, val float64) float64 {
+	if flags&byte(flag) != 0 {
+		return base + val
+	}
+	return val
+}
