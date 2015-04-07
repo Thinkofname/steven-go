@@ -15,6 +15,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 	"reflect"
@@ -35,6 +36,7 @@ func (h handler) Init() {
 	v := reflect.ValueOf(h)
 
 	packet := reflect.TypeOf((*protocol.Packet)(nil)).Elem()
+	pm := reflect.TypeOf((*pluginMessage)(nil)).Elem()
 
 	for i := 0; i < v.NumMethod(); i++ {
 		m := v.Method(i)
@@ -43,13 +45,13 @@ func (h handler) Init() {
 			continue
 		}
 		in := t.In(0)
-		if in.AssignableTo(packet) {
+		if in.AssignableTo(packet) || in.AssignableTo(pm) {
 			h[in] = m
 		}
 	}
 }
 
-func (h handler) Handle(packet protocol.Packet) {
+func (h handler) Handle(packet interface{}) {
 	m, ok := h[reflect.TypeOf(packet)]
 	if ok {
 		m.Call([]reflect.Value{reflect.ValueOf(packet)})
@@ -109,6 +111,21 @@ func (handler) SetBlockBatch(b *protocol.MultiBlockChange) {
 	}
 }
 
+func (handler) JoinGame(j *protocol.JoinGame) {
+	ready = true
+	sendPluginMessage(&pmMinecraftBrand{
+		Brand: "Steven",
+	})
+}
+
+func (h handler) PluginMessage(p *protocol.PluginMessageClientbound) {
+	h.handlePluginMessage(p.Channel, bytes.NewReader(p.Data), false)
+}
+
+func (h handler) ServerBrand(b *pmMinecraftBrand) {
+	fmt.Printf("The server is running: %s\n", b.Brand)
+}
+
 func (handler) Teleport(t *protocol.TeleportPlayer) {
 	render.Camera.X = t.X
 	render.Camera.Y = t.Y
@@ -122,5 +139,4 @@ func (handler) Teleport(t *protocol.TeleportPlayer) {
 		Yaw:   t.Yaw,
 		Pitch: t.Pitch,
 	}
-	ready = true
 }
