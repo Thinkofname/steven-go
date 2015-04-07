@@ -22,7 +22,7 @@ import (
 )
 
 type blocksSnapshot struct {
-	Blocks     []Block
+	Blocks     []uint16
 	BlockLight nibble.Array
 	SkyLight   nibble.Array
 	Biome      []*biome.Type
@@ -33,7 +33,7 @@ type blocksSnapshot struct {
 
 func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 	bs := &blocksSnapshot{
-		Blocks:     make([]Block, w*h*d),
+		Blocks:     make([]uint16, w*h*d),
 		BlockLight: nibble.New(w * h * d),
 		SkyLight:   nibble.New(w * h * d),
 		Biome:      make([]*biome.Type, w*d),
@@ -45,7 +45,7 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 		d:          d,
 	}
 	for i := range bs.Blocks {
-		bs.Blocks[i] = BlockBedrock.Base
+		bs.Blocks[i] = BlockBedrock.Base.SID()
 		bs.SkyLight.Set(i, 15)
 	}
 	for i := range bs.Biome {
@@ -65,35 +65,35 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 			if chunk == nil {
 				continue
 			}
+			x1 := x - cx<<4
+			x2 := x + w - cx<<4
+			z1 := z - cz<<4
+			z2 := z + d - cz<<4
+
+			if x1 < 0 {
+				x1 = 0
+			}
+			if x2 > 16 {
+				x2 = 16
+			}
+			if z1 < 0 {
+				z1 = 0
+			}
+			if z2 > 16 {
+				z2 = 16
+			}
 			for cy := cy1; cy < cy2; cy++ {
 				if cy < 0 || cy > 15 {
 					continue
 				}
 				cs := chunk.Sections[cy]
-				x1 := x - cx<<4
-				x2 := x + w - cx<<4
 				y1 := y - cy<<4
 				y2 := y + h - cy<<4
-				z1 := z - cz<<4
-				z2 := z + d - cz<<4
-
-				if x1 < 0 {
-					x1 = 0
-				}
-				if x2 > 16 {
-					x2 = 16
-				}
 				if y1 < 0 {
 					y1 = 0
 				}
 				if y2 > 16 {
 					y2 = 16
-				}
-				if z1 < 0 {
-					z1 = 0
-				}
-				if z2 > 16 {
-					z2 = 16
 				}
 
 				for yy := y1; yy < y2; yy++ {
@@ -107,10 +107,14 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 								bs.setSkyLight(ox, oy, oz, cs.skyLight(xx, yy, zz))
 							}
 							bs.setBlock(ox, oy, oz, bl)
-
-							bs.setBiome(ox, oz, chunk.biome(xx, zz))
 						}
 					}
+				}
+			}
+			for zz := z1; zz < z2; zz++ {
+				for xx := x1; xx < x2; xx++ {
+					ox, oz := xx+(cx<<4), zz+(cz<<4)
+					bs.setBiome(ox, oz, chunk.biome(xx, zz))
 				}
 			}
 		}
@@ -120,11 +124,11 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 }
 
 func (bs *blocksSnapshot) block(x, y, z int) Block {
-	return bs.Blocks[bs.index(x, y, z)]
+	return allBlocks[bs.Blocks[bs.index(x, y, z)]]
 }
 
 func (bs *blocksSnapshot) setBlock(x, y, z int, b Block) {
-	bs.Blocks[bs.index(x, y, z)] = b
+	bs.Blocks[bs.index(x, y, z)] = b.SID()
 }
 
 func (bs *blocksSnapshot) blockLight(x, y, z int) byte {

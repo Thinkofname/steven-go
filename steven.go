@@ -21,6 +21,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/davecheney/profile"
 	"github.com/thinkofdeath/steven/platform"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/protocol/mojang"
@@ -31,6 +32,10 @@ var loadChan = make(chan struct{})
 var debug bool
 
 func main() {
+	defer profile.Start(&profile.Config{
+		CPUProfile:  true,
+		ProfilePath: "./",
+	}).Stop()
 	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
 
 	if len(os.Args) == 0 {
