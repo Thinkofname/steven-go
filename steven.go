@@ -143,8 +143,8 @@ handle:
 		}
 	}
 
-	Client.renderTick(delta)
 	if ready {
+		Client.renderTick(delta)
 		select {
 		case <-ticker.C:
 			tick()

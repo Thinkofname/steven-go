@@ -37,7 +37,8 @@ var (
 
 	syncChan = make(chan func(), 500)
 
-	glTexture gl.Texture
+	glTexture    gl.Texture
+	textureDepth int
 )
 
 // Start starts the renderer
@@ -64,15 +65,18 @@ func Start(debug bool) {
 	textureLock.Lock()
 	glTexture = gl.CreateTexture()
 	glTexture.Bind(gl.Texture2DArray)
-	glTexture.Image3D(0, BlockAtlasSize, BlockAtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, 1))
+	textureDepth = len(textures)
+	glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, 1))
 	glTexture.Parameter(gl.TextureMagFilter, gl.Nearest)
 	glTexture.Parameter(gl.TextureMinFilter, gl.Nearest)
 	glTexture.Parameter(gl.TextureWrapS, gl.ClampToEdge)
 	glTexture.Parameter(gl.TextureWrapT, gl.ClampToEdge)
 	for i, tex := range textures {
-		glTexture.SubImage3D(0, 0, 0, i, BlockAtlasSize, BlockAtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
+		glTexture.SubImage3D(0, 0, 0, i, AtlasSize, AtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
 	}
 	textureLock.Unlock()
+
+	initUI()
 
 	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
 }
@@ -113,6 +117,24 @@ sync:
 		)
 		gl.Viewport(0, 0, width, height)
 	}
+
+	// Textures
+	textureLock.RLock()
+	if textureDepth != len(textures) {
+		glTexture.Bind(gl.Texture2DArray)
+		textureDepth = len(textures)
+		glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, 1))
+		for i := range textureDirty {
+			textureDirty[i] = true
+		}
+	}
+	for i, tex := range textures {
+		if textureDirty[i] {
+			textureDirty[i] = true
+			glTexture.SubImage3D(0, 0, 0, i, AtlasSize, AtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
+		}
+	}
+	textureLock.RUnlock()
 
 	glTexture.Bind(gl.Texture2DArray)
 	gl.ActiveTexture(0)
@@ -175,6 +197,8 @@ sync:
 		}
 	}
 	gl.Disable(gl.Blend)
+
+	drawUI()
 }
 
 var (

@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/png"
 	"sync"
@@ -29,15 +30,15 @@ import (
 
 var (
 	textures         []*atlas.Type
-	textureViews     []*image.NRGBA
+	textureDirty     []bool
 	textureMap       = map[string]TextureInfo{}
 	textureLock      sync.RWMutex
 	animatedTextures []*animatedTexture
 )
 
 const (
-	BlockAtlasSize    = 512
-	blockAtlasSizeStr = "512"
+	AtlasSize    = 512
+	atlasSizeStr = "512"
 )
 
 // TextureInfo returns information about a texture in an atlas
@@ -63,7 +64,6 @@ func GetTexture(name string) *TextureInfo {
 // TODO(Think) better error handling (if possible to recover?)
 func LoadTextures() {
 	textureLock.Lock()
-	defer textureLock.Unlock()
 
 	// Clear existing
 	textures = nil
@@ -74,6 +74,7 @@ func LoadTextures() {
 		if err != nil {
 			panic(err)
 		}
+		defer r.Close()
 		img, err := png.Decode(r)
 		if err != nil {
 			panic(err)
@@ -87,25 +88,10 @@ func LoadTextures() {
 			draw.Draw(img, img.Bounds(), old, image.ZP, draw.Over)
 			ani = loadAnimation(file, old.Bounds().Dy()/old.Bounds().Dx())
 			ani.Image = old
-			switch old := old.(type) {
-			case *image.NRGBA:
-				ani.Buffer = old.Pix
-			case *image.RGBA:
-				ani.Buffer = old.Pix
-			default:
-				panic(fmt.Sprintf("unsupported image type %T", old))
-			}
+			ani.Buffer = imgToBytes(old)
 			animatedTextures = append(animatedTextures, ani)
 		}
-		var pix []byte
-		switch img := img.(type) {
-		case *image.NRGBA:
-			pix = img.Pix
-		case *image.RGBA:
-			pix = img.Pix
-		default:
-			panic(fmt.Sprintf("unsupported image type %T", img))
-		}
+		pix := imgToBytes(img)
 		name := file[len("textures/blocks/") : len(file)-4]
 		at, rect := addTexture(pix, width, height)
 		info := TextureInfo{
@@ -118,15 +104,34 @@ func LoadTextures() {
 		}
 	}
 
-	at, rect := addTexture([]byte{
-		0, 0, 0, 255,
-		255, 0, 255, 255,
-		255, 0, 255, 255,
-		0, 0, 0, 255,
-	}, 2, 2)
-	textureMap["missing_texture"] = TextureInfo{
-		Rect:  rect,
-		Atlas: at,
+	textureLock.Unlock()
+
+	loadFontInfo()
+	loadFontPage(0)
+}
+
+func imgToBytes(img image.Image) []byte {
+	switch img := img.(type) {
+	case *image.NRGBA:
+		return img.Pix
+	case *image.RGBA:
+		return img.Pix
+	case *image.Paletted:
+		width, height := img.Bounds().Dx(), img.Bounds().Dy()
+		pix := make([]byte, width*height*4)
+		for y := 0; y < height; y++ {
+			for x := 0; x < width; x++ {
+				col := color.NRGBAModel.Convert(img.At(x, y)).(color.NRGBA)
+				index := (y*width + x) * 4
+				pix[index] = col.R
+				pix[index+1] = col.G
+				pix[index+2] = col.B
+				pix[index+3] = col.A
+			}
+		}
+		return pix
+	default:
+		panic(fmt.Sprintf("unsupported image type %T", img))
 	}
 }
 
@@ -137,13 +142,9 @@ func addTexture(pix []byte, width, height int) (int, *atlas.Rect) {
 			return i, rect
 		}
 	}
-	a := atlas.New(BlockAtlasSize, BlockAtlasSize, 4)
+	a := atlas.New(AtlasSize, AtlasSize, 4)
 	textures = append(textures, a)
-	textureViews = append(textureViews, &image.NRGBA{
-		Pix:    a.Buffer,
-		Stride: 4 * BlockAtlasSize,
-		Rect:   image.Rect(0, 0, BlockAtlasSize, BlockAtlasSize),
-	})
+	textureDirty = append(textureDirty, true)
 	rect, err := a.Add(pix, width, height)
 	if err != nil {
 		panic(err)

@@ -16,52 +16,34 @@ package render
 
 import "github.com/thinkofdeath/steven/platform/gl"
 
-type chunkShader struct {
-	Position          gl.Attribute `gl:"aPosition"`
-	TextureInfo       gl.Attribute `gl:"aTextureInfo"`
-	TextureOffset     gl.Attribute `gl:"aTextureOffset"`
-	Color             gl.Attribute `gl:"aColor"`
-	Lighting          gl.Attribute `gl:"aLighting"`
-	PerspectiveMatrix gl.Uniform   `gl:"perspectiveMatrix"`
-	CameraMatrix      gl.Uniform   `gl:"cameraMatrix"`
-	Offset            gl.Uniform   `gl:"offset"`
-	Texture           gl.Uniform   `gl:"textures"`
+type uiShader struct {
+	Position      gl.Attribute `gl:"aPosition"`
+	TextureInfo   gl.Attribute `gl:"aTextureInfo"`
+	TextureOffset gl.Attribute `gl:"aTextureOffset"`
+	Color         gl.Attribute `gl:"aColor"`
+	Texture       gl.Uniform   `gl:"textures"`
 }
 
 const (
-	vertex = `
+	vertexUI = `
 #version 150
-in ivec3 aPosition;
+in vec3 aPosition;
 in vec4 aTextureInfo;
 in vec2 aTextureOffset;
 in vec3 aColor;
-in vec2 aLighting;
-
-uniform mat4 perspectiveMatrix;
-uniform mat4 cameraMatrix;
-uniform vec3 offset;
 
 out vec3 vColor;
 out vec4 vTextureInfo;
 out vec2 vTextureOffset;
-out float vLighting;
-out float dist;
 
 void main() {
-	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
-	vec3 o = vec3(offset.x, -offset.y, offset.z);
-	gl_Position = perspectiveMatrix * cameraMatrix * vec4((pos / 256.0) + o * 16.0, 1.0);
+	gl_Position = vec4((aPosition.x-0.5)*2.0, -(aPosition.y-0.5)*2.0, aPosition.z, 1.0);
 	vColor = aColor;
 	vTextureInfo = aTextureInfo;
 	vTextureOffset = aTextureOffset;
-
-	float light = max(aLighting.x, aLighting.y * 1.0);
-	float val = pow(0.9, 16.0 - light) * 2.0;
-	vLighting = clamp(pow(val, 1.5) * 0.5, 0.0, 1.0);
-	dist = gl_Position.z;
 }
 `
-	fragment = `
+	fragmentUI = `
 #version 150
 
 const float atlasSize = ` + atlasSizeStr + `;
@@ -71,8 +53,6 @@ uniform sampler2DArray textures;
 in vec3 vColor;
 in vec4 vTextureInfo;
 in vec2 vTextureOffset;
-in float vLighting;
-in float dist;
 
 out vec4 fragColor;
 
@@ -83,12 +63,9 @@ void main() {
 	tPos += offset;
 	tPos /= atlasSize;
 	float texID = floor(vTextureInfo.y / atlasSize);
-	vec4 col = texture(textures, vec3(tPos, texID)) ;
-	#ifndef alpha
-	if (col.a < 0.5) discard;
-	#endif
+	vec4 col = texture(textures, vec3(tPos, texID));
+	if (col.a < 0.1) discard;
 	col *= vec4(vColor, 1.0);
-	col.rgb *= vLighting;
 	fragColor = col;
 }
 `

@@ -15,6 +15,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/thinkofdeath/steven/render"
@@ -44,6 +45,8 @@ type ClientState struct {
 	HardCore bool
 
 	Bounds vmath.AABB
+
+	positionText *render.UIText
 }
 
 // The render tick needs to remain pretty light so it
@@ -95,6 +98,14 @@ func (c *ClientState) renderTick(delta float64) {
 		}
 		_, c.OnGround = c.checkCollisions(ground)
 	}
+
+	if c.positionText != nil {
+		c.positionText.Free()
+	}
+	c.positionText = render.AddUIText(
+		fmt.Sprintf("X: %.2f, Y: %.2f, Z: %.2f", c.X, c.Y, c.Z),
+		5, 5, 255, 255, 255,
+	)
 
 	// Copy to the camera
 	render.Camera.X = c.X

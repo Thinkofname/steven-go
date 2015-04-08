@@ -125,7 +125,7 @@ func precomputeModel(bm *blockModel) *processedModel {
 
 			for v := range vert {
 				vert[v].TX = uint16(tex.X)
-				vert[v].TY = uint16(tex.Y + tex.Atlas*render.BlockAtlasSize)
+				vert[v].TY = uint16(tex.Y + tex.Atlas*render.AtlasSize)
 				vert[v].TW = uint16(tex.Width)
 				vert[v].TH = uint16(tex.Height)
 

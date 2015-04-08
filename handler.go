@@ -67,7 +67,6 @@ func (handler) JoinGame(j *protocol.JoinGame) {
 	})
 	Client.GameMode = gameMode(j.Gamemode & 0x7)
 	Client.HardCore = j.Gamemode&0x8 != 0
-	ready = true
 }
 
 func (handler) Respawn(r *protocol.Respawn) {
@@ -99,6 +98,7 @@ func (handler) Teleport(t *protocol.TeleportPlayer) {
 		Pitch:    t.Pitch,
 		OnGround: Client.OnGround,
 	}
+	ready = true
 }
 
 func (handler) ChunkData(c *protocol.ChunkData) {
