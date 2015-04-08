@@ -83,12 +83,7 @@ func (c *ChatUI) renderComponent(line int, co interface{}, color chatGetColorFun
 		for i := 0; i < len(runes); i++ {
 			size := render.SizeOfCharacter(runes[i])
 			if width+size > maxLineWidth {
-				e := &chatUIElement{
-					text:   render.AddUIText(string(runes[:i]), 2+c.lineLength, 480-18, r, g, b),
-					offset: 0,
-					line:   line,
-				}
-				c.Elements = append(c.Elements, e)
+				c.appendText(line, string(runes[:i]), r, g, b)
 				c.lineLength = 0
 				runes = runes[i:]
 				i = 0
@@ -97,19 +92,23 @@ func (c *ChatUI) renderComponent(line int, co interface{}, color chatGetColorFun
 			}
 			width += size
 		}
-		e := &chatUIElement{
-			line:   line,
-			text:   render.AddUIText(string(runes), 2+c.lineLength, 480-18, r, g, b),
-			offset: 0,
-		}
-		c.Elements = append(c.Elements, e)
-		c.lineLength += e.text.Width
+		c.lineLength += c.appendText(line, string(runes), r, g, b)
 		for _, e := range co.Extra {
 			c.renderComponent(line, e.Value, getColor)
 		}
 	default:
 		fmt.Printf("Can't handle %T\n", co)
 	}
+}
+
+func (c *ChatUI) appendText(line int, str string, r, g, b int) float64 {
+	e := &chatUIElement{
+		text:   render.AddUIText(str, 2+c.lineLength, 480-18, r, g, b),
+		offset: 0,
+		line:   line,
+	}
+	c.Elements = append(c.Elements, e)
+	return e.text.Width
 }
 
 type chatGetColorFunc func() chat.Color
