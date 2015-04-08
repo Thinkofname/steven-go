@@ -197,21 +197,19 @@ func (cb *ChunkBuffer) Free() {
 	val--
 	if val <= 0 {
 		delete(bufferColumns, cpos)
+		x, z := cb.X, cb.Z
 		for i := 0; i < 16; i++ {
 			// Update neighbors
-			x, z := cb.X, cb.Z
-			for i := 0; i < 16; i++ {
-				c := buffers[position{x, i, z}]
-				for _, d := range direction.Values {
-					ox, oy, oz := d.Offset()
-					o := buffers[position{x + ox, i + oy, oz + oz}]
-					if o != nil {
-						c.neighborChunks[d] = nil
-						o.neighborChunks[d.Opposite()] = nil
-					}
+			c := buffers[position{x, i, z}]
+			for _, d := range direction.Values {
+				ox, oy, oz := d.Offset()
+				o := buffers[position{x + ox, i + oy, oz + oz}]
+				if o != nil {
+					c.neighborChunks[d] = nil
+					o.neighborChunks[d.Opposite()] = nil
 				}
 			}
-			delete(buffers, position{cb.X, i, cb.Z})
+			delete(buffers, position{x, i, z})
 		}
 	} else {
 		bufferColumns[cpos] = val

@@ -69,7 +69,9 @@ func (c *ChatUI) render(delta float64) {
 		}
 	}
 	for _, e := range c.Elements {
-		e.text.Alpha(c.lineFade[e.line])
+		if e.text != nil {
+			e.text.Alpha(c.lineFade[e.line])
+		}
 	}
 }
 
