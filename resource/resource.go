@@ -84,16 +84,33 @@ func Search(plugin, path, ext string) []string {
 // being an init thing. Also should have a way to get process information.
 
 func init() {
-	defLocation := fmt.Sprintf(".steven/vanilla-%s.res", resourcesVersion)
+	workDir := resolveWorkDir()
+	defLocation := fmt.Sprintf("%s/vanilla-%s.res", workDir, resourcesVersion)
 	f, err := os.Open(defLocation)
 	if os.IsNotExist(err) {
-		f = downloadDefault(defLocation)
+		f = downloadDefault(workDir, defLocation)
 	}
 	fromFile(f)
 
-	if err := loadZip(".steven/pack.zip"); err != nil {
+	if err := loadZip(fmt.Sprintf("%s/pack.zip", workDir)); err != nil {
 		fmt.Printf("Couldn't load pack.zip: %s\n", err)
 	}
+}
+
+func resolveWorkDir() string {
+	stevenHomeEnv := os.Getenv("STEVEN_HOME")
+	if stevenHomeEnv != "" {
+		return stevenHomeEnv;
+	}
+	dataHome := os.Getenv("XDG_DATA_HOME")
+	if dataHome != "" {
+		return fmt.Sprintf("%s/steven/", dataHome)
+	}
+	userHome := os.Getenv("HOME")
+	if userHome != "" {
+		return fmt.Sprintf("%s/.local/share/steven/", userHome)
+	}
+	return ".steven/"
 }
 
 func loadZip(name string) error {
@@ -124,14 +141,14 @@ func fromFile(f *os.File) error {
 	return nil
 }
 
-func downloadDefault(target string) *os.File {
+func downloadDefault(workDir string, target string) *os.File {
 	fmt.Printf("Obtaining vanilla resources for %s, please wait...\n", resourcesVersion)
 	resp, err := http.Get(fmt.Sprintf(vanillaURL, resourcesVersion))
 	if err != nil {
 		panic(err)
 	}
 	defer resp.Body.Close()
-	os.MkdirAll(".steven/", 0777)
+	os.MkdirAll(workDir, 0777)
 	f, err := os.Create(target + ".tmp")
 	if err != nil {
 		panic(err)
