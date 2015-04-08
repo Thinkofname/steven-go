@@ -15,6 +15,7 @@
 package protocol
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/thinkofdeath/steven/chat"
@@ -70,7 +71,7 @@ func (c *Conn) RequestStatus() (response StatusReply, ping time.Duration, err er
 
 	resp, ok := packet.(*StatusResponse)
 	if !ok {
-		err = ErrUnexpectedPacket
+		err = fmt.Errorf("unexpected packet %#v", packet)
 		return
 	}
 	response = resp.Status
@@ -90,7 +91,7 @@ func (c *Conn) RequestStatus() (response StatusReply, ping time.Duration, err er
 
 	_, ok = packet.(*StatusPong)
 	if !ok {
-		err = ErrUnexpectedPacket
+		err = fmt.Errorf("unexpected packet %#v", packet)
 	}
 	ping = time.Now().Sub(t)
 	return

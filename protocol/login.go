@@ -19,6 +19,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"errors"
+	"fmt"
 
 	"github.com/thinkofdeath/steven/protocol/mojang"
 )
@@ -51,7 +52,7 @@ func (c *Conn) LoginToServer(profile mojang.Profile) (err error) {
 	}
 	req, ok := packet.(*EncryptionRequest)
 	if !ok {
-		return ErrUnexpectedPacket
+		return fmt.Errorf("unexpected packet %#v", packet)
 	}
 	var p interface{}
 	if p, err = x509.ParsePKIXPublicKey(req.PublicKey); err != nil {

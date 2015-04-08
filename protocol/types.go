@@ -15,15 +15,8 @@
 package protocol
 
 import (
-	"errors"
 	"fmt"
 	"io"
-)
-
-var (
-	// ErrUnexpectedPacket is returned if the method got a different
-	// packet to the one it expected.
-	ErrUnexpectedPacket = errors.New("unexpected packet")
 )
 
 // Serializable is a type which can be serialized into a packet.
