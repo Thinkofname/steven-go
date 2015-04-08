@@ -110,7 +110,7 @@ func (c *ChatUI) appendText(line int, str string, r, g, b int) float64 {
 		line:   line,
 	}
 	c.Elements = append(c.Elements, e)
-	return e.text.Width
+	return e.text.Width + 2
 }
 
 type chatGetColorFunc func() chat.Color
