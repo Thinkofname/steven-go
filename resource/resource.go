@@ -84,14 +84,14 @@ func Search(plugin, path, ext string) []string {
 // being an init thing. Also should have a way to get process information.
 
 func init() {
-	defLocation := fmt.Sprintf(".steven/vanilla-%s.res", resourcesVersion)
+	defLocation := fmt.Sprintf("./vanilla-%s.res", resourcesVersion)
 	f, err := os.Open(defLocation)
 	if os.IsNotExist(err) {
 		f = downloadDefault(defLocation)
 	}
 	fromFile(f)
 
-	if err := loadZip(".steven/pack.zip"); err != nil {
+	if err := loadZip("./pack.zip"); err != nil {
 		fmt.Printf("Couldn't load pack.zip: %s\n", err)
 	}
 }
@@ -131,7 +131,7 @@ func downloadDefault(target string) *os.File {
 		panic(err)
 	}
 	defer resp.Body.Close()
-	os.MkdirAll(".steven/", 0777)
+	os.MkdirAll("./", 0777)
 	f, err := os.Create(target + ".tmp")
 	if err != nil {
 		panic(err)
