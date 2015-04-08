@@ -70,6 +70,7 @@ func drawUI() {
 		e.draw()
 	}
 
+	// Prevent clipping with the world
 	gl.Clear(gl.DepthBufferBit)
 
 	uiState.program.Use()
@@ -87,6 +88,8 @@ func drawUI() {
 	}
 }
 
+// UIElement is a single element on the screen. It is a rectangle
+// with a texture and a tint.
 type UIElement struct {
 	free bool
 
@@ -98,6 +101,7 @@ type UIElement struct {
 	R, G, B            byte
 }
 
+// AddUIElement creates and adds a single ui element onto the screen.
 func AddUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th int) *UIElement {
 	var e *UIElement
 	if len(uiState.freeElements) == 0 {
@@ -108,6 +112,7 @@ func AddUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th 
 		e = uiState.freeElements[l-1]
 		uiState.freeElements = uiState.freeElements[:l-1]
 	}
+	// (Re)set the information for the element
 	e.X = x / uiWidth
 	e.Y = y / uiHeight
 	e.W = width / uiWidth
@@ -129,6 +134,8 @@ func AddUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th 
 	return e
 }
 
+// Free removes the element from the screen. This may be reused
+// so this element should be considered invalid after this call.
 func (u *UIElement) Free() {
 	if u.free {
 		return

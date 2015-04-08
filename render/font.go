@@ -33,11 +33,15 @@ type fontInfo struct {
 	Start, End int
 }
 
+// UIText is a collection of UI elements that make up a
+// string of characters.
 type UIText struct {
 	elements []*UIElement
 	Width    int
 }
 
+// AddUIText creates and adds a UIText element to the screen with
+// the passed text at the location. The text may be tinted too
 func AddUIText(str string, x, y float64, rr, gg, bb int) *UIText {
 	t := &UIText{}
 	offset := 0.0
@@ -47,10 +51,12 @@ func AddUIText(str string, x, y float64, rr, gg, bb int) *UIText {
 			continue
 		}
 		page := int(r >> 8)
+		// Lazy loading to save memory
 		if !isFontLoaded[page] {
 			loadFontPage(page)
 		}
 		p := fontPages[page]
+		// We don't have font pages for every character
 		if p == nil {
 			continue
 		}
@@ -60,6 +66,7 @@ func AddUIText(str string, x, y float64, rr, gg, bb int) *UIText {
 		cx, cy := c&0xF, c>>4
 		info := fontCharacterInfo[r]
 		if page == 0 {
+			// The first page is 128x128 instead of 256x256
 			tx = cx*8 + info.Start
 			tw = info.End - info.Start
 			ty = cy * 8
@@ -73,6 +80,7 @@ func AddUIText(str string, x, y float64, rr, gg, bb int) *UIText {
 			w = float64(tw)
 		}
 		shadow := AddUIElement(p, x+offset+2, y+2, w, 16, tx, ty, tw, th)
+		// Tint the shadow to a darker shade of the original color
 		shadow.R = byte(float64(rr) * 0.2)
 		shadow.G = byte(float64(gg) * 0.2)
 		shadow.B = byte(float64(bb) * 0.2)
@@ -88,6 +96,8 @@ func AddUIText(str string, x, y float64, rr, gg, bb int) *UIText {
 	return t
 }
 
+// Free frees the UIText's elements. The UIText should be considered
+// invalid after this call.
 func (u *UIText) Free() {
 	for _, e := range u.elements {
 		e.Free()
@@ -100,6 +110,9 @@ func loadFontPage(page int) {
 	isFontLoaded[page] = true
 	var p string
 	if page == 0 {
+		// The ascii font is the minecraft style one
+		// which is the default page 0 instead of the
+		// unicode one for the english locales.
 		p = "ascii"
 	} else {
 		p = fmt.Sprintf("unicode_page_%02x", page)
@@ -122,10 +135,14 @@ func loadFontPage(page int) {
 	}
 	fontPages[page] = info
 	if p == "ascii" {
+		// The font map file included with minecraft has the
+		// wide of the unicode page 0 instead of the ascii one
+		// we need to work this out ourselves
 		calculateFontSizes(img)
 	}
 }
 
+// Scans through each character computing the sizes
 func calculateFontSizes(img image.Image) {
 	for i := 0; i <= 255; i++ {
 		cx := (i & 0xF) * 8
@@ -160,6 +177,8 @@ func loadFontInfo() {
 		panic(err)
 	}
 	for i := range fontCharacterInfo {
+		// Top nibble - start position
+		// Bottom nibble - end position
 		fontCharacterInfo[i].Start = int(data[i] >> 4)
 		fontCharacterInfo[i].End = int(data[i]&0xF) + 1
 	}
