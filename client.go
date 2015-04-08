@@ -47,6 +47,8 @@ type ClientState struct {
 	Bounds vmath.AABB
 
 	positionText *render.UIText
+
+	chat ChatUI
 }
 
 // The render tick needs to remain pretty light so it
@@ -99,6 +101,13 @@ func (c *ClientState) renderTick(delta float64) {
 		_, c.OnGround = c.checkCollisions(ground)
 	}
 
+	// Copy to the camera
+	render.Camera.X = c.X
+	render.Camera.Y = c.Y + playerHeight
+	render.Camera.Z = c.Z
+	render.Camera.Yaw = c.Yaw
+	render.Camera.Pitch = c.Pitch
+
 	if c.positionText != nil {
 		c.positionText.Free()
 	}
@@ -107,12 +116,7 @@ func (c *ClientState) renderTick(delta float64) {
 		5, 5, 255, 255, 255,
 	)
 
-	// Copy to the camera
-	render.Camera.X = c.X
-	render.Camera.Y = c.Y + playerHeight
-	render.Camera.Z = c.Z
-	render.Camera.Yaw = c.Yaw
-	render.Camera.Pitch = c.Pitch
+	c.chat.render()
 }
 
 func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {

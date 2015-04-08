@@ -37,7 +37,7 @@ type fontInfo struct {
 // string of characters.
 type UIText struct {
 	elements []*UIElement
-	Width    int
+	Width    float64
 }
 
 // AddUIText creates and adds a UIText element to the screen with
@@ -81,9 +81,9 @@ func AddUIText(str string, x, y float64, rr, gg, bb int) *UIText {
 		}
 		shadow := AddUIElement(p, x+offset+2, y+2, w, 16, tx, ty, tw, th)
 		// Tint the shadow to a darker shade of the original color
-		shadow.R = byte(float64(rr) * 0.2)
-		shadow.G = byte(float64(gg) * 0.2)
-		shadow.B = byte(float64(bb) * 0.2)
+		shadow.R = byte(float64(rr) * 0.25)
+		shadow.G = byte(float64(gg) * 0.25)
+		shadow.B = byte(float64(bb) * 0.25)
 		t.elements = append(t.elements, shadow)
 		text := AddUIElement(p, x+offset, y, w, 16, tx, ty, tw, th)
 		text.R = byte(rr)
@@ -92,8 +92,17 @@ func AddUIText(str string, x, y float64, rr, gg, bb int) *UIText {
 		t.elements = append(t.elements, text)
 		offset += w + 2
 	}
-	t.Width = int(offset - 2)
+	t.Width = offset - 2
 	return t
+}
+
+// Returns the size of the passed character in pixels.
+func SizeOfCharacter(r rune) int {
+	info := fontCharacterInfo[r]
+	if r>>8 == 0 {
+		return (info.End - info.Start) * 2
+	}
+	return info.End - info.Start
 }
 
 // Free frees the UIText's elements. The UIText should be considered
@@ -101,6 +110,12 @@ func AddUIText(str string, x, y float64, rr, gg, bb int) *UIText {
 func (u *UIText) Free() {
 	for _, e := range u.elements {
 		e.Free()
+	}
+}
+
+func (u *UIText) Shift(x, y float64) {
+	for _, e := range u.elements {
+		e.Shift(x, y)
 	}
 }
 

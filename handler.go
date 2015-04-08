@@ -59,6 +59,7 @@ func (h handler) Handle(packet interface{}) {
 
 func (handler) ServerMessage(msg *protocol.ServerMessage) {
 	fmt.Printf("MSG(%d): %s\n", msg.Type, msg.Message.Value)
+	Client.chat.Add(msg.Message)
 }
 
 func (handler) JoinGame(j *protocol.JoinGame) {

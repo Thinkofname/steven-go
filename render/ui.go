@@ -134,6 +134,11 @@ func AddUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th 
 	return e
 }
 
+func (u *UIElement) Shift(x, y float64) {
+	u.X += x / uiWidth
+	u.Y += y / uiHeight
+}
+
 // Free removes the element from the screen. This may be reused
 // so this element should be considered invalid after this call.
 func (u *UIElement) Free() {
