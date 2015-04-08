@@ -17,6 +17,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/type/vmath"
@@ -48,12 +49,18 @@ type ClientState struct {
 
 	positionText *render.UIText
 
+	fps       int
+	frames    int
+	lastCount time.Time
+	fpsText   *render.UIText
+
 	chat ChatUI
 }
 
 // The render tick needs to remain pretty light so it
 // doesn't hold the lock for too long.
 func (c *ClientState) renderTick(delta float64) {
+	c.frames++
 	if c.GameMode.Fly() {
 		c.X += mf * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
 		c.Z -= mf * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
@@ -114,6 +121,21 @@ func (c *ClientState) renderTick(delta float64) {
 	c.positionText = render.AddUIText(
 		fmt.Sprintf("X: %.2f, Y: %.2f, Z: %.2f", c.X, c.Y, c.Z),
 		5, 5, 255, 255, 255,
+	)
+
+	now := time.Now()
+	if now.Sub(c.lastCount) > time.Second {
+		c.lastCount = now
+		c.fps = c.frames
+		c.frames = 0
+	}
+	if c.fpsText != nil {
+		c.fpsText.Free()
+	}
+	text := fmt.Sprintf("FPS: %d", c.fps)
+	c.fpsText = render.AddUIText(
+		text,
+		800-5-float64(render.SizeOfString(text)), 5, 255, 255, 255,
 	)
 
 	c.chat.render(delta)

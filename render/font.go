@@ -98,11 +98,23 @@ func AddUIText(str string, x, y float64, rr, gg, bb int) *UIText {
 
 // Returns the size of the passed character in pixels.
 func SizeOfCharacter(r rune) int {
+	if r == ' ' {
+		return 4
+	}
 	info := fontCharacterInfo[r]
 	if r>>8 == 0 {
 		return (info.End - info.Start) * 2
 	}
 	return info.End - info.Start
+}
+
+// Returns the size of the passed string in pixels.
+func SizeOfString(str string) int {
+	size := 0
+	for _, r := range str {
+		size += SizeOfCharacter(r) + 2
+	}
+	return size - 1
 }
 
 // Free frees the UIText's elements. The UIText should be considered
