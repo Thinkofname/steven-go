@@ -142,7 +142,7 @@ func addTexture(pix []byte, width, height int) (int, *atlas.Rect) {
 			return i, rect
 		}
 	}
-	a := atlas.New(AtlasSize, AtlasSize, 4)
+	a := atlas.NewPadded(AtlasSize, AtlasSize, 4, 1)
 	textures = append(textures, a)
 	textureDirty = append(textureDirty, true)
 	rect, err := a.Add(pix, width, height)
