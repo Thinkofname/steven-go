@@ -174,7 +174,6 @@ itQueue:
 			}
 			x &= 0xF
 			z &= 0xF
-			// ch.updateLight(exLight, l, x, y, z, get, set, sky)
 			queue = append(queue, lightState{ch, exLight, l, x, y, z})
 			continue itQueue
 		}
@@ -222,7 +221,6 @@ itQueue:
 					ex = 0
 				}
 			}
-			// c.updateLight(ex, nl, x+ox, (sec.Y<<4)+y+oy, z+oz, get, set, sky)
 			queue = append(queue, lightState{c, ex, nl, x + ox, (sec.Y << 4) + y + oy, z + oz})
 		}
 	}
