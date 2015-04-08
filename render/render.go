@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/thinkofdeath/steven/platform"
-	"github.com/thinkofdeath/steven/platform/gl"
+	"github.com/thinkofdeath/steven/render/gl"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
 )

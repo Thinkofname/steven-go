@@ -14,7 +14,7 @@
 
 package render
 
-import "github.com/thinkofdeath/steven/platform/gl"
+import "github.com/thinkofdeath/steven/render/gl"
 
 type chunkShader struct {
 	Position          gl.Attribute `gl:"aPosition"`

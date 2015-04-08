@@ -14,7 +14,7 @@
 
 package render
 
-import "github.com/thinkofdeath/steven/platform/gl"
+import "github.com/thinkofdeath/steven/render/gl"
 
 type uiShader struct {
 	Position      gl.Attribute `gl:"aPosition"`

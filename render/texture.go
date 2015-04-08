@@ -23,8 +23,8 @@ import (
 	"image/png"
 	"sync"
 
-	"github.com/thinkofdeath/steven/platform/gl"
 	"github.com/thinkofdeath/steven/render/atlas"
+	"github.com/thinkofdeath/steven/render/gl"
 	"github.com/thinkofdeath/steven/resource"
 )
 
