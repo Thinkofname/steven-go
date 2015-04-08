@@ -113,9 +113,18 @@ func (u *UIText) Free() {
 	}
 }
 
+// Shift moves all the elements belonging to this UIText by the
+// passed amounts.
 func (u *UIText) Shift(x, y float64) {
 	for _, e := range u.elements {
 		e.Shift(x, y)
+	}
+}
+
+// Alpha changes the alpha of all theelements belonging to this UIText
+func (u *UIText) Alpha(a float64) {
+	for _, e := range u.elements {
+		e.Alpha(a)
 	}
 }
 

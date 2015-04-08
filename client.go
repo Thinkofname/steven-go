@@ -116,7 +116,7 @@ func (c *ClientState) renderTick(delta float64) {
 		5, 5, 255, 255, 255,
 	)
 
-	c.chat.render()
+	c.chat.render(delta)
 }
 
 func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {

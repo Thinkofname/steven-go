@@ -29,8 +29,9 @@ const (
 type ChatUI struct {
 	Elements []*chatUIElement
 
-	dirty bool
-	Lines [chatHistoryLines]chat.AnyComponent
+	dirty    bool
+	Lines    [chatHistoryLines]chat.AnyComponent
+	lineFade [chatHistoryLines]float64
 
 	lineLength float64
 }
@@ -38,31 +39,41 @@ type ChatUI struct {
 type chatUIElement struct {
 	text   *render.UIText
 	offset int
+	line   int
 }
 
-func (c *ChatUI) render() {
-	if !c.dirty {
-		return
+func (c *ChatUI) render(delta float64) {
+	for i := range c.lineFade {
+		if c.lineFade[i] > 0 {
+			c.lineFade[i] -= 0.005 * delta
+		} else {
+			c.lineFade[i] = 0
+		}
 	}
-	c.dirty = false
+	if c.dirty {
+		c.dirty = false
+		for _, e := range c.Elements {
+			if e.text != nil {
+				e.text.Free()
+			}
+		}
+		c.Elements = nil
+
+		for i, line := range c.Lines {
+			c.newLine()
+			if line.Value == nil {
+				continue
+			}
+			c.lineLength = 0
+			c.renderComponent(i, line.Value, nil)
+		}
+	}
 	for _, e := range c.Elements {
-		if e.text != nil {
-			e.text.Free()
-		}
-	}
-	c.Elements = nil
-
-	for _, line := range c.Lines {
-		c.newLine()
-		if line.Value == nil {
-			continue
-		}
-		c.lineLength = 0
-		c.renderComponent(line.Value, nil)
+		e.text.Alpha(c.lineFade[e.line])
 	}
 }
 
-func (c *ChatUI) renderComponent(co interface{}, color chatGetColorFunc) {
+func (c *ChatUI) renderComponent(line int, co interface{}, color chatGetColorFunc) {
 	switch co := co.(type) {
 	case *chat.TextComponent:
 		getColor := chatGetColor(&co.Component, color)
@@ -75,6 +86,7 @@ func (c *ChatUI) renderComponent(co interface{}, color chatGetColorFunc) {
 				e := &chatUIElement{
 					text:   render.AddUIText(string(runes[:i]), 2+c.lineLength, 480-18, r, g, b),
 					offset: 0,
+					line:   line,
 				}
 				c.Elements = append(c.Elements, e)
 				c.lineLength = 0
@@ -86,13 +98,14 @@ func (c *ChatUI) renderComponent(co interface{}, color chatGetColorFunc) {
 			width += size
 		}
 		e := &chatUIElement{
+			line:   line,
 			text:   render.AddUIText(string(runes), 2+c.lineLength, 480-18, r, g, b),
 			offset: 0,
 		}
 		c.Elements = append(c.Elements, e)
 		c.lineLength += e.text.Width
 		for _, e := range co.Extra {
-			c.renderComponent(e.Value, getColor)
+			c.renderComponent(line, e.Value, getColor)
 		}
 	default:
 		fmt.Printf("Can't handle %T\n", co)
@@ -169,6 +182,8 @@ func (c *ChatUI) newLine() {
 
 func (c *ChatUI) Add(msg chat.AnyComponent) {
 	copy(c.Lines[0:chatHistoryLines-1], c.Lines[1:])
+	copy(c.lineFade[0:chatHistoryLines-1], c.lineFade[1:])
 	c.Lines[chatHistoryLines-1] = msg
+	c.lineFade[chatHistoryLines-1] = 3.0
 	c.dirty = true
 }

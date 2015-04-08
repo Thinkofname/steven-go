@@ -56,10 +56,10 @@ func initUI() {
 	uiState.shader.TextureInfo.Enable()
 	uiState.shader.TextureOffset.Enable()
 	uiState.shader.Color.Enable()
-	uiState.shader.Position.Pointer(3, gl.Float, false, 27, 0)
-	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 27, 12)
-	uiState.shader.TextureOffset.Pointer(2, gl.Short, false, 27, 20)
-	uiState.shader.Color.Pointer(3, gl.UnsignedByte, true, 27, 24)
+	uiState.shader.Position.Pointer(3, gl.Float, false, 28, 0)
+	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 28, 12)
+	uiState.shader.TextureOffset.Pointer(2, gl.Short, false, 28, 20)
+	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 28, 24)
 }
 
 func drawUI() {
@@ -72,6 +72,7 @@ func drawUI() {
 
 	// Prevent clipping with the world
 	gl.Clear(gl.DepthBufferBit)
+	gl.Enable(gl.Blend)
 
 	uiState.program.Use()
 	uiState.shader.Texture.Int(0)
@@ -86,6 +87,7 @@ func drawUI() {
 		}
 		gl.DrawArrays(gl.Triangles, 0, uiState.count)
 	}
+	gl.Disable(gl.Blend)
 }
 
 // UIElement is a single element on the screen. It is a rectangle
@@ -98,7 +100,7 @@ type UIElement struct {
 	TX, TY, TW, TH     uint16
 	TOffsetX, TOffsetY int16
 	TSizeW, TSizeH     int16
-	R, G, B            byte
+	R, G, B, A         byte
 }
 
 // AddUIElement creates and adds a single ui element onto the screen.
@@ -128,15 +130,25 @@ func AddUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th 
 	e.R = 255
 	e.G = 255
 	e.B = 255
+	e.A = 255
 	e.DepthIndex = -float64(uiState.elementCount) / float64(math.MaxInt16)
 	uiState.elementCount++
 	e.free = false
 	return e
 }
 
+// Shift moves the element by the passed amounts.
 func (u *UIElement) Shift(x, y float64) {
 	u.X += x / uiWidth
 	u.Y += y / uiHeight
+}
+
+// Alpha changes the alpha of this element
+func (u *UIElement) Alpha(a float64) {
+	if a > 1.0 {
+		a = 1.0
+	}
+	u.A = byte(255.0 * a)
 }
 
 // Free removes the element from the screen. This may be reused
@@ -177,6 +189,7 @@ func (u *UIElement) appendVertex(x, y float64, tx, ty int16) {
 	uiState.data = appendUnsignedByte(uiState.data, u.R)
 	uiState.data = appendUnsignedByte(uiState.data, u.G)
 	uiState.data = appendUnsignedByte(uiState.data, u.B)
+	uiState.data = appendUnsignedByte(uiState.data, u.A)
 }
 
 func appendUnsignedByte(data []byte, i byte) []byte {

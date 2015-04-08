@@ -30,9 +30,9 @@ const (
 in vec3 aPosition;
 in vec4 aTextureInfo;
 in vec2 aTextureOffset;
-in vec3 aColor;
+in vec4 aColor;
 
-out vec3 vColor;
+out vec4 vColor;
 out vec4 vTextureInfo;
 out vec2 vTextureOffset;
 
@@ -50,7 +50,7 @@ const float atlasSize = ` + atlasSizeStr + `;
 
 uniform sampler2DArray textures;
 
-in vec3 vColor;
+in vec4 vColor;
 in vec4 vTextureInfo;
 in vec2 vTextureOffset;
 
@@ -64,8 +64,8 @@ void main() {
 	tPos /= atlasSize;
 	float texID = floor(vTextureInfo.y / atlasSize);
 	vec4 col = texture(textures, vec3(tPos, texID));
-	if (col.a < 0.1) discard;
-	col *= vec4(vColor, 1.0);
+	if (col.a == 0.0) discard;
+	col *= vColor;
 	fragColor = col;
 }
 `
