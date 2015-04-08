@@ -3,6 +3,10 @@
 A work in progress Minecraft client in Go.
 Don't expect it to go anywhere, just doing this for fun.
 
+## Images
+
+![Steven](http://i.imgur.com/M03tidN.png)
+
 ## Building
 
 To build:
