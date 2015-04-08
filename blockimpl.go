@@ -136,6 +136,7 @@ func initTallGrass() *BlockSet {
 	t := &blockTallGrass{}
 	t.init("tallgrass")
 	t.cullAgainst = false
+	t.collidable = false
 	set := alloc(t)
 	return set
 }
@@ -482,6 +483,7 @@ func initDeadBush(name string) *BlockSet {
 	b := &blockDeadBush{}
 	b.init(name)
 	b.cullAgainst = false
+	b.collidable = false
 	set := alloc(b)
 	return set
 }
