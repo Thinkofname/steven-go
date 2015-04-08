@@ -66,7 +66,7 @@ func Start(debug bool) {
 	glTexture = gl.CreateTexture()
 	glTexture.Bind(gl.Texture2DArray)
 	textureDepth = len(textures)
-	glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, 1))
+	glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, AtlasSize*AtlasSize*len(textures)*4))
 	glTexture.Parameter(gl.TextureMagFilter, gl.Nearest)
 	glTexture.Parameter(gl.TextureMinFilter, gl.Linear)
 	glTexture.Parameter(gl.TextureWrapS, gl.ClampToEdge)
@@ -123,7 +123,7 @@ sync:
 	if textureDepth != len(textures) {
 		glTexture.Bind(gl.Texture2DArray)
 		textureDepth = len(textures)
-		glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, 1))
+		glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, AtlasSize*AtlasSize*len(textures)*4))
 		for i := range textureDirty {
 			textureDirty[i] = true
 		}
