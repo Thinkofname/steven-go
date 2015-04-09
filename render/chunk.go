@@ -204,7 +204,7 @@ func (cb *ChunkBuffer) Free() {
 			c := buffers[position{x, i, z}]
 			for _, d := range direction.Values {
 				ox, oy, oz := d.Offset()
-				o := buffers[position{x + ox, i + oy, oz + oz}]
+				o := buffers[position{x + ox, i + oy, z + oz}]
 				if o != nil {
 					c.neighborChunks[d] = nil
 					o.neighborChunks[d.Opposite()] = nil

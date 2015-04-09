@@ -195,9 +195,7 @@ sync:
 				offset += copy(data[offset:], chunk.transData[i.Offset:i.Offset+i.Count])
 			}
 			chunk.bufferT.SubData(0, data)
-			checkError()
 			gl.DrawArrays(gl.Triangles, 0, chunk.countT)
-			checkError()
 		}
 	}
 	gl.Disable(gl.Blend)
