@@ -23,7 +23,7 @@ import (
 
 const (
 	chatHistoryLines = 10
-	maxLineWidth     = 300
+	maxLineWidth     = 500
 )
 
 type ChatUI struct {
@@ -78,12 +78,12 @@ func (c *ChatUI) renderComponent(line int, co interface{}, color chatGetColorFun
 	switch co := co.(type) {
 	case *chat.TextComponent:
 		getColor := chatGetColor(&co.Component, color)
-		width := 0
+		width := 0.0
 		runes := []rune(co.Text)
 		r, g, b := chatColorRGB(getColor())
 		for i := 0; i < len(runes); i++ {
-			size := render.SizeOfCharacter(runes[i])
-			if width+size > maxLineWidth {
+			size := float64(render.SizeOfCharacter(runes[i]))
+			if c.lineLength+width+size > maxLineWidth {
 				c.appendText(line, string(runes[:i]), r, g, b)
 				c.lineLength = 0
 				runes = runes[i:]
