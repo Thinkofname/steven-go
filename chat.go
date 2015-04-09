@@ -44,9 +44,8 @@ type chatUIElement struct {
 
 func (c *ChatUI) render(delta float64) {
 	for i := range c.lineFade {
-		if c.lineFade[i] > 0 {
-			c.lineFade[i] -= 0.005 * delta
-		} else {
+		c.lineFade[i] -= 0.005 * delta
+		if c.lineFade[i] < 0 {
 			c.lineFade[i] = 0
 		}
 	}
