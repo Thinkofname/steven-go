@@ -15,6 +15,8 @@
 package gl
 
 import (
+	"unsafe"
+
 	"github.com/thinkofdeath/gl/v3.2-core/gl"
 )
 
@@ -56,20 +58,22 @@ func (b Buffer) Data(data []byte, usage BufferUsage) {
 	if currentBuffer != b {
 		panic("buffer not bound")
 	}
-	if len(data) == 0 {
-		return
+	var ptr unsafe.Pointer
+	if len(data) != 0 {
+		ptr = gl.Ptr(data)
 	}
-	gl.BufferData(uint32(currentBufferTarget), len(data), gl.Ptr(data), uint32(usage))
+	gl.BufferData(uint32(currentBufferTarget), len(data), ptr, uint32(usage))
 }
 
 func (b Buffer) SubData(offset int, data []byte) {
 	if currentBuffer != b {
 		panic("buffer not bound")
 	}
-	if len(data) == 0 {
-		return
+	var ptr unsafe.Pointer
+	if len(data) != 0 {
+		ptr = gl.Ptr(data)
 	}
-	gl.BufferSubData(uint32(currentBufferTarget), offset, len(data), gl.Ptr(data))
+	gl.BufferSubData(uint32(currentBufferTarget), offset, len(data), ptr)
 }
 
 func (b *Buffer) Delete() {

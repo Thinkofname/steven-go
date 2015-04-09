@@ -169,7 +169,7 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, count int) {
 		cb.bufferTSize = len(cb.transBuffer)
 		cb.bufferT.Data(cb.transBuffer, gl.DynamicDraw)
 	} else {
-		cb.bufferT.SubData(0, cb.transBuffer)
+		cb.bufferT.SubData(0, cb.transData)
 	}
 	shaderChunkT.Position.PointerInt(3, gl.Short, 23, 0)
 	shaderChunkT.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
