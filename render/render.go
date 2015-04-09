@@ -190,10 +190,11 @@ sync:
 			chunk.bufferT.Bind(gl.ArrayBuffer)
 			offset := 0
 			sort.Sort(chunk.transInfo)
+			data := chunk.bufferT.Map(gl.WriteOnly, len(chunk.transData))
 			for _, i := range chunk.transInfo {
-				offset += copy(chunk.transBuffer[offset:], chunk.transData[i.Offset:i.Offset+i.Count])
+				offset += copy(data[offset:], chunk.transData[i.Offset:i.Offset+i.Count])
 			}
-			chunk.bufferT.SubData(0, chunk.transBuffer)
+			chunk.bufferT.Unmap()
 			gl.DrawArrays(gl.Triangles, 0, chunk.countT)
 		}
 	}

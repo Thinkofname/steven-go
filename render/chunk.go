@@ -43,9 +43,8 @@ type ChunkBuffer struct {
 
 	renderedOn uint
 
-	transBuffer []byte
-	transData   []byte
-	transInfo   objectInfoList
+	transData []byte
+	transInfo objectInfoList
 
 	neighborChunks [6]*ChunkBuffer
 }
@@ -120,7 +119,9 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 		cb.bufferSize = len(data)
 		cb.buffer.Data(data, gl.DynamicDraw)
 	} else {
-		cb.buffer.SubData(0, data)
+		target := cb.buffer.Map(gl.WriteOnly, len(data))
+		copy(target, data)
+		cb.buffer.Unmap()
 	}
 	shaderChunk.Position.PointerInt(3, gl.Short, 23, 0)
 	shaderChunk.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
@@ -142,7 +143,6 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, count int) {
 			cb.arrayT.Delete()
 			cb.bufferT.Delete()
 		}
-		cb.transBuffer = nil
 		cb.transData = nil
 		cb.transInfo = nil
 		return
@@ -153,7 +153,6 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, count int) {
 		cb.bufferT = gl.CreateBuffer()
 		n = true
 	}
-	cb.transBuffer = make([]byte, len(data))
 	cb.transData = make([]byte, len(data))
 	copy(cb.transData, data)
 
@@ -165,11 +164,9 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, count int) {
 	shaderChunkT.Lighting.Enable()
 
 	cb.bufferT.Bind(gl.ArrayBuffer)
-	if n || len(cb.transBuffer) > cb.bufferTSize {
-		cb.bufferTSize = len(cb.transBuffer)
-		cb.bufferT.Data(cb.transBuffer, gl.DynamicDraw)
-	} else {
-		cb.bufferT.SubData(0, cb.transData)
+	if n || len(cb.transData) > cb.bufferTSize {
+		cb.bufferTSize = len(cb.transData)
+		cb.bufferT.Data(cb.transData, gl.StreamDraw)
 	}
 	shaderChunkT.Position.PointerInt(3, gl.Short, 23, 0)
 	shaderChunkT.TextureInfo.Pointer(4, gl.UnsignedShort, false, 23, 6)
@@ -190,7 +187,6 @@ func (cb *ChunkBuffer) Free() {
 	cb.invalid = true
 	cb.count = 0
 	cb.countT = 0
-	cb.transBuffer = nil
 	cb.transData = nil
 	cb.transInfo = nil
 	cpos := positionC{cb.position.X, cb.position.Z}

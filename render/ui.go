@@ -83,7 +83,9 @@ func drawUI() {
 			uiState.prevSize = len(uiState.data)
 			uiState.buffer.Data(uiState.data, gl.DynamicDraw)
 		} else {
-			uiState.buffer.SubData(0, uiState.data)
+			target := uiState.buffer.Map(gl.WriteOnly, len(uiState.data))
+			copy(target, uiState.data)
+			uiState.buffer.Unmap()
 		}
 		gl.DrawArrays(gl.Triangles, 0, uiState.count)
 	}
