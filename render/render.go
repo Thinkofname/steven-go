@@ -39,10 +39,12 @@ var (
 
 	glTexture    gl.Texture
 	textureDepth int
+	debug        bool
 )
 
 // Start starts the renderer
-func Start(debug bool) {
+func Start(d bool) {
+	debug = d
 	if debug {
 		gl.Enable(gl.DebugOutput)
 		gl.DebugLog()
@@ -193,12 +195,20 @@ sync:
 				offset += copy(data[offset:], chunk.transData[i.Offset:i.Offset+i.Count])
 			}
 			chunk.bufferT.SubData(0, data)
+			checkError()
 			gl.DrawArrays(gl.Triangles, 0, chunk.countT)
+			checkError()
 		}
 	}
 	gl.Disable(gl.Blend)
 
 	drawUI()
+}
+
+func checkError() {
+	if debug {
+		gl.CheckError()
+	}
 }
 
 var (
