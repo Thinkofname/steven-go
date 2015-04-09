@@ -17,6 +17,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"runtime"
 	"time"
 
 	"github.com/thinkofdeath/steven/render"
@@ -48,6 +49,7 @@ type ClientState struct {
 	Bounds vmath.AABB
 
 	positionText *render.UIText
+	memoryText   *render.UIText
 
 	fps       int
 	frames    int
@@ -56,6 +58,8 @@ type ClientState struct {
 
 	chat ChatUI
 }
+
+var memoryStats runtime.MemStats
 
 // The render tick needs to remain pretty light so it
 // doesn't hold the lock for too long.
@@ -115,12 +119,24 @@ func (c *ClientState) renderTick(delta float64) {
 	render.Camera.Yaw = c.Yaw
 	render.Camera.Pitch = c.Pitch
 
+	// Temp displays
+
 	if c.positionText != nil {
 		c.positionText.Free()
 	}
 	c.positionText = render.AddUIText(
 		fmt.Sprintf("X: %.2f, Y: %.2f, Z: %.2f", c.X, c.Y, c.Z),
 		5, 5, 255, 255, 255,
+	)
+
+	runtime.ReadMemStats(&memoryStats)
+	if c.memoryText != nil {
+		c.memoryText.Free()
+	}
+	text := fmt.Sprintf("%s", formatMemory(memoryStats.Alloc))
+	c.memoryText = render.AddUIText(
+		text,
+		800-5-float64(render.SizeOfString(text)), 23, 255, 255, 255,
 	)
 
 	now := time.Now()
@@ -132,13 +148,32 @@ func (c *ClientState) renderTick(delta float64) {
 	if c.fpsText != nil {
 		c.fpsText.Free()
 	}
-	text := fmt.Sprintf("FPS: %d", c.fps)
+	text = fmt.Sprintf("FPS: %d", c.fps)
 	c.fpsText = render.AddUIText(
 		text,
 		800-5-float64(render.SizeOfString(text)), 5, 255, 255, 255,
 	)
 
 	c.chat.render(delta)
+}
+
+func formatMemory(alloc uint64) string {
+	const letters = "BKMG"
+	i := 0
+	for {
+		check := alloc
+		check >>= 10
+		if check == 0 {
+			break
+		}
+		alloc = check
+		i++
+	}
+	l := string(letters[i])
+	if l != "B" {
+		l += "B"
+	}
+	return fmt.Sprintf("%d%s", alloc, l)
 }
 
 func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
