@@ -182,7 +182,7 @@ sync:
 	for i := range renderOrder {
 		chunk := renderOrder[len(renderOrder)-1-i]
 		if chunk != nil && chunk.countT > 0 {
-			shaderChunkT.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
+			shaderChunkT.Offset.Int3(chunk.X, chunk.Y, chunk.Z)
 
 			chunk.arrayT.Bind()
 			chunk.bufferT.Bind(gl.ArrayBuffer)
@@ -240,7 +240,7 @@ itQueue:
 		renderOrder = append(renderOrder, chunk)
 
 		if chunk.count > 0 {
-			shaderChunk.Offset.Float3(float32(chunk.X), float32(chunk.Y), float32(chunk.Z))
+			shaderChunk.Offset.Int3(chunk.X, chunk.Y, chunk.Z)
 
 			chunk.array.Bind()
 			gl.DrawArrays(gl.Triangles, 0, chunk.count)

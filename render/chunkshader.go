@@ -39,7 +39,7 @@ in vec2 aLighting;
 
 uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
-uniform vec3 offset;
+uniform ivec3 offset;
 
 out vec3 vColor;
 out vec4 vTextureInfo;
