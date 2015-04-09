@@ -154,6 +154,8 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, count int) {
 		n = true
 	}
 	cb.transBuffer = make([]byte, len(data))
+	cb.transData = make([]byte, len(data))
+	copy(cb.transData, data)
 
 	cb.arrayT.Bind()
 	shaderChunkT.Position.Enable()
@@ -177,7 +179,6 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, count int) {
 
 	cb.countT = count
 	cb.transInfo = info
-	cb.transData = data
 }
 
 // Free removes the buffer and frees related resources.

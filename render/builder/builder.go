@@ -109,3 +109,8 @@ func (b *Buffer) Data() []byte {
 func (b *Buffer) ElementSize() int {
 	return b.elemSize
 }
+
+// Reset resets the internal buffer ready for reuse
+func (b *Buffer) Reset() {
+	b.buf.Reset()
+}

@@ -16,6 +16,7 @@ package main
 
 import (
 	"math/rand"
+	"sync"
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/render/builder"
@@ -34,7 +35,14 @@ type buildPos struct {
 	X, Y, Z int
 }
 
-var _, chunkVertexType = builder.Struct(chunkVertex{})
+var (
+	_, chunkVertexType = builder.Struct(chunkVertex{})
+	builderPool        = sync.Pool{
+		New: func() interface{} {
+			return builder.New(chunkVertexType...)
+		},
+	}
+)
 
 func (cs *chunkSection) build(complete chan<- buildPos) {
 	ox, oy, oz := (cs.chunk.X<<4)-2, (cs.Y<<4)-2, (cs.chunk.Z<<4)-2
@@ -44,8 +52,8 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 	bs.y = -2
 	bs.z = -2
 	go func() {
-		bO := builder.New(chunkVertexType...)
-		bT := builder.New(chunkVertexType...)
+		bO := builderPool.Get().(*builder.Buffer)
+		bT := builderPool.Get().(*builder.Buffer)
 
 		r := rand.New(rand.NewSource(int64(cs.chunk.X) | (int64(cs.chunk.Z) << 32)))
 		var tInfo []render.ObjectInfo
@@ -120,6 +128,10 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 		render.Sync(func() {
 			cs.Buffer.Upload(bO.Data(), bO.Count(), cullBits)
 			cs.Buffer.UploadTrans(tInfo, bT.Data(), bT.Count())
+			bO.Reset()
+			bT.Reset()
+			builderPool.Put(bO)
+			builderPool.Put(bT)
 		})
 		// Free up the builder
 		complete <- buildPos{cs.chunk.X, cs.Y, cs.chunk.Z}
