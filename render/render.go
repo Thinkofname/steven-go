@@ -181,7 +181,7 @@ sync:
 	gl.Enable(gl.Blend)
 	for i := range renderOrder {
 		chunk := renderOrder[len(renderOrder)-1-i]
-		if chunk != nil && chunk.countT > 0 {
+		if chunk.countT > 0 && chunk.bufferT.IsValid() {
 			shaderChunkT.Offset.Int3(chunk.X, chunk.Y, chunk.Z)
 
 			chunk.arrayT.Bind()
@@ -239,7 +239,7 @@ itQueue:
 		chunk.renderedOn = frameID
 		renderOrder = append(renderOrder, chunk)
 
-		if chunk.count > 0 {
+		if chunk.count > 0 && chunk.buffer.IsValid() {
 			shaderChunk.Offset.Int3(chunk.X, chunk.Y, chunk.Z)
 
 			chunk.array.Bind()
