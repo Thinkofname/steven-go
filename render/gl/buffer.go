@@ -25,6 +25,10 @@ const (
 
 	StaticDraw  BufferUsage = gl.STATIC_DRAW
 	DynamicDraw BufferUsage = gl.DYNAMIC_DRAW
+	StreamDraw  BufferUsage = gl.STREAM_DRAW
+
+	ReadOnly  Access = gl.READ_ONLY
+	WriteOnly Access = gl.WRITE_ONLY
 )
 
 type Buffer struct {
@@ -33,6 +37,7 @@ type Buffer struct {
 
 type BufferTarget uint32
 type BufferUsage uint32
+type Access uint32
 
 func CreateBuffer() Buffer {
 	var buffer Buffer
@@ -74,6 +79,15 @@ func (b Buffer) SubData(offset int, data []byte) {
 		ptr = gl.Ptr(data)
 	}
 	gl.BufferSubData(uint32(currentBufferTarget), offset, len(data), ptr)
+}
+
+func (b Buffer) Map(access Access, length int) []byte {
+	ptr := gl.MapBuffer(uint32(currentBufferTarget), uint32(access))
+	return (*[1 << 30]byte)(ptr)[:length:length]
+}
+
+func (b Buffer) Unmap() {
+	gl.UnmapBuffer(uint32(currentBufferTarget))
 }
 
 func (b *Buffer) Delete() {
