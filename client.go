@@ -20,6 +20,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
@@ -114,12 +115,7 @@ func (c *ClientState) renderTick(delta float64) {
 		_, c.OnGround = c.checkCollisions(ground)
 	}
 
-	// Copy to the camera
-	render.Camera.X = c.X
-	render.Camera.Y = c.Y + playerHeight
-	render.Camera.Z = c.Z
-	render.Camera.Yaw = c.Yaw
-	render.Camera.Pitch = c.Pitch
+	c.copyToCamera()
 
 	// Temp displays
 
@@ -220,7 +216,36 @@ func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
 	return bounds, hit
 }
 
+func (c *ClientState) copyToCamera() {
+	render.Camera.X = c.X
+	render.Camera.Y = c.Y + playerHeight
+	render.Camera.Z = c.Z
+	render.Camera.Yaw = c.Yaw
+	render.Camera.Pitch = c.Pitch
+}
+
 func (c *ClientState) tick() {
+	// Now you may be wondering why we have to spam movement
+	// packets (any of the Player* move/look packets) 20 times
+	// a second instead of only sending when something changes.
+	// This is because the server only ticks certain parts of
+	// the player when a movement packet is recieved meaning
+	// if we sent them any slower health regen would be slowed
+	// down as well and various other things too (potions, speed
+	// hack check). This also has issues if we send them too
+	// fast as well since we will regen health at much faster
+	// rates than normal players and some modded servers will
+	// (correctly) detect this as cheating. Its Minecraft
+	// what did you expect?
+	// TODO(Think) Use the smaller packets when possible
+	writeChan <- &protocol.PlayerPositionLook{
+		X:        c.X,
+		Y:        c.Y,
+		Z:        c.Z,
+		Yaw:      float32(-c.Yaw * (180 / math.Pi)),
+		Pitch:    float32((-c.Pitch - math.Pi) * (180 / math.Pi)),
+		OnGround: c.OnGround,
+	}
 }
 
 type gameMode int

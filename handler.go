@@ -99,6 +99,7 @@ func (handler) Teleport(t *protocol.TeleportPlayer) {
 		Pitch:    t.Pitch,
 		OnGround: Client.OnGround,
 	}
+	Client.copyToCamera()
 	ready = true
 }
 
