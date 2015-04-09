@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
 )
 
@@ -48,8 +49,9 @@ type ClientState struct {
 
 	Bounds vmath.AABB
 
-	positionText *render.UIText
-	memoryText   *render.UIText
+	positionText  *render.UIText
+	directionText *render.UIText
+	memoryText    *render.UIText
 
 	fps       int
 	frames    int
@@ -121,23 +123,18 @@ func (c *ClientState) renderTick(delta float64) {
 
 	// Temp displays
 
-	if c.positionText != nil {
-		c.positionText.Free()
-	}
-	c.positionText = render.AddUIText(
+	c.positionText = setText(c.positionText,
 		fmt.Sprintf("X: %.2f, Y: %.2f, Z: %.2f", c.X, c.Y, c.Z),
 		5, 5, 255, 255, 255,
 	)
+	c.directionText = setText(c.directionText,
+		fmt.Sprintf("Facing: %s", c.facingDirection()),
+		5, 23, 255, 255, 255,
+	)
 
 	runtime.ReadMemStats(&memoryStats)
-	if c.memoryText != nil {
-		c.memoryText.Free()
-	}
 	text := fmt.Sprintf("%s", formatMemory(memoryStats.Alloc))
-	c.memoryText = render.AddUIText(
-		text,
-		800-5-float64(render.SizeOfString(text)), 23, 255, 255, 255,
-	)
+	c.memoryText = setText(c.memoryText, text, 800-5-float64(render.SizeOfString(text)), 23, 255, 255, 255)
 
 	now := time.Now()
 	if now.Sub(c.lastCount) > time.Second {
@@ -145,16 +142,30 @@ func (c *ClientState) renderTick(delta float64) {
 		c.fps = c.frames
 		c.frames = 0
 	}
-	if c.fpsText != nil {
-		c.fpsText.Free()
-	}
 	text = fmt.Sprintf("FPS: %d", c.fps)
-	c.fpsText = render.AddUIText(
-		text,
-		800-5-float64(render.SizeOfString(text)), 5, 255, 255, 255,
-	)
+	c.fpsText = setText(c.fpsText, text, 800-5-float64(render.SizeOfString(text)), 5, 255, 255, 255)
 
 	c.chat.render(delta)
+}
+
+func setText(txt *render.UIText, str string, x, y float64, rr, gg, bb int) *render.UIText {
+	if txt != nil {
+		txt.Free()
+	}
+	return render.AddUIText(str, x, y, rr, gg, bb)
+}
+
+func (c *ClientState) facingDirection() direction.Type {
+	var viewVector vmath.Vector3
+	viewVector.X = math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+	viewVector.Z = -math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+	viewVector.Y = -math.Sin(c.Pitch)
+	for _, d := range direction.Values {
+		if d.AsVector().Dot(viewVector) > 0.5 {
+			return d
+		}
+	}
+	return direction.Invalid
 }
 
 func formatMemory(alloc uint64) string {
