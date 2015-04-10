@@ -17,7 +17,9 @@ package main
 import (
 	"fmt"
 
+	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
 )
 
@@ -34,6 +36,11 @@ type ChatUI struct {
 	lineFade [chatHistoryLines]float64
 
 	lineLength float64
+
+	enteringText bool
+	inputLine    []rune
+	cursorTick   float64
+	first        bool
 }
 
 type chatUIElement struct {
@@ -48,6 +55,9 @@ func (c *ChatUI) render(delta float64) {
 		if c.lineFade[i] < 0 {
 			c.lineFade[i] = 0
 		}
+	}
+	if c.enteringText {
+		c.dirty = true
 	}
 	if c.dirty {
 		c.dirty = false
@@ -66,11 +76,68 @@ func (c *ChatUI) render(delta float64) {
 			c.lineLength = 0
 			c.renderComponent(i, line.Value, nil)
 		}
+
+		if c.enteringText {
+			c.newLine()
+			c.lineLength = 0
+
+			color := chat.White
+			gc := func() chat.Color { return color }
+			line := c.inputLine
+			if len(line) != 0 && line[0] == '/' {
+				color = chat.Gold
+				c.renderText(len(c.Lines), line[:1], gc)
+				color = chat.Yellow
+				line = line[1:]
+			}
+			c.renderText(len(c.Lines), line, gc)
+			c.cursorTick += delta
+			if int(c.cursorTick/30)%2 == 0 {
+				c.renderText(len(c.Lines), []rune{'|'}, gc)
+			}
+			if c.cursorTick > 0xFFFFFF {
+				c.cursorTick = 0
+			}
+		}
 	}
 	for _, e := range c.Elements {
 		if e.text != nil {
-			e.text.Alpha(c.lineFade[e.line])
+			if c.enteringText {
+				e.text.Alpha(1.0)
+			} else {
+				e.text.Alpha(c.lineFade[e.line])
+			}
 		}
+	}
+}
+
+func (c *ChatUI) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	if (key == glfw.KeyEscape || key == glfw.KeyEnter) && action == glfw.Release {
+		if key == glfw.KeyEnter && len(c.inputLine) != 0 {
+			writeChan <- &protocol.ChatMessage{string(c.inputLine)}
+		}
+		c.enteringText = false
+		c.inputLine = c.inputLine[:0]
+		lockMouse = true
+		w.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+		c.dirty = true
+		w.SetCharCallback(nil)
+		return
+	}
+	if key == glfw.KeyBackspace && action != glfw.Release {
+		if len(c.inputLine) > 0 {
+			c.inputLine = c.inputLine[:len(c.inputLine)-1]
+		}
+	}
+}
+
+func (c *ChatUI) handleChar(w *glfw.Window, char rune) {
+	if c.first {
+		c.first = false
+		return
+	}
+	if len(c.inputLine) < 100 {
+		c.inputLine = append(c.inputLine, char)
 	}
 }
 
@@ -78,28 +145,31 @@ func (c *ChatUI) renderComponent(line int, co interface{}, color chatGetColorFun
 	switch co := co.(type) {
 	case *chat.TextComponent:
 		getColor := chatGetColor(&co.Component, color)
-		width := 0.0
-		runes := []rune(co.Text)
-		r, g, b := chatColorRGB(getColor())
-		for i := 0; i < len(runes); i++ {
-			size := float64(render.SizeOfCharacter(runes[i]))
-			if c.lineLength+width+size > maxLineWidth {
-				c.appendText(line, string(runes[:i]), r, g, b)
-				c.lineLength = 0
-				runes = runes[i:]
-				i = 0
-				width = 0
-				c.newLine()
-			}
-			width += size
-		}
-		c.lineLength += c.appendText(line, string(runes), r, g, b)
+		c.renderText(line, []rune(co.Text), getColor)
 		for _, e := range co.Extra {
 			c.renderComponent(line, e.Value, getColor)
 		}
 	default:
 		fmt.Printf("Can't handle %T\n", co)
 	}
+}
+
+func (c *ChatUI) renderText(line int, runes []rune, getColor chatGetColorFunc) {
+	width := 0.0
+	r, g, b := chatColorRGB(getColor())
+	for i := 0; i < len(runes); i++ {
+		size := float64(render.SizeOfCharacter(runes[i]))
+		if c.lineLength+width+size > maxLineWidth {
+			c.appendText(line, string(runes[:i]), r, g, b)
+			c.lineLength = 0
+			runes = runes[i:]
+			i = 0
+			width = 0
+			c.newLine()
+		}
+		width += size
+	}
+	c.lineLength += c.appendText(line, string(runes), r, g, b)
 }
 
 func (c *ChatUI) appendText(line int, str string, r, g, b int) float64 {
@@ -171,7 +241,7 @@ func (c *ChatUI) newLine() {
 			continue
 		}
 		e.offset++
-		if e.offset > 6 {
+		if e.offset > chatHistoryLines {
 			e.text.Free()
 			e.text = nil
 			continue

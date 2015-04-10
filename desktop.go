@@ -73,7 +73,7 @@ func onMouseMove(w *glfw.Window, xpos float64, ypos float64) {
 }
 
 func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mod glfw.ModifierKey) {
-	if button == glfw.MouseButtonLeft && action == glfw.Press {
+	if button == glfw.MouseButtonLeft && action == glfw.Press && !Client.chat.enteringText {
 		lockMouse = true
 		w.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
 	}
@@ -89,6 +89,10 @@ const (
 )
 
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	if Client.chat.enteringText {
+		Client.chat.handleKey(w, key, scancode, action, mods)
+		return
+	}
 	switch key {
 	case glfw.KeyEscape:
 		lockMouse = false
@@ -109,6 +113,16 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		if action != glfw.Repeat {
 			Client.KeyState[KeyRight] = action == glfw.Press
 		}
+	case glfw.KeyT, glfw.KeySlash:
+		Client.chat.enteringText = true
+		Client.chat.dirty = true
+		Client.chat.first = true
+		if key == glfw.KeySlash {
+			Client.chat.inputLine = append(Client.chat.inputLine, '/')
+		}
+		lockMouse = false
+		w.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
+		w.SetCharCallback(Client.chat.handleChar)
 	case glfw.KeySpace:
 		if action != glfw.Repeat {
 			Client.Jumping = action == glfw.Press
