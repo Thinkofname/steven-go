@@ -74,7 +74,7 @@ func (c *ClientState) renderTick(delta float64) {
 		c.X += forward * math.Cos(yaw) * -math.Cos(c.Pitch) * delta * 0.2
 		c.Z -= forward * math.Sin(yaw) * -math.Cos(c.Pitch) * delta * 0.2
 		c.Y -= forward * math.Sin(c.Pitch) * delta * 0.2
-	} else {
+	} else if chunkMap[chunkPosition{int(c.X) >> 4, int(c.Z) >> 4}] != nil {
 		c.X += forward * math.Cos(yaw) * delta * 0.1
 		c.Z -= forward * math.Sin(yaw) * delta * 0.1
 		if !c.OnGround {
@@ -90,7 +90,7 @@ func (c *ClientState) renderTick(delta float64) {
 		c.Y += c.VSpeed * delta
 	}
 
-	if !c.GameMode.NoClip() && chunkMap[chunkPosition{int(c.X) >> 4, int(c.Z) >> 4}] != nil {
+	if !c.GameMode.NoClip() {
 		cy := c.Y
 		cz := c.Z
 		c.Y = render.Camera.Y - playerHeight
@@ -112,11 +112,7 @@ func (c *ClientState) renderTick(delta float64) {
 		bounds, _ = c.checkCollisions(c.Bounds)
 		c.Y = bounds.Min.Y
 
-		ground := vmath.AABB{
-			Min: vmath.Vector3{-0.3, -0.05, -0.3},
-			Max: vmath.Vector3{0.3, 0, 0.3},
-		}
-		_, c.OnGround = c.checkCollisions(ground)
+		c.checkGround()
 	}
 
 	c.copyToCamera()
@@ -146,6 +142,14 @@ func (c *ClientState) renderTick(delta float64) {
 	c.fpsText = setText(c.fpsText, text, 800-5-float64(render.SizeOfString(text)), 5, 255, 255, 255)
 
 	c.chat.render(delta)
+}
+
+func (c *ClientState) checkGround() {
+	ground := vmath.AABB{
+		Min: vmath.Vector3{-0.3, -0.05, -0.3},
+		Max: vmath.Vector3{0.3, 0.0, 0.3},
+	}
+	_, c.OnGround = c.checkCollisions(ground)
 }
 
 func setText(txt *render.UIText, str string, x, y float64, rr, gg, bb int) *render.UIText {

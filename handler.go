@@ -91,6 +91,7 @@ func (handler) Teleport(t *protocol.TeleportPlayer) {
 	Client.Z = calculateTeleport(teleportRelZ, t.Flags, Client.Z, t.Z)
 	Client.Yaw = calculateTeleport(teleportRelYaw, t.Flags, Client.Yaw, float64(-t.Yaw)*(math.Pi/180))
 	Client.Pitch = calculateTeleport(teleportRelPitch, t.Flags, Client.Pitch, -float64(t.Pitch)*(math.Pi/180)+math.Pi)
+	Client.checkGround()
 	writeChan <- &protocol.PlayerPositionLook{
 		X:        t.X,
 		Y:        t.Y,
