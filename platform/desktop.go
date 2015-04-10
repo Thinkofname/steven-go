@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/gl/v3.2-core/gl"
+	"fmt"
 )
 
 var window *glfw.Window
@@ -101,6 +102,18 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 	case glfw.KeyS:
 		if action == glfw.Press {
 			handler.Move(-1, 0)
+		} else if action == glfw.Release {
+			handler.Move(0, 0)
+		}
+	case glfw.KeyA:
+		if action == glfw.Press {
+			handler.Move(0, -1)
+		} else if action == glfw.Release {
+			handler.Move(0, 0)
+		}
+	case glfw.KeyD:
+		if action == glfw.Press {
+			handler.Move(0, 1)
 		} else if action == glfw.Release {
 			handler.Move(0, 0)
 		}
