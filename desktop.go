@@ -81,22 +81,35 @@ func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, m
 	}
 }
 
+type Key int
+
+const (
+	KeyForward Key = iota
+	KeyBackwards
+	KeyLeft
+	KeyRight
+)
+
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	switch key {
 	case glfw.KeyEscape:
 		lockMouse = false
 		w.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
 	case glfw.KeyW:
-		if action == glfw.Press {
-			move(1, 0)
-		} else if action == glfw.Release {
-			move(0, 0)
+		if action != glfw.Repeat {
+			Client.KeyState[KeyForward] = action == glfw.Press
 		}
 	case glfw.KeyS:
-		if action == glfw.Press {
-			move(-1, 0)
-		} else if action == glfw.Release {
-			move(0, 0)
+		if action != glfw.Repeat {
+			Client.KeyState[KeyBackwards] = action == glfw.Press
+		}
+	case glfw.KeyA:
+		if action != glfw.Repeat {
+			Client.KeyState[KeyLeft] = action == glfw.Press
+		}
+	case glfw.KeyD:
+		if action != glfw.Repeat {
+			Client.KeyState[KeyRight] = action == glfw.Press
 		}
 	case glfw.KeySpace:
 		if action != glfw.Repeat {

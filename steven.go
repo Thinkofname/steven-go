@@ -81,12 +81,6 @@ func rotate(x, y float64) {
 	Client.Pitch -= y
 }
 
-var mf, ms float64
-
-func move(f, s float64) {
-	mf, ms = f, s
-}
-
 var maxBuilders = runtime.NumCPU() * 2
 
 var (

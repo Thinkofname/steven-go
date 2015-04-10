@@ -43,6 +43,7 @@ type ClientState struct {
 
 	Jumping  bool
 	VSpeed   float64
+	KeyState [4]bool
 	OnGround bool
 
 	GameMode gameMode
@@ -64,17 +65,18 @@ type ClientState struct {
 
 var memoryStats runtime.MemStats
 
-// The render tick needs to remain pretty light so it
-// doesn't hold the lock for too long.
 func (c *ClientState) renderTick(delta float64) {
 	c.frames++
+
+	forward, yaw := c.calculateMovement()
+
 	if c.GameMode.Fly() {
-		c.X += mf * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
-		c.Z -= mf * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
-		c.Y -= mf * math.Sin(c.Pitch) * delta * 0.2
+		c.X += forward * math.Cos(yaw) * -math.Cos(c.Pitch) * delta * 0.2
+		c.Z -= forward * math.Sin(yaw) * -math.Cos(c.Pitch) * delta * 0.2
+		c.Y -= forward * math.Sin(c.Pitch) * delta * 0.2
 	} else {
-		c.X += mf * math.Cos(c.Yaw-math.Pi/2) * delta * 0.1
-		c.Z -= mf * math.Sin(c.Yaw-math.Pi/2) * delta * 0.1
+		c.X += forward * math.Cos(yaw) * delta * 0.1
+		c.Z -= forward * math.Sin(yaw) * delta * 0.1
 		if !c.OnGround {
 			c.VSpeed -= 0.01 * delta
 			if c.VSpeed < -0.3 {
@@ -149,6 +151,33 @@ func setText(txt *render.UIText, str string, x, y float64, rr, gg, bb int) *rend
 		txt.Free()
 	}
 	return render.AddUIText(str, x, y, rr, gg, bb)
+}
+
+func (c *ClientState) calculateMovement() (float64, float64) {
+	forward := 0.0
+	yaw := c.Yaw - math.Pi/2
+	if c.KeyState[KeyForward] || c.KeyState[KeyBackwards] {
+		forward = 1
+		if c.KeyState[KeyBackwards] {
+			yaw += math.Pi
+		}
+	}
+	change := 0.0
+	if c.KeyState[KeyLeft] {
+		change = (math.Pi / 2) / (math.Abs(forward) + 1)
+	}
+	if c.KeyState[KeyRight] {
+		change = -(math.Pi / 2) / (math.Abs(forward) + 1)
+	}
+	if c.KeyState[KeyRight] || c.KeyState[KeyLeft] {
+		forward = 1
+	}
+	if c.KeyState[KeyBackwards] {
+		yaw -= change
+	} else {
+		yaw += change
+	}
+	return forward, yaw
 }
 
 func (c *ClientState) facingDirection() direction.Type {
