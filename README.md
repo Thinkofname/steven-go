@@ -29,6 +29,11 @@ To update, run `go get` with the `-u` option.
 
 * 99% of Minecraft's features
 
+## Chat
+
+I generally am on the `irc.spi.gt` irc network in the `#think` channel. 
+Feel free to pop in to say hi, [Webchat can be found here](https://irc.spi.gt/iris/?channels=think)
+
 ## Builds
 
 Builds for Linux (64bit only) and Windows(32bit and 64bit) can be found
