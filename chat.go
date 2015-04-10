@@ -50,23 +50,21 @@ type chatUIElement struct {
 }
 
 func (c *ChatUI) render(delta float64) {
-	for i := range c.lineFade {
-		c.lineFade[i] -= 0.005 * delta
-		if c.lineFade[i] < 0 {
-			c.lineFade[i] = 0
-		}
-	}
+	// Always redraw in input mode because of the cursor
 	if c.enteringText {
 		c.dirty = true
 	}
 	if c.dirty {
 		c.dirty = false
+		// Clear the existing elements.
+		// They will be reused if needed (handled by the
+		// ui system)
 		for _, e := range c.Elements {
 			if e.text != nil {
 				e.text.Free()
 			}
 		}
-		c.Elements = nil
+		c.Elements = c.Elements[:0]
 
 		for i, line := range c.Lines {
 			c.newLine()
@@ -78,12 +76,14 @@ func (c *ChatUI) render(delta float64) {
 		}
 
 		if c.enteringText {
+			// Shift all the lines up
 			c.newLine()
 			c.lineLength = 0
 
 			color := chat.White
 			gc := func() chat.Color { return color }
 			line := c.inputLine
+			// Make it clear that a command is being typed
 			if len(line) != 0 && line[0] == '/' {
 				color = chat.Gold
 				c.renderText(len(c.Lines), line[:1], gc)
@@ -92,16 +92,26 @@ func (c *ChatUI) render(delta float64) {
 			}
 			c.renderText(len(c.Lines), line, gc)
 			c.cursorTick += delta
+			// Add on our cursor
 			if int(c.cursorTick/30)%2 == 0 {
 				c.renderText(len(c.Lines), []rune{'|'}, gc)
 			}
+			// Lazy way of preventing rounding errors buiding up over time
 			if c.cursorTick > 0xFFFFFF {
 				c.cursorTick = 0
 			}
 		}
 	}
+	// Slowly fade out each line
+	for i := range c.lineFade {
+		c.lineFade[i] -= 0.005 * delta
+		if c.lineFade[i] < 0 {
+			c.lineFade[i] = 0
+		}
+	}
 	for _, e := range c.Elements {
 		if e.text != nil {
+			// If entering text show every line
 			if c.enteringText {
 				e.text.Alpha(1.0)
 			} else {
@@ -116,6 +126,7 @@ func (c *ChatUI) handleKey(w *glfw.Window, key glfw.Key, scancode int, action gl
 		if key == glfw.KeyEnter && len(c.inputLine) != 0 {
 			writeChan <- &protocol.ChatMessage{string(c.inputLine)}
 		}
+		// Return control back to the default
 		c.enteringText = false
 		c.inputLine = c.inputLine[:0]
 		lockMouse = true
