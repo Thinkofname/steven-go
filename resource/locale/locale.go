@@ -32,6 +32,7 @@ func init() {
 	LoadLocale("en_US")
 }
 
+// Clear clears loaded strings and reloads the default locale.
 func Clear() {
 	lock.Lock()
 	values = map[string]string{}
@@ -39,6 +40,7 @@ func Clear() {
 	LoadLocale("en_US")
 }
 
+// LoadLocale loads the named locale if it exists.
 func LoadLocale(name string) {
 	lock.Lock()
 	defer lock.Unlock()
