@@ -101,10 +101,12 @@ func (c *ClientState) renderTick(delta float64) {
 
 		bounds, _ := c.checkCollisions(c.Bounds)
 		c.X = bounds.Min.X + 0.3
+		c.copyToCamera()
 
 		c.Z = cz
 		bounds, _ = c.checkCollisions(c.Bounds)
 		c.Z = bounds.Min.Z + 0.3
+		c.copyToCamera()
 
 		c.Y = cy
 		bounds, _ = c.checkCollisions(c.Bounds)
