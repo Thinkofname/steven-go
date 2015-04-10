@@ -19,7 +19,6 @@ import (
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/gl/v3.2-core/gl"
-	"fmt"
 )
 
 var window *glfw.Window
