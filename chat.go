@@ -21,6 +21,7 @@ import (
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/resource/locale"
 )
 
 const (
@@ -157,6 +158,22 @@ func (c *ChatUI) renderComponent(line int, co interface{}, color chatGetColorFun
 	case *chat.TextComponent:
 		getColor := chatGetColor(&co.Component, color)
 		c.renderText(line, []rune(co.Text), getColor)
+		for _, e := range co.Extra {
+			c.renderComponent(line, e.Value, getColor)
+		}
+	case *chat.TranslateComponent:
+		getColor := chatGetColor(&co.Component, color)
+		for _, part := range locale.Get(co.Translate) {
+			switch part := part.(type) {
+			case string:
+				c.renderText(line, []rune(part), getColor)
+			case int:
+				if part < 0 || part >= len(co.With) {
+					continue
+				}
+				c.renderComponent(line, co.With[part].Value, getColor)
+			}
+		}
 		for _, e := range co.Extra {
 			c.renderComponent(line, e.Value, getColor)
 		}

@@ -151,7 +151,7 @@ type (
 	// the client's language, substituting in values from the With
 	// slice.
 	TranslateComponent struct {
-		Translate string          `json:"text,omitempty"`
+		Translate string          `json:"translate,omitempty"`
 		With      []*AnyComponent `json:"with,omitempty"`
 		Component
 	}
