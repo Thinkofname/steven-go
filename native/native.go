@@ -12,17 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package platform
+package native
 
-//go:generate stringer -type=Action
-
-// Action is something that a platform implementation
-// can trigger.
-type Action int
-
-// Possible actions
-const (
-	InvalidAction Action = iota
-	Debug
-	JumpToggle
+import (
+	"encoding/binary"
+	"unsafe"
 )
+
+// Order is the native byte order of the system
+var Order binary.ByteOrder
+
+func init() {
+	check := uint32(1)
+	c := (*[4]byte)(unsafe.Pointer(&check))
+	Order = binary.BigEndian
+	if binary.LittleEndian.Uint32(c[:]) == 1 {
+		Order = binary.LittleEndian
+	}
+}

@@ -21,7 +21,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/thinkofdeath/steven/platform"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
 )
@@ -69,13 +68,7 @@ func main() {
 		loadChan <- struct{}{}
 	}()
 
-	platform.Init(platform.Handler{
-		Start:  start,
-		Draw:   draw,
-		Move:   move,
-		Rotate: rotate,
-		Action: action,
-	})
+	startWindow()
 }
 
 func start() {
@@ -92,14 +85,6 @@ var mf, ms float64
 
 func move(f, s float64) {
 	mf, ms = f, s
-}
-
-func action(action platform.Action) {
-	switch action {
-	case platform.Debug:
-	case platform.JumpToggle:
-		Client.Jumping = !Client.Jumping
-	}
 }
 
 var maxBuilders = runtime.NumCPU() * 2
@@ -151,7 +136,8 @@ handle:
 		}
 	}
 
-	render.Draw(delta)
+	width, height := window.GetFramebufferSize()
+	render.Draw(width, height, delta)
 	chunks := sortedChunks()
 
 	// Search for 'dirty' chunk sections and start building

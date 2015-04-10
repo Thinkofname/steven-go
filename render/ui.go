@@ -17,7 +17,7 @@ package render
 import (
 	"math"
 
-	"github.com/thinkofdeath/steven/platform"
+	"github.com/thinkofdeath/steven/native"
 	"github.com/thinkofdeath/steven/render/gl"
 )
 
@@ -206,7 +206,7 @@ var scratch [8]byte
 
 func appendUnsignedShort(data []byte, i uint16) []byte {
 	d := scratch[:2]
-	platform.NativeOrder.PutUint16(d, i)
+	native.Order.PutUint16(d, i)
 	return append(data, d...)
 }
 
@@ -217,6 +217,6 @@ func appendShort(data []byte, i int16) []byte {
 func appendFloat(data []byte, f float32) []byte {
 	d := scratch[:4]
 	i := math.Float32bits(f)
-	platform.NativeOrder.PutUint32(d, i)
+	native.Order.PutUint32(d, i)
 	return append(data, d...)
 }

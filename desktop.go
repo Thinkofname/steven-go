@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package platform
+package main
 
 import (
 	"runtime"
@@ -22,10 +22,8 @@ import (
 )
 
 var window *glfw.Window
-var handler Handler
 
-func run(h Handler) {
-	handler = h
+func startWindow() {
 	runtime.LockOSThread()
 
 	if err := glfw.Init(); err != nil {
@@ -54,30 +52,26 @@ func run(h Handler) {
 		panic(err)
 	}
 
-	handler.Start()
+	start()
 
 	for !window.ShouldClose() {
-		handler.Draw()
+		draw()
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}
 }
 
-func size() (int, int) {
-	return window.GetFramebufferSize()
-}
-
 var lockMouse bool
 
 func onMouseMove(w *glfw.Window, xpos float64, ypos float64) {
-	if handler.Rotate == nil || !lockMouse {
+	if !lockMouse {
 		return
 	}
-	width, height := size()
+	width, height := w.GetFramebufferSize()
 	ww, hh := float64(width/2), float64(height/2)
 	w.SetCursorPos(ww, hh)
 
-	handler.Rotate((xpos-ww)/2000.0, (ypos-hh)/2000.0)
+	rotate((xpos-ww)/2000.0, (ypos-hh)/2000.0)
 }
 
 func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mod glfw.ModifierKey) {
@@ -94,23 +88,19 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		w.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
 	case glfw.KeyW:
 		if action == glfw.Press {
-			handler.Move(1, 0)
+			move(1, 0)
 		} else if action == glfw.Release {
-			handler.Move(0, 0)
+			move(0, 0)
 		}
 	case glfw.KeyS:
 		if action == glfw.Press {
-			handler.Move(-1, 0)
+			move(-1, 0)
 		} else if action == glfw.Release {
-			handler.Move(0, 0)
-		}
-	case glfw.KeyH:
-		if action == glfw.Release {
-			handler.Action(Debug)
+			move(0, 0)
 		}
 	case glfw.KeySpace:
-		if action == glfw.Release || action == glfw.Press {
-			handler.Action(JumpToggle)
+		if action != glfw.Repeat {
+			Client.Jumping = action == glfw.Press
 		}
 	}
 }

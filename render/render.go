@@ -19,7 +19,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/thinkofdeath/steven/platform"
 	"github.com/thinkofdeath/steven/render/gl"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
@@ -91,7 +90,7 @@ var (
 )
 
 // Draw draws a single frame
-func Draw(delta float64) {
+func Draw(width, height int, delta float64) {
 	tickAnimatedTextures(delta)
 	frameID++
 sync:
@@ -104,7 +103,6 @@ sync:
 		}
 	}
 
-	width, height := platform.Size()
 	// Only update the viewport if the window was resized
 	if lastHeight != height || lastWidth != width {
 		lastWidth = width

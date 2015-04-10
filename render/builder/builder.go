@@ -19,7 +19,7 @@ import (
 	"bytes"
 	"math"
 
-	"github.com/thinkofdeath/steven/platform"
+	"github.com/thinkofdeath/steven/native"
 )
 
 // Types allowed to be used in a buffer.
@@ -72,7 +72,7 @@ func (b *Buffer) Byte(i int8) {
 // buffer
 func (b *Buffer) UnsignedShort(i uint16) {
 	d := b.scratch[:2]
-	platform.NativeOrder.PutUint16(d, i)
+	native.Order.PutUint16(d, i)
 	b.buf.Write(d)
 }
 
@@ -85,7 +85,7 @@ func (b *Buffer) Short(i int16) {
 func (b *Buffer) Float(f float32) {
 	d := b.scratch[:4]
 	i := math.Float32bits(f)
-	platform.NativeOrder.PutUint32(d, i)
+	native.Order.PutUint32(d, i)
 	b.buf.Write(d)
 }
 
