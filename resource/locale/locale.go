@@ -55,7 +55,6 @@ func LoadLocale(name string) {
 			continue
 		}
 		parts := strings.SplitN(line, "=", 2)
-		fmt.Println(parts)
 		if len(parts) != 2 {
 			continue
 		}
