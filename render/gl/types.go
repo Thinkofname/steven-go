@@ -18,8 +18,10 @@ import (
 	"github.com/thinkofdeath/gl/v3.2-core/gl"
 )
 
+// Type is a type of data used by various operations.
 type Type uint32
 
+// Valid types.
 const (
 	UnsignedByte  Type = gl.UNSIGNED_BYTE
 	UnsignedShort Type = gl.UNSIGNED_SHORT
