@@ -18,7 +18,7 @@ import (
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/thinkofdeath/gl/v3.2-core/gl"
+	"github.com/thinkofdeath/steven/render/gl"
 )
 
 var window *glfw.Window
@@ -48,9 +48,7 @@ func startWindow() {
 	window.SetMouseButtonCallback(onMouseClick)
 	window.SetKeyCallback(onKey)
 
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
+	gl.Init()
 
 	start()
 
