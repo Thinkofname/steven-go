@@ -68,13 +68,19 @@ var memoryStats runtime.MemStats
 // doesn't hold the lock for too long.
 func (c *ClientState) renderTick(delta float64) {
 	c.frames++
+	yaw := c.Yaw
+	yaw+= ms*67.5
+	if mf == 0 && ms != 0 {
+		mf=1
+	}
+
 	if c.GameMode.Fly() {
-		c.X += mf * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
-		c.Z -= mf * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
+		c.X += mf * math.Cos(yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
+		c.Z -= mf * math.Sin(yaw-math.Pi/2) * -math.Cos(c.Pitch) * delta * 0.2
 		c.Y -= mf * math.Sin(c.Pitch) * delta * 0.2
 	} else {
-		c.X += mf * math.Cos(c.Yaw-math.Pi/2) * delta * 0.1
-		c.Z -= mf * math.Sin(c.Yaw-math.Pi/2) * delta * 0.1
+		c.X += mf * math.Cos(yaw-math.Pi/2) * delta * 0.1
+		c.Z -= mf * math.Sin(yaw-math.Pi/2) * delta * 0.1
 		if !c.OnGround {
 			c.VSpeed -= 0.01 * delta
 			if c.VSpeed < -0.3 {

@@ -104,6 +104,18 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		} else if action == glfw.Release {
 			handler.Move(0, 0)
 		}
+	case glfw.KeyA:
+		if action == glfw.Press {
+			handler.Move(0, -1)
+		} else if action == glfw.Release {
+			handler.Move(0, 0)
+		}
+	case glfw.KeyD:
+		if action == glfw.Press {
+			handler.Move(0, 1)
+		} else if action == glfw.Release {
+			handler.Move(0, 0)
+		}
 	case glfw.KeyH:
 		if action == glfw.Release {
 			handler.Action(Debug)
