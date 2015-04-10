@@ -31,12 +31,12 @@ func NewAABB(x1, y1, z1, x2, y2, z2 float64) *AABB {
 }
 
 func (a *AABB) Intersects(o *AABB) bool {
-	return !(o.Min.X > a.Max.X ||
-		o.Max.X < a.Min.X ||
-		o.Min.Y > a.Max.Y ||
-		o.Max.Y < a.Min.Y ||
-		o.Min.Z > a.Max.Z ||
-		o.Max.Z < a.Min.Z)
+	return !(o.Min.X >= a.Max.X ||
+		o.Max.X <= a.Min.X ||
+		o.Min.Y >= a.Max.Y ||
+		o.Max.Y <= a.Min.Y ||
+		o.Min.Z >= a.Max.Z ||
+		o.Max.Z <= a.Min.Z)
 }
 
 func (a *AABB) Shift(x, y, z float64) {
