@@ -22,8 +22,7 @@ import (
 )
 
 var (
-	buffers       = make(map[position]*ChunkBuffer)
-	bufferColumns = make(map[positionC]int)
+	buffers = make(map[position]*ChunkBuffer)
 )
 
 // ChunkBuffer is a renderable chunk section
@@ -55,31 +54,51 @@ func (cb *ChunkBuffer) IsVisible(from, to direction.Type) bool {
 	return (cb.cullBits & (1 << (from*6 + to))) != 0
 }
 
-// AllocateChunkBuffer allocates a chunk buffer and adds it to the
-// render list.
-func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
-	if _, ok := bufferColumns[positionC{x, z}]; !ok {
-		for i := 0; i < 16; i++ {
+// AllocateColumn ensures the column's buffers are allocated.
+func AllocateColumn(x, z int) {
+	for i := 0; i < 16; i++ {
+		if _, ok := buffers[position{x, i, z}]; !ok {
 			buffers[position{x, i, z}] = &ChunkBuffer{
 				position: position{X: x, Y: i, Z: z},
 				cullBits: math.MaxUint64,
 				invalid:  true,
 			}
 		}
-		// Update neighbors
-		for i := 0; i < 16; i++ {
-			c := buffers[position{x, i, z}]
-			for _, d := range direction.Values {
-				ox, oy, oz := d.Offset()
-				o := buffers[position{x + ox, i + oy, z + oz}]
-				if o != nil {
-					c.neighborChunks[d] = o
-					o.neighborChunks[d.Opposite()] = c
-				}
+	}
+	// Update neighbors
+	for i := 0; i < 16; i++ {
+		c := buffers[position{x, i, z}]
+		for _, d := range direction.Values {
+			ox, oy, oz := d.Offset()
+			o := buffers[position{x + ox, i + oy, z + oz}]
+			if o != nil {
+				c.neighborChunks[d] = o
+				o.neighborChunks[d.Opposite()] = c
 			}
 		}
 	}
-	bufferColumns[positionC{x, z}]++
+}
+
+// FreeColumn deallocates the column's buffers.
+func FreeColumn(x, z int) {
+	for i := 0; i < 16; i++ {
+		// Update neighbors
+		c := buffers[position{x, i, z}]
+		for _, d := range direction.Values {
+			ox, oy, oz := d.Offset()
+			o := buffers[position{x + ox, i + oy, z + oz}]
+			if o != nil {
+				c.neighborChunks[d] = nil
+				o.neighborChunks[d.Opposite()] = nil
+			}
+		}
+		delete(buffers, position{x, i, z})
+	}
+}
+
+// AllocateChunkBuffer allocates a chunk buffer and adds it to the
+// render list.
+func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 	c := buffers[position{x, y, z}]
 	c.invalid = false
 	return c
@@ -189,28 +208,7 @@ func (cb *ChunkBuffer) Free() {
 	cb.countT = 0
 	cb.transData = nil
 	cb.transInfo = nil
-	cpos := positionC{cb.position.X, cb.position.Z}
-	val := bufferColumns[cpos]
-	val--
-	if val <= 0 {
-		delete(bufferColumns, cpos)
-		x, z := cb.X, cb.Z
-		for i := 0; i < 16; i++ {
-			// Update neighbors
-			c := buffers[position{x, i, z}]
-			for _, d := range direction.Values {
-				ox, oy, oz := d.Offset()
-				o := buffers[position{x + ox, i + oy, z + oz}]
-				if o != nil {
-					c.neighborChunks[d] = nil
-					o.neighborChunks[d.Opposite()] = nil
-				}
-			}
-			delete(buffers, position{x, i, z})
-		}
-	} else {
-		bufferColumns[cpos] = val
-	}
+	cb.cullBits = math.MaxUint64
 
 	if cb.buffer.IsValid() {
 		cb.buffer.Delete()

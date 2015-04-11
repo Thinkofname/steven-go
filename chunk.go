@@ -257,6 +257,7 @@ func (c *chunk) free() {
 			s.Buffer.Free()
 		}
 	}
+	render.FreeColumn(c.X, c.Z)
 }
 
 type chunkSection struct {
@@ -369,6 +370,7 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 	}
 
 	syncChan <- func() {
+		render.AllocateColumn(c.X, c.Z)
 		// Allocate the render buffers sync
 		for y, section := range c.Sections {
 			if section != nil && section.Buffer == nil {
