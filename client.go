@@ -51,9 +51,10 @@ type ClientState struct {
 
 	Bounds vmath.AABB
 
-	positionText  *render.UIText
-	directionText *render.UIText
-	memoryText    *render.UIText
+	positionText    *render.UIText
+	directionText   *render.UIText
+	memoryText      *render.UIText
+	targetBlockText *render.UIText
 
 	fps       int
 	frames    int
@@ -127,6 +128,11 @@ func (c *ClientState) renderTick(delta float64) {
 		fmt.Sprintf("Facing: %s", c.facingDirection()),
 		5, 23, 255, 255, 255,
 	)
+	tx, ty, tz, b := c.targetBlock()
+	c.targetBlockText = setText(c.targetBlockText,
+		fmt.Sprintf("Target(%d,%d,%d): %s", tx, ty, tz, b),
+		5, 41, 255, 255, 255,
+	)
 
 	runtime.ReadMemStats(&memoryStats)
 	text := fmt.Sprintf("%s", formatMemory(memoryStats.Alloc))
@@ -142,6 +148,99 @@ func (c *ClientState) renderTick(delta float64) {
 	c.fpsText = setText(c.fpsText, text, 800-5-float64(render.SizeOfString(text)), 5, 255, 255, 255)
 
 	c.chat.render(delta)
+}
+
+func (c *ClientState) targetBlock() (x, y, z int, block Block) {
+	const max = 4.0
+	block = BlockAir.Base
+	s := vmath.Vector3{c.X, c.Y + playerHeight, c.Z}
+	d := c.viewVector()
+
+	type gen struct {
+		count   int
+		base, d float64
+	}
+	newGen := func(start, d float64) *gen {
+		g := &gen{}
+		if d > 0 {
+			g.base = (math.Ceil(start) - start) / d
+		} else if d < 0 {
+			d = math.Abs(d)
+			g.base = (start - math.Floor(start)) / d
+		}
+		g.d = d
+		return g
+	}
+	next := func(g *gen) float64 {
+		g.count++
+		if g.d == 0 {
+			return math.Inf(1)
+		}
+		return g.base + float64(g.count-1)/g.d
+	}
+
+	aGen := newGen(s.X, d.X)
+	bGen := newGen(s.Y, d.Y)
+	cGen := newGen(s.Z, d.Z)
+	prevN := 0.0
+	nextNA := next(aGen)
+	nextNB := next(bGen)
+	nextNC := next(cGen)
+	for {
+		nextN := 0.0
+		if nextNA < nextNB {
+			if nextNA < nextNC {
+				nextN = nextNA
+				nextNA = next(aGen)
+			} else {
+				nextN = nextNC
+				nextNC = next(cGen)
+			}
+		} else {
+			if nextNB < nextNC {
+				nextN = nextNB
+				nextNB = next(bGen)
+			} else {
+				nextN = nextNC
+				nextNC = next(cGen)
+			}
+		}
+		if prevN == nextN {
+			continue
+		}
+		if nextN > max {
+			break
+		}
+		n := (prevN + nextN) / 2
+		bx, by, bz := int(math.Floor(s.X+d.X*n)), int(math.Floor(s.Y+d.Y*n)), int(math.Floor(s.Z+d.Z*n))
+		b := chunkMap.Block(bx, by, bz)
+		if b.Collidable() {
+			bb := b.CollisionBounds()
+			for _, bound := range bb {
+				bound.Shift(float64(bx), float64(by), float64(bz))
+				if bound.IntersectsLine(s, d) {
+					x, y, z = bx, by, bz
+					block = b
+					return
+				}
+			}
+		}
+		prevN = nextN
+	}
+	bx, by, bz := int(math.Floor(s.X+d.X*max)), int(math.Floor(s.Y+d.Y*max)), int(math.Floor(s.Z+d.Z*max))
+	b := chunkMap.Block(bx, by, bz)
+	if b.Collidable() {
+		bb := b.CollisionBounds()
+		for _, bound := range bb {
+			bound.Shift(float64(bx), float64(by), float64(bz))
+			if bound.IntersectsLine(s, d) {
+				x, y, z = bx, by, bz
+				block = b
+				return
+			}
+		}
+	}
+	return
 }
 
 func (c *ClientState) checkGround() {
@@ -187,16 +286,21 @@ func (c *ClientState) calculateMovement() (float64, float64) {
 }
 
 func (c *ClientState) facingDirection() direction.Type {
-	var viewVector vmath.Vector3
-	viewVector.X = math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
-	viewVector.Z = -math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
-	viewVector.Y = -math.Sin(c.Pitch)
+	viewVector := c.viewVector()
 	for _, d := range direction.Values {
 		if d.AsVector().Dot(viewVector) > 0.5 {
 			return d
 		}
 	}
 	return direction.Invalid
+}
+
+func (c *ClientState) viewVector() vmath.Vector3 {
+	var viewVector vmath.Vector3
+	viewVector.X = math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+	viewVector.Z = -math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+	viewVector.Y = -math.Sin(c.Pitch)
+	return viewVector
 }
 
 func formatMemory(alloc uint64) string {

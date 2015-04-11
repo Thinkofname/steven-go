@@ -60,6 +60,8 @@ func initUI() {
 	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 28, 12)
 	uiState.shader.TextureOffset.Pointer(2, gl.Short, false, 28, 20)
 	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 28, 24)
+
+	AddUIElement(GetTexture("stone"), 400-2, 240-2, 4, 4, 0, 0, 16, 16)
 }
 
 func drawUI() {

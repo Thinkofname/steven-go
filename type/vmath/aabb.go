@@ -39,6 +39,73 @@ func (a *AABB) Intersects(o *AABB) bool {
 		o.Max.Z <= a.Min.Z)
 }
 
+func (a *AABB) IntersectsLine(origin, dir Vector3) bool {
+	const right, left, middle = 0, 1, 2
+	var (
+		quadrant       [3]int
+		candidatePlane [3]float64
+		maxT           = [3]float64{-1, -1, -1}
+	)
+	inside := true
+	findC := func(i int, x, minX, maxX float64) {
+		if x < minX {
+			quadrant[i] = left
+			candidatePlane[i] = minX
+			inside = false
+		} else if x > maxX {
+			quadrant[i] = right
+			candidatePlane[i] = maxX
+			inside = false
+		} else {
+			quadrant[i] = middle
+		}
+	}
+	findC(0, origin.X, a.Min.X, a.Max.X)
+	findC(1, origin.Y, a.Min.Y, a.Max.Y)
+	findC(2, origin.Z, a.Min.Z, a.Max.Z)
+	if inside {
+		return true
+	}
+
+	if quadrant[0] != middle && dir.X != 0 {
+		maxT[0] = (candidatePlane[0] - origin.X) / dir.X
+	}
+	if quadrant[1] != middle && dir.Y != 0 {
+		maxT[1] = (candidatePlane[1] - origin.Y) / dir.Y
+	}
+	if quadrant[2] != middle && dir.Z != 0 {
+		maxT[2] = (candidatePlane[2] - origin.Z) / dir.Z
+	}
+	whichPlane := 0
+	for i := 1; i < 3; i++ {
+		if maxT[whichPlane] < maxT[i] {
+			whichPlane = i
+		}
+	}
+	if maxT[whichPlane] < 0 {
+		return false
+	}
+	check := func(i int, oX, dX, min, max float64) bool {
+		if whichPlane != i {
+			coord := oX + maxT[whichPlane]*dX
+			if coord < min || coord > max {
+				return false
+			}
+		}
+		return true
+	}
+	if !check(0, origin.X, dir.X, a.Min.X, a.Max.X) {
+		return false
+	}
+	if !check(1, origin.Y, dir.Y, a.Min.Y, a.Max.Y) {
+		return false
+	}
+	if !check(2, origin.Z, dir.Z, a.Min.Z, a.Max.Z) {
+		return false
+	}
+	return true
+}
+
 func (a *AABB) Shift(x, y, z float64) {
 	a.Min.X += x
 	a.Max.X += x

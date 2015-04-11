@@ -37,6 +37,13 @@ func (v *Vector3) Normalize() {
 	v.Z /= l
 }
 
+func (v Vector3) DistanceSquared(o Vector3) float64 {
+	dx := v.X - o.X
+	dy := v.Y - o.Y
+	dz := v.Z - o.Z
+	return dx*dx + dy*dy + dz*dz
+}
+
 func (v Vector3) LengthSquared() float64 {
 	return v.X*v.X + v.Y*v.Y + v.Z*v.Z
 }
