@@ -132,7 +132,7 @@ func (c *ClientState) renderTick(delta float64) {
 	c.displayTargetInfo()
 
 	runtime.ReadMemStats(&memoryStats)
-	text := fmt.Sprintf("%s", formatMemory(memoryStats.Alloc))
+	text := fmt.Sprintf("%s/%s", formatMemory(memoryStats.Alloc), formatMemory(memoryStats.Sys))
 	c.memoryText = setText(c.memoryText, text, 800-5-float64(render.SizeOfString(text)), 23, 255, 255, 255)
 
 	now := time.Now()
