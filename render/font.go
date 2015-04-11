@@ -97,20 +97,20 @@ func AddUIText(str string, x, y float64, rr, gg, bb int) *UIText {
 }
 
 // Returns the size of the passed character in pixels.
-func SizeOfCharacter(r rune) int {
+func SizeOfCharacter(r rune) float64 {
 	if r == ' ' {
 		return 4
 	}
 	info := fontCharacterInfo[r]
 	if r>>8 == 0 {
-		return (info.End - info.Start) * 2
+		return float64((info.End - info.Start) * 2)
 	}
-	return info.End - info.Start
+	return float64(info.End - info.Start)
 }
 
 // Returns the size of the passed string in pixels.
-func SizeOfString(str string) int {
-	size := 0
+func SizeOfString(str string) float64 {
+	size := 0.0
 	for _, r := range str {
 		size += SizeOfCharacter(r) + 2
 	}

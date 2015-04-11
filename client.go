@@ -20,6 +20,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/type/direction"
@@ -54,7 +55,7 @@ type ClientState struct {
 	positionText    *render.UIText
 	directionText   *render.UIText
 	memoryText      *render.UIText
-	targetBlockText *render.UIText
+	targetBlockText []*render.UIText
 
 	fps       int
 	frames    int
@@ -128,11 +129,7 @@ func (c *ClientState) renderTick(delta float64) {
 		fmt.Sprintf("Facing: %s", c.facingDirection()),
 		5, 23, 255, 255, 255,
 	)
-	tx, ty, tz, b := c.targetBlock()
-	c.targetBlockText = setText(c.targetBlockText,
-		fmt.Sprintf("Target(%d,%d,%d): %s", tx, ty, tz, b),
-		5, 41, 255, 255, 255,
-	)
+	c.displayTargetInfo()
 
 	runtime.ReadMemStats(&memoryStats)
 	text := fmt.Sprintf("%s", formatMemory(memoryStats.Alloc))
@@ -241,6 +238,72 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 		}
 	}
 	return
+}
+
+var debugStateColors = [...]chat.Color{
+	cWhite:     chat.White,
+	cOrange:    chat.Gold,
+	cMagenta:   chat.LightPurple,
+	cLightBlue: chat.Aqua,
+	cYellow:    chat.Yellow,
+	cLime:      chat.Green,
+	cPink:      chat.Red,
+	cGray:      chat.Gray,
+	cSilver:    chat.DarkGray,
+	cCyan:      chat.DarkAqua,
+	cPurple:    chat.DarkPurple,
+	cBlue:      chat.Blue,
+	cBrown:     chat.Gold,
+	cGreen:     chat.DarkGreen,
+	cRed:       chat.DarkRed,
+	cBlack:     chat.Black,
+}
+
+func (c *ClientState) displayTargetInfo() {
+	for _, e := range c.targetBlockText {
+		e.Free()
+	}
+	c.targetBlockText = c.targetBlockText[:0]
+	tx, ty, tz, b := c.targetBlock()
+	text := fmt.Sprintf("Target(%d,%d,%d)", tx, ty, tz)
+	c.targetBlockText = append(c.targetBlockText, render.AddUIText(
+		text,
+		800-5-render.SizeOfString(text), 41, 255, 255, 255,
+	))
+	text = fmt.Sprintf("%s:%s", b.Plugin(), b.Name())
+	c.targetBlockText = append(c.targetBlockText, render.AddUIText(
+		text,
+		800-5-render.SizeOfString(text), 59, 255, 255, 255,
+	))
+
+	for i, s := range b.states() {
+		var r, g, b int = 255, 255, 255
+		text = fmt.Sprint(s.Value)
+		switch val := s.Value.(type) {
+		case bool:
+			b = 0
+			if val {
+				g = 255
+				r = 0
+			} else {
+				r = 255
+				g = 0
+			}
+		case color:
+			r, g, b = chatColorRGB(debugStateColors[val])
+		}
+		pos := 800 - 5 - render.SizeOfString(text)
+		c.targetBlockText = append(c.targetBlockText, render.AddUIText(
+			text,
+			pos, 59+18*(1+float64(i)), r, g, b,
+		))
+		text = fmt.Sprintf("%s=", s.Key)
+		pos -= render.SizeOfString(text)
+		c.targetBlockText = append(c.targetBlockText, render.AddUIText(
+			text,
+			pos, 59+18*(1+float64(i)), 255, 255, 255,
+		))
+	}
 }
 
 func (c *ClientState) checkGround() {

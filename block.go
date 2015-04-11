@@ -44,6 +44,7 @@ type Block interface {
 	SID() uint16
 	Set(key string, val interface{}) Block
 	UpdateState(x, y, z int) Block
+	states() []blockState
 
 	Collidable() bool
 	CollisionBounds() []vmath.AABB
@@ -61,6 +62,11 @@ type Block interface {
 	String() string
 
 	toData() int
+}
+
+type blockState struct {
+	Key   string
+	Value interface{}
 }
 
 // base of most (if not all) blocks
@@ -220,6 +226,17 @@ func (b *baseBlock) Set(key string, val interface{}) Block {
 
 	}
 	return b.Parent.Blocks[index]
+}
+
+func (b *baseBlock) states() (out []blockState) {
+	self := reflect.ValueOf(b.Parent.Blocks[b.Index]).Elem()
+	for _, state := range b.Parent.states {
+		out = append(out, blockState{
+			Key:   state.name,
+			Value: self.FieldByIndex(state.field.Index).Interface(),
+		})
+	}
+	return
 }
 
 // GetBlockByCombinedID returns the block with the matching combined id.
