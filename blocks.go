@@ -51,7 +51,7 @@ var (
 	BlockDeadBush                   = initDeadBush("deadbush")
 	BlockPiston                     = initSimple("piston")
 	BlockPistonHead                 = initSimple("piston_head")
-	BlockWool                       = initSimple("wool")
+	BlockWool                       = initWool("wool")
 	BlockPistonExtension            = initSimple("piston_extension")
 	BlockYellowFlower               = initSimple("yellow_flower")
 	BlockRedFlower                  = initSimple("red_flower")

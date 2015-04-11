@@ -928,3 +928,25 @@ func (b *blockStainedClay) ModelName() string {
 func (b *blockStainedClay) toData() int {
 	return int(b.Color)
 }
+
+// Wool
+
+type blockWool struct {
+	baseBlock
+	Color color `state:"color,0-15"`
+}
+
+func initWool(name string) *BlockSet {
+	b := &blockWool{}
+	b.init(name)
+	set := alloc(b)
+	return set
+}
+
+func (b *blockWool) ModelName() string {
+	return b.Color.String() + "_wool"
+}
+
+func (b *blockWool) toData() int {
+	return int(b.Color)
+}
