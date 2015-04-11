@@ -157,7 +157,7 @@ func (l *blockLeaves) toData() int {
 	if l.Second {
 		data -= 4
 	}
-	if l.Decayable {
+	if !l.Decayable {
 		data |= 0x4
 	}
 	if l.CheckDecay {
