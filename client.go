@@ -298,7 +298,7 @@ func (c *ClientState) displayTargetInfo() {
 			pos, 59+18*(1+float64(i)), r, g, b,
 		))
 		text = fmt.Sprintf("%s=", s.Key)
-		pos -= render.SizeOfString(text)
+		pos -= render.SizeOfString(text) + 2
 		c.targetBlockText = append(c.targetBlockText, render.AddUIText(
 			text,
 			pos, 59+18*(1+float64(i)), 255, 255, 255,

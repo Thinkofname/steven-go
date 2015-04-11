@@ -114,7 +114,7 @@ func SizeOfString(str string) float64 {
 	for _, r := range str {
 		size += SizeOfCharacter(r) + 2
 	}
-	return size - 1
+	return size - 2
 }
 
 // Free frees the UIText's elements. The UIText should be considered
