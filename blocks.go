@@ -175,7 +175,7 @@ var (
 	BlockQuartzStairs               = initStairs("quartz_stairs")
 	BlockActivatorRail              = initPoweredRail("activator_rail")
 	BlockDropper                    = initDispenser("dropper")
-	BlockStainedHardenedClay        = initSimple("stained_hardened_clay")
+	BlockStainedHardenedClay        = initStainedClay("stained_hardened_clay")
 	BlockStainedGlassPane           = initStainedGlassPane("stained_glass_pane")
 	BlockLeaves2                    = initLeaves("leaves2", true)
 	BlockLog2                       = initLog("log2", true)

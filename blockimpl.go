@@ -906,3 +906,25 @@ func (b *blockVines) toData() int {
 	}
 	return data
 }
+
+// Stained clay
+
+type blockStainedClay struct {
+	baseBlock
+	Color color `state:"color,0-15"`
+}
+
+func initStainedClay(name string) *BlockSet {
+	b := &blockStainedClay{}
+	b.init(name)
+	set := alloc(b)
+	return set
+}
+
+func (b *blockStainedClay) ModelName() string {
+	return b.Color.String() + "_stained_hardened_clay"
+}
+
+func (b *blockStainedClay) toData() int {
+	return int(b.Color)
+}
