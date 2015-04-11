@@ -20,6 +20,7 @@ import (
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/render/builder"
+	"github.com/thinkofdeath/steven/type/bit"
 	"github.com/thinkofdeath/steven/type/direction"
 )
 
@@ -144,7 +145,7 @@ func buildCullBits(bs *blocksSnapshot) uint64 {
 		bits |= 1 << (from*6 + to)
 	}
 
-	visited := map[position]struct{}{}
+	visited := bit.NewSet(16 * 16 * 16)
 	// This tries a flood fill on every block in the chunk
 	// section with an optimization of not visiting a block
 	// that was visited in a previous fill (as it would already
@@ -152,7 +153,7 @@ func buildCullBits(bs *blocksSnapshot) uint64 {
 	for y := 0; y < 16; y++ {
 		for z := 0; z < 16; z++ {
 			for x := 0; x < 16; x++ {
-				if _, ok := visited[position{x, y, z}]; ok {
+				if visited.Get(x | (z << 4) | (y << 8)) {
 					continue
 				}
 				touched := floodFill(bs, visited, x, y, z)
@@ -178,14 +179,14 @@ func buildCullBits(bs *blocksSnapshot) uint64 {
 	return bits
 }
 
-func floodFill(bs *blocksSnapshot, visited map[position]struct{}, x, y, z int) uint8 {
-	pos := position{x, y, z}
+func floodFill(bs *blocksSnapshot, visited bit.Set, x, y, z int) uint8 {
+	i := x | (z << 4) | (y << 8)
 	// Make sure we aren't filling the same spot repeatedly or
 	// going out of bounds.
-	if _, ok := visited[pos]; ok || x < 0 || x > 15 || y < 0 || y > 15 || z < 0 || z > 15 {
+	if x < 0 || x > 15 || y < 0 || y > 15 || z < 0 || z > 15 || visited.Get(i) {
 		return 0
 	}
-	visited[pos] = struct{}{}
+	visited.Set(i, true)
 
 	// Can't fill into 'solid' spaces (ones that completely fill
 	// the block)
