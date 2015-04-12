@@ -16,6 +16,7 @@ package main
 
 import (
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/type/direction"
 )
 
@@ -56,8 +57,7 @@ func (l *blockLiquid) toData() int {
 	return l.Level
 }
 
-func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int) []chunkVertex {
-	var out []chunkVertex
+func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder.Buffer) {
 	var tex *render.TextureInfo
 	var b1, b2 *BlockSet
 	if l.Lava {
@@ -99,68 +99,67 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int) []chunkVerte
 			ux2 := int16(16 * tex.Width)
 			uy1 := int16(0)
 			uy2 := int16(16 * tex.Height)
-			for v := range vert {
-				vert[v].TX = uint16(tex.X)
-				vert[v].TY = uint16(tex.Y + tex.Atlas*render.AtlasSize)
-				vert[v].TW = uint16(tex.Width)
-				vert[v].TH = uint16(tex.Height)
-				vert[v].R = cr
-				vert[v].G = cg
-				vert[v].B = cb
+			for _, vert := range vert {
+				vert.TX = uint16(tex.X)
+				vert.TY = uint16(tex.Y + tex.Atlas*render.AtlasSize)
+				vert.TW = uint16(tex.Width)
+				vert.TH = uint16(tex.Height)
+				vert.R = cr
+				vert.G = cg
+				vert.B = cb
 
-				if vert[v].Y == 0 {
-					vert[v].Y = int16(0 + y*256)
+				if vert.Y == 0 {
+					vert.Y = int16(0 + y*256)
 				} else {
-					if vert[v].X == 0 && vert[v].Z == 0 {
+					if vert.X == 0 && vert.Z == 0 {
 						height := int((16.0/8.0)*float64(tl)) * 16
-						vert[v].Y = int16(height + y*256)
-					} else if vert[v].X != 0 && vert[v].Z == 0 {
+						vert.Y = int16(height + y*256)
+					} else if vert.X != 0 && vert.Z == 0 {
 						height := int((16.0/8.0)*float64(tr)) * 16
-						vert[v].Y = int16(height + y*256)
-					} else if vert[v].X == 0 && vert[v].Z != 0 {
+						vert.Y = int16(height + y*256)
+					} else if vert.X == 0 && vert.Z != 0 {
 						height := int((16.0/8.0)*float64(bl)) * 16
-						vert[v].Y = int16(height + y*256)
+						vert.Y = int16(height + y*256)
 					} else {
 						height := int((16.0/8.0)*float64(br)) * 16
-						vert[v].Y = int16(height + y*256)
+						vert.Y = int16(height + y*256)
 					}
 				}
 
-				if vert[v].X == 0 {
-					vert[v].X = int16(0 + x*256)
+				if vert.X == 0 {
+					vert.X = int16(0 + x*256)
 				} else {
-					vert[v].X = int16(256 + x*256)
+					vert.X = int16(256 + x*256)
 				}
-				if vert[v].Z == 0 {
-					vert[v].Z = int16(0 + z*256)
+				if vert.Z == 0 {
+					vert.Z = int16(0 + z*256)
 				} else {
-					vert[v].Z = int16(256 + z*256)
+					vert.Z = int16(256 + z*256)
 				}
 
-				vert[v].BlockLight, vert[v].SkyLight = calculateLight(
+				vert.BlockLight, vert.SkyLight = calculateLight(
 					bs,
 					x, y, z,
-					float64(vert[v].X)/256.0,
-					float64(vert[v].Y)/256.0,
-					float64(vert[v].Z)/256.0,
+					float64(vert.X)/256.0,
+					float64(vert.Y)/256.0,
+					float64(vert.Z)/256.0,
 					1, !l.Lava, l.ForceShade(),
 				)
 
-				if vert[v].TOffsetX == 0 {
-					vert[v].TOffsetX = int16(ux1)
+				if vert.TOffsetX == 0 {
+					vert.TOffsetX = int16(ux1)
 				} else {
-					vert[v].TOffsetX = int16(ux2)
+					vert.TOffsetX = int16(ux2)
 				}
-				if vert[v].TOffsetY == 0 {
-					vert[v].TOffsetY = int16(uy1)
+				if vert.TOffsetY == 0 {
+					vert.TOffsetY = int16(uy1)
 				} else {
-					vert[v].TOffsetY = int16(uy2)
+					vert.TOffsetY = int16(uy2)
 				}
+				buildVertex(buf, vert)
 			}
-			out = append(out, vert[:]...)
 		}
 	}
-	return out
 }
 
 func (l *blockLiquid) averageLiquidLevel(bs *blocksSnapshot, x, y, z int) int {

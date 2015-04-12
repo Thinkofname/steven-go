@@ -79,12 +79,10 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 					}
 					offset := len(b.Data())
 
-					// Liquid can't be represented by the model system
+					// Liquids can't be represented by the model system
 					// due to the number of possible states they have
 					if l, ok := bl.(*blockLiquid); ok {
-						for _, v := range l.renderLiquid(bs, x, y, z) {
-							buildVertex(b, v)
-						}
+						l.renderLiquid(bs, x, y, z, b)
 						r.Int() // See the comment above for air
 						count := len(b.Data()) - offset
 						if bl.IsTranslucent() && count > 0 {
@@ -104,9 +102,7 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 					index := r.Intn(len(bl.Models()))
 
 					if variant := bl.Models().selectModel(index); variant != nil {
-						for _, v := range variant.Render(x, y, z, bs) {
-							buildVertex(b, v)
-						}
+						variant.Render(x, y, z, bs, b)
 						count := len(b.Data()) - offset
 						if bl.IsTranslucent() && count > 0 {
 							tInfo = append(tInfo, render.ObjectInfo{

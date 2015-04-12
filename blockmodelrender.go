@@ -19,6 +19,7 @@ import (
 	"math"
 
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/type/direction"
 )
 
@@ -266,8 +267,7 @@ func precomputeModel(bm *blockModel) *processedModel {
 	return p
 }
 
-func (p processedModel) Render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
-	var out []chunkVertex
+func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf *builder.Buffer) {
 	this := bs.block(x, y, z)
 	for _, f := range p.faces {
 		if f.cullFace != direction.Invalid {
@@ -276,10 +276,6 @@ func (p processedModel) Render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 				continue
 			}
 		}
-
-		off := len(out)
-		out = append(out, f.vertices...)
-		verts := out[off:]
 
 		var cr, cg, cb byte
 		cr = 255
@@ -297,26 +293,26 @@ func (p processedModel) Render(x, y, z int, bs *blocksSnapshot) []chunkVertex {
 			cb = byte(float64(cb) * 0.8)
 		}
 
-		for i := range verts {
-			verts[i].R = cr
-			verts[i].G = cg
-			verts[i].B = cb
+		for _, vert := range f.vertices {
+			vert.R = cr
+			vert.G = cg
+			vert.B = cb
 
-			verts[i].X += int16(x * 256)
-			verts[i].Y += int16(y * 256)
-			verts[i].Z += int16(z * 256)
+			vert.X += int16(x * 256)
+			vert.Y += int16(y * 256)
+			vert.Z += int16(z * 256)
 
-			verts[i].BlockLight, verts[i].SkyLight = calculateLight(
+			vert.BlockLight, vert.SkyLight = calculateLight(
 				bs,
 				x, y, z,
-				float64(verts[i].X)/256.0,
-				float64(verts[i].Y)/256.0,
-				float64(verts[i].Z)/256.0,
+				float64(vert.X)/256.0,
+				float64(vert.Y)/256.0,
+				float64(vert.Z)/256.0,
 				int(f.facing), p.ambientOcclusion, this.ForceShade(),
 			)
+			buildVertex(buf, vert)
 		}
 	}
-	return out
 }
 
 // Takes an average of the biome colors of the surrounding area
