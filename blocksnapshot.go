@@ -16,6 +16,7 @@ package main
 
 import (
 	"math"
+	"sync"
 
 	"github.com/thinkofdeath/steven/type/nibble"
 	"github.com/thinkofdeath/steven/world/biome"
@@ -31,19 +32,42 @@ type blocksSnapshot struct {
 	w, h, d int
 }
 
+var snapshotPool = sync.Pool{
+	New: func() interface{} {
+		const w, h, d = 20, 20, 20
+		return &blocksSnapshot{
+			Blocks:     make([]uint16, w*h*d),
+			BlockLight: nibble.New(w * h * d),
+			SkyLight:   nibble.New(w * h * d),
+			Biome:      make([]*biome.Type, w*d),
+		}
+	},
+}
+
+func getPooledSnapshot(x, y, z int) *blocksSnapshot {
+	bs := snapshotPool.Get().(*blocksSnapshot)
+	bs.init(x, y, z, 20, 20, 20)
+	return bs
+}
+
 func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 	bs := &blocksSnapshot{
 		Blocks:     make([]uint16, w*h*d),
 		BlockLight: nibble.New(w * h * d),
 		SkyLight:   nibble.New(w * h * d),
 		Biome:      make([]*biome.Type, w*d),
-		x:          x,
-		y:          y,
-		z:          z,
-		w:          w,
-		h:          h,
-		d:          d,
 	}
+	bs.init(x, y, z, w, h, d)
+	return bs
+}
+
+func (bs *blocksSnapshot) init(x, y, z, w, h, d int) {
+	bs.x = x
+	bs.y = y
+	bs.z = z
+	bs.w = w
+	bs.h = h
+	bs.d = d
 	for i := range bs.Blocks {
 		bs.Blocks[i] = BlockBedrock.Base.SID()
 		bs.SkyLight.Set(i, 15)
@@ -119,8 +143,6 @@ func getSnapshot(x, y, z, w, h, d int) *blocksSnapshot {
 			}
 		}
 	}
-
-	return bs
 }
 
 func (bs *blocksSnapshot) block(x, y, z int) Block {

@@ -47,7 +47,7 @@ var (
 
 func (cs *chunkSection) build(complete chan<- buildPos) {
 	ox, oy, oz := (cs.chunk.X<<4)-2, (cs.Y<<4)-2, (cs.chunk.Z<<4)-2
-	bs := getSnapshot(ox, oy, oz, 20, 20, 20)
+	bs := getPooledSnapshot(ox, oy, oz)
 	// Make relative
 	bs.x = -2
 	bs.y = -2
@@ -120,6 +120,7 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 
 		// Update culling information
 		cullBits := buildCullBits(bs)
+		snapshotPool.Put(bs)
 
 		// Upload the buffers on the render goroutine
 		render.Sync(func() {
