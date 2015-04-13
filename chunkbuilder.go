@@ -64,8 +64,7 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 				for z := 0; z < 16; z++ {
 
 					bl := bs.block(x, y, z)
-					// Air will never have a model
-					if bl.Is(BlockAir) {
+					if !bl.Renderable() {
 						// Use one step of the rng so that
 						// if a block is placed in an empty
 						// location is variant doesn't change

@@ -121,6 +121,31 @@ func precomputeModel(bm *blockModel) *processedModel {
 			uy1 := int16(face.uv[1] * tex.Height)
 			uy2 := int16(face.uv[3] * tex.Height)
 
+			tw, th := int16(tex.Width), int16(tex.Height)
+			if face.rotation > 0 {
+				x := ux1
+				y := uy1
+				w := ux2 - ux1
+				h := uy2 - uy1
+				switch face.rotation {
+				case 90:
+					uy2 = x + w
+					ux1 = tw*16 - (y + h)
+					ux2 = tw*16 - y
+					uy1 = x
+				case 180:
+					uy1 = th*16 - (y + h)
+					uy2 = th*16 - y
+					ux1 = x + w
+					ux2 = x
+				case 270:
+					uy2 = x
+					uy1 = x + w
+					ux2 = y + h
+					ux1 = y
+				}
+			}
+
 			var minX, minY, minZ int16 = math.MaxInt16, math.MaxInt16, math.MaxInt16
 			var maxX, maxY, maxZ int16 = math.MinInt16, math.MinInt16, math.MinInt16
 
@@ -207,11 +232,21 @@ func precomputeModel(bm *blockModel) *processedModel {
 					vert[v].TOffsetY = int16(uy2)
 				}
 
+				if face.rotation > 0 {
+					rotY := -float64(face.rotation) * (math.Pi / 180)
+					c := int16(math.Cos(rotY))
+					s := int16(math.Sin(rotY))
+					x := vert[v].TOffsetX - 8*tw
+					y := vert[v].TOffsetY - 8*th
+					vert[v].TOffsetX = 8*tw + int16(x*c-y*s)
+					vert[v].TOffsetY = 8*th + int16(y*c+x*s)
+				}
+
 				if bm.uvLock && bm.y > 0 &&
 					(pFace.facing == direction.Up || pFace.facing == direction.Down) {
-					rotY := float64(bm.y) * (math.Pi / 180)
-					c := int16(math.Cos(-rotY))
-					s := int16(math.Sin(-rotY))
+					rotY := float64(-bm.y) * (math.Pi / 180)
+					c := int16(math.Cos(rotY))
+					s := int16(math.Sin(rotY))
 					x := vert[v].TOffsetX - 8*16
 					y := vert[v].TOffsetY - 8*16
 					vert[v].TOffsetX = 8*16 + int16(x*c+y*s)
@@ -221,8 +256,8 @@ func precomputeModel(bm *blockModel) *processedModel {
 				if bm.uvLock && bm.x > 0 &&
 					(pFace.facing != direction.Up && pFace.facing != direction.Down) {
 					rotY := float64(bm.x) * (math.Pi / 180)
-					c := int16(math.Cos(-rotY))
-					s := int16(math.Sin(-rotY))
+					c := int16(math.Cos(rotY))
+					s := int16(math.Sin(rotY))
 					x := vert[v].TOffsetX - 8*16
 					y := vert[v].TOffsetY - 8*16
 					vert[v].TOffsetX = 8*16 + int16(x*c+y*s)

@@ -49,6 +49,7 @@ type Block interface {
 	Collidable() bool
 	CollisionBounds() []vmath.AABB
 
+	Renderable() bool
 	ModelName() string
 	ModelVariant() string
 	Models() blockVariants
@@ -79,6 +80,7 @@ type baseBlock struct {
 	BlockVariants blockVariants
 	translucent   bool
 	collidable    bool
+	renderable    bool
 	bounds        []vmath.AABB
 }
 
@@ -99,6 +101,7 @@ func (b *baseBlock) init(name string) {
 	b.plugin = "minecraft"
 	b.cullAgainst = true
 	b.collidable = true
+	b.renderable = true
 }
 
 func (b *baseBlock) String() string {
@@ -130,6 +133,10 @@ func (b *baseBlock) CollisionBounds() []vmath.AABB {
 	return b.bounds
 }
 
+func (b *baseBlock) Renderable() bool {
+	return b.renderable
+}
+
 func (b *baseBlock) Models() blockVariants {
 	return b.BlockVariants
 }
@@ -139,10 +146,6 @@ func (b *baseBlock) ModelName() string {
 }
 func (b *baseBlock) ModelVariant() string {
 	return "normal"
-}
-
-func (b *baseBlock) toData() int {
-	panic("toData on baseBlock")
 }
 
 func (b *baseBlock) LightReduction() int {
@@ -404,11 +407,11 @@ func initBlocks() {
 			if data != -1 {
 				blocks[(bs.ID<<4)|data] = b
 			}
-			// Liquids have custom rendering and air is never
-			// rendered
-			if _, ok := b.(*blockLiquid); ok || b.Is(BlockAir) {
+			// Liquids have custom rendering
+			if _, ok := b.(*blockLiquid); ok || !b.Renderable() {
 				continue
 			}
+
 			if model := findStateModel(b.Plugin(), b.ModelName()); model != nil {
 				if variants := model.variant(b.ModelVariant()); variants != nil {
 					br.FieldByName("BlockVariants").Set(

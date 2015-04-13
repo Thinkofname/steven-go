@@ -524,7 +524,8 @@ func (b *blockFence) UpdateState(x, y, z int) Block {
 		}
 		ox, oy, oz := d.Offset()
 		bl := chunkMap.Block(x+ox, y+oy, z+oz)
-		if fence, ok := bl.(*blockFence); bl.ShouldCullAgainst() || (ok && fence.Wood == b.Wood) {
+		_, ok2 := bl.(*blockFenceGate)
+		if fence, ok := bl.(*blockFence); bl.ShouldCullAgainst() || (ok && fence.Wood == b.Wood) || ok2 {
 			block = block.Set(d.String(), true)
 		} else {
 			block = block.Set(d.String(), false)
@@ -540,6 +541,133 @@ func (b *blockFence) ModelVariant() string {
 func (b *blockFence) toData() int {
 	if !b.North && !b.South && !b.East && !b.West {
 		return 0
+	}
+	return -1
+}
+
+// Fence Gate
+
+type blockFenceGate struct {
+	baseBlock
+	Facing  direction.Type `state:"facing,2-5"`
+	InWall  bool           `state:"in_wall"`
+	Open    bool           `state:"open"`
+	Powered bool           `state:"powered"`
+}
+
+func initFenceGate(name string) *BlockSet {
+	b := &blockFenceGate{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockFenceGate) UpdateState(x, y, z int) Block {
+	var block Block = b
+	ox, oy, oz := b.Facing.Clockwise().Offset()
+	if _, ok := chunkMap.Block(x+ox, y+oy, z+oz).(*blockWall); ok {
+		return block.Set("in_wall", true)
+	}
+	ox, oy, oz = b.Facing.CounterClockwise().Offset()
+	if _, ok := chunkMap.Block(x+ox, y+oy, z+oz).(*blockWall); ok {
+		return block.Set("in_wall", true)
+	}
+	return block.Set("in_wall", false)
+}
+
+func (b *blockFenceGate) ModelVariant() string {
+	return fmt.Sprintf("facing=%s,in_wall=%t,open=%t", b.Facing, b.InWall, b.Open)
+}
+
+func (b *blockFenceGate) toData() int {
+	if b.Powered || b.InWall {
+		return -1
+	}
+	data := 0
+	switch b.Facing {
+	case direction.South:
+		data = 0
+	case direction.West:
+		data = 1
+	case direction.North:
+		data = 2
+	case direction.East:
+		data = 3
+	}
+	if b.Open {
+		data |= 0x4
+	}
+	return data
+}
+
+// Wall
+
+type wallVariant int
+
+const (
+	wvCobblestone wallVariant = iota
+	wvMossyCobblestone
+)
+
+func (w wallVariant) String() string {
+	switch w {
+	case wvCobblestone:
+		return "cobblestone"
+	case wvMossyCobblestone:
+		return "mossy_cobblestone"
+	}
+	return fmt.Sprintf("wallVariant(%d)", w)
+}
+
+type blockWall struct {
+	baseBlock
+	Variant wallVariant `state:"variant,0-1"`
+	Up      bool        `state:"up"`
+	North   bool        `state:"north"`
+	South   bool        `state:"south"`
+	East    bool        `state:"east"`
+	West    bool        `state:"west"`
+}
+
+func initWall(name string) *BlockSet {
+	b := &blockWall{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockWall) UpdateState(x, y, z int) Block {
+	var block Block = b
+	for _, d := range direction.Values {
+		if d == direction.Down {
+			continue
+		}
+		ox, oy, oz := d.Offset()
+		bl := chunkMap.Block(x+ox, y+oy, z+oz)
+		_, ok := bl.(*blockWall)
+		_, ok2 := bl.(*blockFenceGate)
+		if bl.ShouldCullAgainst() || ok || ok2 {
+			block = block.Set(d.String(), true)
+		} else {
+			block = block.Set(d.String(), false)
+		}
+	}
+	return block
+}
+
+func (b *blockWall) ModelName() string {
+	return b.Variant.String() + "_wall"
+}
+
+func (b *blockWall) ModelVariant() string {
+	return fmt.Sprintf("east=%t,north=%t,south=%t,up=%t,west=%t", b.East, b.North, b.South, b.Up, b.West)
+}
+
+func (b *blockWall) toData() int {
+	if !b.North && !b.South && !b.East && !b.West && !b.Up {
+		return int(b.Variant)
 	}
 	return -1
 }
@@ -949,4 +1077,115 @@ func (b *blockWool) ModelName() string {
 
 func (b *blockWool) toData() int {
 	return int(b.Color)
+}
+
+// Piston
+
+type blockPiston struct {
+	baseBlock
+	Facing   direction.Type `state:"facing,0-5"`
+	Extended bool           `state:"extended"`
+}
+
+func initPiston(name string) *BlockSet {
+	b := &blockPiston{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockPiston) LightReduction() int {
+	return 6
+}
+
+func (b *blockPiston) ModelVariant() string {
+	return fmt.Sprintf("extended=%t,facing=%s", b.Extended, b.Facing)
+}
+
+func (b *blockPiston) toData() int {
+	data := 0
+	switch b.Facing {
+	case direction.Down:
+		data = 0
+	case direction.Up:
+		data = 1
+	case direction.North:
+		data = 2
+	case direction.South:
+		data = 3
+	case direction.West:
+		data = 4
+	case direction.East:
+		data = 5
+	}
+	if b.Extended {
+		data |= 0x8
+	}
+	return data
+}
+
+type pistonType int
+
+const (
+	ptNormal pistonType = iota
+	ptSticky
+)
+
+func (p pistonType) String() string {
+	switch p {
+	case ptNormal:
+		return "normal"
+	case ptSticky:
+		return "sticky"
+	}
+	return fmt.Sprintf("pistonType(%d)", p)
+}
+
+type blockPistonHead struct {
+	baseBlock
+	Facing direction.Type `state:"facing,0-5"`
+	Short  bool           `state:"short"`
+	Type   pistonType     `state:"type,0-1"`
+}
+
+func initPistonHead(name string) *BlockSet {
+	b := &blockPistonHead{}
+	b.init(name)
+	b.cullAgainst = false
+	set := alloc(b)
+	return set
+}
+
+func (b *blockPistonHead) LightReduction() int {
+	return 0
+}
+
+func (b *blockPistonHead) ModelVariant() string {
+	return fmt.Sprintf("facing=%s,short=%t,type=%s", b.Facing, b.Short, b.Type)
+}
+
+func (b *blockPistonHead) toData() int {
+	if b.Short {
+		return -1
+	}
+	data := 0
+	switch b.Facing {
+	case direction.Down:
+		data = 0
+	case direction.Up:
+		data = 1
+	case direction.North:
+		data = 2
+	case direction.South:
+		data = 3
+	case direction.West:
+		data = 4
+	case direction.East:
+		data = 5
+	}
+	if b.Type == ptSticky {
+		data |= 0x8
+	}
+	return data
 }
