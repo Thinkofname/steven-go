@@ -36,18 +36,34 @@ type processedFace struct {
 	tintIndex int
 }
 
-var faceRotation = [...]direction.Type{
+var faceRotation = []direction.Type{
 	direction.North,
 	direction.East,
 	direction.South,
 	direction.West,
 }
 
-var faceRotationX = [...]direction.Type{
+var faceRotationX = []direction.Type{
 	direction.North,
 	direction.Down,
 	direction.South,
 	direction.Up,
+}
+
+func rotateDirection(val direction.Type, offset int, rots []direction.Type, invalid ...direction.Type) direction.Type {
+	for _, d := range invalid {
+		if d == val {
+			return val
+		}
+	}
+	var pos int
+	for di, d := range rots {
+		if d == val {
+			pos = di
+			break
+		}
+	}
+	return rots[(pos+offset)%len(rots)]
 }
 
 func precomputeModel(bm *blockModel) *processedModel {
@@ -58,55 +74,21 @@ func precomputeModel(bm *blockModel) *processedModel {
 		// grass's overlay works correctly.
 		el := bm.elements[len(bm.elements)-1-ei]
 		for i, face := range el.faces {
-			faceID := i
+			faceID := direction.Type(i)
 			if face == nil {
 				continue
 			}
 			pFace := processedFace{}
 			cullFace := face.cullFace
 			if bm.x > 0 {
-				if cullFace != direction.East && cullFace != direction.West && cullFace != direction.Invalid {
-					var pos int
-					for di, d := range faceRotationX {
-						if d == cullFace {
-							pos = di
-							break
-						}
-					}
-					cullFace = faceRotationX[(pos+(int(bm.x)/90))%len(faceRotationX)]
-				}
-				if faceID != int(direction.East) && faceID != int(direction.West) {
-					var pos int
-					for di, d := range faceRotationX {
-						if d == direction.Type(faceID) {
-							pos = di
-							break
-						}
-					}
-					faceID = int(faceRotationX[(pos+(int(bm.x)/90))%len(faceRotationX)])
-				}
+				o := int(bm.x) / 90
+				cullFace = rotateDirection(cullFace, o, faceRotationX, direction.East, direction.West, direction.Invalid)
+				faceID = rotateDirection(faceID, o, faceRotationX, direction.East, direction.West, direction.Invalid)
 			}
 			if bm.y > 0 {
-				if cullFace >= 2 && cullFace != direction.Invalid {
-					var pos int
-					for di, d := range faceRotation {
-						if d == cullFace {
-							pos = di
-							break
-						}
-					}
-					cullFace = faceRotation[(pos+(int(bm.y)/90))%len(faceRotation)]
-				}
-				if faceID >= 2 {
-					var pos int
-					for di, d := range faceRotation {
-						if d == direction.Type(faceID) {
-							pos = di
-							break
-						}
-					}
-					faceID = int(faceRotation[(pos+(int(bm.y)/90))%len(faceRotation)])
-				}
+				o := int(bm.y) / 90
+				cullFace = rotateDirection(cullFace, o, faceRotation, direction.Up, direction.Down, direction.Invalid)
+				faceID = rotateDirection(faceID, o, faceRotation, direction.Up, direction.Down, direction.Invalid)
 			}
 			pFace.cullFace = cullFace
 			pFace.facing = direction.Type(faceID)
