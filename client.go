@@ -212,7 +212,7 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 		n := (prevN + nextN) / 2
 		bx, by, bz := int(math.Floor(s.X+d.X*n)), int(math.Floor(s.Y+d.Y*n)), int(math.Floor(s.Z+d.Z*n))
 		b := chunkMap.Block(bx, by, bz)
-		if b.Collidable() {
+		if _, ok := b.(*blockLiquid); !b.Is(BlockAir) && !ok {
 			bb := b.CollisionBounds()
 			for _, bound := range bb {
 				bound.Shift(float64(bx), float64(by), float64(bz))
