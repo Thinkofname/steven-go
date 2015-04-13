@@ -29,6 +29,8 @@ var (
 	shaderChunk   *chunkShader
 	chunkProgramT gl.Program
 	shaderChunkT  *chunkShader
+	lineProgram   gl.Program
+	shaderLine    *lineShader
 
 	lastWidth, lastHeight int = -1, -1
 	perspectiveMatrix         = vmath.NewMatrix4()
@@ -78,6 +80,7 @@ func Start(d bool) {
 	textureLock.Unlock()
 
 	initUI()
+	initLineDraw()
 
 	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
 }
@@ -172,6 +175,8 @@ sync:
 
 	renderOrder = renderOrder[:0]
 	renderBuffer(nearestBuffer, chunkPos, direction.Invalid)
+
+	drawLines()
 
 	chunkProgramT.Use()
 	shaderChunkT.PerspectiveMatrix.Matrix4(perspectiveMatrix)

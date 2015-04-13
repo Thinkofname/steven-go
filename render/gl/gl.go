@@ -76,6 +76,8 @@ const (
 	// LineStrip means the previous vertex connects to the next
 	// one in a continuous strip.
 	LineStrip DrawType = gl.LINE_STRIP
+	// Lines treats each set of 2 vertices as a line
+	Lines DrawType = gl.LINES
 )
 
 // Func is a function to be preformed on two values.

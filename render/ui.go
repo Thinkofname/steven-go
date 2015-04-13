@@ -36,7 +36,6 @@ var (
 		prevSize     int
 		elements     []*UIElement
 		freeElements []*UIElement
-		lastID       int
 		elementCount int
 	}{
 		prevSize: -1,

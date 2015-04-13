@@ -130,6 +130,7 @@ func (c *ClientState) renderTick(delta float64) {
 		5, 23, 255, 255, 255,
 	)
 	c.displayTargetInfo()
+	c.highlightTarget()
 
 	runtime.ReadMemStats(&memoryStats)
 	text := fmt.Sprintf("%s/%s", formatMemory(memoryStats.Alloc), formatMemory(memoryStats.Sys))
@@ -257,6 +258,52 @@ var debugStateColors = [...]chat.Color{
 	cGreen:     chat.DarkGreen,
 	cRed:       chat.DarkRed,
 	cBlack:     chat.Black,
+}
+
+func (c *ClientState) highlightTarget() {
+	const lineSize = 1.0 / 128.0
+	tx, ty, tz, b := c.targetBlock()
+	if b.Is(BlockAir) {
+		return
+	}
+	for _, b := range b.CollisionBounds() {
+		b.Shift(float64(tx), float64(ty), float64(tz))
+
+		points := [][2]float64{
+			{b.Min.X, b.Min.Z},
+			{b.Min.X, b.Max.Z},
+			{b.Max.X, b.Min.Z},
+			{b.Max.X, b.Max.Z},
+		}
+
+		for _, p := range points {
+			render.DrawBox(
+				p[0]-lineSize, b.Min.Y-lineSize, p[1]-lineSize,
+				p[0]+lineSize, b.Max.Y+lineSize, p[1]+lineSize,
+				0, 0, 0, 255,
+			)
+		}
+
+		topPoints := [][4]float64{
+			{b.Min.X, b.Min.Z, b.Max.X, b.Min.Z},
+			{b.Min.X, b.Max.Z, b.Max.X, b.Max.Z},
+			{b.Min.X, b.Min.Z, b.Min.X, b.Max.Z},
+			{b.Max.X, b.Min.Z, b.Max.X, b.Max.Z},
+		}
+		for _, p := range topPoints {
+			p2 := p[2:]
+			render.DrawBox(
+				p[0]-lineSize, b.Min.Y-lineSize, p[1]-lineSize,
+				p2[0]+lineSize, b.Min.Y+lineSize, p2[1]+lineSize,
+				0, 0, 0, 255,
+			)
+			render.DrawBox(
+				p[0]-lineSize, b.Max.Y-lineSize, p[1]-lineSize,
+				p2[0]+lineSize, b.Max.Y+lineSize, p2[1]+lineSize,
+				0, 0, 0, 255,
+			)
+		}
+	}
 }
 
 func (c *ClientState) displayTargetInfo() {
