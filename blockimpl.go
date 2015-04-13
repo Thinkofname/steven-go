@@ -17,8 +17,10 @@ package main
 import (
 	"fmt"
 	"image"
+	"math"
 
 	"github.com/thinkofdeath/steven/type/direction"
+	"github.com/thinkofdeath/steven/type/vmath"
 )
 
 // Stone
@@ -438,6 +440,15 @@ func initPoweredRail(name string) *BlockSet {
 	return set
 }
 
+func (b *blockPoweredRail) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			*vmath.NewAABB(0, 0, 0, 1.0, 1.0/16.0, 1.0),
+		}
+	}
+	return b.bounds
+}
+
 func (b *blockPoweredRail) ModelVariant() string {
 	return fmt.Sprintf("powered=%t,shape=%s", b.Powered, b.Shape)
 }
@@ -463,6 +474,15 @@ func initRail(name string) *BlockSet {
 	b.cullAgainst = false
 	set := alloc(b)
 	return set
+}
+
+func (b *blockRail) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			*vmath.NewAABB(0, 0, 0, 1.0, 1.0/16.0, 1.0),
+		}
+	}
+	return b.bounds
 }
 
 func (b *blockRail) ModelVariant() string {
@@ -1095,6 +1115,30 @@ func initPiston(name string) *BlockSet {
 	return set
 }
 
+func (b *blockPiston) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		bo := *vmath.NewAABB(0, 0, 0, 1.0, 1.0, 1.0)
+		if b.Extended {
+			bo.Min.Z = 4.0 / 16.0
+		}
+		switch b.Facing {
+		case direction.North:
+		case direction.South:
+			bo.RotateY(math.Pi, 0.5, 0.5, 0.5)
+		case direction.West:
+			bo.RotateY(math.Pi*1.5, 0.5, 0.5, 0.5)
+		case direction.East:
+			bo.RotateY(math.Pi*0.5, 0.5, 0.5, 0.5)
+		case direction.Up:
+			bo.RotateX(math.Pi*1.5, 0.5, 0.5, 0.5)
+		case direction.Down:
+			bo.RotateX(math.Pi*0.5, 0.5, 0.5, 0.5)
+		}
+		b.bounds = []vmath.AABB{bo}
+	}
+	return b.bounds
+}
+
 func (b *blockPiston) LightReduction() int {
 	return 6
 }
@@ -1155,6 +1199,34 @@ func initPistonHead(name string) *BlockSet {
 	b.cullAgainst = false
 	set := alloc(b)
 	return set
+}
+
+func (b *blockPistonHead) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			*vmath.NewAABB(0, 0, 0, 1.0, 1.0, 4.0/16.0),
+			*vmath.NewAABB(6.0/16.0, 6.0/16.0, 4.0/16.0, 10.0/16.0, 10.0/16.0, 1.0),
+		}
+		if !b.Short {
+			b.bounds[1].Max.Z += 4.0 / 16.0
+		}
+		for i := range b.bounds {
+			switch b.Facing {
+			case direction.North:
+			case direction.South:
+				b.bounds[i].RotateY(math.Pi, 0.5, 0.5, 0.5)
+			case direction.West:
+				b.bounds[i].RotateY(math.Pi*1.5, 0.5, 0.5, 0.5)
+			case direction.East:
+				b.bounds[i].RotateY(math.Pi*0.5, 0.5, 0.5, 0.5)
+			case direction.Up:
+				b.bounds[i].RotateX(math.Pi*1.5, 0.5, 0.5, 0.5)
+			case direction.Down:
+				b.bounds[i].RotateX(math.Pi*0.5, 0.5, 0.5, 0.5)
+			}
+		}
+	}
+	return b.bounds
 }
 
 func (b *blockPistonHead) LightReduction() int {
