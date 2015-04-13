@@ -71,6 +71,24 @@ func (v Vector3) AngleTo(other Vector3) float64 {
 	return v.Dot(other) / (v.Length() + other.Length())
 }
 
+func (v *Vector3) RotateX(a, ox, oy, oz float64) {
+	c := math.Cos(a)
+	s := math.Sin(a)
+	z := v.Z - oz
+	y := v.Y - oy
+	v.Z = oz + (z*c - y*s)
+	v.Y = oy + (y*c + z*s)
+}
+
+func (v *Vector3) RotateY(a, ox, oy, oz float64) {
+	c := math.Cos(a)
+	s := math.Sin(a)
+	x := v.X - ox
+	z := v.Z - oz
+	v.X = ox + (x*c - z*s)
+	v.Z = oz + (z*c + x*s)
+}
+
 func (v Vector3) String() string {
 	return fmt.Sprintf("(%f,%f,%f)", v.X, v.Y, v.Z)
 }

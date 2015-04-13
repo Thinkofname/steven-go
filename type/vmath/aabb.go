@@ -30,6 +30,30 @@ func NewAABB(x1, y1, z1, x2, y2, z2 float64) *AABB {
 	}
 }
 
+func (a *AABB) RotateX(an, ox, oy, oz float64) {
+	a.Max.RotateX(an, ox, oy, oz)
+	a.Min.RotateX(an, ox, oy, oz)
+	a.fixBounds()
+}
+
+func (a *AABB) RotateY(an, ox, oy, oz float64) {
+	a.Max.RotateY(an, ox, oy, oz)
+	a.Min.RotateY(an, ox, oy, oz)
+	a.fixBounds()
+}
+
+func (a *AABB) fixBounds() {
+	if a.Max.X < a.Min.X || a.Min.X > a.Max.X {
+		a.Max.X, a.Min.X = a.Min.X, a.Max.X
+	}
+	if a.Max.Y < a.Min.Y || a.Min.Y > a.Max.Y {
+		a.Max.Y, a.Min.Y = a.Min.Y, a.Max.Y
+	}
+	if a.Max.Z < a.Min.Z || a.Min.Z > a.Max.Z {
+		a.Max.Z, a.Min.Z = a.Min.Z, a.Max.Z
+	}
+}
+
 func (a *AABB) Intersects(o *AABB) bool {
 	return !(o.Min.X >= a.Max.X ||
 		o.Max.X <= a.Min.X ||
