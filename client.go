@@ -206,10 +206,12 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 		if prevN == nextN {
 			continue
 		}
-		if nextN > max {
-			break
-		}
+		final := false
 		n := (prevN + nextN) / 2
+		if nextN > max {
+			final = true
+			n = max
+		}
 		bx, by, bz := int(math.Floor(s.X+d.X*n)), int(math.Floor(s.Y+d.Y*n)), int(math.Floor(s.Z+d.Z*n))
 		b := chunkMap.Block(bx, by, bz)
 		if _, ok := b.(*blockLiquid); !b.Is(BlockAir) && !ok {
@@ -224,18 +226,8 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 			}
 		}
 		prevN = nextN
-	}
-	bx, by, bz := int(math.Floor(s.X+d.X*max)), int(math.Floor(s.Y+d.Y*max)), int(math.Floor(s.Z+d.Z*max))
-	b := chunkMap.Block(bx, by, bz)
-	if b.Collidable() {
-		bb := b.CollisionBounds()
-		for _, bound := range bb {
-			bound.Shift(float64(bx), float64(by), float64(bz))
-			if bound.IntersectsLine(s, d) {
-				x, y, z = bx, by, bz
-				block = b
-				return
-			}
+		if final {
+			break
 		}
 	}
 	return
