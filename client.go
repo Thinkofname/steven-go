@@ -111,6 +111,13 @@ func (c *ClientState) renderTick(delta float64) {
 		c.Z = bounds.Min.Z + 0.3
 		c.copyToCamera()
 
+		// Half block jumps
+		// Minecraft lets you 'jump' up 0.5 blocks
+		// for slabs and stairs (or smaller blocks).
+		// Currently we implement this as a teleport to the
+		// top of the block if we could move there
+		// but this isn't smooth.
+		// TODO(Think) Improve this
 		if (xhit || zhit) && c.OnGround {
 			ox, oz := c.X, c.Z
 			c.X, c.Z = cx, cz
@@ -126,6 +133,7 @@ func (c *ClientState) renderTick(delta float64) {
 			}
 			c.X, c.Z = ox, oz
 		}
+		c.copyToCamera()
 
 		c.Y = cy
 		bounds, _ = c.checkCollisions(c.Bounds)
@@ -136,8 +144,10 @@ func (c *ClientState) renderTick(delta float64) {
 
 	c.copyToCamera()
 
-	// Temp displays
+	//  Highlights the target block
+	c.highlightTarget()
 
+	// Debug displays
 	c.positionText = setText(c.positionText,
 		fmt.Sprintf("X: %.2f, Y: %.2f, Z: %.2f", c.X, c.Y, c.Z),
 		5, 5, 255, 255, 255,
@@ -147,7 +157,6 @@ func (c *ClientState) renderTick(delta float64) {
 		5, 23, 255, 255, 255,
 	)
 	c.displayTargetInfo()
-	c.highlightTarget()
 
 	runtime.ReadMemStats(&memoryStats)
 	text := fmt.Sprintf("%s/%s", formatMemory(memoryStats.Alloc), formatMemory(memoryStats.Sys))
@@ -161,6 +170,8 @@ func (c *ClientState) renderTick(delta float64) {
 	}
 	text = fmt.Sprintf("FPS: %d", c.fps)
 	c.fpsText = setText(c.fpsText, text, 800-5-float64(render.SizeOfString(text)), 5, 255, 255, 255)
+
+	// Ui rendering
 
 	c.chat.render(delta)
 }
