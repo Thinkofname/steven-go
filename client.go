@@ -93,6 +93,7 @@ func (c *ClientState) renderTick(delta float64) {
 	}
 
 	if !c.GameMode.NoClip() {
+		cx := c.X
 		cy := c.Y
 		cz := c.Z
 		c.Y = render.Camera.Y - playerHeight
@@ -101,14 +102,26 @@ func (c *ClientState) renderTick(delta float64) {
 		// We handle each axis separately to allow for a sliding
 		// effect when pushing up against walls.
 
-		bounds, _ := c.checkCollisions(c.Bounds)
+		bounds, xhit := c.checkCollisions(c.Bounds)
 		c.X = bounds.Min.X + 0.3
 		c.copyToCamera()
 
 		c.Z = cz
-		bounds, _ = c.checkCollisions(c.Bounds)
+		bounds, zhit := c.checkCollisions(c.Bounds)
 		c.Z = bounds.Min.Z + 0.3
 		c.copyToCamera()
+
+		if xhit || zhit {
+			ox, oz := c.X, c.Z
+			c.X, c.Z = cx, cz
+			mini := c.Bounds
+			mini.Shift(0, 0.5, 0)
+			_, hit := c.checkCollisions(mini)
+			if !hit {
+				cy += 0.15
+			}
+			c.X, c.Z = ox, oz
+		}
 
 		c.Y = cy
 		bounds, _ = c.checkCollisions(c.Bounds)
