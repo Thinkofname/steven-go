@@ -865,6 +865,60 @@ func (b *blockStairs) load(tag reflect.StructTag) {
 	b.cullAgainst = false
 }
 
+func (b *blockStairs) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		switch b.Shape {
+		case ssStraight:
+			b.bounds = []vmath.AABB{
+				*vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
+				*vmath.NewAABB(0, 0.5, 0, 1, 1, 0.5),
+			}
+		case ssInnerLeft:
+			b.bounds = []vmath.AABB{
+				*vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
+				*vmath.NewAABB(0, 0.5, 0, 1, 1, 0.5),
+				*vmath.NewAABB(0, 0.5, 0.5, 0.5, 1, 1.0),
+			}
+		case ssInnerRight:
+			b.bounds = []vmath.AABB{
+				*vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
+				*vmath.NewAABB(0, 0.5, 0, 1, 1, 0.5),
+				*vmath.NewAABB(0.5, 0.5, 0.5, 1.0, 1, 1.0),
+			}
+		case ssOuterLeft:
+			b.bounds = []vmath.AABB{
+				*vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
+				*vmath.NewAABB(0, 0.5, 0, 0.5, 1, 0.5),
+			}
+		case ssOuterRight:
+			b.bounds = []vmath.AABB{
+				*vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
+				*vmath.NewAABB(0.5, 0.5, 0, 1.0, 1, 0.5),
+			}
+		default:
+			b.bounds = []vmath.AABB{
+				*vmath.NewAABB(0, 0, 0, 1, 1, 1),
+			}
+		}
+		for i := range b.bounds {
+			if b.Half == shTop {
+				b.bounds[i].RotateX(math.Pi, 0.5, 0.5, 0.5)
+				b.bounds[i].RotateY(math.Pi, 0.5, 0.5, 0.5)
+			}
+			switch b.Facing {
+			case direction.North:
+			case direction.South:
+				b.bounds[i].RotateY(math.Pi, 0.5, 0.5, 0.5)
+			case direction.East:
+				b.bounds[i].RotateY(math.Pi*0.5, 0.5, 0.5, 0.5)
+			case direction.West:
+				b.bounds[i].RotateY(math.Pi*1.5, 0.5, 0.5, 0.5)
+			}
+		}
+	}
+	return b.bounds
+}
+
 func (b *blockStairs) ModelVariant() string {
 	return fmt.Sprintf("facing=%s,half=%s,shape=%s", b.Facing, b.Half, b.Shape)
 }
