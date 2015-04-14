@@ -53,8 +53,8 @@ var Blocks = struct {
 	DetectorRail               *BlockSet `type:"poweredRail"`
 	StickyPiston               *BlockSet `type:"piston"`
 	Web                        *BlockSet `cullAgainst:"false" collidable:"false"`
-	Tallgrass                  *BlockSet `type:"tallGrass"`
-	Deadbush                   *BlockSet `type:"deadBush"`
+	TallGrass                  *BlockSet `type:"tallGrass" mc:"tallgrass"`
+	DeadBush                   *BlockSet `type:"deadBush" mc:"deadbush"`
 	Piston                     *BlockSet `type:"piston"`
 	PistonHead                 *BlockSet `type:"pistonHead"`
 	Wool                       *BlockSet `type:"wool"`
@@ -120,7 +120,7 @@ var Blocks = struct {
 	StainedGlass               *BlockSet `type:"stainedGlass"`
 	TrapDoor                   *BlockSet
 	MonsterEgg                 *BlockSet
-	StoneBrick                 *BlockSet
+	StoneBrick                 *BlockSet `mc:"stonebrick"`
 	BrownMushroomBlock         *BlockSet
 	RedMushroomBlock           *BlockSet
 	IronBars                   *BlockSet `type:"connectable"`
