@@ -15,6 +15,8 @@
 package main
 
 import (
+	"reflect"
+
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/type/direction"
@@ -26,17 +28,14 @@ type blockLiquid struct {
 	Level int `state:"level,0-15"`
 }
 
-func initLiquid(name string, lava bool) *BlockSet {
-	l := &blockLiquid{}
-	l.init(name)
-	l.Lava = lava
+func (l *blockLiquid) load(tag reflect.StructTag) {
+	getBool := wrapTagBool(tag)
+	l.Lava = getBool("lava", false)
 	l.cullAgainst = false
 	l.collidable = false
-	if !lava {
+	if !l.Lava {
 		l.translucent = true
 	}
-	set := alloc(l)
-	return set
 }
 
 func (l *blockLiquid) LightReduction() int {
@@ -61,12 +60,12 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder
 	var tex *render.TextureInfo
 	var b1, b2 *BlockSet
 	if l.Lava {
-		b1 = BlockLava
-		b2 = BlockFlowingLava
+		b1 = Blocks.Lava
+		b2 = Blocks.FlowingLava
 		tex = render.GetTexture("lava_still")
 	} else {
-		b1 = BlockWater
-		b2 = BlockFlowingWater
+		b1 = Blocks.Water
+		b2 = Blocks.FlowingWater
 		tex = render.GetTexture("water_still")
 	}
 

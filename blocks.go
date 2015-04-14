@@ -14,204 +14,280 @@
 
 package main
 
-// Valid blocks.
-var (
-	BlockAir                        = initSimpleConfig("air", simpleConfig{NotCullAgainst: true, NoCollision: true, NotRendable: true})
-	BlockStone                      = initStone("stone")
-	BlockGrass                      = initGrass()
-	BlockDirt                       = initSimple("dirt")
-	BlockCobblestone                = initSimple("cobblestone")
-	BlockPlanks                     = initPlanks("planks")
-	BlockSapling                    = initSapling("sapling")
-	BlockBedrock                    = initSimple("bedrock")
-	BlockFlowingWater               = initLiquid("flowing_water", false)
-	BlockWater                      = initLiquid("water", false)
-	BlockFlowingLava                = initLiquid("flowing_lava", true)
-	BlockLava                       = initLiquid("lava", true)
-	BlockSand                       = initSimple("sand")
-	BlockGravel                     = initSimple("gravel")
-	BlockGoldOre                    = initSimple("gold_ore")
-	BlockIronOre                    = initSimple("iron_ore")
-	BlockCoalOre                    = initSimple("coal_ore")
-	BlockLog                        = initLog("log", false)
-	BlockLeaves                     = initLeaves("leaves", false)
-	BlockSponge                     = initSponge("sponge")
-	BlockGlass                      = initSimpleConfig("glass", simpleConfig{NotCullAgainst: true})
-	BlockLapisOre                   = initSimple("lapis_ore")
-	BlockLapisBlock                 = initSimple("lapis_block")
-	BlockDispenser                  = initDispenser("dispenser")
-	BlockSandstone                  = initSimple("sandstone")
-	BlockNote                       = initSimple("noteblock")
-	BlockBed                        = initBed("bed")
-	BlockGoldenRail                 = initPoweredRail("golden_rail")
-	BlockDetectorRail               = initPoweredRail("detector_rail")
-	BlockStickyPiston               = initPiston("sticky_piston")
-	BlockWeb                        = initSimpleConfig("web", simpleConfig{NotCullAgainst: true, NoCollision: true})
-	BlockTallGrass                  = initTallGrass()
-	BlockDeadBush                   = initDeadBush("deadbush")
-	BlockPiston                     = initPiston("piston")
-	BlockPistonHead                 = initPistonHead("piston_head")
-	BlockWool                       = initWool("wool")
-	BlockPistonExtension            = initSimpleConfig("piston_extension", simpleConfig{NotRendable: true})
-	BlockYellowFlower               = initSimple("yellow_flower")
-	BlockRedFlower                  = initSimple("red_flower")
-	BlockBrownMushroom              = initSimpleConfig("brown_mushroom", simpleConfig{NotCullAgainst: true, NoCollision: true})
-	BlockRedMushrrom                = initSimpleConfig("red_mushroom", simpleConfig{NotCullAgainst: true, NoCollision: true})
-	BlockGoldBlock                  = initSimple("gold_block")
-	BlockIronBlock                  = initSimple("iron_block")
-	BlockDoubleStoneSlab            = initSimple("double_stone_slab")
-	BlockStoneSlab                  = initSimple("stone_slab")
-	BlockBrickBlock                 = initSimple("brick_block")
-	BlockTNT                        = initSimple("tnt")
-	BlockBookShelf                  = initSimple("blockshelf")
-	BlockMossyCobblestone           = initSimple("mossy_cobblestone")
-	BlockObsidian                   = initSimple("obsidian")
-	BlockTorch                      = initSimple("torch")
-	BlockFire                       = initSimple("fire")
-	BlockMobSpawner                 = initSimple("mob_spawner")
-	BlockOakStairs                  = initStairs("oak_stairs")
-	BlockChest                      = initSimple("chest")
-	BlockRedstoneWire               = initSimple("redstone_wire")
-	BlockDiamondOre                 = initSimple("diamond_ore")
-	BlockDiamondBlock               = initSimple("diamond_block")
-	BlockCraftingTable              = initSimple("crafting_table")
-	BlockWheat                      = initSimple("wheat")
-	BlockFarmland                   = initSimple("farmland")
-	BlockFurnace                    = initSimple("furnace")
-	BlockFurnaceLit                 = initSimple("lit_furnace")
-	BlockStandingSign               = initSimple("standing_sign")
-	BlockWoodenDoor                 = initDoor("wooden_door")
-	BlockLadder                     = initSimple("ladder")
-	BlockRail                       = initRail("rail")
-	BlockStoneStairs                = initStairs("stone_stairs")
-	BlockWallSign                   = initSimple("wall_sign")
-	BlockLever                      = initSimple("lever")
-	BlockStonePressurePlate         = initSimple("stone_pressure_plate")
-	BlockIronDoor                   = initDoor("iron_door")
-	BlockWoodenPressurePlate        = initSimple("wooden_pressure_plate")
-	BlockRedstoneOre                = initSimple("redstone_ore")
-	BlockRedstoneOreLit             = initSimple("lit_redstone_ore")
-	BlockRedstoneTorchUnlit         = initSimple("unlit_redstone_torch")
-	BlockRedstoneTorch              = initSimple("redstone_torch")
-	BlockStoneButton                = initSimple("stone_button")
-	BlockSnowLayer                  = initSimple("snow_layer")
-	BlockIce                        = initSimple("ice")
-	BlockSnow                       = initSimple("snow")
-	BlockCactus                     = initSimpleConfig("cactus", simpleConfig{NotCullAgainst: true})
-	BlockClay                       = initSimple("clay")
-	BlockReeds                      = initSimpleConfig("reeds", simpleConfig{NotCullAgainst: true, NoCollision: true})
-	BlockJukebox                    = initSimple("jukebox")
-	BlockFence                      = initFence("fence", true)
-	BlockPumpkin                    = initSimple("pumpkin")
-	BlockNetherrack                 = initSimple("netherrack")
-	BlockSoulSand                   = initSimple("soul_sand")
-	BlockGlowstone                  = initSimple("glowstone")
-	BlockPortal                     = initSimple("portal")
-	BlockPumpkinLit                 = initSimple("lit_pumpkin")
-	BlockCake                       = initSimple("cake")
-	BlockRepeaterUnpowered          = initSimple("unpowered_repeater")
-	BlockRepeaterPowered            = initSimple("powered_repeater")
-	BlockStainedGlass               = initStainedGlass("stained_glass")
-	BlockTrapDoor                   = initSimple("trapdoor")
-	BlockMonsterEgg                 = initSimple("monster_egg")
-	BlockStoneBrick                 = initSimple("stonebrick")
-	BlockBrownMushroomBlock         = initSimple("brown_mushroom_block")
-	BlockRedMushroomBlock           = initSimple("red_mushroom_block")
-	BlockIronBars                   = initConnectable("iron_bars")
-	BlockGlassPane                  = initConnectable("glass_pane")
-	BlockMelonBlock                 = initSimple("melon_block")
-	BlockPumpkinStem                = initSimple("pumpkin_stem")
-	BlockMelonStem                  = initSimple("melon_stem")
-	BlockVine                       = initVines("vine")
-	BlockFenceGate                  = initFenceGate("fence_gate")
-	BlockBrickStairs                = initStairs("brick_stairs")
-	BlockStoneBrickStairs           = initStairs("stone_brick_stairs")
-	BlockMycelium                   = initSimple("mycelium")
-	BlockWaterlily                  = initSimple("waterlily")
-	BlockNetherBrick                = initSimple("nether_brick")
-	BlockNetherBrickFence           = initFence("nether_brick_fence", false)
-	BlockNetherBrickStairs          = initStairs("nether_brick_stairs")
-	BlockNetherWart                 = initSimple("nether_wart")
-	BlockEnchantingTable            = initSimple("enchanting_table")
-	BlockBrewingStand               = initSimple("brewing_stand")
-	BlockCauldron                   = initSimple("cauldron")
-	BlockEndPortal                  = initSimple("end_portal")
-	BlockEndPortalFrame             = initSimple("end_portal_frame")
-	BlockEndStone                   = initSimple("end_stone")
-	BlockDragonEgg                  = initSimple("dragon_egg")
-	BlockRedstoneLamp               = initSimple("redstone_lamp")
-	BlockRedstoneLampLit            = initSimple("lit_redstone_lamp")
-	BlockDoubleWoodenSlab           = initSimple("double_wooden_slab")
-	BlockWoodenSlab                 = initSimple("wooden_slab")
-	BlockCocoa                      = initSimple("cocoa")
-	BlockSandstoneStairs            = initStairs("sandstone_stairs")
-	BlockEmeraldOre                 = initSimple("emerald_ore")
-	BlockEnderChest                 = initSimple("ender_Chest")
-	BlockTripwireHook               = initSimple("tripwire_hook")
-	BlockTripwire                   = initSimple("tripwire")
-	BlockEmeraldBlock               = initSimple("emerald_block")
-	BlockSpruceStairs               = initStairs("spruce_stairs")
-	BlockBirchStairs                = initStairs("birch_stairs")
-	BlockJungleStairs               = initStairs("jungle_stairs")
-	BlockCommandBlock               = initSimple("command_block")
-	BlockBeacon                     = initSimple("beacon")
-	BlockCobblestoneWall            = initWall("cobblestone_wall")
-	BlockFlowerPot                  = initSimple("flower_pot")
-	BlockCarrots                    = initSimple("carrots")
-	BlockPotatoes                   = initSimple("potatoes")
-	BlockWoodenButton               = initSimple("wooden_button")
-	BlockSkull                      = initSimple("skull")
-	BlockAnvil                      = initSimple("anvil")
-	BlockTrappedChest               = initSimple("trapped_chest")
-	BlockLightWeightedPressurePlate = initSimple("light_weighted_pressure_plate")
-	BlockHeavyWeightedPressurePlate = initSimple("heavy_weighted_pressure_plate")
-	BlockComparatorUnpowered        = initSimple("unpowered_comparator")
-	BlockComparatorPowered          = initSimple("powered_comparator")
-	BlockDaylightDetector           = initSimple("daylight_detector")
-	BlockRedstoneBlock              = initSimple("redstone_block")
-	BlockQuartzOre                  = initSimple("quartz_ore")
-	BlockHopper                     = initSimple("hopper")
-	BlockQuartzBlock                = initSimple("quartz_block")
-	BlockQuartzStairs               = initStairs("quartz_stairs")
-	BlockActivatorRail              = initPoweredRail("activator_rail")
-	BlockDropper                    = initDispenser("dropper")
-	BlockStainedHardenedClay        = initStainedClay("stained_hardened_clay")
-	BlockStainedGlassPane           = initStainedGlassPane("stained_glass_pane")
-	BlockLeaves2                    = initLeaves("leaves2", true)
-	BlockLog2                       = initLog("log2", true)
-	BlockAcaciaStairs               = initStairs("acacia_stairs")
-	BlockDarkOakStairs              = initStairs("dark_oak_stairs")
-	BlockSlime                      = initSimple("slime")
-	BlockBarrier                    = initSimple("barrier")
-	BlockIronTrapDoor               = initSimple("iron_trapdoor")
-	BlockPrismarine                 = initSimple("prismarine")
-	BlockSeaLantern                 = initSimple("sea_lantern")
-	BlockHayBlock                   = initSimple("hay_block")
-	BlockCarpet                     = initSimple("carpet")
-	BlockHardenedClay               = initSimple("hardened_clay")
-	BlockCoalBlock                  = initSimple("coal_block")
-	BlockPackedIce                  = initSimple("packed_ice")
-	BlockDoublePlant                = initSimple("double_plant")
-	BlockStandingBanner             = initSimple("standing_banner")
-	BlockWallBanner                 = initSimple("wall_banner")
-	BlockDaylightDetectorInverted   = initSimple("daylight_detector_inverted")
-	BlockRedSandstone               = initSimple("red_sandstone")
-	BlockRedSandstoneStairs         = initStairs("red_sandstone_stairs")
-	BlockDoubleStoneSlab2           = initSimple("double_stone_slab2")
-	BlockStoneSlab2                 = initSimple("stone_slab2")
-	BlockSpruceFenceGate            = initFenceGate("spruce_fence_gate")
-	BlockBirchFenceGate             = initFenceGate("birch_fence_gate")
-	BlockJungleFenceGate            = initFenceGate("jungle_fence_gate")
-	BlockDarkOakFenceGate           = initFenceGate("dark_oak_fence_gate")
-	BlockAcaciaFenceGate            = initFenceGate("acacia_fence_gate")
-	BlockSpruceFence                = initFence("spruce_fence", true)
-	BlockBirchFence                 = initFence("birch_fence", true)
-	BlockJungleFence                = initFence("jungle_fence", true)
-	BlockDarkOakFence               = initFence("dark_oak_fence", true)
-	BlockAcaciaFence                = initFence("acacia_fence", true)
-	BlockSpruceDoor                 = initDoor("spruce_door")
-	BlockBirchDoor                  = initDoor("birch_door")
-	BlockJungleDoor                 = initDoor("jungle_door")
-	BlockAcaciaDoor                 = initDoor("acacia_door")
-	BlockDarkOakDoor                = initDoor("dark_oak_door")
+import (
+	"bytes"
+	"reflect"
+	"unicode"
 )
+
+// Valid blocks.
+var Blocks = struct {
+	Air                        *BlockSet `cullAgainst:"false" collidable:"false" renderable:"false"`
+	Stone                      *BlockSet `type:"stone"`
+	Grass                      *BlockSet `type:"grass"`
+	Dirt                       *BlockSet
+	Cobblestone                *BlockSet
+	Planks                     *BlockSet `type:"planks"`
+	Sapling                    *BlockSet `type:"sapling"`
+	Bedrock                    *BlockSet
+	FlowingWater               *BlockSet `type:"liquid"`
+	Water                      *BlockSet `type:"liquid"`
+	FlowingLava                *BlockSet `type:"liquid" lava:"true"`
+	Lava                       *BlockSet `type:"liquid" lava:"true"`
+	Sand                       *BlockSet
+	Gravel                     *BlockSet
+	GoldOre                    *BlockSet
+	IronOre                    *BlockSet
+	CoalOre                    *BlockSet
+	Log                        *BlockSet `type:"log"`
+	Leaves                     *BlockSet `type:"leaves"`
+	Sponge                     *BlockSet `type:"sponge"`
+	Glass                      *BlockSet `cullAgainst:"false"`
+	LapisOre                   *BlockSet
+	LapisBlock                 *BlockSet
+	Dispenser                  *BlockSet `type:"dispenser"`
+	Sandstone                  *BlockSet
+	Note                       *BlockSet
+	Bed                        *BlockSet `type:"bed"`
+	GoldenRail                 *BlockSet `type:"poweredRail"`
+	DetectorRail               *BlockSet `type:"poweredRail"`
+	StickyPiston               *BlockSet `type:"piston"`
+	Web                        *BlockSet `cullAgainst:"false" collidable:"false"`
+	Tallgrass                  *BlockSet `type:"tallGrass"`
+	Deadbush                   *BlockSet `type:"deadBush"`
+	Piston                     *BlockSet `type:"piston"`
+	PistonHead                 *BlockSet `type:"pistonHead"`
+	Wool                       *BlockSet `type:"wool"`
+	PistonExtension            *BlockSet `renderable:"false"`
+	YellowFlower               *BlockSet `cullAgainst:"false" collidable:"false"`
+	RedFlower                  *BlockSet `cullAgainst:"false" collidable:"false"`
+	BrownMushroom              *BlockSet `cullAgainst:"false" collidable:"false"`
+	RedMushrrom                *BlockSet `cullAgainst:"false" collidable:"false"`
+	GoldBlock                  *BlockSet
+	IronBlock                  *BlockSet
+	DoubleStoneSlab            *BlockSet
+	StoneSlab                  *BlockSet
+	BrickBlock                 *BlockSet
+	TNT                        *BlockSet
+	BookShelf                  *BlockSet
+	MossyCobblestone           *BlockSet
+	Obsidian                   *BlockSet
+	Torch                      *BlockSet
+	Fire                       *BlockSet
+	MobSpawner                 *BlockSet
+	OakStairs                  *BlockSet `type:"stairs"`
+	Chest                      *BlockSet
+	RedstoneWire               *BlockSet
+	DiamondOre                 *BlockSet
+	DiamondBlock               *BlockSet
+	CraftingTable              *BlockSet
+	Wheat                      *BlockSet
+	Farmland                   *BlockSet
+	Furnace                    *BlockSet
+	FurnaceLit                 *BlockSet
+	StandingSign               *BlockSet
+	WoodenDoor                 *BlockSet `type:"door"`
+	Ladder                     *BlockSet
+	Rail                       *BlockSet `type:"rail"`
+	StoneStairs                *BlockSet `type:"stairs"`
+	WallSign                   *BlockSet
+	Lever                      *BlockSet
+	StonePressurePlate         *BlockSet
+	IronDoor                   *BlockSet `type:"door"`
+	WoodenPressurePlate        *BlockSet
+	RedstoneOre                *BlockSet
+	RedstoneOreLit             *BlockSet
+	RedstoneTorchUnlit         *BlockSet
+	RedstoneTorch              *BlockSet
+	StoneButton                *BlockSet
+	SnowLayer                  *BlockSet
+	Ice                        *BlockSet
+	Snow                       *BlockSet
+	Cactus                     *BlockSet `cullAgainst:"false"`
+	Clay                       *BlockSet
+	Reeds                      *BlockSet `cullAgainst:"false" collidable:"false"`
+	Jukebox                    *BlockSet
+	Fence                      *BlockSet `type:"fence"`
+	Pumpkin                    *BlockSet
+	Netherrack                 *BlockSet
+	SoulSand                   *BlockSet
+	Glowstone                  *BlockSet
+	Portal                     *BlockSet
+	PumpkinLit                 *BlockSet
+	Cake                       *BlockSet
+	RepeaterUnpowered          *BlockSet
+	RepeaterPowered            *BlockSet
+	StainedGlass               *BlockSet `type:"stainedGlass"`
+	TrapDoor                   *BlockSet
+	MonsterEgg                 *BlockSet
+	StoneBrick                 *BlockSet
+	BrownMushroomBlock         *BlockSet
+	RedMushroomBlock           *BlockSet
+	IronBars                   *BlockSet `type:"connectable"`
+	GlassPane                  *BlockSet `type:"connectable"`
+	MelonBlock                 *BlockSet
+	PumpkinStem                *BlockSet
+	MelonStem                  *BlockSet
+	Vine                       *BlockSet `type:"vines"`
+	FenceGate                  *BlockSet `type:"fenceGate"`
+	BrickStairs                *BlockSet `type:"stairs"`
+	StoneBrickStairs           *BlockSet `type:"stairs"`
+	Mycelium                   *BlockSet
+	Waterlily                  *BlockSet
+	NetherBrick                *BlockSet
+	NetherBrickFence           *BlockSet `type:"fence" wood:"false"`
+	NetherBrickStairs          *BlockSet `type:"stairs"`
+	NetherWart                 *BlockSet
+	EnchantingTable            *BlockSet
+	BrewingStand               *BlockSet
+	Cauldron                   *BlockSet
+	EndPortal                  *BlockSet
+	EndPortalFrame             *BlockSet
+	EndStone                   *BlockSet
+	DragonEgg                  *BlockSet
+	RedstoneLamp               *BlockSet
+	RedstoneLampLit            *BlockSet
+	DoubleWoodenSlab           *BlockSet
+	WoodenSlab                 *BlockSet
+	Cocoa                      *BlockSet
+	SandstoneStairs            *BlockSet `type:"stairs"`
+	EmeraldOre                 *BlockSet
+	EnderChest                 *BlockSet
+	TripwireHook               *BlockSet
+	Tripwire                   *BlockSet
+	EmeraldBlock               *BlockSet
+	SpruceStairs               *BlockSet `type:"stairs"`
+	BirchStairs                *BlockSet `type:"stairs"`
+	JungleStairs               *BlockSet `type:"stairs"`
+	CommandBlock               *BlockSet
+	Beacon                     *BlockSet
+	CobblestoneWall            *BlockSet `type:"wall"`
+	FlowerPot                  *BlockSet
+	Carrots                    *BlockSet
+	Potatoes                   *BlockSet
+	WoodenButton               *BlockSet
+	Skull                      *BlockSet
+	Anvil                      *BlockSet
+	TrappedChest               *BlockSet
+	LightWeightedPressurePlate *BlockSet
+	HeavyWeightedPressurePlate *BlockSet
+	ComparatorUnpowered        *BlockSet
+	ComparatorPowered          *BlockSet
+	DaylightDetector           *BlockSet
+	RedstoneBlock              *BlockSet
+	QuartzOre                  *BlockSet
+	Hopper                     *BlockSet
+	QuartzBlock                *BlockSet
+	QuartzStairs               *BlockSet `type:"stairs"`
+	ActivatorRail              *BlockSet `type:"poweredRail"`
+	Dropper                    *BlockSet `type:"dispenser"`
+	StainedHardenedClay        *BlockSet `type:"stainedClay"`
+	StainedGlassPane           *BlockSet `type:"stainedGlassPane"`
+	Leaves2                    *BlockSet `type:"leaves" second:"true"`
+	Log2                       *BlockSet `type:"log" second:"true"`
+	AcaciaStairs               *BlockSet `type:"stairs"`
+	DarkOakStairs              *BlockSet `type:"stairs"`
+	Slime                      *BlockSet
+	Barrier                    *BlockSet
+	IronTrapDoor               *BlockSet
+	Prismarine                 *BlockSet
+	SeaLantern                 *BlockSet
+	HayBlock                   *BlockSet
+	Carpet                     *BlockSet
+	HardenedClay               *BlockSet
+	CoalBlock                  *BlockSet
+	PackedIce                  *BlockSet
+	DoublePlant                *BlockSet
+	StandingBanner             *BlockSet
+	WallBanner                 *BlockSet
+	DaylightDetectorInverted   *BlockSet
+	RedSandstone               *BlockSet
+	RedSandstoneStairs         *BlockSet `type:"stairs"`
+	DoubleStoneSlab2           *BlockSet
+	StoneSlab2                 *BlockSet
+	SpruceFenceGate            *BlockSet `type:"fenceGate"`
+	BirchFenceGate             *BlockSet `type:"fenceGate"`
+	JungleFenceGate            *BlockSet `type:"fenceGate"`
+	DarkOakFenceGate           *BlockSet `type:"fenceGate"`
+	AcaciaFenceGate            *BlockSet `type:"fenceGate"`
+	SpruceFence                *BlockSet `type:"fence"`
+	BirchFence                 *BlockSet `type:"fence"`
+	JungleFence                *BlockSet `type:"fence"`
+	DarkOakFence               *BlockSet `type:"fence"`
+	AcaciaFence                *BlockSet `type:"fence"`
+	SpruceDoor                 *BlockSet `type:"door"`
+	BirchDoor                  *BlockSet `type:"door"`
+	JungleDoor                 *BlockSet `type:"door"`
+	AcaciaDoor                 *BlockSet `type:"door"`
+	DarkOakDoor                *BlockSet `type:"door"`
+}{}
+
+var blockTypes = map[string]reflect.Type{}
+
+func init() {
+	type loadable interface {
+		load(tag reflect.StructTag)
+	}
+	v := reflect.ValueOf(&Blocks).Elem()
+	t := v.Type()
+	bsType := reflect.TypeOf(&BlockSet{})
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		fv := v.Field(i)
+		if !f.Type.AssignableTo(bsType) {
+			continue
+		}
+		tag := f.Tag
+
+		ty := tag.Get("type")
+		if ty == "" {
+			ty = "default"
+		}
+
+		name := tag.Get("mc")
+		if name == "" {
+			name = formatFieldName(f.Name)
+		}
+
+		rT, ok := blockTypes[ty]
+		if !ok {
+			panic("invalid block type " + ty)
+		}
+		nv := reflect.New(rT)
+		block := nv.Interface().(Block)
+		block.init(name)
+		if l, ok := block.(loadable); ok {
+			l.load(tag)
+		}
+		set := alloc(block)
+		fv.Set(reflect.ValueOf(set))
+	}
+}
+
+func formatFieldName(name string) string {
+	var buf bytes.Buffer
+	for _, r := range name {
+		if unicode.IsUpper(r) {
+			r = unicode.ToLower(r)
+			if buf.Len() > 0 {
+				buf.WriteRune('_')
+			}
+		}
+		buf.WriteRune(r)
+	}
+	return buf.String()
+}
+
+func registerBlockType(name string, v Block) {
+	blockTypes[name] = reflect.TypeOf(v).Elem()
+}
+
+func wrapTagBool(tag reflect.StructTag) func(name string, def bool) bool {
+	return func(name string, def bool) bool {
+		v := tag.Get(name)
+		if v == "" {
+			return def
+		}
+		return v == "true"
+	}
+}

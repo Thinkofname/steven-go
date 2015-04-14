@@ -150,7 +150,7 @@ func (c *ClientState) renderTick(delta float64) {
 
 func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 	const max = 4.0
-	block = BlockAir.Base
+	block = Blocks.Air.Base
 	s := vmath.Vector3{c.X, c.Y + playerHeight, c.Z}
 	d := c.viewVector()
 
@@ -214,7 +214,7 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 		}
 		bx, by, bz := int(math.Floor(s.X+d.X*n)), int(math.Floor(s.Y+d.Y*n)), int(math.Floor(s.Z+d.Z*n))
 		b := chunkMap.Block(bx, by, bz)
-		if _, ok := b.(*blockLiquid); !b.Is(BlockAir) && !ok {
+		if _, ok := b.(*blockLiquid); !b.Is(Blocks.Air) && !ok {
 			bb := b.CollisionBounds()
 			for _, bound := range bb {
 				bound.Shift(float64(bx), float64(by), float64(bz))
@@ -255,7 +255,7 @@ var debugStateColors = [...]chat.Color{
 func (c *ClientState) highlightTarget() {
 	const lineSize = 1.0 / 128.0
 	tx, ty, tz, b := c.targetBlock()
-	if b.Is(BlockAir) {
+	if b.Is(Blocks.Air) {
 		return
 	}
 	for _, b := range b.CollisionBounds() {

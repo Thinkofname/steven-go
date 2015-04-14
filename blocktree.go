@@ -17,6 +17,7 @@ package main
 import (
 	"fmt"
 	"image"
+	"reflect"
 )
 
 // Logs have 4 possible 'rotations' (more like shapes),
@@ -84,12 +85,9 @@ type blockLog struct {
 	Axis    blockAxis `state:"axis,0-3"`
 }
 
-func initLog(name string, second bool) *BlockSet {
-	l := &blockLog{}
-	l.init(name)
-	l.Second = second
-	set := alloc(l)
-	return set
+func (l *blockLog) load(tag reflect.StructTag) {
+	getBool := wrapTagBool(tag)
+	l.Second = getBool("second", false)
 }
 
 func (l *blockLog) VariantRange() (int, int) {
@@ -124,13 +122,10 @@ type blockLeaves struct {
 	CheckDecay bool `state:"check_decay"`
 }
 
-func initLeaves(name string, second bool) *BlockSet {
-	l := &blockLeaves{}
-	l.init(name)
-	l.Second = second
+func (l *blockLeaves) load(tag reflect.StructTag) {
+	getBool := wrapTagBool(tag)
+	l.Second = getBool("second", false)
 	l.cullAgainst = false
-	set := alloc(l)
-	return set
 }
 
 func (l *blockLeaves) VariantRange() (int, int) {
@@ -171,13 +166,6 @@ type blockPlanks struct {
 	Variant treeVariant `state:"variant,0-5"`
 }
 
-func initPlanks(name string) *BlockSet {
-	b := &blockPlanks{}
-	b.init(name)
-	set := alloc(b)
-	return set
-}
-
 func (b *blockPlanks) ModelName() string {
 	return b.Variant.String() + "_planks"
 }
@@ -192,12 +180,8 @@ type blockSapling struct {
 	Stage   int         `state:"stage,0-1"`
 }
 
-func initSapling(name string) *BlockSet {
-	b := &blockSapling{}
-	b.init(name)
+func (b *blockSapling) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockSapling) ModelName() string {

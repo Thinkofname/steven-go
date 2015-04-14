@@ -14,30 +14,19 @@
 
 package main
 
+import (
+	"reflect"
+)
+
 type blockSimple struct {
 	baseBlock
 }
 
-type simpleConfig struct {
-	NotCullAgainst bool
-	NoCollision    bool
-	NotRendable    bool
-}
-
-func initSimple(name string) *BlockSet {
-	return initSimpleConfig(name, simpleConfig{})
-}
-
-func initSimpleConfig(name string, config simpleConfig) *BlockSet {
-	s := &blockSimple{}
-	s.init(name)
-	set := alloc(s)
-
-	s.cullAgainst = !config.NotCullAgainst
-	s.collidable = !config.NoCollision
-	s.renderable = !config.NotRendable
-
-	return set
+func (b *blockSimple) load(tag reflect.StructTag) {
+	getBool := wrapTagBool(tag)
+	b.cullAgainst = getBool("cullAgainst", true)
+	b.collidable = getBool("collidable", true)
+	b.renderable = getBool("renderable", true)
 }
 
 func (b *blockSimple) toData() int {

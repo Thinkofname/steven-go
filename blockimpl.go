@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"image"
 	"math"
+	"reflect"
 
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
@@ -57,23 +58,16 @@ func (s stoneVariant) String() string {
 	return fmt.Sprintf("stoneVariant(%d)", s)
 }
 
-type blockstone struct {
+type blockStone struct {
 	baseBlock
 	Variant stoneVariant `state:"variant,0-6"`
 }
 
-func initStone(name string) *BlockSet {
-	l := &blockstone{}
-	l.init(name)
-	set := alloc(l)
-	return set
-}
-
-func (b *blockstone) ModelName() string {
+func (b *blockStone) ModelName() string {
 	return b.Variant.String()
 }
 
-func (b *blockstone) toData() int {
+func (b *blockStone) toData() int {
 	data := int(b.Variant)
 	return data
 }
@@ -83,13 +77,6 @@ func (b *blockstone) toData() int {
 type blockGrass struct {
 	baseBlock
 	Snowy bool `state:"snowy"`
-}
-
-func initGrass() *BlockSet {
-	g := &blockGrass{}
-	g.init("grass")
-	set := alloc(g)
-	return set
 }
 
 func (g *blockGrass) ModelVariant() string {
@@ -134,25 +121,21 @@ type blockTallGrass struct {
 	Type tallGrassType `state:"type,0-2"`
 }
 
-func initTallGrass() *BlockSet {
-	t := &blockTallGrass{}
-	t.init("tallgrass")
-	t.cullAgainst = false
-	t.collidable = false
-	set := alloc(t)
-	return set
+func (b *blockTallGrass) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.collidable = false
 }
 
-func (t *blockTallGrass) ModelName() string {
-	return t.Type.String()
+func (b *blockTallGrass) ModelName() string {
+	return b.Type.String()
 }
 
-func (t *blockTallGrass) TintImage() *image.NRGBA {
+func (b *blockTallGrass) TintImage() *image.NRGBA {
 	return grassBiomeColors
 }
 
-func (t *blockTallGrass) toData() int {
-	return int(t.Type)
+func (b *blockTallGrass) toData() int {
+	return int(b.Type)
 }
 
 // Bed
@@ -181,12 +164,8 @@ type blockBed struct {
 	Part     bedPart        `state:"part,0-1"`
 }
 
-func initBed(name string) *BlockSet {
-	b := &blockBed{}
-	b.init(name)
+func (b *blockBed) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockBed) ModelVariant() string {
@@ -219,13 +198,6 @@ func (b *blockBed) toData() int {
 type blockSponge struct {
 	baseBlock
 	Wet bool `state:"wet"`
-}
-
-func initSponge(name string) *BlockSet {
-	b := &blockSponge{}
-	b.init(name)
-	set := alloc(b)
-	return set
 }
 
 func (b *blockSponge) ModelVariant() string {
@@ -285,12 +257,8 @@ type blockDoor struct {
 	Powered bool           `state:"powered"`
 }
 
-func initDoor(name string) *BlockSet {
-	b := &blockDoor{}
-	b.init(name)
+func (b *blockDoor) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockDoor) ModelVariant() string {
@@ -348,13 +316,6 @@ type blockDispenser struct {
 	baseBlock
 	Facing    direction.Type `state:"facing,0-5"`
 	Triggered bool           `state:"triggered"`
-}
-
-func initDispenser(name string) *BlockSet {
-	b := &blockDispenser{}
-	b.init(name)
-	set := alloc(b)
-	return set
 }
 
 func (b *blockDispenser) ModelVariant() string {
@@ -432,12 +393,8 @@ type blockPoweredRail struct {
 	Powered bool      `state:"powered"`
 }
 
-func initPoweredRail(name string) *BlockSet {
-	b := &blockPoweredRail{}
-	b.init(name)
+func (b *blockPoweredRail) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockPoweredRail) CollisionBounds() []vmath.AABB {
@@ -468,12 +425,8 @@ type blockRail struct {
 	Shape railShape `state:"shape,0-9"`
 }
 
-func initRail(name string) *BlockSet {
-	b := &blockRail{}
-	b.init(name)
+func (b *blockRail) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockRail) CollisionBounds() []vmath.AABB {
@@ -499,13 +452,9 @@ type blockDeadBush struct {
 	baseBlock
 }
 
-func initDeadBush(name string) *BlockSet {
-	b := &blockDeadBush{}
-	b.init(name)
+func (b *blockDeadBush) load(tag reflect.StructTag) {
 	b.cullAgainst = false
 	b.collidable = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockDeadBush) ModelName() string {
@@ -527,13 +476,10 @@ type blockFence struct {
 	West  bool `state:"west"`
 }
 
-func initFence(name string, wood bool) *BlockSet {
-	b := &blockFence{}
-	b.init(name)
-	b.Wood = wood
+func (b *blockFence) load(tag reflect.StructTag) {
+	getBool := wrapTagBool(tag)
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
+	b.Wood = getBool("wood", true)
 }
 
 func (b *blockFence) UpdateState(x, y, z int) Block {
@@ -575,12 +521,8 @@ type blockFenceGate struct {
 	Powered bool           `state:"powered"`
 }
 
-func initFenceGate(name string) *BlockSet {
-	b := &blockFenceGate{}
-	b.init(name)
+func (b *blockFenceGate) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockFenceGate) UpdateState(x, y, z int) Block {
@@ -650,12 +592,8 @@ type blockWall struct {
 	West    bool        `state:"west"`
 }
 
-func initWall(name string) *BlockSet {
-	b := &blockWall{}
-	b.init(name)
+func (b *blockWall) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockWall) UpdateState(x, y, z int) Block {
@@ -758,13 +696,9 @@ type blockStainedGlass struct {
 	Color color `state:"color,0-15"`
 }
 
-func initStainedGlass(name string) *BlockSet {
-	b := &blockStainedGlass{}
-	b.init(name)
+func (b *blockStainedGlass) load(tag reflect.StructTag) {
 	b.translucent = true
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockStainedGlass) ModelName() string {
@@ -785,12 +719,8 @@ type blockConnectable struct {
 	West  bool `state:"west"`
 }
 
-func initConnectable(name string) *BlockSet {
-	b := &blockConnectable{}
-	b.init(name)
+func (b *blockConnectable) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (blockConnectable) connectable() {}
@@ -837,13 +767,9 @@ type blockStainedGlassPane struct {
 	West  bool  `state:"west"`
 }
 
-func initStainedGlassPane(name string) *BlockSet {
-	b := &blockStainedGlassPane{}
-	b.init(name)
+func (b *blockStainedGlassPane) load(tag reflect.StructTag) {
 	b.translucent = true
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockStainedGlassPane) ModelName() string {
@@ -935,12 +861,8 @@ type blockStairs struct {
 	Shape  stairShape     `state:"shape,0-4"`
 }
 
-func initStairs(name string) *BlockSet {
-	b := &blockStairs{}
-	b.init(name)
+func (b *blockStairs) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockStairs) ModelVariant() string {
@@ -1015,12 +937,8 @@ type blockVines struct {
 	West  bool `state:"west"`
 }
 
-func initVines(name string) *BlockSet {
-	b := &blockVines{}
-	b.init(name)
+func (b *blockVines) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockVines) ModelVariant() string {
@@ -1062,13 +980,6 @@ type blockStainedClay struct {
 	Color color `state:"color,0-15"`
 }
 
-func initStainedClay(name string) *BlockSet {
-	b := &blockStainedClay{}
-	b.init(name)
-	set := alloc(b)
-	return set
-}
-
 func (b *blockStainedClay) ModelName() string {
 	return b.Color.String() + "_stained_hardened_clay"
 }
@@ -1082,13 +993,6 @@ func (b *blockStainedClay) toData() int {
 type blockWool struct {
 	baseBlock
 	Color color `state:"color,0-15"`
-}
-
-func initWool(name string) *BlockSet {
-	b := &blockWool{}
-	b.init(name)
-	set := alloc(b)
-	return set
 }
 
 func (b *blockWool) ModelName() string {
@@ -1107,12 +1011,8 @@ type blockPiston struct {
 	Extended bool           `state:"extended"`
 }
 
-func initPiston(name string) *BlockSet {
-	b := &blockPiston{}
-	b.init(name)
+func (b *blockPiston) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockPiston) CollisionBounds() []vmath.AABB {
@@ -1193,12 +1093,8 @@ type blockPistonHead struct {
 	Type   pistonType     `state:"type,0-1"`
 }
 
-func initPistonHead(name string) *BlockSet {
-	b := &blockPistonHead{}
-	b.init(name)
+func (b *blockPistonHead) load(tag reflect.StructTag) {
 	b.cullAgainst = false
-	set := alloc(b)
-	return set
 }
 
 func (b *blockPistonHead) CollisionBounds() []vmath.AABB {

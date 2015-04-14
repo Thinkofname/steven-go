@@ -33,7 +33,7 @@ func (w world) Block(x, y, z int) Block {
 	cz := z >> 4
 	chunk := w[chunkPosition{cx, cz}]
 	if chunk == nil {
-		return BlockBedrock.Base
+		return Blocks.Bedrock.Base
 	}
 	return chunk.block(x&0xF, y, z&0xF)
 }
@@ -95,11 +95,11 @@ type chunk struct {
 func (c *chunk) block(x, y, z int) Block {
 	s := y >> 4
 	if s < 0 || s > 15 {
-		return BlockAir.Base
+		return Blocks.Air.Base
 	}
 	sec := c.Sections[s]
 	if sec == nil {
-		return BlockAir.Base
+		return Blocks.Air.Base
 	}
 	return sec.block(x, y&0xF, z)
 }
@@ -306,7 +306,7 @@ func newChunkSection(c *chunk, y int) *chunkSection {
 		SkyLight:   nibble.New(16 * 16 * 16),
 	}
 	for i := range cs.Blocks {
-		cs.Blocks[i] = BlockAir.Blocks[0].SID()
+		cs.Blocks[i] = Blocks.Air.Blocks[0].SID()
 	}
 	return cs
 }

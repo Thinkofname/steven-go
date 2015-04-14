@@ -62,6 +62,7 @@ type Block interface {
 	LightEmitted() int
 	String() string
 
+	init(name string)
 	toData() int
 }
 
@@ -248,7 +249,7 @@ func (b *baseBlock) states() (out []blockState) {
 func GetBlockByCombinedID(id uint16) Block {
 	b := blocks[id]
 	if b == nil {
-		return BlockStone.Base
+		return Blocks.Stone.Base
 	}
 	return b
 }

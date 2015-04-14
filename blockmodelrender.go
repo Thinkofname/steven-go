@@ -408,7 +408,7 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 				blockLight += bs.blockLight(bx, by, bz)
 				if !force {
 					skyLight += bs.skyLight(bx, by, bz)
-				} else if bl := bs.block(bx, by, bz); bl.Is(BlockAir) {
+				} else if bl := bs.block(bx, by, bz); bl.Is(Blocks.Air) {
 					skyLight += 15
 				}
 			}

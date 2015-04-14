@@ -69,7 +69,7 @@ func (bs *blocksSnapshot) init(x, y, z, w, h, d int) {
 	bs.h = h
 	bs.d = d
 	for i := range bs.Blocks {
-		bs.Blocks[i] = BlockBedrock.Base.SID()
+		bs.Blocks[i] = Blocks.Bedrock.Base.SID()
 		bs.SkyLight.Set(i, 15)
 	}
 	for i := range bs.Biome {
@@ -124,7 +124,7 @@ func (bs *blocksSnapshot) init(x, y, z, w, h, d int) {
 					for zz := z1; zz < z2; zz++ {
 						for xx := x1; xx < x2; xx++ {
 							ox, oy, oz := xx+(cx<<4), yy+(cy<<4), zz+(cz<<4)
-							var bl Block = BlockAir.Base
+							var bl Block = Blocks.Air.Base
 							if cs != nil {
 								bl = cs.block(xx, yy, zz)
 								bs.setBlockLight(ox, oy, oz, cs.blockLight(xx, yy, zz))
