@@ -111,14 +111,18 @@ func (c *ClientState) renderTick(delta float64) {
 		c.Z = bounds.Min.Z + 0.3
 		c.copyToCamera()
 
-		if xhit || zhit {
+		if (xhit || zhit) && c.OnGround {
 			ox, oz := c.X, c.Z
 			c.X, c.Z = cx, cz
-			mini := c.Bounds
-			mini.Shift(0, 0.5, 0)
-			_, hit := c.checkCollisions(mini)
-			if !hit {
-				cy += 0.15
+			for i := 1.0 / 16.0; i <= 0.5; i += 1.0 / 16.0 {
+				mini := c.Bounds
+				mini.Shift(0, i, 0)
+				_, hit := c.checkCollisions(mini)
+				if !hit {
+					cy += i
+					ox, oz = c.X, c.Z
+					break
+				}
 			}
 			c.X, c.Z = ox, oz
 		}
