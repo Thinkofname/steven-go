@@ -133,7 +133,7 @@ sync:
 	}
 	for i, tex := range textures {
 		if textureDirty[i] {
-			textureDirty[i] = true
+			textureDirty[i] = false
 			glTexture.SubImage3D(0, 0, 0, i, AtlasSize, AtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
 		}
 	}
