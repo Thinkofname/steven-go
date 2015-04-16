@@ -281,6 +281,9 @@ var debugStateColors = [...]chat.Color{
 }
 
 func (c *ClientState) highlightTarget() {
+	if c.GameMode == gmSpecator {
+		return
+	}
 	const lineSize = 1.0 / 128.0
 	tx, ty, tz, b := c.targetBlock()
 	if b.Is(Blocks.Air) {
