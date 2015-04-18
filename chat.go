@@ -16,6 +16,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/chat"
@@ -87,15 +88,40 @@ func (c *ChatUI) render(delta float64) {
 			c.lineFade[i] = 0
 		}
 	}
+	solid := render.GetTexture("solid")
+	first := true
+	top := 0
 	for _, e := range c.Elements {
 		if !e.draw {
 			continue
 		}
-		text := render.DrawUIText(e.text, e.x, 480-18*float64(e.offset+1), e.r, e.g, e.b)
+		if first {
+			first = false
+			top = e.offset
+		}
+		x, y, w, h := e.x, 480-18*float64(e.offset+1), e.width, 18.0
+		ux, uy := x, y
+		if x == 2 {
+			ux -= 2
+			w += 2
+		}
+		if e.offset == top {
+			uy -= 2
+			h += 2
+		}
+		background := render.DrawUIElement(solid, ux, uy, w, h, 0, 0, 1, 1)
+		background.R = 0
+		background.G = 0
+		background.B = 0
+		ba := 0.3
+		text := render.DrawUIText(e.text, x, y, e.r, e.g, e.b)
 		// If entering text show every line
 		if !c.enteringText {
 			text.Alpha(c.lineFade[e.line])
+			ba -= 1.0 - c.lineFade[e.line]
+			ba = math.Min(ba, 0.5)
 		}
+		background.Alpha(ba)
 	}
 }
 
@@ -179,6 +205,7 @@ func (c *ChatUI) renderText(line int, runes []rune, getColor chatGetColorFunc) {
 type chatUIElement struct {
 	text    string
 	x       float64
+	width   float64
 	r, g, b int
 	offset  int
 	line    int
@@ -186,17 +213,20 @@ type chatUIElement struct {
 }
 
 func (c *ChatUI) appendText(line int, str string, r, g, b int) float64 {
-	// txt := render.DrawUIText(str, 2+c.lineLength, 480-18, r, g, b)
+	if str == "" {
+		return 0
+	}
 	e := &chatUIElement{
-		text: str,
-		x:    2 + c.lineLength,
-		r:    r, g: g, b: b,
+		text:  str,
+		x:     2 + c.lineLength,
+		width: render.SizeOfString(str) + 2,
+		r:     r, g: g, b: b,
 		offset: 0,
 		line:   line,
 		draw:   true,
 	}
 	c.Elements = append(c.Elements, e)
-	return render.SizeOfString(e.text) + 2
+	return e.width
 }
 
 type chatGetColorFunc func() chat.Color
