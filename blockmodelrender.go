@@ -98,10 +98,10 @@ func precomputeModel(bm *blockModel) *processedModel {
 			vert := faceVertices[i]
 			tex := bm.lookupTexture(face.texture)
 
-			ux1 := int16(face.uv[0] * tex.Width)
-			ux2 := int16(face.uv[2] * tex.Width)
-			uy1 := int16(face.uv[1] * tex.Height)
-			uy2 := int16(face.uv[3] * tex.Height)
+			ux1 := int16(face.uv[0] * float64(tex.Width))
+			ux2 := int16(face.uv[2] * float64(tex.Width))
+			uy1 := int16(face.uv[1] * float64(tex.Height))
+			uy2 := int16(face.uv[3] * float64(tex.Height))
 
 			tw, th := int16(tex.Width), int16(tex.Height)
 			if face.rotation > 0 {

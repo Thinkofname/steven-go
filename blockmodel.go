@@ -51,7 +51,11 @@ func findStateModel(plugin, name string) *blockStateModel {
 }
 
 func loadStateModel(key pluginKey) *blockStateModel {
-	data := map[string]interface{}{}
+	type jsType struct {
+		Variants map[string]json.RawMessage
+	}
+
+	var data jsType
 	err := loadJSON(key.Plugin, fmt.Sprintf("blockstates/%s.json", key.Name), &data)
 	if err != nil {
 		fmt.Printf("Error loading state %s: %s\n", key.Name, err)
@@ -60,18 +64,18 @@ func loadStateModel(key pluginKey) *blockStateModel {
 	bs := &blockStateModel{
 		variants: map[string]blockVariants{},
 	}
-	variants := data["variants"].(map[string]interface{})
+	variants := data.Variants
 	for k, v := range variants {
 		var models blockVariants
-		switch v := v.(type) {
-		case map[string]interface{}:
-			models = append(models, precomputeModel(parseBlockStateVariant(key.Plugin, v)))
-		case []interface{}:
-			for _, vv := range v {
-				models = append(models, precomputeModel(parseBlockStateVariant(key.Plugin, vv.(map[string]interface{}))))
+		switch v[0] {
+		case '[':
+			var list []json.RawMessage
+			json.Unmarshal(v, &list)
+			for _, vv := range list {
+				models = append(models, precomputeModel(parseBlockStateVariant(key.Plugin, vv)))
 			}
 		default:
-			fmt.Printf("Unhandled variant type: %T\n", v)
+			models = append(models, precomputeModel(parseBlockStateVariant(key.Plugin, v)))
 		}
 		bs.variants[k] = models
 	}
@@ -96,53 +100,65 @@ type blockModel struct {
 	y, x   float64
 }
 
-func parseBlockStateVariant(plugin string, data map[string]interface{}) *blockModel {
-	modelName := data["model"].(string)
-	bdata := map[string]interface{}{}
-	err := loadJSON(plugin, "models/block/"+modelName+".json", &bdata)
-	if err != nil {
-		fmt.Printf("Error loading model %s: %s\n", modelName, err)
-		return nil
+func parseBlockStateVariant(plugin string, js json.RawMessage) *blockModel {
+	type jsType struct {
+		Model  string
+		X, Y   float64
+		UVLock bool
 	}
-	bm := parseBlockModel(plugin, bdata)
+	var data jsType
+	err := json.Unmarshal(js, &data)
+	if err != nil {
+		panic(err)
+	}
+	var bdata jsBlockModel
+	err = loadJSON(plugin, "models/block/"+data.Model+".json", &bdata)
+	if err != nil {
+		panic(err)
+	}
+	bm := parseBlockModel(plugin, &bdata)
 
-	bm.y, _ = data["y"].(float64)
-	bm.x, _ = data["x"].(float64)
-	bm.uvLock, _ = data["uvlock"].(bool)
+	bm.y = data.Y
+	bm.x = data.X
+	bm.uvLock = data.UVLock
 	return bm
 }
 
-func parseBlockModel(plugin string, data map[string]interface{}) *blockModel {
+type jsBlockModel struct {
+	Parent           string
+	Textures         map[string]string
+	AmbientOcclusion *bool
+	Elements         []*jsBlockElement
+}
+
+func parseBlockModel(plugin string, data *jsBlockModel) *blockModel {
 	var bm *blockModel
-	if parent, ok := data["parent"].(string); ok {
-		pdata := map[string]interface{}{}
-		err := loadJSON(plugin, "models/"+parent+".json", &pdata)
+	if data.Parent != "" {
+		var pdata jsBlockModel
+		err := loadJSON(plugin, "models/"+data.Parent+".json", &pdata)
 		if err != nil {
-			fmt.Printf("Error loading model %s: %s\n", parent, err)
+			fmt.Printf("Error loading model %s: %s\n", data.Parent, err)
 			return nil
 		}
-		bm = parseBlockModel(plugin, pdata)
+		bm = parseBlockModel(plugin, &pdata)
 	} else {
 		bm = &blockModel{
 			textureVars: map[string]string{},
 		}
 	}
 
-	if textures, ok := data["textures"].(map[string]interface{}); ok {
-		for k, v := range textures {
-			bm.textureVars[k] = v.(string)
+	if data.Textures != nil {
+		for k, v := range data.Textures {
+			bm.textureVars[k] = v
 		}
 	}
 
-	if elements, ok := data["elements"].([]interface{}); ok {
-		for _, e := range elements {
-			bm.elements = append(bm.elements, parseBlockElement(e.(map[string]interface{})))
-		}
+	for _, e := range data.Elements {
+		bm.elements = append(bm.elements, parseBlockElement(e))
 	}
 
-	ambientOcclusion, ok := data["ambientocclusion"].(bool)
-	if ok {
-		bm.ambientOcclusion = ambientOcclusion
+	if data.AmbientOcclusion != nil {
+		bm.ambientOcclusion = *data.AmbientOcclusion
 		bm.aoSet = true
 	} else if !bm.aoSet {
 		bm.ambientOcclusion = true
@@ -167,7 +183,7 @@ type blockRotation struct {
 }
 
 type blockFace struct {
-	uv          [4]int
+	uv          [4]float64
 	texture     string
 	textureInfo *render.TextureInfo
 	cullFace    direction.Type
@@ -175,64 +191,70 @@ type blockFace struct {
 	tintIndex   int
 }
 
-func parseBlockElement(data map[string]interface{}) *blockElement {
-	be := &blockElement{}
-	from := data["from"].([]interface{})
-	to := data["to"].([]interface{})
-	for i := 0; i < 3; i++ {
-		be.from[i] = from[i].(float64)
-		be.to[i] = to[i].(float64)
+type jsBlockElement struct {
+	From, To [3]float64
+	Shade    *bool
+	Faces    map[string]*jsBlockFace
+	Rotation *struct {
+		Origin  *[3]float64
+		Axis    string
+		Angle   float64
+		Rescale bool
 	}
+}
 
-	shade, ok := data["shade"].(bool)
-	be.shade = !ok || shade
+func parseBlockElement(data *jsBlockElement) *blockElement {
+	be := &blockElement{}
+	be.from, be.to = data.From, data.To
 
-	if faces, ok := data["faces"].(map[string]interface{}); ok {
+	be.shade = data.Shade == nil || *data.Shade
+
+	if data.Faces != nil {
 		for i, d := range direction.Values {
-			if data, ok := faces[d.String()].(map[string]interface{}); ok {
+			if data, ok := data.Faces[d.String()]; ok {
 				be.faces[i] = &blockFace{}
 				be.faces[i].init(data)
 			}
 		}
 	}
 
-	if rotation, ok := data["rotation"].(map[string]interface{}); ok {
+	if data.Rotation != nil {
 		r := &blockRotation{}
 		be.rotation = r
+		rot := data.Rotation
 
 		r.origin = []float64{8, 8, 8}
-		if origin, ok := rotation["origin"].([]interface{}); ok {
-			r.origin[0] = origin[0].(float64)
-			r.origin[1] = origin[1].(float64)
-			r.origin[2] = origin[2].(float64)
+		if rot.Origin != nil {
+			r.origin = rot.Origin[:]
 		}
-		r.axis = rotation["axis"].(string)
-		r.angle = rotation["angle"].(float64)
-		r.rescale, _ = rotation["rescale"].(bool)
+		r.axis = rot.Axis
+		r.angle = rot.Angle
+		r.rescale = rot.Rescale
 	}
 
 	return be
 }
 
-func (bf *blockFace) init(data map[string]interface{}) {
-	if uv, ok := data["uv"].([]interface{}); ok {
-		for i := 0; i < 4; i++ {
-			bf.uv[i] = int(uv[i].(float64))
-		}
+type jsBlockFace struct {
+	UV        *[4]float64
+	Texture   string
+	CullFace  string
+	Rotation  int
+	TintIndex *int
+}
+
+func (bf *blockFace) init(data *jsBlockFace) {
+	if data.UV != nil {
+		bf.uv = *data.UV
 	} else {
-		bf.uv = [4]int{0, 0, 16, 16}
+		bf.uv = [4]float64{0, 0, 16, 16}
 	}
-	bf.texture, _ = data["texture"].(string)
-	cullFace, _ := data["cullface"].(string)
-	bf.cullFace = direction.FromString(cullFace)
-	rotation, ok := data["rotation"].(float64)
-	if ok {
-		bf.rotation = int(rotation)
-	}
+	bf.texture = data.Texture
+	bf.cullFace = direction.FromString(data.CullFace)
+	bf.rotation = data.Rotation
 	bf.tintIndex = -1
-	tintIndex, ok := data["tintindex"].(float64)
-	if ok {
-		bf.tintIndex = int(tintIndex)
+	if data.TintIndex != nil {
+		bf.tintIndex = *data.TintIndex
 	}
 }
 
