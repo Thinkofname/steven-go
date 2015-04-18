@@ -21,6 +21,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -85,16 +86,44 @@ func Search(plugin, path, ext string) []string {
 // being an init thing. Also should have a way to get process information.
 
 func init() {
-	defLocation := fmt.Sprintf("./vanilla-%s.res", resourcesVersion)
-	f, err := os.Open(defLocation)
+	defLocation := fmt.Sprintf("./resources-%s", resourcesVersion)
+	_, err := os.Stat(defLocation)
 	if os.IsNotExist(err) {
-		f = downloadDefault(defLocation)
+		downloadDefault(defLocation)
 	}
-	fromFile(f)
+	if err := fromDir(defLocation); err != nil {
+		panic(err)
+	}
 
 	if err := loadZip("./pack.zip"); err != nil {
 		fmt.Printf("Couldn't load pack.zip: %s\n", err)
 	}
+}
+func fromDir(d string) error {
+	p := &pack{
+		files: map[string]opener{},
+	}
+
+	err := filepath.Walk(d, func(path string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() {
+			return err
+		}
+		rel, err := filepath.Rel(d, path)
+		if err != nil {
+			return err
+		}
+		rel = strings.Replace(rel, string(filepath.Separator), "/", -1)
+		p.files[rel] = func() (io.ReadCloser, error) {
+			return os.Open(path)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	packs = append(packs, p)
+	return nil
 }
 
 func loadZip(name string) error {
@@ -125,7 +154,7 @@ func fromFile(f *os.File) error {
 	return nil
 }
 
-func downloadDefault(target string) *os.File {
+func downloadDefault(target string) {
 	fmt.Printf("Obtaining vanilla resources for %s, please wait...\n", resourcesVersion)
 	resp, err := http.Get(fmt.Sprintf(vanillaURL, resourcesVersion))
 	if err != nil {
@@ -147,23 +176,20 @@ func downloadDefault(target string) *os.File {
 	f.Seek(0, 0) // Go back to the start
 	fr, err := zip.NewReader(f, size)
 
-	t, err := os.Create(target)
-	if err != nil {
-		panic(err)
-	}
-	defer t.Seek(0, 0) // Rollback to the start after writing the zip
-	zt := zip.NewWriter(t)
-	defer zt.Close()
+	os.MkdirAll(target, 0777)
 
 	// Copy the assets (not the classes) in the new zip
 	for _, f := range fr.File {
 		if !strings.HasPrefix(f.Name, "assets/") {
 			continue
 		}
-		w, err := zt.CreateHeader(&f.FileHeader)
+		path := filepath.Join(target, f.Name)
+		os.MkdirAll(filepath.Dir(path), 0777)
+		w, err := os.Create(path)
 		if err != nil {
 			panic(err)
 		}
+		defer w.Close()
 		r, err := f.Open()
 		if err != nil {
 			panic(err)
@@ -174,6 +200,4 @@ func downloadDefault(target string) *os.File {
 		}
 		r.Close()
 	}
-
-	return t
 }
