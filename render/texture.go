@@ -104,6 +104,14 @@ func LoadTextures() {
 		}
 	}
 
+	pix := []byte{255, 255, 255, 255}
+	at, rect := addTexture(pix, 1, 1)
+	info := TextureInfo{
+		Rect:  rect,
+		Atlas: at,
+	}
+	textureMap["solid"] = info
+
 	textureLock.Unlock()
 
 	loadFontInfo()
