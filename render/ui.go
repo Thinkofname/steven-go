@@ -143,6 +143,9 @@ func (u *UIElement) Alpha(a float64) {
 	if a > 1.0 {
 		a = 1.0
 	}
+	if a < 0.0 {
+		a = 0.0
+	}
 	u.A = byte(255.0 * a)
 }
 

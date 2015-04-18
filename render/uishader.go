@@ -64,8 +64,8 @@ void main() {
 	tPos /= atlasSize;
 	float texID = floor(vTextureInfo.y / atlasSize);
 	vec4 col = texture(textures, vec3(tPos, texID));
-	if (col.a == 0.0) discard;
 	col *= vColor;
+	if (col.a == 0.0) discard;
 	fragColor = col;
 }
 `
