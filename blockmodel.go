@@ -236,64 +236,6 @@ func (bf *blockFace) init(data map[string]interface{}) {
 	}
 }
 
-// Precomputed face vertices
-var faceVertices = [6][6]chunkVertex{
-	{ // Up
-		{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
-		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 1},
-
-		{X: 1, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 1},
-		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-	},
-	{ // Down
-		{X: 0, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
-		{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
-
-		{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
-		{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 0},
-	},
-	{ // North
-		{X: 0, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
-		{X: 1, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-
-		{X: 1, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
-		{X: 0, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
-	},
-	{ // South
-		{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
-
-		{X: 1, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
-	},
-	{ // West
-		{X: 0, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
-		{X: 0, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
-
-		{X: 0, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 0},
-		{X: 0, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
-	},
-	{ // East
-		{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
-		{X: 1, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
-		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-
-		{X: 1, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
-		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
-	},
-}
-
 func (bm *blockModel) lookupTexture(name string) *render.TextureInfo {
 	if len(name) > 0 && name[0] == '#' {
 		return bm.lookupTexture(bm.textureVars[name[1:]])

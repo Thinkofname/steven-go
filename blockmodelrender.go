@@ -422,3 +422,61 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 func round(f float64) int {
 	return int(f + math.Copysign(0.5, f))
 }
+
+// Precomputed face vertices
+var faceVertices = [6][6]chunkVertex{
+	{ // Up
+		{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
+		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
+		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 1},
+
+		{X: 1, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 1},
+		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 1},
+		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
+	},
+	{ // Down
+		{X: 0, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
+		{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 0},
+		{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
+
+		{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 0},
+		{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
+		{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 0},
+	},
+	{ // North
+		{X: 0, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
+		{X: 1, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
+		{X: 0, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
+
+		{X: 1, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
+		{X: 0, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
+		{X: 1, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
+	},
+	{ // South
+		{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
+		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
+		{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
+
+		{X: 1, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 0},
+		{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
+		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
+	},
+	{ // West
+		{X: 0, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
+		{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
+		{X: 0, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
+
+		{X: 0, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 0},
+		{X: 0, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
+		{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
+	},
+	{ // East
+		{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
+		{X: 1, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
+		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
+
+		{X: 1, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
+		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
+		{X: 1, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
+	},
+}
