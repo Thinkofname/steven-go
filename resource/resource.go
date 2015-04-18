@@ -35,9 +35,10 @@ var (
 )
 
 type pack struct {
-	zip   *zip.Reader
-	files map[string]*zip.File
+	files map[string]opener
 }
+
+type opener func() (io.ReadCloser, error)
 
 // Open searches through all open resource packs for the requested file.
 // If a file exists but fails to open that error will be returned instead
@@ -48,7 +49,7 @@ func Open(plugin, name string) (io.ReadCloser, error) {
 	for i := len(packs) - 1; i >= 0; i-- {
 		pck := packs[i]
 		if f, ok := pck.files[fmt.Sprintf("assets/%s/%s", plugin, name)]; ok {
-			r, err := f.Open()
+			r, err := f()
 			if err != nil {
 				lastErr = err
 				continue
@@ -114,11 +115,11 @@ func fromFile(f *os.File) error {
 		return err
 	}
 	p := &pack{
-		zip:   z,
-		files: map[string]*zip.File{},
+		files: map[string]opener{},
 	}
 	for _, f := range z.File {
-		p.files[f.Name] = f
+		f := f
+		p.files[f.Name] = f.Open
 	}
 	packs = append(packs, p)
 	return nil
