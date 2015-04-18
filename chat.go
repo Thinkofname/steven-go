@@ -32,7 +32,6 @@ const (
 type ChatUI struct {
 	Elements []*chatUIElement
 
-	dirty    bool
 	Lines    [chatHistoryLines]chat.AnyComponent
 	lineFade [chatHistoryLines]float64
 
@@ -44,63 +43,41 @@ type ChatUI struct {
 	first        bool
 }
 
-type chatUIElement struct {
-	text   *render.UIText
-	offset int
-	line   int
-}
-
 func (c *ChatUI) render(delta float64) {
-	// Always redraw in input mode because of the cursor
-	if c.enteringText {
-		c.dirty = true
+	c.Elements = c.Elements[:0]
+	for i, line := range c.Lines {
+		c.newLine()
+		if line.Value == nil {
+			continue
+		}
+		c.lineLength = 0
+		c.renderComponent(i, line.Value, nil)
 	}
-	if c.dirty {
-		c.dirty = false
-		// Clear the existing elements.
-		// They will be reused if needed (handled by the
-		// ui system)
-		for _, e := range c.Elements {
-			if e.text != nil {
-				e.text.Free()
-			}
+
+	if c.enteringText {
+		// Shift all the lines up
+		c.newLine()
+		c.lineLength = 0
+
+		color := chat.White
+		gc := func() chat.Color { return color }
+		line := c.inputLine
+		// Make it clear that a command is being typed
+		if len(line) != 0 && line[0] == '/' {
+			color = chat.Gold
+			c.renderText(len(c.Lines), line[:1], gc)
+			color = chat.Yellow
+			line = line[1:]
 		}
-		c.Elements = c.Elements[:0]
-
-		for i, line := range c.Lines {
-			c.newLine()
-			if line.Value == nil {
-				continue
-			}
-			c.lineLength = 0
-			c.renderComponent(i, line.Value, nil)
+		c.renderText(len(c.Lines), line, gc)
+		c.cursorTick += delta
+		// Add on our cursor
+		if int(c.cursorTick/30)%2 == 0 {
+			c.renderText(len(c.Lines), []rune{'|'}, gc)
 		}
-
-		if c.enteringText {
-			// Shift all the lines up
-			c.newLine()
-			c.lineLength = 0
-
-			color := chat.White
-			gc := func() chat.Color { return color }
-			line := c.inputLine
-			// Make it clear that a command is being typed
-			if len(line) != 0 && line[0] == '/' {
-				color = chat.Gold
-				c.renderText(len(c.Lines), line[:1], gc)
-				color = chat.Yellow
-				line = line[1:]
-			}
-			c.renderText(len(c.Lines), line, gc)
-			c.cursorTick += delta
-			// Add on our cursor
-			if int(c.cursorTick/30)%2 == 0 {
-				c.renderText(len(c.Lines), []rune{'|'}, gc)
-			}
-			// Lazy way of preventing rounding errors buiding up over time
-			if c.cursorTick > 0xFFFFFF {
-				c.cursorTick = 0
-			}
+		// Lazy way of preventing rounding errors buiding up over time
+		if c.cursorTick > 0xFFFFFF {
+			c.cursorTick = 0
 		}
 	}
 	// Slowly fade out each line
@@ -111,13 +88,13 @@ func (c *ChatUI) render(delta float64) {
 		}
 	}
 	for _, e := range c.Elements {
-		if e.text != nil {
-			// If entering text show every line
-			if c.enteringText {
-				e.text.Alpha(1.0)
-			} else {
-				e.text.Alpha(c.lineFade[e.line])
-			}
+		if !e.draw {
+			continue
+		}
+		text := render.DrawUIText(e.text, e.x, 480-18*float64(e.offset+1), e.r, e.g, e.b)
+		// If entering text show every line
+		if !c.enteringText {
+			text.Alpha(c.lineFade[e.line])
 		}
 	}
 }
@@ -132,7 +109,6 @@ func (c *ChatUI) handleKey(w *glfw.Window, key glfw.Key, scancode int, action gl
 		c.inputLine = c.inputLine[:0]
 		lockMouse = true
 		w.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
-		c.dirty = true
 		w.SetCharCallback(nil)
 		return
 	}
@@ -200,14 +176,27 @@ func (c *ChatUI) renderText(line int, runes []rune, getColor chatGetColorFunc) {
 	c.lineLength += c.appendText(line, string(runes), r, g, b)
 }
 
+type chatUIElement struct {
+	text    string
+	x       float64
+	r, g, b int
+	offset  int
+	line    int
+	draw    bool
+}
+
 func (c *ChatUI) appendText(line int, str string, r, g, b int) float64 {
+	// txt := render.DrawUIText(str, 2+c.lineLength, 480-18, r, g, b)
 	e := &chatUIElement{
-		text:   render.AddUIText(str, 2+c.lineLength, 480-18, r, g, b),
+		text: str,
+		x:    2 + c.lineLength,
+		r:    r, g: g, b: b,
 		offset: 0,
 		line:   line,
+		draw:   true,
 	}
 	c.Elements = append(c.Elements, e)
-	return e.text.Width + 2
+	return render.SizeOfString(e.text) + 2
 }
 
 type chatGetColorFunc func() chat.Color
@@ -265,16 +254,10 @@ func chatColorRGB(c chat.Color) (r, g, b int) {
 
 func (c *ChatUI) newLine() {
 	for _, e := range c.Elements {
-		if e.text == nil {
-			continue
-		}
 		e.offset++
-		if e.offset > chatHistoryLines {
-			e.text.Free()
-			e.text = nil
-			continue
+		if e.offset >= chatHistoryLines {
+			e.draw = false
 		}
-		e.text.Shift(0, -18)
 	}
 }
 
@@ -283,5 +266,4 @@ func (c *ChatUI) Add(msg chat.AnyComponent) {
 	copy(c.lineFade[0:chatHistoryLines-1], c.lineFade[1:])
 	c.Lines[chatHistoryLines-1] = msg
 	c.lineFade[chatHistoryLines-1] = 3.0
-	c.dirty = true
 }

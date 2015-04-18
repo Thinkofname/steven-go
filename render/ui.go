@@ -34,8 +34,7 @@ var (
 		count        int
 		data         []byte
 		prevSize     int
-		elements     []*UIElement
-		freeElements []*UIElement
+		elements     []UIElement
 		elementCount int
 	}{
 		prevSize: -1,
@@ -59,17 +58,16 @@ func initUI() {
 	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 28, 12)
 	uiState.shader.TextureOffset.Pointer(2, gl.Short, false, 28, 20)
 	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 28, 24)
-
-	AddUIElement(GetTexture("stone"), 400-2, 240-2, 4, 4, 0, 0, 16, 16)
 }
 
 func drawUI() {
 	// Redraw everything
 	uiState.count = 0
 	uiState.data = uiState.data[:0]
-	for _, e := range uiState.elements {
-		e.draw()
+	for i := 0; i < uiState.elementCount; i++ {
+		uiState.elements[i].draw()
 	}
+	uiState.elementCount = 0
 
 	// Prevent clipping with the world
 	gl.Clear(gl.DepthBufferBit)
@@ -96,8 +94,6 @@ func drawUI() {
 // UIElement is a single element on the screen. It is a rectangle
 // with a texture and a tint.
 type UIElement struct {
-	free bool
-
 	X, Y, W, H         float64
 	DepthIndex         float64
 	TX, TY, TW, TH     uint16
@@ -106,17 +102,14 @@ type UIElement struct {
 	R, G, B, A         byte
 }
 
-// AddUIElement creates and adds a single ui element onto the screen.
-func AddUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th int) *UIElement {
-	var e *UIElement
-	if len(uiState.freeElements) == 0 {
-		e = &UIElement{}
-		uiState.elements = append(uiState.elements, e)
-	} else {
-		l := len(uiState.freeElements)
-		e = uiState.freeElements[l-1]
-		uiState.freeElements = uiState.freeElements[:l-1]
+// DrawUIElement draws a single ui element onto the screen.
+func DrawUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th int) *UIElement {
+	if len(uiState.elements) == uiState.elementCount {
+		old := uiState.elements
+		uiState.elements = make([]UIElement, (len(old)+1)<<1)
+		copy(uiState.elements, old)
 	}
+	e := &uiState.elements[uiState.elementCount]
 	// (Re)set the information for the element
 	e.X = x / uiWidth
 	e.Y = y / uiHeight
@@ -136,7 +129,6 @@ func AddUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th 
 	e.A = 255
 	e.DepthIndex = -float64(uiState.elementCount) / float64(math.MaxInt16)
 	uiState.elementCount++
-	e.free = false
 	return e
 }
 
@@ -154,21 +146,7 @@ func (u *UIElement) Alpha(a float64) {
 	u.A = byte(255.0 * a)
 }
 
-// Free removes the element from the screen. This may be reused
-// so this element should be considered invalid after this call.
-func (u *UIElement) Free() {
-	if u.free {
-		return
-	}
-	u.free = true
-	uiState.freeElements = append(uiState.freeElements, u)
-	uiState.elementCount--
-}
-
 func (u *UIElement) draw() {
-	if u.free {
-		return
-	}
 	u.appendVertex(u.X, u.Y, u.TOffsetX, u.TOffsetY)
 	u.appendVertex(u.X+u.W, u.Y, u.TOffsetX+u.TSizeW, u.TOffsetY)
 	u.appendVertex(u.X, u.Y+u.H, u.TOffsetX, u.TOffsetY+u.TSizeH)

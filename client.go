@@ -52,11 +52,6 @@ type ClientState struct {
 
 	Bounds vmath.AABB
 
-	positionText    *render.UIText
-	directionText   *render.UIText
-	memoryText      *render.UIText
-	targetBlockText []*render.UIText
-
 	fps       int
 	frames    int
 	lastCount time.Time
@@ -148,11 +143,11 @@ func (c *ClientState) renderTick(delta float64) {
 	c.highlightTarget()
 
 	// Debug displays
-	c.positionText = setText(c.positionText,
+	render.DrawUIText(
 		fmt.Sprintf("X: %.2f, Y: %.2f, Z: %.2f", c.X, c.Y, c.Z),
 		5, 5, 255, 255, 255,
 	)
-	c.directionText = setText(c.directionText,
+	render.DrawUIText(
 		fmt.Sprintf("Facing: %s", c.facingDirection()),
 		5, 23, 255, 255, 255,
 	)
@@ -160,7 +155,7 @@ func (c *ClientState) renderTick(delta float64) {
 
 	runtime.ReadMemStats(&memoryStats)
 	text := fmt.Sprintf("%s/%s", formatMemory(memoryStats.Alloc), formatMemory(memoryStats.Sys))
-	c.memoryText = setText(c.memoryText, text, 800-5-float64(render.SizeOfString(text)), 23, 255, 255, 255)
+	render.DrawUIText(text, 800-5-float64(render.SizeOfString(text)), 23, 255, 255, 255)
 
 	now := time.Now()
 	if now.Sub(c.lastCount) > time.Second {
@@ -169,7 +164,7 @@ func (c *ClientState) renderTick(delta float64) {
 		c.frames = 0
 	}
 	text = fmt.Sprintf("FPS: %d", c.fps)
-	c.fpsText = setText(c.fpsText, text, 800-5-float64(render.SizeOfString(text)), 5, 255, 255, 255)
+	render.DrawUIText(text, 800-5-float64(render.SizeOfString(text)), 5, 255, 255, 255)
 
 	// Ui rendering
 
@@ -330,21 +325,17 @@ func (c *ClientState) highlightTarget() {
 }
 
 func (c *ClientState) displayTargetInfo() {
-	for _, e := range c.targetBlockText {
-		e.Free()
-	}
-	c.targetBlockText = c.targetBlockText[:0]
 	tx, ty, tz, b := c.targetBlock()
 	text := fmt.Sprintf("Target(%d,%d,%d)", tx, ty, tz)
-	c.targetBlockText = append(c.targetBlockText, render.AddUIText(
+	render.DrawUIText(
 		text,
 		800-5-render.SizeOfString(text), 41, 255, 255, 255,
-	))
+	)
 	text = fmt.Sprintf("%s:%s", b.Plugin(), b.Name())
-	c.targetBlockText = append(c.targetBlockText, render.AddUIText(
+	render.DrawUIText(
 		text,
 		800-5-render.SizeOfString(text), 59, 255, 255, 255,
-	))
+	)
 
 	for i, s := range b.states() {
 		var r, g, b int = 255, 255, 255
@@ -363,16 +354,16 @@ func (c *ClientState) displayTargetInfo() {
 			r, g, b = chatColorRGB(debugStateColors[val])
 		}
 		pos := 800 - 5 - render.SizeOfString(text)
-		c.targetBlockText = append(c.targetBlockText, render.AddUIText(
+		render.DrawUIText(
 			text,
 			pos, 59+18*(1+float64(i)), r, g, b,
-		))
+		)
 		text = fmt.Sprintf("%s=", s.Key)
 		pos -= render.SizeOfString(text) + 2
-		c.targetBlockText = append(c.targetBlockText, render.AddUIText(
+		render.DrawUIText(
 			text,
 			pos, 59+18*(1+float64(i)), 255, 255, 255,
-		))
+		)
 	}
 }
 
@@ -382,13 +373,6 @@ func (c *ClientState) checkGround() {
 		Max: vmath.Vector3{0.3, 0.0, 0.3},
 	}
 	_, c.OnGround = c.checkCollisions(ground)
-}
-
-func setText(txt *render.UIText, str string, x, y float64, rr, gg, bb int) *render.UIText {
-	if txt != nil {
-		txt.Free()
-	}
-	return render.AddUIText(str, x, y, rr, gg, bb)
 }
 
 func (c *ClientState) calculateMovement() (float64, float64) {

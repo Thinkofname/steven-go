@@ -115,7 +115,6 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		}
 	case glfw.KeyT, glfw.KeySlash:
 		Client.chat.enteringText = true
-		Client.chat.dirty = true
 		Client.chat.first = true
 		if key == glfw.KeySlash {
 			Client.chat.inputLine = append(Client.chat.inputLine, '/')
