@@ -169,6 +169,10 @@ func (c *ClientState) renderTick(delta float64) {
 	// Ui rendering
 
 	c.chat.render(delta)
+
+	solid := render.GetTexture("solid")
+	render.DrawUIElement(solid, 400-4, 240-1, 8, 2, 0, 0, 1, 1)
+	render.DrawUIElement(solid, 400-1, 240-4, 2, 8, 0, 0, 1, 1)
 }
 
 func (c *ClientState) targetBlock() (x, y, z int, block Block) {
