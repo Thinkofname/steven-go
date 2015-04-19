@@ -80,7 +80,7 @@ func drawUI() {
 		uiState.buffer.Bind(gl.ArrayBuffer)
 		if len(uiState.data) > uiState.prevSize {
 			uiState.prevSize = len(uiState.data)
-			uiState.buffer.Data(uiState.data, gl.DynamicDraw)
+			uiState.buffer.Data(uiState.data, gl.StreamDraw)
 		} else {
 			target := uiState.buffer.Map(gl.WriteOnly, len(uiState.data))
 			copy(target, uiState.data)
