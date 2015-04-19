@@ -92,7 +92,7 @@ func (c *ChatUI) render(delta float64) {
 	first := true
 	top := 0
 	for _, e := range c.Elements {
-		if !e.draw {
+		if !e.draw || (!c.enteringText && (e.line >= chatHistoryLines || c.lineFade[e.line] <= 0.0)) {
 			continue
 		}
 		if first {
@@ -119,7 +119,7 @@ func (c *ChatUI) render(delta float64) {
 		if !c.enteringText {
 			text.Alpha(c.lineFade[e.line])
 			ba -= (1.0 - c.lineFade[e.line]) / 2.0
-			ba = math.Min(ba, 0.5)
+			ba = math.Min(ba, 0.3)
 		}
 		background.Alpha(ba)
 	}
