@@ -57,7 +57,7 @@ func GetTexture(name string) *TextureInfo {
 	defer textureLock.RUnlock()
 	t, ok := textureMap[name]
 	if !ok {
-		t = textureMap["missing_texture"]
+		panic("missing texture " + name)
 	}
 	return &t
 }
