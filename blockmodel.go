@@ -17,7 +17,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource"
@@ -261,9 +260,6 @@ func (bf *blockFace) init(data *jsBlockFace) {
 func (bm *blockModel) lookupTexture(name string) *render.TextureInfo {
 	if len(name) > 0 && name[0] == '#' {
 		return bm.lookupTexture(bm.textureVars[name[1:]])
-	}
-	if strings.HasPrefix(name, "blocks/") {
-		name = name[len("blocks/"):]
 	}
 	return render.GetTexture(name)
 }

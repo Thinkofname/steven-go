@@ -21,6 +21,8 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
+	"sort"
+	"strings"
 	"sync"
 
 	"github.com/thinkofdeath/steven/render/atlas"
@@ -37,8 +39,8 @@ var (
 )
 
 const (
-	AtlasSize    = 512
-	atlasSizeStr = "512"
+	AtlasSize    = 1024
+	atlasSizeStr = "1024"
 )
 
 // TextureInfo returns information about a texture in an atlas
@@ -60,6 +62,25 @@ func GetTexture(name string) *TextureInfo {
 	return &t
 }
 
+type sortableTexture struct {
+	Area int
+	File string
+}
+
+type sortableTextures []sortableTexture
+
+func (s sortableTextures) Swap(a, b int) {
+	s[a], s[b] = s[b], s[a]
+}
+
+func (s sortableTextures) Len() int {
+	return len(s)
+}
+
+func (s sortableTextures) Less(a, b int) bool {
+	return s[a].Area > s[b].Area
+}
+
 // LoadTextures (re)loads all the block textures from the resource pack(s)
 // TODO(Think) better error handling (if possible to recover?)
 func LoadTextures() {
@@ -69,7 +90,30 @@ func LoadTextures() {
 	textures = nil
 	textureMap = map[string]TextureInfo{}
 
-	for _, file := range resource.Search("minecraft", "textures/blocks/", ".png") {
+	names := resource.Search("minecraft", "textures/", ".png")
+	tList := make(sortableTextures, 0, len(names))
+	for _, file := range names {
+		if strings.HasPrefix(file, "textures/font") {
+			continue
+		}
+		r, err := resource.Open("minecraft", file)
+		if err != nil {
+			panic(err)
+		}
+		defer r.Close()
+		img, err := png.Decode(r)
+		if err != nil {
+			panic(err)
+		}
+		width, height := img.Bounds().Dx(), img.Bounds().Dy()
+		tList = append(tList, sortableTexture{
+			Area: width * height,
+			File: file,
+		})
+	}
+	sort.Sort(tList)
+	for _, st := range tList {
+		file := st.File
 		r, err := resource.Open("minecraft", file)
 		if err != nil {
 			panic(err)
@@ -81,7 +125,8 @@ func LoadTextures() {
 		}
 		width, height := img.Bounds().Dx(), img.Bounds().Dy()
 		var ani *animatedTexture
-		if width != height {
+		if (strings.HasPrefix(file, "textures/blocks") || strings.HasPrefix(file, "textures/items")) &&
+			width != height {
 			height = width
 			old := img
 			img := image.NewNRGBA(image.Rect(0, 0, width, width))
@@ -92,7 +137,7 @@ func LoadTextures() {
 			animatedTextures = append(animatedTextures, ani)
 		}
 		pix := imgToBytes(img)
-		name := file[len("textures/blocks/") : len(file)-4]
+		name := file[len("textures/") : len(file)-4]
 		at, rect := addTexture(pix, width, height)
 		info := TextureInfo{
 			Rect:  rect,
@@ -145,6 +190,9 @@ func imgToBytes(img image.Image) []byte {
 
 func addTexture(pix []byte, width, height int) (int, *atlas.Rect) {
 	for i, a := range textures {
+		if a == nil {
+			continue
+		}
 		rect, err := a.Add(pix, width, height)
 		if err == nil {
 			return i, rect
@@ -155,7 +203,7 @@ func addTexture(pix []byte, width, height int) (int, *atlas.Rect) {
 	textureDirty = append(textureDirty, true)
 	rect, err := a.Add(pix, width, height)
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("Failed to place %d,%d: %s", width, height, err))
 	}
 	return len(textures) - 1, rect
 }

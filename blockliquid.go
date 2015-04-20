@@ -62,11 +62,11 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder
 	if l.Lava {
 		b1 = Blocks.Lava
 		b2 = Blocks.FlowingLava
-		tex = render.GetTexture("lava_still")
+		tex = render.GetTexture("blocks/lava_still")
 	} else {
 		b1 = Blocks.Water
 		b2 = Blocks.FlowingWater
-		tex = render.GetTexture("water_still")
+		tex = render.GetTexture("blocks/water_still")
 	}
 
 	var tl, tr, bl, br int
