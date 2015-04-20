@@ -93,6 +93,13 @@ func (t Texture) Bind(target TextureTarget) {
 	currentTextureTarget = target
 }
 
+func (t Texture) Get(level int, format TextureFormat, ty Type, pixels []byte) {
+	if t != currentTexture {
+		panic("texture not bound")
+	}
+	gl.GetTexImage(uint32(currentTextureTarget), int32(level), uint32(format), uint32(ty), gl.Ptr(pixels))
+}
+
 // Image3D uploads a 3D texture to the GPU.
 func (t Texture) Image3D(level, width, height, depth int, format TextureFormat, ty Type, pix []byte) {
 	if t != currentTexture {

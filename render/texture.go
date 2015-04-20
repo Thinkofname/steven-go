@@ -195,6 +195,7 @@ func addTexture(pix []byte, width, height int) (int, *atlas.Rect) {
 		}
 		rect, err := a.Add(pix, width, height)
 		if err == nil {
+			textureDirty[i] = true
 			return i, rect
 		}
 	}
@@ -298,21 +299,4 @@ func loadAnimation(file string, max int) *animatedTexture {
 	}
 
 	return a
-}
-
-func shrinkTexture(buffer []byte, width, height int) (nw, nh int, data []byte) {
-	nw = width >> 1
-	nh = height >> 1
-	data = make([]byte, nw*nh*4)
-	for x := 0; x < nw; x++ {
-		for y := 0; y < nh; y++ {
-			i := (y*nw + x) * 4
-			i2 := ((y<<1)*width + (x << 1)) * 4
-			data[i] = buffer[i2]
-			data[i+1] = buffer[i2+1]
-			data[i+2] = buffer[i2+2]
-			data[i+3] = buffer[i2+3]
-		}
-	}
-	return
 }

@@ -76,6 +76,7 @@ func Start(d bool) {
 	glTexture.Parameter(gl.TextureWrapT, gl.ClampToEdge)
 	for i, tex := range textures {
 		glTexture.SubImage3D(0, 0, 0, i, AtlasSize, AtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
+		textures[i] = nil
 	}
 	textureLock.Unlock()
 
@@ -125,14 +126,16 @@ sync:
 	textureLock.RLock()
 	if textureDepth != len(textures) {
 		glTexture.Bind(gl.Texture2DArray)
+		data := make([]byte, AtlasSize*AtlasSize*len(textures)*4)
+		glTexture.Get(0, gl.RGBA, gl.UnsignedByte, data)
 		textureDepth = len(textures)
-		glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, AtlasSize*AtlasSize*len(textures)*4))
+		glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, data)
 		for i := range textureDirty {
 			textureDirty[i] = true
 		}
 	}
 	for i, tex := range textures {
-		if textureDirty[i] {
+		if textureDirty[i] && tex != nil {
 			textureDirty[i] = false
 			glTexture.SubImage3D(0, 0, 0, i, AtlasSize, AtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
 		}
