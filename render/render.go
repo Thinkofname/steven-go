@@ -224,7 +224,6 @@ type renderRequest struct {
 	chunk *ChunkBuffer
 	pos   position
 	from  direction.Type
-	dist  int
 }
 
 const (
@@ -234,7 +233,7 @@ const (
 var rQueue renderQueue
 
 func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
-	rQueue.Append(renderRequest{chunk, pos, from, 1})
+	rQueue.Append(renderRequest{chunk, pos, from})
 itQueue:
 	for !rQueue.Empty() {
 		req := rQueue.Take()
@@ -244,7 +243,7 @@ itQueue:
 			float64((pos.Y<<4)+8) - Camera.Y,
 			float64((pos.Z<<4)+8) - Camera.Z,
 		}
-		if (v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0) || req.dist > 20 {
+		if v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0 {
 			continue itQueue
 		}
 		if chunk == nil || chunk.renderedOn == frameID {
@@ -264,7 +263,7 @@ itQueue:
 			if dir != from && (from == direction.Invalid || (chunk.IsVisible(from, dir) && validDirs[dir])) {
 				ox, oy, oz := dir.Offset()
 				pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
-				rQueue.Append(renderRequest{chunk.neighborChunks[dir], pos, dir.Opposite(), req.dist + 1})
+				rQueue.Append(renderRequest{chunk.neighborChunks[dir], pos, dir.Opposite()})
 			}
 		}
 	}
