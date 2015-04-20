@@ -20,25 +20,36 @@ import (
 	"time"
 
 	"github.com/thinkofdeath/steven/chat"
-	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/ui"
 )
 
 var memoryStats runtime.MemStats
 
+func (c *ClientState) initDebug() {
+	c.debug.position = ui.NewText("X:0 Y:0 Z:0", 5, 5, 255, 255, 255)
+	ui.AddDrawable(c.debug.position, ui.Top, ui.Left)
+	c.debug.facing = ui.NewText("Facing: invalid", 5, 23, 255, 255, 255)
+	ui.AddDrawable(c.debug.facing, ui.Top, ui.Left)
+
+	c.debug.fps = ui.NewText("FPS: 0", 5, 5, 255, 255, 255)
+	ui.AddDrawable(c.debug.fps, ui.Top, ui.Right)
+	c.debug.memory = ui.NewText("0/0", 5, 23, 255, 255, 255)
+	ui.AddDrawable(c.debug.memory, ui.Top, ui.Right)
+
+	c.debug.target = ui.NewText("", 5, 41, 255, 255, 255)
+	ui.AddDrawable(c.debug.target, ui.Top, ui.Right)
+	c.debug.targetName = ui.NewText("", 5, 59, 255, 255, 255)
+	ui.AddDrawable(c.debug.targetName, ui.Top, ui.Right)
+}
+
 func (c *ClientState) renderDebug() {
-	render.DrawUIText(
-		fmt.Sprintf("X: %.2f, Y: %.2f, Z: %.2f", c.X, c.Y, c.Z),
-		5, 5, 255, 255, 255,
-	)
-	render.DrawUIText(
-		fmt.Sprintf("Facing: %s", c.facingDirection()),
-		5, 23, 255, 255, 255,
-	)
+	c.debug.position.Update(fmt.Sprintf("X: %.2f, Y: %.2f, Z: %.2f", c.X, c.Y, c.Z))
+	c.debug.facing.Update(fmt.Sprintf("Facing: %s", c.facingDirection()))
+
 	c.displayTargetInfo()
 
 	runtime.ReadMemStats(&memoryStats)
-	text := fmt.Sprintf("%s/%s", formatMemory(memoryStats.Alloc), formatMemory(memoryStats.Sys))
-	render.DrawUIText(text, 800-5-float64(render.SizeOfString(text)), 23, 255, 255, 255)
+	c.debug.memory.Update(fmt.Sprintf("%s/%s", formatMemory(memoryStats.Alloc), formatMemory(memoryStats.Sys)))
 
 	now := time.Now()
 	if now.Sub(c.lastCount) > time.Second {
@@ -46,8 +57,7 @@ func (c *ClientState) renderDebug() {
 		c.fps = c.frames
 		c.frames = 0
 	}
-	text = fmt.Sprintf("FPS: %d", c.fps)
-	render.DrawUIText(text, 800-5-float64(render.SizeOfString(text)), 5, 255, 255, 255)
+	c.debug.fps.Update(fmt.Sprintf("FPS: %d", c.fps))
 }
 
 func formatMemory(alloc uint64) string {
@@ -90,20 +100,12 @@ var debugStateColors = [...]chat.Color{
 
 func (c *ClientState) displayTargetInfo() {
 	tx, ty, tz, b := c.targetBlock()
-	text := fmt.Sprintf("Target(%d,%d,%d)", tx, ty, tz)
-	render.DrawUIText(
-		text,
-		800-5-render.SizeOfString(text), 41, 255, 255, 255,
-	)
-	text = fmt.Sprintf("%s:%s", b.Plugin(), b.Name())
-	render.DrawUIText(
-		text,
-		800-5-render.SizeOfString(text), 59, 255, 255, 255,
-	)
+	c.debug.target.Update(fmt.Sprintf("Target(%d,%d,%d)", tx, ty, tz))
+	c.debug.targetName.Update(fmt.Sprintf("%s:%s", b.Plugin(), b.Name()))
 
 	for i, s := range b.states() {
 		var r, g, b int = 255, 255, 255
-		text = fmt.Sprint(s.Value)
+		text := fmt.Sprint(s.Value)
 		switch val := s.Value.(type) {
 		case bool:
 			b = 0
@@ -117,16 +119,33 @@ func (c *ClientState) displayTargetInfo() {
 		case color:
 			r, g, b = chatColorRGB(debugStateColors[val])
 		}
-		pos := 800 - 5 - render.SizeOfString(text)
-		render.DrawUIText(
-			text,
-			pos, 59+18*(1+float64(i)), r, g, b,
-		)
-		text = fmt.Sprintf("%s=", s.Key)
-		pos -= render.SizeOfString(text) + 2
-		render.DrawUIText(
-			text,
-			pos, 59+18*(1+float64(i)), 255, 255, 255,
-		)
+		if i >= len(c.debug.targetInfo) {
+			c.debug.targetInfo = append(c.debug.targetInfo, [2]*ui.Text{})
+		}
+		if c.debug.targetInfo[i][0] == nil {
+			c.debug.targetInfo[i] = [2]*ui.Text{
+				ui.NewText("", 5, 59+18*(1+float64(i)), 255, 255, 255),
+				ui.NewText("", 5, 59+18*(1+float64(i)), 255, 255, 255),
+			}
+			for _, t := range c.debug.targetInfo[i] {
+				ui.AddDrawable(t, ui.Top, ui.Right)
+			}
+		}
+		v := c.debug.targetInfo[i][0]
+		v.R, v.G, v.B = r, g, b
+		k := c.debug.targetInfo[i][1]
+		v.Update(text)
+		k.X = 7 + v.Width
+		k.Update(fmt.Sprintf("%s=", s.Key))
+	}
+	for i := len(b.states()); i < len(c.debug.targetInfo); i++ {
+		info := &c.debug.targetInfo[i]
+		if info[0] == nil {
+			continue
+		}
+		info[0].Remove()
+		info[1].Remove()
+		info[0] = nil
+		info[1] = nil
 	}
 }

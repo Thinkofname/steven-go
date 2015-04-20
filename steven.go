@@ -23,6 +23,7 @@ import (
 
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/ui"
 )
 
 var loadChan = make(chan struct{})
@@ -73,6 +74,7 @@ func main() {
 
 func start() {
 	<-loadChan
+	Client.init()
 	render.Start(debug)
 }
 
@@ -121,8 +123,11 @@ handle:
 		}
 	}
 
+	width, height := window.GetFramebufferSize()
+
 	if ready {
 		Client.renderTick(delta)
+		ui.Draw(width, height, delta)
 		select {
 		case <-ticker.C:
 			tick()
@@ -130,7 +135,6 @@ handle:
 		}
 	}
 
-	width, height := window.GetFramebufferSize()
 	render.Draw(width, height, delta)
 	chunks := sortedChunks()
 

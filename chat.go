@@ -22,6 +22,7 @@ import (
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/ui"
 	"github.com/thinkofdeath/steven/resource/locale"
 )
 
@@ -44,7 +45,18 @@ type ChatUI struct {
 	first        bool
 }
 
-func (c *ChatUI) render(delta float64) {
+func (c *ChatUI) Offset() (float64, float64) {
+	return 0, 0
+}
+
+func (c *ChatUI) Size() (float64, float64) {
+	return 500, chatHistoryLines*18 + 2
+}
+
+func (c *ChatUI) Draw(r ui.Region, delta float64) {
+	cw, ch := c.Size()
+	sx, sy := r.W/cw, r.H/ch
+
 	c.Elements = c.Elements[:0]
 	for i, line := range c.Lines {
 		c.newLine()
@@ -99,7 +111,7 @@ func (c *ChatUI) render(delta float64) {
 			first = false
 			top = e.offset
 		}
-		x, y, w, h := e.x, 480-18*float64(e.offset+1), e.width, 18.0
+		x, y, w, h := e.x, ch-18*float64(e.offset+1), e.width, 18.0
 		ux, uy := x, y
 		if x == 2 {
 			ux -= 2
@@ -109,12 +121,12 @@ func (c *ChatUI) render(delta float64) {
 			uy -= 2
 			h += 2
 		}
-		background := render.DrawUIElement(solid, ux, uy, w, h, 0, 0, 1, 1)
+		background := render.DrawUIElement(solid, r.X+ux*sx, r.Y+uy*sy, w*sx, h*sy, 0, 0, 1, 1)
 		background.R = 0
 		background.G = 0
 		background.B = 0
 		ba := 0.3
-		text := render.DrawUIText(e.text, x, y, e.r, e.g, e.b)
+		text := render.DrawUITextScaled(e.text, r.X+x*sx, r.Y+y*sy, sx, sy, e.r, e.g, e.b)
 		// If entering text show every line
 		if !c.enteringText {
 			text.Alpha(c.lineFade[e.line])

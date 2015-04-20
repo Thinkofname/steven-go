@@ -20,6 +20,7 @@ import (
 
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/ui"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
 )
@@ -52,9 +53,23 @@ type ClientState struct {
 	fps       int
 	frames    int
 	lastCount time.Time
-	fpsText   *render.UIText
+	debug     struct {
+		position *ui.Text
+		facing   *ui.Text
+		fps      *ui.Text
+		memory   *ui.Text
+
+		target     *ui.Text
+		targetName *ui.Text
+		targetInfo [][2]*ui.Text
+	}
 
 	chat ChatUI
+}
+
+func (c *ClientState) init() {
+	ui.AddDrawable(&Client.chat, ui.Bottom, ui.Left)
+	c.initDebug()
 }
 
 func (c *ClientState) renderTick(delta float64) {
@@ -141,8 +156,6 @@ func (c *ClientState) renderTick(delta float64) {
 	c.renderDebug()
 
 	// Ui rendering
-	c.chat.render(delta)
-
 	solid := render.GetTexture("solid")
 	render.DrawUIElement(solid, 400-4, 240-1, 8, 2, 0, 0, 1, 1)
 	render.DrawUIElement(solid, 400-1, 240-4, 2, 8, 0, 0, 1, 1)

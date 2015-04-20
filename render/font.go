@@ -43,6 +43,13 @@ type UIText struct {
 // DrawUIText draws a UIText element to the screen with
 // the passed text at the location. The text may be tinted too
 func DrawUIText(str string, x, y float64, rr, gg, bb int) UIText {
+	return DrawUITextScaled(str, x, y, 1.0, 1.0, rr, gg, bb)
+}
+
+// DrawUITextScaled draws a UIText element to the screen with
+// the passed text at the location. The text may be tinted and/or
+// scaled too
+func DrawUITextScaled(str string, x, y float64, sx, sy float64, rr, gg, bb int) UIText {
 	t := UIText{}
 	offset := 0.0
 	for _, r := range str {
@@ -79,20 +86,20 @@ func DrawUIText(str string, x, y float64, rr, gg, bb int) UIText {
 			th = 16
 			w = float64(tw)
 		}
-		shadow := DrawUIElement(p, x+offset+2, y+2, w, 16, tx, ty, tw, th)
+		shadow := DrawUIElement(p, x+(offset+2)*sx, y+2*sy, w*sx, 16*sy, tx, ty, tw, th)
 		// Tint the shadow to a darker shade of the original color
 		shadow.R = byte(float64(rr) * 0.25)
 		shadow.G = byte(float64(gg) * 0.25)
 		shadow.B = byte(float64(bb) * 0.25)
 		t.elements = append(t.elements, shadow)
-		text := DrawUIElement(p, x+offset, y, w, 16, tx, ty, tw, th)
+		text := DrawUIElement(p, x+offset*sx, y, w*sx, 16*sy, tx, ty, tw, th)
 		text.R = byte(rr)
 		text.G = byte(gg)
 		text.B = byte(bb)
 		t.elements = append(t.elements, text)
 		offset += w + 2
 	}
-	t.Width = offset - 2
+	t.Width = (offset - 2) * sx
 	return t
 }
 
