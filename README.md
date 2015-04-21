@@ -13,7 +13,7 @@ To build:
 
 ```
 export GOPATH=your/install/directory
-go get github.com/thinkofdeath/steven
+go get github.com/thinkofdeath/steven/cmd/steven
 ```
 
 To update, run `go get` with the `-u` option.
