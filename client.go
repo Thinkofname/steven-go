@@ -63,21 +63,63 @@ type ClientState struct {
 		targetName *ui.Text
 		targetInfo [][2]*ui.Text
 	}
+	hotbarUI          *ui.Image
+	currentHotbarSlot int
+	lifeUI            []*ui.Image
+	lifeFillUI        []*ui.Image
+	foodUI            []*ui.Image
+	foodFillUI        []*ui.Image
 
 	chat ChatUI
 }
 
 func (c *ClientState) init() {
-	ui.AddDrawable(&Client.chat, ui.Bottom, ui.Left)
-	c.initDebug()
+	widgets := render.GetTexture("gui/widgets")
+	icons := render.GetTexture("gui/icons")
+	// Crosshair
 	ui.AddDrawable(
-		ui.NewImage(render.GetTexture("gui/widgets"), 0, 0, 182*2, 22*2, 0, 0, 182, 22, 255, 255, 255),
+		ui.NewImage(icons, 0, 0, 32, 32, 0, 0, 16, 16, 255, 255, 255),
+		ui.Middle, ui.Center,
+	)
+	// Hotbar
+	ui.AddDrawable(
+		ui.NewImage(widgets, 0, 0, 182*2, 22*2, 0, 0, 182, 22, 255, 255, 255),
 		ui.Bottom, ui.Center,
 	)
+	c.hotbarUI = ui.NewImage(widgets, -22*2+4, -2, 24*2, 24*2, 0, 22, 24, 24, 255, 255, 255)
+	ui.AddDrawable(c.hotbarUI, ui.Bottom, ui.Center)
+
+	// Hearts / Food
+	for i := 0; i < 10; i++ {
+		l := ui.NewImage(icons, -182+9+16*float64(i), 22*2+16, 18, 18, 16, 0, 9, 9, 255, 255, 255)
+		ui.AddDrawable(l, ui.Bottom, ui.Center)
+		c.lifeUI = append(c.lifeUI, l)
+		l = ui.NewImage(icons, -182+9+16*float64(i), 22*2+16, 18, 18, 16+9*4, 0, 9, 9, 255, 255, 255)
+		ui.AddDrawable(l, ui.Bottom, ui.Center)
+		c.lifeFillUI = append(c.lifeFillUI, l)
+
+		f := ui.NewImage(icons, 182+7-16*float64(10-i), 22*2+16, 18, 18, 16, 27, 9, 9, 255, 255, 255)
+		ui.AddDrawable(f, ui.Bottom, ui.Center)
+		c.foodUI = append(c.foodUI, l)
+		f = ui.NewImage(icons, 182+7-16*float64(10-i), 22*2+16, 18, 18, 16+9*4, 27, 9, 9, 255, 255, 255)
+		ui.AddDrawable(f, ui.Bottom, ui.Center)
+		c.foodFillUI = append(c.foodFillUI, l)
+	}
+
+	// Exp bar
+	ui.AddDrawable(
+		ui.NewImage(icons, 0, 22*2+4, 182*2, 10, 0, 64, 182, 5, 255, 255, 255),
+		ui.Bottom, ui.Center,
+	)
+
+	ui.AddDrawable(&Client.chat, ui.Bottom, ui.Left)
+	c.initDebug()
 }
 
 func (c *ClientState) renderTick(delta float64) {
 	c.frames++
+
+	c.hotbarUI.X = -184 + 24 + 40*float64(c.currentHotbarSlot)
 
 	forward, yaw := c.calculateMovement()
 
@@ -158,11 +200,6 @@ func (c *ClientState) renderTick(delta float64) {
 
 	// Debug displays
 	c.renderDebug()
-
-	// Ui rendering
-	solid := render.GetTexture("solid")
-	render.DrawUIElement(solid, 400-4, 240-1, 8, 2, 0, 0, 1, 1)
-	render.DrawUIElement(solid, 400-1, 240-4, 2, 8, 0, 0, 1, 1)
 }
 
 func (c *ClientState) targetBlock() (x, y, z int, block Block) {

@@ -23,6 +23,7 @@ type Text struct {
 	R, G, B int
 	value   string
 	Width   float64
+	Visible bool
 	ref     DrawRef
 }
 
@@ -33,7 +34,11 @@ func NewText(val string, x, y float64, r, g, b int) *Text {
 		Width: render.SizeOfString(val),
 		R:     r, G: g, B: b,
 		X: x, Y: y,
+		Visible: true,
 	}
+}
+func (t *Text) ShouldDraw() bool {
+	return t.Visible
 }
 
 // Update updates the string drawn by this drawable.

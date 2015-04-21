@@ -23,6 +23,7 @@ type Image struct {
 	X, Y, W, H     float64
 	TX, TY, TW, TH int
 	R, G, B, A     int
+	Visible        bool
 	ref            DrawRef
 }
 
@@ -33,7 +34,12 @@ func NewImage(texture *render.TextureInfo, x, y, w, h float64, tx, ty, tw, th in
 		R:       r, G: g, B: b, A: 255,
 		X: x, Y: y, W: w, H: h,
 		TX: tx, TY: ty, TW: tw, TH: th,
+		Visible: true,
 	}
+}
+
+func (i *Image) ShouldDraw() bool {
+	return i.Visible
 }
 
 // Draw draws this to the target region.

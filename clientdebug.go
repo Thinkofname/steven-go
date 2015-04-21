@@ -121,8 +121,6 @@ func (c *ClientState) displayTargetInfo() {
 		}
 		if i >= len(c.debug.targetInfo) {
 			c.debug.targetInfo = append(c.debug.targetInfo, [2]*ui.Text{})
-		}
-		if c.debug.targetInfo[i][0] == nil {
 			c.debug.targetInfo[i] = [2]*ui.Text{
 				ui.NewText("", 5, 59+18*(1+float64(i)), 255, 255, 255),
 				ui.NewText("", 5, 59+18*(1+float64(i)), 255, 255, 255),
@@ -132,20 +130,17 @@ func (c *ClientState) displayTargetInfo() {
 			}
 		}
 		v := c.debug.targetInfo[i][0]
+		v.Visible = true
 		v.R, v.G, v.B = r, g, b
-		k := c.debug.targetInfo[i][1]
 		v.Update(text)
+		k := c.debug.targetInfo[i][1]
+		k.Visible = true
 		k.X = 7 + v.Width
 		k.Update(fmt.Sprintf("%s=", s.Key))
 	}
 	for i := len(b.states()); i < len(c.debug.targetInfo); i++ {
 		info := &c.debug.targetInfo[i]
-		if info[0] == nil {
-			continue
-		}
-		info[0].Remove()
-		info[1].Remove()
-		info[0] = nil
-		info[1] = nil
+		info[0].Visible = false
+		info[1].Visible = false
 	}
 }

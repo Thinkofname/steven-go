@@ -18,6 +18,7 @@ import (
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
+	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render/gl"
 )
 
@@ -47,6 +48,7 @@ func startWindow() {
 	window.SetCursorPosCallback(onMouseMove)
 	window.SetMouseButtonCallback(onMouseClick)
 	window.SetKeyCallback(onKey)
+	window.SetScrollCallback(onScroll)
 
 	gl.Init()
 
@@ -57,6 +59,21 @@ func startWindow() {
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}
+}
+
+func onScroll(w *glfw.Window, xoff float64, yoff float64) {
+	if yoff < 0 {
+		Client.currentHotbarSlot++
+	} else {
+		Client.currentHotbarSlot--
+	}
+	if Client.currentHotbarSlot < 0 {
+		Client.currentHotbarSlot = 0
+	} else if Client.currentHotbarSlot > 8 {
+		Client.currentHotbarSlot = 8
+	}
+
+	writeChan <- &protocol.HeldItemChange{Slot: int16(Client.currentHotbarSlot)}
 }
 
 var lockMouse bool

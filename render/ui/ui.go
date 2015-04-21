@@ -36,6 +36,7 @@ type Drawable interface {
 	// Offset is the offset from the attachment point on
 	// each axis
 	Offset() (float64, float64)
+	ShouldDraw() bool
 }
 
 type refStorable interface {
@@ -71,6 +72,9 @@ func Draw(width, height int, delta float64) {
 		sw, sh = 1.0, 1.0
 	}
 	for _, d := range drawables {
+		if !d.d.ShouldDraw() {
+			continue
+		}
 		r := Region{}
 		w, h := d.d.Size()
 		ox, oy := d.d.Offset()

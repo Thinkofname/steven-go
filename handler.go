@@ -85,6 +85,10 @@ func (handler) ChangeGameState(c *protocol.ChangeGameState) {
 	}
 }
 
+func (handler) ChangeHotbarSlot(s *protocol.SetCurrentHotbarSlot) {
+	Client.currentHotbarSlot = int(s.Slot)
+}
+
 func (handler) Teleport(t *protocol.TeleportPlayer) {
 	Client.X = calculateTeleport(teleportRelX, t.Flags, Client.X, t.X)
 	Client.Y = calculateTeleport(teleportRelY, t.Flags, Client.Y, t.Y)

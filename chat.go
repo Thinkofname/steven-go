@@ -45,8 +45,12 @@ type ChatUI struct {
 	first        bool
 }
 
+func (c *ChatUI) ShouldDraw() bool {
+	return true
+}
+
 func (c *ChatUI) Offset() (float64, float64) {
-	return 0, 0
+	return 0, 44
 }
 
 func (c *ChatUI) Size() (float64, float64) {
