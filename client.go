@@ -70,6 +70,10 @@ type ClientState struct {
 func (c *ClientState) init() {
 	ui.AddDrawable(&Client.chat, ui.Bottom, ui.Left)
 	c.initDebug()
+	ui.AddDrawable(
+		ui.NewImage(render.GetTexture("gui/widgets"), 0, 0, 182*2, 22*2, 0, 0, 182, 22, 255, 255, 255),
+		ui.Bottom, ui.Center,
+	)
 }
 
 func (c *ClientState) renderTick(delta float64) {
