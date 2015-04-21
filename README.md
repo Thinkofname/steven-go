@@ -5,7 +5,7 @@ Don't expect it to go anywhere, just doing this for fun.
 
 ## Images
 
-![Steven](http://i.imgur.com/M03tidN.png)
+![Steven](http://i.imgur.com/VVnmbkV.png)
 
 ## Building
 
