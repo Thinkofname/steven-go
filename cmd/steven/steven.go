@@ -12,32 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package main
 
 import (
 	"fmt"
-	"image"
-	"image/png"
+	"os"
+	"runtime"
 
-	"github.com/thinkofdeath/steven/resource"
+	"github.com/thinkofdeath/steven"
 )
 
-var (
-	grassBiomeColors   *image.NRGBA
-	foliageBiomeColors *image.NRGBA
-)
+func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
 
-func init() {
-	grassBiomeColors = loadBiomeColors("grass")
-	foliageBiomeColors = loadBiomeColors("foliage")
-}
-
-func loadBiomeColors(name string) *image.NRGBA {
-	f, _ := resource.Open("minecraft", fmt.Sprintf("textures/colormap/%s.png", name))
-	defer f.Close()
-	img, err := png.Decode(f)
-	if err != nil {
-		panic(err)
+	if len(os.Args) == 0 {
+		fmt.Println("steven must be run via the mojang launcher")
+		return
 	}
-	return img.(*image.NRGBA)
+
+	// Can't use flags as we need to support a weird flag
+	// format
+	var username, uuid, accessToken, server string
+
+	for i, arg := range os.Args {
+		switch arg {
+		case "--username":
+			username = os.Args[i+1]
+		case "--uuid":
+			uuid = os.Args[i+1]
+		case "--accessToken":
+			accessToken = os.Args[i+1]
+		case "--server":
+			server = os.Args[i+1]
+		}
+	}
+	steven.Main(username, uuid, accessToken, server)
 }

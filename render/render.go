@@ -40,17 +40,10 @@ var (
 
 	glTexture    gl.Texture
 	textureDepth int
-	debug        bool
 )
 
 // Start starts the renderer
-func Start(d bool) {
-	debug = d
-	if debug {
-		gl.Enable(gl.DebugOutput)
-		gl.DebugLog()
-	}
-
+func Start() {
 	gl.ClearColor(122.0/255.0, 165.0/255.0, 247.0/255.0, 1.0)
 	gl.Enable(gl.DepthTest)
 	gl.Enable(gl.CullFaceFlag)
@@ -207,12 +200,6 @@ sync:
 	gl.Disable(gl.Blend)
 
 	drawUI()
-}
-
-func checkError() {
-	if debug {
-		gl.CheckError()
-	}
 }
 
 var (

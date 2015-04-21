@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package steven
 
 import (
-	"fmt"
 	"math"
-	"os"
 	"runtime"
 	"time"
 
@@ -27,34 +25,8 @@ import (
 )
 
 var loadChan = make(chan struct{})
-var debug bool
 
-func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
-
-	if len(os.Args) == 0 {
-		fmt.Println("steven must be run via the mojang launcher")
-		return
-	}
-
-	// Can't use flags as we need to support a weird flag
-	// format
-	var username, uuid, accessToken, server string
-
-	for i, arg := range os.Args {
-		switch arg {
-		case "--username":
-			username = os.Args[i+1]
-		case "--uuid":
-			uuid = os.Args[i+1]
-		case "--accessToken":
-			accessToken = os.Args[i+1]
-		case "--server":
-			server = os.Args[i+1]
-		case "--debug":
-			debug = true
-		}
-	}
+func Main(username, uuid, accessToken, server string) {
 
 	// Start connecting whilst starting the renderer
 	go startConnection(mojang.Profile{
@@ -75,7 +47,7 @@ func main() {
 func start() {
 	<-loadChan
 	Client.init()
-	render.Start(debug)
+	render.Start()
 }
 
 func rotate(x, y float64) {
