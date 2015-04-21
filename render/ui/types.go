@@ -21,8 +21,12 @@ const (
 	mUnscaled
 )
 
+// AttachPoint is a side of the screen that an element
+// can be attached to
 type AttachPoint int
 
+// Attachment points
+//     VAlign, HAlign
 const (
 	Top, Left AttachPoint = iota, iota
 	Middle, Center
