@@ -15,8 +15,12 @@
 package steven
 
 import (
-	"encoding/json"
 	"fmt"
+	"io/ioutil"
+
+	realjson "encoding/json"
+
+	"github.com/thinkofdeath/steven/encoding/json"
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource"
@@ -51,7 +55,7 @@ func findStateModel(plugin, name string) *blockStateModel {
 
 func loadStateModel(key pluginKey) *blockStateModel {
 	type jsType struct {
-		Variants map[string]json.RawMessage
+		Variants map[string]realjson.RawMessage
 	}
 
 	var data jsType
@@ -68,7 +72,7 @@ func loadStateModel(key pluginKey) *blockStateModel {
 		var models blockVariants
 		switch v[0] {
 		case '[':
-			var list []json.RawMessage
+			var list []realjson.RawMessage
 			json.Unmarshal(v, &list)
 			for _, vv := range list {
 				models = append(models, precomputeModel(parseBlockStateVariant(key.Plugin, vv)))
@@ -99,7 +103,7 @@ type blockModel struct {
 	y, x   float64
 }
 
-func parseBlockStateVariant(plugin string, js json.RawMessage) *blockModel {
+func parseBlockStateVariant(plugin string, js realjson.RawMessage) *blockModel {
 	type jsType struct {
 		Model  string
 		X, Y   float64
@@ -270,6 +274,9 @@ func loadJSON(plugin, name string, target interface{}) error {
 		return err
 	}
 	defer r.Close()
-	d := json.NewDecoder(r)
-	return d.Decode(target)
+	d, err := ioutil.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(d, target)
 }
