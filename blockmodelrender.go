@@ -165,7 +165,7 @@ func precomputeModel(bm *blockModel) *processedModel {
 						vert[v].X = int16(r.origin[0]*16 + (x*c - z*s))
 						vert[v].Z = int16(r.origin[2]*16 + (z*c + x*s))
 					case "x":
-						rotX := -r.angle * (math.Pi / 180)
+						rotX := r.angle * (math.Pi / 180)
 						c := math.Cos(-rotX)
 						s := math.Sin(-rotX)
 						z := float64(vert[v].Z) - r.origin[2]*16
