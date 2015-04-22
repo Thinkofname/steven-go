@@ -119,22 +119,28 @@ func LoadTextures() {
 			panic(err)
 		}
 		defer r.Close()
-		img, err := png.Decode(r)
+		ii, err := png.Decode(r)
 		if err != nil {
 			panic(err)
 		}
+		img := ii.(draw.Image)
 		width, height := img.Bounds().Dx(), img.Bounds().Dy()
 		var ani *animatedTexture
 		if (strings.HasPrefix(file, "textures/blocks") || strings.HasPrefix(file, "textures/items")) &&
 			width != height {
 			height = width
 			old := img
-			img := image.NewNRGBA(image.Rect(0, 0, width, width))
+			img = image.NewNRGBA(image.Rect(0, 0, width, width))
 			draw.Draw(img, img.Bounds(), old, image.ZP, draw.Over)
 			ani = loadAnimation(file, old.Bounds().Dy()/old.Bounds().Dx())
-			ani.Image = old
-			ani.Buffer = imgToBytes(old)
-			animatedTextures = append(animatedTextures, ani)
+			if ani != nil {
+				ani.Image = old
+				ani.Buffer = imgToBytes(old)
+				animatedTextures = append(animatedTextures, ani)
+			} else {
+				img = old
+				width, height = img.Bounds().Dx(), img.Bounds().Dy()
+			}
 		}
 		pix := imgToBytes(img)
 		name := file[len("textures/") : len(file)-4]
@@ -244,7 +250,9 @@ func tickAnimatedTextures(delta float64) {
 func loadAnimation(file string, max int) *animatedTexture {
 	a := &animatedTexture{}
 	defer func() {
-		a.RemainingTime = float64(a.Frames[0].Time)
+		if a != nil {
+			a.RemainingTime = float64(a.Frames[0].Time)
+		}
 	}()
 
 	type animation struct {
@@ -258,7 +266,9 @@ func loadAnimation(file string, max int) *animatedTexture {
 
 	meta, err := resource.Open("minecraft", file+".mcmeta")
 	if err != nil {
-		panic(err)
+		fmt.Printf("%s: %s\n", file+".mcmeta", err)
+		a = nil
+		return nil
 	}
 	defer meta.Close()
 	b := &base{}
