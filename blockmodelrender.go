@@ -157,29 +157,29 @@ func precomputeModel(bm *blockModel) *processedModel {
 					r := el.rotation
 					switch r.axis {
 					case "y":
-						rotY := r.angle * (math.Pi / 180)
+						rotY := -r.angle * (math.Pi / 180)
 						c := math.Cos(rotY)
 						s := math.Sin(rotY)
 						x := float64(vert[v].X) - r.origin[0]*16
 						z := float64(vert[v].Z) - r.origin[2]*16
-						vert[v].X = int16(r.origin[0] + (x*c - z*s))
-						vert[v].Z = int16(r.origin[2] + (z*c + x*s))
+						vert[v].X = int16(r.origin[0]*16 + (x*c - z*s))
+						vert[v].Z = int16(r.origin[2]*16 + (z*c + x*s))
 					case "x":
 						rotX := r.angle * (math.Pi / 180)
 						c := math.Cos(-rotX)
 						s := math.Sin(-rotX)
-						z := float64(vert[v].Z) - r.origin[1]*16
+						z := float64(vert[v].Z) - r.origin[2]*16
 						y := float64(vert[v].Y) - r.origin[1]*16
-						vert[v].Z = int16(r.origin[2] + (z*c - y*s))
-						vert[v].Y = int16(r.origin[1] + (y*c + z*s))
+						vert[v].Z = int16(r.origin[2]*16 + (z*c - y*s))
+						vert[v].Y = int16(r.origin[1]*16 + (y*c + z*s))
 					case "z":
 						rotZ := r.angle * (math.Pi / 180)
 						c := math.Cos(-rotZ)
 						s := math.Sin(-rotZ)
 						x := float64(vert[v].X) - r.origin[0]*16
 						y := float64(vert[v].Y) - r.origin[1]*16
-						vert[v].X = int16(r.origin[0] + (x*c - y*s))
-						vert[v].Y = int16(r.origin[1] + (y*c + x*s))
+						vert[v].X = int16(r.origin[0]*16 + (x*c - y*s))
+						vert[v].Y = int16(r.origin[1]*16 + (y*c + x*s))
 					}
 				}
 

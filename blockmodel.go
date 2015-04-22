@@ -17,6 +17,7 @@ package steven
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
 
 	realjson "encoding/json"
 
@@ -217,6 +218,26 @@ func parseBlockElement(data *jsBlockElement) *blockElement {
 			if data, ok := data.Faces[d.String()]; ok {
 				be.faces[i] = &blockFace{}
 				be.faces[i].init(data)
+				if math.IsNaN(be.faces[i].uv[0]) {
+					be.faces[i].uv = [4]float64{0, 0, 16, 16}
+					switch d {
+					case direction.North, direction.South:
+						be.faces[i].uv[0] = be.from[0]
+						be.faces[i].uv[2] = be.to[0]
+						be.faces[i].uv[1] = 16 - be.to[1]
+						be.faces[i].uv[3] = 16 - be.from[1]
+					case direction.West, direction.East:
+						be.faces[i].uv[0] = be.from[2]
+						be.faces[i].uv[2] = be.to[2]
+						be.faces[i].uv[1] = 16 - be.to[1]
+						be.faces[i].uv[3] = 16 - be.from[1]
+					case direction.Down, direction.Up:
+						be.faces[i].uv[0] = be.from[0]
+						be.faces[i].uv[2] = be.to[0]
+						be.faces[i].uv[1] = 16 - be.to[2]
+						be.faces[i].uv[3] = 16 - be.from[2]
+					}
+				}
 			}
 		}
 	}
@@ -250,7 +271,7 @@ func (bf *blockFace) init(data *jsBlockFace) {
 	if data.UV != nil {
 		bf.uv = *data.UV
 	} else {
-		bf.uv = [4]float64{0, 0, 16, 16}
+		bf.uv = [4]float64{math.NaN(), 0, 0, 0}
 	}
 	bf.texture = data.Texture
 	bf.cullFace = direction.FromString(data.CullFace)
