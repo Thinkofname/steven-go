@@ -247,10 +247,12 @@ itQueue:
 		}
 
 		for _, dir := range direction.Values {
-			if dir != from && (from == direction.Invalid || (chunk.IsVisible(from, dir) && validDirs[dir])) {
+			c := chunk.neighborChunks[dir]
+			if dir != from && c != nil && c.renderedOn != frameID &&
+				(from == direction.Invalid || (chunk.IsVisible(from, dir) && validDirs[dir])) {
 				ox, oy, oz := dir.Offset()
 				pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
-				rQueue.Append(renderRequest{chunk.neighborChunks[dir], pos, dir.Opposite()})
+				rQueue.Append(renderRequest{c, pos, dir.Opposite()})
 			}
 		}
 	}
