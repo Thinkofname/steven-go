@@ -168,6 +168,15 @@ func (b *blockBed) load(tag reflect.StructTag) {
 	b.cullAgainst = false
 }
 
+func (b *blockBed) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			*vmath.NewAABB(0, 0, 0, 1, 9.0/16.0, 1),
+		}
+	}
+	return b.bounds
+}
+
 func (b *blockBed) ModelVariant() string {
 	return fmt.Sprintf("facing=%s,part=%s", b.Facing, b.Part)
 }
