@@ -725,6 +725,28 @@ func (b *blockConnectable) load(tag reflect.StructTag) {
 
 func (blockConnectable) connectable() {}
 
+func (b *blockConnectable) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		all := !b.North && !b.South && !b.West && !b.East
+		aa := vmath.NewAABB(0, 0, 7.0/16.0, 1.0, 1.0, 9.0/16.0)
+		bb := vmath.NewAABB(7.0/16.0, 0, 0, 9.0/16.0, 1.0, 1.0)
+		if !b.North && !all {
+			bb.Min.Z = 7.0 / 16.0
+		}
+		if !b.South && !all {
+			bb.Max.Z = 9.0 / 16.0
+		}
+		if !b.West && !all {
+			aa.Min.X = 7.0 / 16.0
+		}
+		if !b.East && !all {
+			aa.Max.X = 9.0 / 16.0
+		}
+		b.bounds = []vmath.AABB{*aa, *bb}
+	}
+	return b.bounds
+}
+
 func (b *blockConnectable) UpdateState(x, y, z int) Block {
 	type connectable interface {
 		connectable()
@@ -781,6 +803,28 @@ func (b *blockStainedGlassPane) ModelVariant() string {
 }
 
 func (blockStainedGlassPane) connectable() {}
+
+func (b *blockStainedGlassPane) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		all := !b.North && !b.South && !b.West && !b.East
+		aa := vmath.NewAABB(0, 0, 7.0/16.0, 1.0, 1.0, 9.0/16.0)
+		bb := vmath.NewAABB(7.0/16.0, 0, 0, 9.0/16.0, 1.0, 1.0)
+		if !b.North && !all {
+			bb.Min.Z = 7.0 / 16.0
+		}
+		if !b.South && !all {
+			bb.Max.Z = 9.0 / 16.0
+		}
+		if !b.West && !all {
+			aa.Min.X = 7.0 / 16.0
+		}
+		if !b.East && !all {
+			aa.Max.X = 9.0 / 16.0
+		}
+		b.bounds = []vmath.AABB{*aa, *bb}
+	}
+	return b.bounds
+}
 
 func (b *blockStainedGlassPane) UpdateState(x, y, z int) Block {
 	type connectable interface {
