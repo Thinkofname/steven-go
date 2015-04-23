@@ -76,10 +76,16 @@ func loadStateModel(key pluginKey) *blockStateModel {
 			var list []realjson.RawMessage
 			json.Unmarshal(v, &list)
 			for _, vv := range list {
-				models = append(models, precomputeModel(parseBlockStateVariant(key.Plugin, vv)))
+				mdl := parseBlockStateVariant(key.Plugin, vv)
+				if mdl != nil {
+					models = append(models, precomputeModel(mdl))
+				}
 			}
 		default:
-			models = append(models, precomputeModel(parseBlockStateVariant(key.Plugin, v)))
+			mdl := parseBlockStateVariant(key.Plugin, v)
+			if mdl != nil {
+				models = append(models, precomputeModel(mdl))
+			}
 		}
 		bs.variants[k] = models
 	}
@@ -113,12 +119,13 @@ func parseBlockStateVariant(plugin string, js realjson.RawMessage) *blockModel {
 	var data jsType
 	err := json.Unmarshal(js, &data)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return nil
 	}
 	var bdata jsBlockModel
 	err = loadJSON(plugin, "models/block/"+data.Model+".json", &bdata)
 	if err != nil {
-		panic(err)
+		return nil
 	}
 	bm := parseBlockModel(plugin, &bdata)
 
