@@ -78,37 +78,37 @@ func (c *ClientState) init() {
 	icons := render.GetTexture("gui/icons")
 	// Crosshair
 	ui.AddDrawable(
-		ui.NewImage(icons, 0, 0, 32, 32, 0, 0, 16, 16, 255, 255, 255),
+		ui.NewImage(icons, 0, 0, 32, 32, 0, 0, 16.0/256.0, 16.0/256.0, 255, 255, 255),
 		ui.Middle, ui.Center,
 	)
 	// Hotbar
 	ui.AddDrawable(
-		ui.NewImage(widgets, 0, 0, 182*2, 22*2, 0, 0, 182, 22, 255, 255, 255),
+		ui.NewImage(widgets, 0, 0, 182*2, 22*2, 0, 0, 182.0/256.0, 22.0/256.0, 255, 255, 255),
 		ui.Bottom, ui.Center,
 	)
-	c.hotbarUI = ui.NewImage(widgets, -22*2+4, -2, 24*2, 24*2, 0, 22, 24, 24, 255, 255, 255)
+	c.hotbarUI = ui.NewImage(widgets, -22*2+4, -2, 24*2, 24*2, 0, 22.0/256.0, 24.0/256.0, 24.0/256.0, 255, 255, 255)
 	ui.AddDrawable(c.hotbarUI, ui.Bottom, ui.Center)
 
 	// Hearts / Food
 	for i := 0; i < 10; i++ {
-		l := ui.NewImage(icons, -182+9+16*float64(i), 22*2+16, 18, 18, 16, 0, 9, 9, 255, 255, 255)
+		l := ui.NewImage(icons, -182+9+16*float64(i), 22*2+16, 18, 18, 16.0/256.0, 0, 9.0/256.0, 9.0/256.0, 255, 255, 255)
 		ui.AddDrawable(l, ui.Bottom, ui.Center)
 		c.lifeUI = append(c.lifeUI, l)
-		l = ui.NewImage(icons, -182+9+16*float64(i), 22*2+16, 18, 18, 16+9*4, 0, 9, 9, 255, 255, 255)
+		l = ui.NewImage(icons, -182+9+16*float64(i), 22*2+16, 18, 18, (16+9*4)/256.0, 0, 9.0/256.0, 9.0/256.0, 255, 255, 255)
 		ui.AddDrawable(l, ui.Bottom, ui.Center)
 		c.lifeFillUI = append(c.lifeFillUI, l)
 
-		f := ui.NewImage(icons, 182+7-16*float64(10-i), 22*2+16, 18, 18, 16, 27, 9, 9, 255, 255, 255)
+		f := ui.NewImage(icons, 182+7-16*float64(10-i), 22*2+16, 18, 18, 16.0/256.0, 27.0/256.0, 9.0/256.0, 9.0/256.0, 255, 255, 255)
 		ui.AddDrawable(f, ui.Bottom, ui.Center)
 		c.foodUI = append(c.foodUI, l)
-		f = ui.NewImage(icons, 182+7-16*float64(10-i), 22*2+16, 18, 18, 16+9*4, 27, 9, 9, 255, 255, 255)
+		f = ui.NewImage(icons, 182+7-16*float64(10-i), 22*2+16, 18, 18, (16+9*4)/256.0, 27.0/256.0, 9.0/256.0, 9.0/256.0, 255, 255, 255)
 		ui.AddDrawable(f, ui.Bottom, ui.Center)
 		c.foodFillUI = append(c.foodFillUI, l)
 	}
 
 	// Exp bar
 	ui.AddDrawable(
-		ui.NewImage(icons, 0, 22*2+4, 182*2, 10, 0, 64, 182, 5, 255, 255, 255),
+		ui.NewImage(icons, 0, 22*2+4, 182*2, 10, 0, 64.0/256.0, 182.0/256.0, 5.0/256.0, 255, 255, 255),
 		ui.Bottom, ui.Center,
 	)
 

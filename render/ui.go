@@ -103,7 +103,7 @@ type UIElement struct {
 }
 
 // DrawUIElement draws a single ui element onto the screen.
-func DrawUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th int) *UIElement {
+func DrawUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *UIElement {
 	if len(uiState.elements) == uiState.elementCount {
 		old := uiState.elements
 		uiState.elements = make([]UIElement, (len(old)+1)<<1)
@@ -119,10 +119,10 @@ func DrawUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th
 	e.TY = uint16(tex.Y + tex.Atlas*AtlasSize)
 	e.TW = uint16(tex.Width)
 	e.TH = uint16(tex.Height)
-	e.TOffsetX = int16(tx * 16)
-	e.TOffsetY = int16(ty * 16)
-	e.TSizeW = int16(tw * 16)
-	e.TSizeH = int16(th * 16)
+	e.TOffsetX = int16(tx * float64(tex.Width) * 16)
+	e.TOffsetY = int16(ty * float64(tex.Height) * 16)
+	e.TSizeW = int16(tw * float64(tex.Width) * 16)
+	e.TSizeH = int16(th * float64(tex.Height) * 16)
 	e.R = 255
 	e.G = 255
 	e.B = 255

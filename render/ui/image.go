@@ -21,14 +21,14 @@ type Image struct {
 	Parent         Drawable
 	Texture        *render.TextureInfo
 	X, Y, W, H     float64
-	TX, TY, TW, TH int
+	TX, TY, TW, TH float64
 	R, G, B, A     int
 	Visible        bool
 	ref            DrawRef
 }
 
 // NewText creates a new Text drawable.
-func NewImage(texture *render.TextureInfo, x, y, w, h float64, tx, ty, tw, th int, r, g, b int) *Image {
+func NewImage(texture *render.TextureInfo, x, y, w, h, tx, ty, tw, th float64, r, g, b int) *Image {
 	return &Image{
 		Texture: texture,
 		R:       r, G: g, B: b, A: 255,

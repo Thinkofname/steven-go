@@ -24,9 +24,10 @@ import (
 )
 
 var (
-	fontPages         [0x100]*TextureInfo
-	isFontLoaded      [0x100]bool
-	fontCharacterInfo [0x10000]fontInfo
+	fontPages               [0x100]*TextureInfo
+	isFontLoaded            [0x100]bool
+	fontCharacterInfo       [0x10000]fontInfo
+	aPageWidth, aPageHeight float64
 )
 
 type fontInfo struct {
@@ -69,22 +70,23 @@ func DrawUITextScaled(str string, x, y float64, sx, sy float64, rr, gg, bb int) 
 		}
 		c := int(r & 0xFF)
 		var w float64
-		var tx, ty, tw, th int
+		var tx, ty, tw, th float64
 		cx, cy := c&0xF, c>>4
 		info := fontCharacterInfo[r]
 		if page == 0 {
+			sw, sh := aPageWidth/16, aPageHeight/16
 			// The first page is 128x128 instead of 256x256
-			tx = cx*8 + info.Start
-			tw = info.End - info.Start
-			ty = cy * 8
-			th = 8
-			w = float64(tw * 2)
+			tx = float64(cx*int(sw)+info.Start) / aPageWidth
+			tw = float64(info.End-info.Start) / aPageWidth
+			ty = float64(cy*int(sh)) / aPageHeight
+			th = sh / aPageHeight
+			w = (float64(info.End-info.Start) / sw) * 16
 		} else {
-			tx = cx*16 + info.Start
-			tw = info.End - info.Start
-			ty = cy * 16
-			th = 16
-			w = float64(tw)
+			tx = float64(cx*16+info.Start) / 256.0
+			tw = float64(info.End-info.Start) / 256.0
+			ty = float64(cy*16) / 256.0
+			th = 16.0 / 256.0
+			w = float64(info.End - info.Start)
 		}
 		shadow := DrawUIElement(p, x+(offset+2)*sx, y+2*sy, w*sx, 16*sy, tx, ty, tw, th)
 		// Tint the shadow to a darker shade of the original color
@@ -110,7 +112,8 @@ func SizeOfCharacter(r rune) float64 {
 	}
 	info := fontCharacterInfo[r]
 	if r>>8 == 0 {
-		return float64((info.End - info.Start) * 2)
+		sw := aPageWidth / 16
+		return (float64(info.End-info.Start) / sw) * 16
 	}
 	return float64(info.End - info.Start)
 }
@@ -179,13 +182,16 @@ func loadFontPage(page int) {
 
 // Scans through each character computing the sizes
 func calculateFontSizes(img image.Image) {
+	aPageWidth, aPageHeight = float64(img.Bounds().Dx()), float64(img.Bounds().Dy())
+	sw := img.Bounds().Dx() / 16
+	sh := img.Bounds().Dy() / 16
 	for i := 0; i <= 255; i++ {
-		cx := (i & 0xF) * 8
-		cy := (i >> 4) * 8
+		cx := (i & 0xF) * sw
+		cy := (i >> 4) * sh
 		start := true
 	xloop:
-		for x := 0; x < 8; x++ {
-			for y := 0; y < 8; y++ {
+		for x := 0; x < sw; x++ {
+			for y := 0; y < sh; y++ {
 				_, _, _, a := img.At(cx+x, cy+y).RGBA()
 				if start && a != 0 {
 					fontCharacterInfo[i].Start = x
@@ -195,8 +201,10 @@ func calculateFontSizes(img image.Image) {
 					continue xloop
 				}
 			}
-			fontCharacterInfo[i].End = x
-			break
+			if !start {
+				fontCharacterInfo[i].End = x
+				break
+			}
 		}
 	}
 }
