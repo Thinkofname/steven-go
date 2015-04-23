@@ -325,7 +325,7 @@ func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf *builder.Buf
 				float64(vert.X)/256.0,
 				float64(vert.Y)/256.0,
 				float64(vert.Z)/256.0,
-				int(f.facing), p.ambientOcclusion, this.ForceShade(),
+				f.facing, p.ambientOcclusion, this.ForceShade(),
 			)
 			buildVertex(buf, vert)
 		}
@@ -352,12 +352,18 @@ func calculateBiome(bs *blocksSnapshot, x, z int, img *image.NRGBA) (byte, byte,
 }
 
 func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
-	x, y, z float64, face int, smooth, force bool) (byte, byte) {
-	blockLight := bs.blockLight(origX, origY, origZ)
-	skyLight := bs.skyLight(origX, origY, origZ)
+	x, y, z float64, face direction.Type, smooth, force bool) (byte, byte) {
 	if !smooth {
+		ox, oy, oz := face.Offset()
+		if !bs.block(origX, origY, origZ).ShouldCullAgainst() {
+			ox, oy, oz = 0, 0, 0
+		}
+		blockLight := bs.blockLight(origX+ox, origY+oy, origZ+oz)
+		skyLight := bs.skyLight(origX+ox, origY+oy, origZ+oz)
 		return blockLight, skyLight
 	}
+	blockLight := bs.blockLight(origX, origY, origZ)
+	skyLight := bs.skyLight(origX, origY, origZ)
 	count := 1
 
 	// TODO(Think) Document/cleanup this
@@ -367,32 +373,32 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 	var pox, poy, poz, nox, noy, noz int
 
 	switch face {
-	case 0: // Up
+	case direction.Up: // Up
 		poz, pox = 0, 0
 		noz, nox = -1, -1
 		poy = 1
 		noy = 0
-	case 1: // Down
+	case direction.Down: // Down
 		poz, pox = 0, 0
 		noz, nox = -1, -1
 		poy = -1
 		noy = -2
-	case 2: // North
+	case direction.North: // North
 		poy, pox = 0, 0
 		noy, nox = -1, -1
 		poz = -1
 		noz = -2
-	case 3: // South
+	case direction.South: // South
 		poy, pox = 0, 0
 		noy, nox = -1, -1
 		poz = 1
 		noz = 0
-	case 4: // West
+	case direction.West: // West
 		poz, poy = 0, 0
 		noz, noy = -1, -1
 		pox = -1
 		nox = -2
-	case 5: // East
+	case direction.East: // East
 		poz, poy = 0, 0
 		noz, noy = -1, -1
 		pox = 1
