@@ -426,7 +426,10 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 }
 
 func round(f float64) int {
-	return int(f + math.Copysign(0.5, f))
+	if f < 0 {
+		return int(f - 0.5)
+	}
+	return int(f + 0.5)
 }
 
 // Precomputed face vertices
