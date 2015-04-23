@@ -64,7 +64,7 @@ func Start() {
 	textureDepth = len(textures)
 	glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, AtlasSize*AtlasSize*len(textures)*4))
 	glTexture.Parameter(gl.TextureMagFilter, gl.Nearest)
-	glTexture.Parameter(gl.TextureMinFilter, gl.Linear)
+	glTexture.Parameter(gl.TextureMinFilter, gl.Nearest)
 	glTexture.Parameter(gl.TextureWrapS, gl.ClampToEdge)
 	glTexture.Parameter(gl.TextureWrapT, gl.ClampToEdge)
 	for i, tex := range textures {
