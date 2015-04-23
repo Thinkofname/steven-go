@@ -160,7 +160,7 @@ var Blocks = struct {
 	BirchStairs                *BlockSet `type:"stairs"`
 	JungleStairs               *BlockSet `type:"stairs"`
 	CommandBlock               *BlockSet
-	Beacon                     *BlockSet
+	Beacon                     *BlockSet `cullAgainst:"false"`
 	CobblestoneWall            *BlockSet `type:"wall"`
 	FlowerPot                  *BlockSet
 	Carrots                    *BlockSet
