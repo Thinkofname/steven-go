@@ -134,6 +134,12 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		if action == glfw.Release {
 			Client.toggleDebug()
 		}
+	case glfw.KeyTab:
+		if action == glfw.Press {
+			Client.playerList.set(true)
+		} else if action == glfw.Release {
+			Client.playerList.set(false)
+		}
 	case glfw.KeyT, glfw.KeySlash:
 		Client.chat.enteringText = true
 		Client.chat.first = true

@@ -71,7 +71,8 @@ type ClientState struct {
 	foodUI            []*ui.Image
 	foodFillUI        []*ui.Image
 
-	chat ChatUI
+	chat       ChatUI
+	playerList playerListUI
 }
 
 func (c *ClientState) init() {
@@ -115,6 +116,7 @@ func (c *ClientState) init() {
 
 	ui.AddDrawable(&Client.chat, ui.Bottom, ui.Left)
 	c.initDebug()
+	c.playerList.init()
 }
 
 func (c *ClientState) renderTick(delta float64) {
@@ -201,6 +203,8 @@ func (c *ClientState) renderTick(delta float64) {
 
 	// Debug displays
 	c.renderDebug()
+
+	c.playerList.render(delta)
 }
 
 func (c *ClientState) targetBlock() (x, y, z int, block Block) {
