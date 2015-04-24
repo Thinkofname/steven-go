@@ -33,7 +33,7 @@ const (
 #version 150
 in ivec3 aPosition;
 in vec4 aTextureInfo;
-in vec2 aTextureOffset;
+in vec3 aTextureOffset;
 in vec3 aColor;
 in vec2 aLighting;
 
@@ -43,7 +43,7 @@ uniform ivec3 offset;
 
 out vec3 vColor;
 out vec4 vTextureInfo;
-out vec2 vTextureOffset;
+out vec3 vTextureOffset;
 out float vLighting;
 out float dist;
 
@@ -70,20 +70,19 @@ uniform sampler2DArray textures;
 
 in vec3 vColor;
 in vec4 vTextureInfo;
-in vec2 vTextureOffset;
+in vec3 vTextureOffset;
 in float vLighting;
 in float dist;
 
 out vec4 fragColor;
 
 void main() {
-	vec2 tPos = vTextureOffset / 16.0;
+	vec2 tPos = vTextureOffset.xy / 16.0;
 	tPos = mod(tPos, vTextureInfo.zw);
-	vec2 offset = vec2(vTextureInfo.x, mod(vTextureInfo.y, atlasSize));
+	vec2 offset = vTextureInfo.xy;
 	tPos += offset;
 	tPos /= atlasSize;
-	float texID = floor(vTextureInfo.y / atlasSize);
-	vec4 col = texture(textures, vec3(tPos, texID)) ;
+	vec4 col = texture(textures, vec3(tPos, vTextureOffset.z));
 	#ifndef alpha
 	if (col.a < 0.5) discard;
 	#endif

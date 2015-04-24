@@ -54,10 +54,10 @@ func initUI() {
 	uiState.shader.TextureInfo.Enable()
 	uiState.shader.TextureOffset.Enable()
 	uiState.shader.Color.Enable()
-	uiState.shader.Position.Pointer(3, gl.Float, false, 28, 0)
-	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 28, 12)
-	uiState.shader.TextureOffset.Pointer(2, gl.Short, false, 28, 20)
-	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 28, 24)
+	uiState.shader.Position.Pointer(3, gl.Float, false, 30, 0)
+	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 30, 12)
+	uiState.shader.TextureOffset.Pointer(3, gl.Short, false, 30, 20)
+	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 30, 26)
 }
 
 func drawUI() {
@@ -94,12 +94,12 @@ func drawUI() {
 // UIElement is a single element on the screen. It is a rectangle
 // with a texture and a tint.
 type UIElement struct {
-	X, Y, W, H         float64
-	DepthIndex         float64
-	TX, TY, TW, TH     uint16
-	TOffsetX, TOffsetY int16
-	TSizeW, TSizeH     int16
-	R, G, B, A         byte
+	X, Y, W, H                 float64
+	DepthIndex                 float64
+	TX, TY, TW, TH             uint16
+	TOffsetX, TOffsetY, TAtlas int16
+	TSizeW, TSizeH             int16
+	R, G, B, A                 byte
 }
 
 // DrawUIElement draws a single ui element onto the screen.
@@ -116,9 +116,10 @@ func DrawUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th
 	e.W = width / uiWidth
 	e.H = height / uiHeight
 	e.TX = uint16(tex.X)
-	e.TY = uint16(tex.Y + tex.Atlas*AtlasSize)
+	e.TY = uint16(tex.Y)
 	e.TW = uint16(tex.Width)
 	e.TH = uint16(tex.Height)
+	e.TAtlas = int16(tex.Atlas)
 	e.TOffsetX = int16(tx * float64(tex.Width) * 16)
 	e.TOffsetY = int16(ty * float64(tex.Height) * 16)
 	e.TSizeW = int16(tw * float64(tex.Width) * 16)
@@ -170,6 +171,7 @@ func (u *UIElement) appendVertex(x, y float64, tx, ty int16) {
 	uiState.data = appendUnsignedShort(uiState.data, u.TH)
 	uiState.data = appendShort(uiState.data, tx)
 	uiState.data = appendShort(uiState.data, ty)
+	uiState.data = appendShort(uiState.data, u.TAtlas)
 	uiState.data = appendUnsignedByte(uiState.data, u.R)
 	uiState.data = appendUnsignedByte(uiState.data, u.G)
 	uiState.data = appendUnsignedByte(uiState.data, u.B)

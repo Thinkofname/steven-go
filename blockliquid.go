@@ -103,6 +103,7 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder
 				vert.TY = uint16(tex.Y + tex.Atlas*render.AtlasSize)
 				vert.TW = uint16(tex.Width)
 				vert.TH = uint16(tex.Height)
+				vert.TAtlas = int16(tex.Atlas)
 				vert.R = cr
 				vert.G = cg
 				vert.B = cb

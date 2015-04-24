@@ -25,11 +25,11 @@ import (
 )
 
 type chunkVertex struct {
-	X, Y, Z              int16
-	TX, TY, TW, TH       uint16
-	TOffsetX, TOffsetY   int16
-	R, G, B              byte
-	BlockLight, SkyLight byte
+	X, Y, Z                    int16
+	TX, TY, TW, TH             uint16
+	TOffsetX, TOffsetY, TAtlas int16
+	R, G, B                    byte
+	BlockLight, SkyLight       byte
 }
 
 type buildPos struct {
@@ -234,6 +234,7 @@ func buildVertex(b *builder.Buffer, v chunkVertex) {
 	b.UnsignedShort(v.TH)
 	b.Short(v.TOffsetX)
 	b.Short(v.TOffsetY)
+	b.Short(v.TAtlas)
 	b.UnsignedByte(v.R)
 	b.UnsignedByte(v.G)
 	b.UnsignedByte(v.B)
