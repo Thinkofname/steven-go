@@ -130,6 +130,10 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		if action != glfw.Repeat {
 			Client.KeyState[KeyRight] = action == glfw.Press
 		}
+	case glfw.KeyF3:
+		if action == glfw.Release {
+			Client.toggleDebug()
+		}
 	case glfw.KeyT, glfw.KeySlash:
 		Client.chat.enteringText = true
 		Client.chat.first = true

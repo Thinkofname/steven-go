@@ -40,9 +40,29 @@ func (c *ClientState) initDebug() {
 	ui.AddDrawable(c.debug.target, ui.Top, ui.Right)
 	c.debug.targetName = ui.NewText("", 5, 59, 255, 255, 255)
 	ui.AddDrawable(c.debug.targetName, ui.Top, ui.Right)
+	c.debug.enabled = true
+	c.toggleDebug()
+}
+
+func (c *ClientState) toggleDebug() {
+	c.debug.enabled = !c.debug.enabled
+	e := c.debug.enabled
+	c.debug.position.Visible = e
+	c.debug.facing.Visible = e
+	c.debug.fps.Visible = e
+	c.debug.memory.Visible = e
+	c.debug.target.Visible = e
+	c.debug.targetName.Visible = e
+	for _, t := range c.debug.targetInfo {
+		t[0].Visible = e
+		t[1].Visible = e
+	}
 }
 
 func (c *ClientState) renderDebug() {
+	if !c.debug.enabled {
+		return
+	}
 	c.debug.position.Update(fmt.Sprintf("X: %.2f, Y: %.2f, Z: %.2f", c.X, c.Y, c.Z))
 	c.debug.facing.Update(fmt.Sprintf("Facing: %s", c.facingDirection()))
 

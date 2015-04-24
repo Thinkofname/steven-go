@@ -54,6 +54,7 @@ type ClientState struct {
 	frames    int
 	lastCount time.Time
 	debug     struct {
+		enabled  bool
 		position *ui.Text
 		facing   *ui.Text
 		fps      *ui.Text
