@@ -113,46 +113,7 @@ func LoadTextures() {
 	}
 	sort.Sort(tList)
 	for _, st := range tList {
-		file := st.File
-		r, err := resource.Open("minecraft", file)
-		if err != nil {
-			panic(err)
-		}
-		defer r.Close()
-		ii, err := png.Decode(r)
-		if err != nil {
-			panic(err)
-		}
-		img := ii.(draw.Image)
-		width, height := img.Bounds().Dx(), img.Bounds().Dy()
-		var ani *animatedTexture
-		if (strings.HasPrefix(file, "textures/blocks") || strings.HasPrefix(file, "textures/items")) &&
-			width != height {
-			height = width
-			old := img
-			img = image.NewNRGBA(image.Rect(0, 0, width, width))
-			draw.Draw(img, img.Bounds(), old, image.ZP, draw.Over)
-			ani = loadAnimation(file, old.Bounds().Dy()/old.Bounds().Dx())
-			if ani != nil {
-				ani.Image = old
-				ani.Buffer = imgToBytes(old)
-				animatedTextures = append(animatedTextures, ani)
-			} else {
-				img = old
-				width, height = img.Bounds().Dx(), img.Bounds().Dy()
-			}
-		}
-		pix := imgToBytes(img)
-		name := file[len("textures/") : len(file)-4]
-		at, rect := addTexture(pix, width, height)
-		info := TextureInfo{
-			Rect:  rect,
-			Atlas: at,
-		}
-		textureMap[name] = info
-		if ani != nil {
-			ani.Info = info
-		}
+		loadTexFile(st.File)
 	}
 
 	pix := []byte{255, 255, 255, 255}
@@ -167,6 +128,48 @@ func LoadTextures() {
 
 	loadFontInfo()
 	loadFontPage(0)
+}
+
+func loadTexFile(file string) {
+	r, err := resource.Open("minecraft", file)
+	if err != nil {
+		panic(err)
+	}
+	defer r.Close()
+	ii, err := png.Decode(r)
+	if err != nil {
+		panic(err)
+	}
+	img := ii.(draw.Image)
+	width, height := img.Bounds().Dx(), img.Bounds().Dy()
+	var ani *animatedTexture
+	if (strings.HasPrefix(file, "textures/blocks") || strings.HasPrefix(file, "textures/items")) &&
+		width != height {
+		height = width
+		old := img
+		img = image.NewNRGBA(image.Rect(0, 0, width, width))
+		draw.Draw(img, img.Bounds(), old, image.ZP, draw.Over)
+		ani = loadAnimation(file, old.Bounds().Dy()/old.Bounds().Dx())
+		if ani != nil {
+			ani.Image = old
+			ani.Buffer = imgToBytes(old)
+			animatedTextures = append(animatedTextures, ani)
+		} else {
+			img = old
+			width, height = img.Bounds().Dx(), img.Bounds().Dy()
+		}
+	}
+	pix := imgToBytes(img)
+	name := file[len("textures/") : len(file)-4]
+	at, rect := addTexture(pix, width, height)
+	info := TextureInfo{
+		Rect:  rect,
+		Atlas: at,
+	}
+	textureMap[name] = info
+	if ani != nil {
+		ani.Info = info
+	}
 }
 
 func imgToBytes(img image.Image) []byte {
