@@ -596,10 +596,10 @@ type Maps struct {
 	ItemDamage VarInt
 	Scale      int8
 	Icons      []MapIcon `length:"VarInt"`
-	Columns    int8
-	Rows       int8   `if:".Columns>0"`
-	X          int8   `if:".Columns>0"`
-	Z          int8   `if:".Columns>0"`
+	Columns    byte
+	Rows       byte   `if:".Columns>0"`
+	X          byte   `if:".Columns>0"`
+	Z          byte   `if:".Columns>0"`
 	Data       []byte `if:".Columns>0" length:"VarInt"`
 }
 

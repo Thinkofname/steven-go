@@ -2741,20 +2741,20 @@ func (m *Maps) read(rr io.Reader) (err error) {
 	if _, err = rr.Read(tmp[:1]); err != nil {
 		return
 	}
-	m.Columns = int8((uint8(tmp[0]) << 0))
+	m.Columns = (byte(tmp[0]) << 0)
 	if m.Columns > 0 {
 		if _, err = rr.Read(tmp[:1]); err != nil {
 			return
 		}
-		m.Rows = int8((uint8(tmp[0]) << 0))
+		m.Rows = (byte(tmp[0]) << 0)
 		if _, err = rr.Read(tmp[:1]); err != nil {
 			return
 		}
-		m.X = int8((uint8(tmp[0]) << 0))
+		m.X = (byte(tmp[0]) << 0)
 		if _, err = rr.Read(tmp[:1]); err != nil {
 			return
 		}
-		m.Z = int8((uint8(tmp[0]) << 0))
+		m.Z = (byte(tmp[0]) << 0)
 		var tmp2 VarInt
 		if tmp2, err = ReadVarInt(rr); err != nil {
 			return
