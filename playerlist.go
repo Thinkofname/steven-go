@@ -26,6 +26,8 @@ import (
 	"github.com/thinkofdeath/steven/render/ui"
 )
 
+const playerListWidth = 150
+
 var playerList = map[protocol.UUID]*playerInfo{}
 
 type playerInfo struct {
@@ -42,7 +44,7 @@ type playerInfo struct {
 type playerListUI struct {
 	enabled bool
 
-	background [3]*ui.Image
+	background [4]*ui.Image
 	entries    []*playerListUIEntry
 }
 
@@ -62,7 +64,7 @@ func (p playerListUIEntry) set(enabled bool) {
 
 func (p *playerListUI) init() {
 	for i := range p.background {
-		p.background[i] = ui.NewImage(render.GetTexture("solid"), 0, 16, 16, 16, 0, 0, 1, 1, 0, 0, 0)
+		p.background[i] = ui.NewImage(render.GetTexture("solid"), 0, 16, playerListWidth+48, 16, 0, 0, 1, 1, 0, 0, 0)
 		p.background[i].A = 120
 		p.background[i].Visible = false
 		ui.AddDrawable(p.background[i], ui.Top, ui.Center)
@@ -91,7 +93,6 @@ func (p *playerListUI) render(delta float64) {
 	}
 	offset := 0
 	count := 0
-	width := 0.0
 	bTab := 0
 	lastEntry := 0
 	for _, pl := range p.players() {
@@ -100,14 +101,12 @@ func (p *playerListUI) render(delta float64) {
 			lastEntry = offset
 			for _, e := range entries {
 				if e.icon.Visible {
-					e.icon.X = -width/2 - 12
-					e.iconHat.X = -width/2 - 12
-					e.ping.X = width/2 + 12
+					e.icon.X = -playerListWidth/2 - 12
+					e.iconHat.X = -playerListWidth/2 - 12
+					e.ping.X = playerListWidth/2 + 12
 				}
 			}
-			p.background[bTab].W = width + 48
 			p.background[bTab].H = float64(count * 18)
-			width = 0
 			count = 0
 			bTab++
 			if bTab >= len(p.background) {
@@ -143,9 +142,6 @@ func (p *playerListUI) render(delta float64) {
 		offset++
 		e.text.Y = 1 + 18*float64(count)
 		e.text.Update(pl.name)
-		if e.text.Width > width {
-			width = e.text.Width
-		}
 		e.icon.Y = 1 + 18*float64(count)
 		e.icon.Texture = pl.skin
 		e.iconHat.Y = 1 + 18*float64(count)
@@ -174,12 +170,11 @@ func (p *playerListUI) render(delta float64) {
 	if bTab < len(p.background) {
 		for _, e := range p.entries {
 			if e.icon.Visible {
-				e.icon.X = -width/2 - 12
-				e.iconHat.X = -width/2 - 12
-				e.ping.X = width/2 + 12
+				e.icon.X = -playerListWidth/2 - 12
+				e.iconHat.X = -playerListWidth/2 - 12
+				e.ping.X = playerListWidth/2 + 12
 			}
 		}
-		p.background[bTab].W = width + 48
 		p.background[bTab].H = float64(count * 18)
 	}
 
@@ -189,10 +184,16 @@ func (p *playerListUI) render(delta float64) {
 	case 1: // Double
 		p.background[0].X = -p.background[0].W / 2
 		p.background[1].X = p.background[1].W / 2
-	case 2, 3: // Triple
+	case 2: // Triple
 		p.background[0].X = -(p.background[1].W / 2) - p.background[0].W/2
 		p.background[1].X = 0
 		p.background[2].X = (p.background[1].W / 2) + p.background[2].W/2
+	default: // Quad
+		p.background[0].X = -p.background[0].W/2 - p.background[1].W
+		p.background[3].X = p.background[3].W/2 + p.background[2].W
+
+		p.background[1].X = -p.background[1].W / 2
+		p.background[2].X = p.background[2].W / 2
 	}
 }
 
