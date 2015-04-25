@@ -42,27 +42,40 @@ type playerInfo struct {
 type playerListUI struct {
 	enabled bool
 
-	background *ui.Image
-	elements   []*ui.Text
-	icons      [][2]*ui.Image
+	background [3]*ui.Image
+	entries    []*playerListUIEntry
+}
+
+type playerListUIEntry struct {
+	text    *ui.Text
+	icon    *ui.Image
+	iconHat *ui.Image
+	ping    *ui.Image
+}
+
+func (p playerListUIEntry) set(enabled bool) {
+	p.text.Visible = enabled
+	p.icon.Visible = enabled
+	p.iconHat.Visible = enabled
+	p.ping.Visible = enabled
 }
 
 func (p *playerListUI) init() {
-	p.background = ui.NewImage(render.GetTexture("solid"), 0, 16, 16, 16, 0, 0, 1, 1, 0, 0, 0)
-	p.background.A = 120
-	p.background.Visible = false
-	ui.AddDrawable(p.background, ui.Top, ui.Center)
+	for i := range p.background {
+		p.background[i] = ui.NewImage(render.GetTexture("solid"), 0, 16, 16, 16, 0, 0, 1, 1, 0, 0, 0)
+		p.background[i].A = 120
+		p.background[i].Visible = false
+		ui.AddDrawable(p.background[i], ui.Top, ui.Center)
+	}
 }
 
 func (p *playerListUI) set(enabled bool) {
 	p.enabled = enabled
-	p.background.Visible = enabled
-	for _, e := range p.elements {
-		e.Visible = enabled
+	for _, b := range p.background {
+		b.Visible = enabled
 	}
-	for _, i := range p.icons {
-		i[0].Visible = enabled
-		i[1].Visible = enabled
+	for _, e := range p.entries {
+		e.set(enabled)
 	}
 }
 
@@ -70,55 +83,113 @@ func (p *playerListUI) render(delta float64) {
 	if !p.enabled {
 		return
 	}
-	for _, e := range p.elements {
-		e.Visible = false
+	for _, b := range p.background {
+		b.Visible = false
 	}
-	for _, i := range p.icons {
-		i[0].Visible = false
-		i[1].Visible = false
+	for _, e := range p.entries {
+		e.set(false)
 	}
 	offset := 0
 	count := 0
 	width := 0.0
-	for i, pl := range p.players() {
-		if offset >= len(p.elements) {
-			text := ui.NewText("", 8, 0, 255, 255, 255)
-			p.elements = append(p.elements, text)
+	bTab := 0
+	lastEntry := 0
+	for _, pl := range p.players() {
+		if count >= 20 {
+			entries := p.entries[lastEntry:offset]
+			lastEntry = offset
+			for _, e := range entries {
+				if e.icon.Visible {
+					e.icon.X = -width/2 - 12
+					e.iconHat.X = -width/2 - 12
+					e.ping.X = width/2 + 12
+				}
+			}
+			p.background[bTab].W = width + 48
+			p.background[bTab].H = float64(count * 18)
+			width = 0
+			count = 0
+			bTab++
+			if bTab >= len(p.background) {
+				break
+			}
+		}
+		background := p.background[bTab]
+		background.Visible = true
+		if offset >= len(p.entries) {
+			text := ui.NewText("", 0, 0, 255, 255, 255)
 			ui.AddDrawable(text, ui.Top, ui.Center)
 			icon := ui.NewImage(pl.skin, 0, 0, 16, 16, 8/64.0, 8/64.0, 8/64.0, 8/64.0, 255, 255, 255)
 			ui.AddDrawable(icon, ui.Top, ui.Center)
 			iconHat := ui.NewImage(pl.skin, 0, 0, 16, 16, 40/64.0, 8/64.0, 8/64.0, 8/64.0, 255, 255, 255)
 			ui.AddDrawable(iconHat, ui.Top, ui.Center)
-			p.icons = append(p.icons, [2]*ui.Image{icon, iconHat})
-			text.Parent = p.background
-			icon.Parent = p.background
-			iconHat.Parent = p.background
+			ping := ui.NewImage(render.GetTexture("gui/icons"), 0, 0, 20, 16, 0, 16/256.0, 10/256.0, 8/256.0, 255, 255, 255)
+			ui.AddDrawable(ping, ui.Top, ui.Center)
+
+			text.Parent = background
+			icon.Parent = background
+			iconHat.Parent = background
+			ping.Parent = background
+
+			p.entries = append(p.entries, &playerListUIEntry{
+				text:    text,
+				icon:    icon,
+				iconHat: iconHat,
+				ping:    ping,
+			})
 		}
-		text := p.elements[offset]
-		icons := p.icons[offset]
+		e := p.entries[offset]
+		e.set(true)
 		offset++
-		text.Visible = true
-		text.Y = 1 + 18*float64(i)
-		text.Update(pl.name)
+		e.text.Y = 1 + 18*float64(count)
+		e.text.Update(pl.name)
+		if e.text.Width > width {
+			width = e.text.Width
+		}
+		e.icon.Y = 1 + 18*float64(count)
+		e.icon.Texture = pl.skin
+		e.iconHat.Y = 1 + 18*float64(count)
+		e.iconHat.Texture = pl.skin
+
+		e.ping.Y = 1 + 18*float64(count)
+		y := 0.0
+		switch {
+		case pl.ping <= 75:
+			y = 16 / 256.0
+		case pl.ping <= 150:
+			y = 24 / 256.0
+		case pl.ping <= 225:
+			y = 32 / 256.0
+		default:
+			y = 40 / 256.0
+		}
+		e.ping.TY = y
 		count++
-		if text.Width > width {
-			width = text.Width
-		}
-		for _, ic := range icons {
-			ic.Visible = true
-			ic.Y = 1 + 18*float64(i)
-			ic.Texture = pl.skin
-		}
-	}
-	for _, i := range p.icons {
-		if i[0].Visible {
-			i[0].X = -width/2 - 4
-			i[1].X = -width/2 - 4
-		}
 	}
 
-	p.background.W = width + 32
-	p.background.H = float64(count * 18)
+	if bTab < len(p.background) {
+		for _, e := range p.entries {
+			if e.icon.Visible {
+				e.icon.X = -width/2 - 12
+				e.iconHat.X = -width/2 - 12
+				e.ping.X = width/2 + 12
+			}
+		}
+		p.background[bTab].W = width + 48
+		p.background[bTab].H = float64(count * 18)
+	}
+
+	switch bTab {
+	case 0: // Single
+		p.background[0].X = 0
+	case 1: // Double
+		p.background[0].X = -p.background[0].W / 2
+		p.background[1].X = p.background[1].W / 2
+	case 2, 3: // Triple
+		p.background[0].X = -(p.background[1].W / 2) - p.background[0].W/2
+		p.background[1].X = 0
+		p.background[2].X = (p.background[1].W / 2) + p.background[2].W/2
+	}
 }
 
 func (p *playerListUI) players() (out []*playerInfo) {
