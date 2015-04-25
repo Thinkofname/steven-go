@@ -32,7 +32,6 @@ import (
 
 var (
 	textures         []*atlas.Type
-	textureDirty     []bool
 	textureMap       = map[string]TextureInfo{}
 	textureLock      sync.RWMutex
 	animatedTextures []*animatedTexture
@@ -45,8 +44,7 @@ const (
 
 // TextureInfo returns information about a texture in an atlas
 type TextureInfo struct {
-	Atlas     int
-	imageView *image.NRGBA
+	Atlas int
 	*atlas.Rect
 }
 
@@ -117,11 +115,7 @@ func LoadTextures() {
 	}
 
 	pix := []byte{255, 255, 255, 255}
-	at, rect := addTexture(pix, 1, 1)
-	info := TextureInfo{
-		Rect:  rect,
-		Atlas: at,
-	}
+	info := *addTexture(pix, 1, 1)
 	textureMap["solid"] = info
 
 	textureLock.Unlock()
@@ -161,11 +155,7 @@ func loadTexFile(file string) {
 	}
 	pix := imgToBytes(img)
 	name := file[len("textures/") : len(file)-4]
-	at, rect := addTexture(pix, width, height)
-	info := TextureInfo{
-		Rect:  rect,
-		Atlas: at,
-	}
+	info := *addTexture(pix, width, height)
 	textureMap[name] = info
 	if ani != nil {
 		ani.Info = info
@@ -197,25 +187,44 @@ func imgToBytes(img image.Image) []byte {
 	}
 }
 
-func addTexture(pix []byte, width, height int) (int, *atlas.Rect) {
+func addTexture(pix []byte, width, height int) *TextureInfo {
 	for i, a := range textures {
 		if a == nil {
 			continue
 		}
 		rect, err := a.Add(pix, width, height)
 		if err == nil {
-			textureDirty[i] = true
-			return i, rect
+			info := &TextureInfo{Atlas: i, Rect: rect}
+			if texturesCreated {
+				uploadTexture(info, pix)
+			}
+			return info
 		}
 	}
 	a := atlas.New(AtlasSize, AtlasSize, 4)
 	textures = append(textures, a)
-	textureDirty = append(textureDirty, true)
 	rect, err := a.Add(pix, width, height)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to place %d,%d: %s", width, height, err))
 	}
-	return len(textures) - 1, rect
+
+	info := &TextureInfo{Atlas: len(textures) - 1, Rect: rect}
+	if texturesCreated {
+		glTexture.Bind(gl.Texture2DArray)
+		data := make([]byte, AtlasSize*AtlasSize*len(textures)*4)
+		glTexture.Get(0, gl.RGBA, gl.UnsignedByte, data)
+		textureDepth = len(textures)
+		glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, data)
+		uploadTexture(info, pix)
+	}
+
+	return info
+}
+
+func uploadTexture(info *TextureInfo, data []byte) {
+	glTexture.Bind(gl.Texture2DArray)
+	r := info.Rect
+	glTexture.SubImage3D(0, r.X, r.Y, info.Atlas, r.Width, r.Height, 1, gl.RGBA, gl.UnsignedByte, data)
 }
 
 type animatedTexture struct {

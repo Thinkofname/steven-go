@@ -166,11 +166,7 @@ func loadFontPage(page int) {
 	}
 	width, height := img.Bounds().Dx(), img.Bounds().Dy()
 	pix := imgToBytes(img)
-	at, rect := addTexture(pix, width, height)
-	info := &TextureInfo{
-		Rect:  rect,
-		Atlas: at,
-	}
+	info := addTexture(pix, width, height)
 	fontPages[page] = info
 	if p == "ascii" {
 		// The font map file included with minecraft has the

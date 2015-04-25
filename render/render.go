@@ -38,8 +38,9 @@ var (
 
 	syncChan = make(chan func(), 500)
 
-	glTexture    gl.Texture
-	textureDepth int
+	glTexture       gl.Texture
+	textureDepth    int
+	texturesCreated bool
 )
 
 // Start starts the renderer
@@ -71,6 +72,7 @@ func Start() {
 		glTexture.SubImage3D(0, 0, 0, i, AtlasSize, AtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
 		textures[i] = nil
 	}
+	texturesCreated = true
 	textureLock.Unlock()
 
 	initUI()
@@ -114,26 +116,6 @@ sync:
 		)
 		gl.Viewport(0, 0, width, height)
 	}
-
-	// Textures
-	textureLock.RLock()
-	if textureDepth != len(textures) {
-		glTexture.Bind(gl.Texture2DArray)
-		data := make([]byte, AtlasSize*AtlasSize*len(textures)*4)
-		glTexture.Get(0, gl.RGBA, gl.UnsignedByte, data)
-		textureDepth = len(textures)
-		glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, data)
-		for i := range textureDirty {
-			textureDirty[i] = true
-		}
-	}
-	for i, tex := range textures {
-		if textureDirty[i] && tex != nil {
-			textureDirty[i] = false
-			glTexture.SubImage3D(0, 0, 0, i, AtlasSize, AtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
-		}
-	}
-	textureLock.RUnlock()
 
 	glTexture.Bind(gl.Texture2DArray)
 	gl.ActiveTexture(0)
