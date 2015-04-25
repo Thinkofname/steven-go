@@ -57,6 +57,14 @@ func (c *ChatUI) Size() (float64, float64) {
 	return 500, chatHistoryLines*18 + 2
 }
 
+func (c *ChatUI) Attachment() (vAttach, hAttach ui.AttachPoint) {
+	return ui.Bottom, ui.Left
+}
+
+func (c *ChatUI) AttachedTo() ui.Drawable {
+	return nil
+}
+
 func (c *ChatUI) Draw(r ui.Region, delta float64) {
 	cw, ch := c.Size()
 	sx, sy := r.W/cw, r.H/ch

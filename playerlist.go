@@ -67,7 +67,7 @@ func (p *playerListUI) init() {
 		p.background[i] = ui.NewImage(render.GetTexture("solid"), 0, 16, playerListWidth+48, 16, 0, 0, 1, 1, 0, 0, 0)
 		p.background[i].A = 120
 		p.background[i].Visible = false
-		ui.AddDrawable(p.background[i], ui.Top, ui.Center)
+		ui.AddDrawable(p.background[i].Attach(ui.Top, ui.Center))
 	}
 }
 
@@ -116,14 +116,18 @@ func (p *playerListUI) render(delta float64) {
 		background := p.background[bTab]
 		background.Visible = true
 		if offset >= len(p.entries) {
-			text := ui.NewText("", 0, 0, 255, 255, 255)
-			ui.AddDrawable(text, ui.Top, ui.Center)
-			icon := ui.NewImage(pl.skin, 0, 0, 16, 16, 8/64.0, 8/64.0, 8/64.0, 8/64.0, 255, 255, 255)
-			ui.AddDrawable(icon, ui.Top, ui.Center)
-			iconHat := ui.NewImage(pl.skin, 0, 0, 16, 16, 40/64.0, 8/64.0, 8/64.0, 8/64.0, 255, 255, 255)
-			ui.AddDrawable(iconHat, ui.Top, ui.Center)
-			ping := ui.NewImage(render.GetTexture("gui/icons"), 0, 0, 20, 16, 0, 16/256.0, 10/256.0, 8/256.0, 255, 255, 255)
-			ui.AddDrawable(ping, ui.Top, ui.Center)
+			text := ui.NewText("", 24, 0, 255, 255, 255).
+				Attach(ui.Top, ui.Left)
+			ui.AddDrawable(text)
+			icon := ui.NewImage(pl.skin, 0, 0, 16, 16, 8/64.0, 8/64.0, 8/64.0, 8/64.0, 255, 255, 255).
+				Attach(ui.Top, ui.Center)
+			ui.AddDrawable(icon)
+			iconHat := ui.NewImage(pl.skin, 0, 0, 16, 16, 40/64.0, 8/64.0, 8/64.0, 8/64.0, 255, 255, 255).
+				Attach(ui.Top, ui.Center)
+			ui.AddDrawable(iconHat)
+			ping := ui.NewImage(render.GetTexture("gui/icons"), 0, 0, 20, 16, 0, 16/256.0, 10/256.0, 8/256.0, 255, 255, 255).
+				Attach(ui.Top, ui.Center)
+			ui.AddDrawable(ping)
 
 			text.Parent = background
 			icon.Parent = background

@@ -26,20 +26,26 @@ import (
 var memoryStats runtime.MemStats
 
 func (c *ClientState) initDebug() {
-	c.debug.position = ui.NewText("X:0 Y:0 Z:0", 5, 5, 255, 255, 255)
-	ui.AddDrawable(c.debug.position, ui.Top, ui.Left)
-	c.debug.facing = ui.NewText("Facing: invalid", 5, 23, 255, 255, 255)
-	ui.AddDrawable(c.debug.facing, ui.Top, ui.Left)
+	c.debug.position = ui.NewText("X:0 Y:0 Z:0", 5, 5, 255, 255, 255).
+		Attach(ui.Top, ui.Left)
+	ui.AddDrawable(c.debug.position)
+	c.debug.facing = ui.NewText("Facing: invalid", 5, 23, 255, 255, 255).
+		Attach(ui.Top, ui.Left)
+	ui.AddDrawable(c.debug.facing)
 
-	c.debug.fps = ui.NewText("FPS: 0", 5, 5, 255, 255, 255)
-	ui.AddDrawable(c.debug.fps, ui.Top, ui.Right)
-	c.debug.memory = ui.NewText("0/0", 5, 23, 255, 255, 255)
-	ui.AddDrawable(c.debug.memory, ui.Top, ui.Right)
+	c.debug.fps = ui.NewText("FPS: 0", 5, 5, 255, 255, 255).
+		Attach(ui.Top, ui.Right)
+	ui.AddDrawable(c.debug.fps)
+	c.debug.memory = ui.NewText("0/0", 5, 23, 255, 255, 255).
+		Attach(ui.Top, ui.Right)
+	ui.AddDrawable(c.debug.memory)
 
-	c.debug.target = ui.NewText("", 5, 41, 255, 255, 255)
-	ui.AddDrawable(c.debug.target, ui.Top, ui.Right)
-	c.debug.targetName = ui.NewText("", 5, 59, 255, 255, 255)
-	ui.AddDrawable(c.debug.targetName, ui.Top, ui.Right)
+	c.debug.target = ui.NewText("", 5, 41, 255, 255, 255).
+		Attach(ui.Top, ui.Right)
+	ui.AddDrawable(c.debug.target)
+	c.debug.targetName = ui.NewText("", 5, 59, 255, 255, 255).
+		Attach(ui.Top, ui.Right)
+	ui.AddDrawable(c.debug.targetName)
 	c.debug.enabled = true
 	c.toggleDebug()
 }
@@ -142,11 +148,11 @@ func (c *ClientState) displayTargetInfo() {
 		if i >= len(c.debug.targetInfo) {
 			c.debug.targetInfo = append(c.debug.targetInfo, [2]*ui.Text{})
 			c.debug.targetInfo[i] = [2]*ui.Text{
-				ui.NewText("", 5, 59+18*(1+float64(i)), 255, 255, 255),
-				ui.NewText("", 5, 59+18*(1+float64(i)), 255, 255, 255),
+				ui.NewText("", 5, 59+18*(1+float64(i)), 255, 255, 255).Attach(ui.Top, ui.Right),
+				ui.NewText("", 5, 59+18*(1+float64(i)), 255, 255, 255).Attach(ui.Top, ui.Right),
 			}
 			for _, t := range c.debug.targetInfo[i] {
-				ui.AddDrawable(t, ui.Top, ui.Right)
+				ui.AddDrawable(t)
 			}
 		}
 		v := c.debug.targetInfo[i][0]

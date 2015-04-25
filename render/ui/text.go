@@ -18,13 +18,13 @@ import "github.com/thinkofdeath/steven/render"
 
 // Text is a drawable that draws a string.
 type Text struct {
-	Parent  Drawable
-	X, Y    float64
-	R, G, B int
-	value   string
-	Width   float64
-	Visible bool
-	ref     DrawRef
+	Parent           Drawable
+	X, Y             float64
+	R, G, B          int
+	value            string
+	Width            float64
+	Visible          bool
+	vAttach, hAttach AttachPoint
 }
 
 // NewText creates a new Text drawable.
@@ -37,6 +37,19 @@ func NewText(val string, x, y float64, r, g, b int) *Text {
 		Visible: true,
 	}
 }
+
+// Attach changes the location where this is attached to.
+func (t *Text) Attach(vAttach, hAttach AttachPoint) *Text {
+	t.vAttach, t.hAttach = vAttach, hAttach
+	return t
+}
+
+// Attachment returns the sides where this element is attached too.
+func (t *Text) Attachment() (vAttach, hAttach AttachPoint) {
+	return t.vAttach, t.hAttach
+}
+
+// ShouldDraw returns whether this should be drawn at this time.
 func (t *Text) ShouldDraw() bool {
 	return t.Visible
 }
@@ -54,13 +67,14 @@ func (t *Text) Draw(r Region, delta float64) {
 	render.DrawUITextScaled(t.value, r.X, r.Y, sx, sy, t.R, t.G, t.B)
 }
 
+// AttachedTo returns the Drawable this is attached to or nil.
+func (t *Text) AttachedTo() Drawable {
+	return t.Parent
+}
+
 // Offset returns the offset of this drawable from the attachment
-// point. Includes the parent if it has one.
+// point.
 func (t *Text) Offset() (float64, float64) {
-	if t.Parent != nil {
-		ox, oy := t.Parent.Offset()
-		return ox + t.X, oy + t.Y
-	}
 	return t.X, t.Y
 }
 
@@ -69,11 +83,7 @@ func (t *Text) Size() (float64, float64) {
 	return t.Width + 2, 18
 }
 
-func (t *Text) setRef(r DrawRef) {
-	t.ref = r
-}
-
 // Remove removes the text element from the draw list.
 func (t *Text) Remove() {
-	t.ref.Remove()
+	Remove(t)
 }

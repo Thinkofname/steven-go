@@ -20,7 +20,7 @@ const (
 
 var (
 	drawMode  = mScaled
-	drawables []attachedDrawable
+	drawables []Drawable
 )
 
 // Region is an area for a Drawable to draw to
@@ -37,32 +37,17 @@ type Drawable interface {
 	// each axis
 	Offset() (float64, float64)
 	ShouldDraw() bool
-}
-
-type refStorable interface {
-	setRef(r DrawRef)
-}
-
-type attachedDrawable struct {
-	d                Drawable
-	vAttach, hAttach AttachPoint
+	AttachedTo() Drawable
+	Attachment() (vAttach, hAttach AttachPoint)
 }
 
 // AddDrawable adds the drawable to the draw list and attaches it
-// to the specified parts of the screen. This returns a reference
-// that may be used to remove this from the draw list.
-func AddDrawable(d Drawable, vAttach, hAttach AttachPoint) DrawRef {
-	drawables = append(drawables, attachedDrawable{
-		d:       d,
-		vAttach: vAttach,
-		hAttach: hAttach,
-	})
-	r := DrawRef{d: d}
-	if ra, ok := d.(refStorable); ok {
-		ra.setRef(r)
-	}
-	return r
+// to the specified parts of the screen.
+func AddDrawable(d Drawable) {
+	drawables = append(drawables, d)
 }
+
+var screen = Region{W: scaledWidth, H: scaledHeight}
 
 // Draw draws all drawables in the draw list to the screen.
 func Draw(width, height int, delta float64) {
@@ -72,44 +57,52 @@ func Draw(width, height int, delta float64) {
 		sw, sh = 1.0, 1.0
 	}
 	for _, d := range drawables {
-		if !d.d.ShouldDraw() {
+		if !d.ShouldDraw() {
 			continue
 		}
-		r := Region{}
-		w, h := d.d.Size()
-		ox, oy := d.d.Offset()
-		r.W = w * sw
-		r.H = h * sh
-		switch d.hAttach {
-		case Left:
-			r.X = ox * sw
-		case Middle:
-			r.X = (scaledWidth / 2) - (r.W / 2) + ox*sw
-		case Right:
-			r.X = scaledWidth - ox*sw - r.W
-		}
-		switch d.vAttach {
-		case Top:
-			r.Y = oy * sh
-		case Middle:
-			r.Y = (scaledHeight / 2) - (r.H / 2) + oy*sh
-		case Right:
-			r.Y = scaledHeight - oy*sh - r.H
-		}
-		d.d.Draw(r, delta)
+		r := getDrawRegion(d, sw, sh)
+		d.Draw(r, delta)
 	}
 }
 
-// DrawRef is a reference to a Drawable that can be used to
-// remove it from the draw list.
-type DrawRef struct {
-	d Drawable
+func getDrawRegion(d Drawable, sw, sh float64) Region {
+	parent := d.AttachedTo()
+	var superR Region
+	if parent != nil {
+		superR = getDrawRegion(parent, sw, sh)
+	} else {
+		superR = screen
+	}
+	r := Region{}
+	w, h := d.Size()
+	ox, oy := d.Offset()
+	r.W = w * sw
+	r.H = h * sh
+	vAttach, hAttach := d.Attachment()
+	switch hAttach {
+	case Left:
+		r.X = ox * sw
+	case Middle:
+		r.X = (superR.W / 2) - (r.W / 2) + ox*sw
+	case Right:
+		r.X = superR.W - ox*sw - r.W
+	}
+	switch vAttach {
+	case Top:
+		r.Y = oy * sh
+	case Middle:
+		r.Y = (superR.H / 2) - (r.H / 2) + oy*sh
+	case Right:
+		r.Y = superR.H - oy*sh - r.H
+	}
+	r.X += superR.X
+	r.Y += superR.Y
+	return r
 }
 
-// Remove removes the referenced drawable from the draw list.
-func (d DrawRef) Remove() {
+func Remove(d Drawable) {
 	for i, dd := range drawables {
-		if dd.d == d.d {
+		if dd == d {
 			drawables = append(drawables[:i], drawables[i+1:]...)
 			return
 		}

@@ -18,13 +18,13 @@ import "github.com/thinkofdeath/steven/render"
 
 // Image is a drawable that draws a texture.
 type Image struct {
-	Parent         Drawable
-	Texture        *render.TextureInfo
-	X, Y, W, H     float64
-	TX, TY, TW, TH float64
-	R, G, B, A     int
-	Visible        bool
-	ref            DrawRef
+	Parent           Drawable
+	Texture          *render.TextureInfo
+	X, Y, W, H       float64
+	TX, TY, TW, TH   float64
+	R, G, B, A       int
+	Visible          bool
+	vAttach, hAttach AttachPoint
 }
 
 // NewText creates a new Text drawable.
@@ -38,6 +38,18 @@ func NewImage(texture *render.TextureInfo, x, y, w, h, tx, ty, tw, th float64, r
 	}
 }
 
+// Attach changes the location where this is attached to.
+func (i *Image) Attach(vAttach, hAttach AttachPoint) *Image {
+	i.vAttach, i.hAttach = vAttach, hAttach
+	return i
+}
+
+// Attachment returns the sides where this element is attached too.
+func (i *Image) Attachment() (vAttach, hAttach AttachPoint) {
+	return i.vAttach, i.hAttach
+}
+
+// ShouldDraw returns whether this should be drawn at this time.
 func (i *Image) ShouldDraw() bool {
 	return i.Visible
 }
@@ -51,13 +63,14 @@ func (i *Image) Draw(r Region, delta float64) {
 	e.A = byte(i.A)
 }
 
+// AttachedTo returns the Drawable this is attached to or nil.
+func (i *Image) AttachedTo() Drawable {
+	return i.Parent
+}
+
 // Offset returns the offset of this drawable from the attachment
-// point. Includes the parent if it has one.
+// point.
 func (i *Image) Offset() (float64, float64) {
-	if i.Parent != nil {
-		ox, oy := i.Parent.Offset()
-		return ox + i.X, oy + i.Y
-	}
 	return i.X, i.Y
 }
 
@@ -66,11 +79,7 @@ func (i *Image) Size() (float64, float64) {
 	return i.W, i.H
 }
 
-func (i *Image) setRef(r DrawRef) {
-	i.ref = r
-}
-
 // Remove removes the image element from the draw list.
 func (i *Image) Remove() {
-	i.ref.Remove()
+	Remove(i)
 }
