@@ -82,7 +82,13 @@ func Get(key string) (parts []interface{}) {
 	index := 0
 	curIndex := -1
 	inSub := false
+	skipNext := false
 	for i, r := range val {
+		if skipNext {
+			skipNext = false
+			last = i + 1
+			continue
+		}
 		if inSub {
 			if r == '%' {
 				parts = append(parts, "%")
@@ -91,19 +97,25 @@ func Get(key string) (parts []interface{}) {
 				curIndex = -1
 				continue
 			}
-			if r <= '0' && r <= '9' {
+			if r >= '0' && r <= '9' {
+				if curIndex == -1 {
+					curIndex = 0
+				}
 				curIndex *= 10
 				curIndex += int(r - '0')
 				continue
 			}
 			if curIndex == -1 {
-				curIndex = index
+				curIndex = index + 1
 				index++
 			}
-			parts = append(parts, curIndex)
+			parts = append(parts, curIndex-1)
 			inSub = false
 			curIndex = -1
 			last = i + 1
+			if r == '$' {
+				skipNext = true
+			}
 		}
 		if r == '%' {
 			inSub = true
