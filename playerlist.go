@@ -160,8 +160,12 @@ func (p *playerListUI) render(delta float64) {
 			y = 24 / 256.0
 		case pl.ping <= 225:
 			y = 32 / 256.0
-		default:
+		case pl.ping <= 350:
 			y = 40 / 256.0
+		case pl.ping < 999:
+			y = 48 / 256.0
+		default:
+			y = 56 / 256.0
 		}
 		e.ping.TY = y
 		count++
