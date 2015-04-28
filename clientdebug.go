@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/thinkofdeath/steven/chat"
-	"github.com/thinkofdeath/steven/render/ui"
+	"github.com/thinkofdeath/steven/ui"
 )
 
 var memoryStats runtime.MemStats

@@ -22,8 +22,8 @@ import (
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/render/ui"
 	"github.com/thinkofdeath/steven/resource/locale"
+	"github.com/thinkofdeath/steven/ui"
 )
 
 const (
