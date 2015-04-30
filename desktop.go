@@ -154,6 +154,10 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 				Client.scene.Show()
 			}
 		}
+	case glfw.KeyF2:
+		if action == glfw.Release {
+			conn.Close()
+		}
 	case glfw.KeyF3:
 		if action == glfw.Release {
 			Client.toggleDebug()

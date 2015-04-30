@@ -30,6 +30,9 @@ var (
 )
 
 func startConnection(profile mojang.Profile, server string) {
+	writeChan = make(chan protocol.Packet, 200)
+	readChan = make(chan protocol.Packet, 200)
+	errorChan = make(chan error, 1)
 	var err error
 	conn, err = protocol.Dial(server)
 	if err != nil {

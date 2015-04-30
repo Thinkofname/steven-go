@@ -15,6 +15,7 @@
 package steven
 
 import (
+	"fmt"
 	"math"
 	"runtime"
 	"time"
@@ -124,7 +125,10 @@ handle:
 	for {
 		select {
 		case err := <-errorChan:
-			panic(err)
+			conn.Close()
+			fmt.Printf("Disconnected: %s\n", err)
+			ready = false
+			setScreen(newServerList())
 		case packet := <-readChan:
 			defaultHandler.Handle(packet)
 		case pos := <-completeBuilders:
