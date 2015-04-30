@@ -250,5 +250,8 @@ func (c *Conn) SetCompression(threshold int) {
 
 // Close closes the underlying connection
 func (c *Conn) Close() error {
+	if c.net == nil {
+		return nil
+	}
 	return c.net.Close()
 }

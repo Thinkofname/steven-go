@@ -36,20 +36,23 @@ func startConnection(profile mojang.Profile, server string) {
 	var err error
 	conn, err = protocol.Dial(server)
 	if err != nil {
-		panic(err)
+		closeWithError(err)
+		return
 	}
 	defer conn.Close()
 
 	err = conn.LoginToServer(profile)
 	if err != nil {
-		panic(err)
+		closeWithError(err)
+		return
 	}
 
 preLogin:
 	for {
 		packet, err := conn.ReadPacket()
 		if err != nil {
-			panic(err)
+			closeWithError(err)
+			return
 		}
 		switch packet := packet.(type) {
 		case *protocol.SetInitialCompression:
@@ -68,11 +71,7 @@ preLogin:
 		packet, err := conn.ReadPacket()
 		if err != nil {
 			// Try to save the error if one isn't already there
-			select {
-			case errorChan <- err:
-			default:
-			}
-			conn.Close()
+			closeWithError(err)
 			return
 		}
 
@@ -85,6 +84,16 @@ preLogin:
 		default:
 			readChan <- packet
 		}
+	}
+}
+
+func closeWithError(err error) {
+	select {
+	case errorChan <- err:
+	default:
+	}
+	if conn != nil {
+		conn.Close()
 	}
 }
 

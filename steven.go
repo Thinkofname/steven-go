@@ -125,7 +125,9 @@ handle:
 	for {
 		select {
 		case err := <-errorChan:
-			conn.Close()
+			if conn != nil {
+				conn.Close()
+			}
 			fmt.Printf("Disconnected: %s\n", err)
 			ready = false
 			setScreen(newServerList())
