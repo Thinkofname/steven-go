@@ -229,7 +229,7 @@ func (c *ChatUI) Add(msg chat.AnyComponent) {
 	line := &chatLine{
 		text:       f,
 		fade:       3.0,
-		background: ui.NewImage(render.GetTexture("solid"), 0, chatHistoryLines*18, 500, 18, 0, 0, 1, 1, 0, 0, 0),
+		background: ui.NewImage(render.GetTexture("solid"), 0, chatHistoryLines*18, 500, f.Height, 0, 0, 1, 1, 0, 0, 0),
 	}
 	line.background.Parent = c
 	line.background.A = 77
