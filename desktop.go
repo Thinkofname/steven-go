@@ -79,10 +79,14 @@ func onScroll(w *glfw.Window, xoff float64, yoff float64) {
 var lockMouse bool
 
 func onMouseMove(w *glfw.Window, xpos float64, ypos float64) {
+	width, height := w.GetFramebufferSize()
+	if currentScreen != nil {
+		currentScreen.hover(xpos, ypos, width, height)
+		return
+	}
 	if !lockMouse {
 		return
 	}
-	width, height := w.GetFramebufferSize()
 	ww, hh := float64(width/2), float64(height/2)
 	w.SetCursorPos(ww, hh)
 
@@ -90,6 +94,15 @@ func onMouseMove(w *glfw.Window, xpos float64, ypos float64) {
 }
 
 func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mod glfw.ModifierKey) {
+	if currentScreen != nil {
+		if button != glfw.MouseButtonLeft || action != glfw.Release {
+			return
+		}
+		width, height := w.GetFramebufferSize()
+		xpos, ypos := w.GetCursorPos()
+		currentScreen.click(xpos, ypos, width, height)
+		return
+	}
 	if button == glfw.MouseButtonLeft && action == glfw.Press && !Client.chat.enteringText {
 		lockMouse = true
 		w.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
@@ -106,6 +119,9 @@ const (
 )
 
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	if currentScreen != nil {
+		return
+	}
 	if Client.chat.enteringText {
 		Client.chat.handleKey(w, key, scancode, action, mods)
 		return
@@ -129,6 +145,14 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 	case glfw.KeyD:
 		if action != glfw.Repeat {
 			Client.KeyState[KeyRight] = action == glfw.Press
+		}
+	case glfw.KeyF1:
+		if action == glfw.Release {
+			if Client.scene.IsVisible() {
+				Client.scene.Hide()
+			} else {
+				Client.scene.Show()
+			}
 		}
 	case glfw.KeyF3:
 		if action == glfw.Release {

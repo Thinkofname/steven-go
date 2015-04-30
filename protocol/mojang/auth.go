@@ -35,18 +35,24 @@ type Profile struct {
 	AccessToken string
 }
 
+// IsComplete returns whether the profile is enough to connect
+// with.
+func (p Profile) IsComplete() bool {
+	return p.Username != "" && p.ID != "" && p.AccessToken != ""
+}
+
 type joinData struct {
 	AccessToken     string `json:"accessToken"`
 	SelectedProfile string `json:"selectedProfile"`
 	ServerID        string `json:"serverId"`
 }
 
-type mojError struct {
+type Error struct {
 	Message string `json:"errorMessage"`
 	Type    string `json:"error"`
 }
 
-func (m mojError) Error() string {
+func (m Error) Error() string {
 	return fmt.Sprintf("%s: %s", m.Type, m.Message)
 }
 
@@ -92,7 +98,7 @@ func JoinServer(profile Profile, serverHash ...[]byte) error {
 		return err
 	}
 	if len(reply) != 0 {
-		var e mojError
+		var e Error
 		json.Unmarshal(reply, &e)
 		return e
 	}

@@ -129,13 +129,13 @@ const (
 type (
 	// Component is the base for any chat component.
 	Component struct {
-		Extra         []*AnyComponent `json:"extra,omitempty"`
-		Bold          *bool           `json:"bold,omitempty"`
-		Italic        *bool           `json:"italic,omitempty"`
-		Underlined    *bool           `json:"underlined,omitempty"`
-		Strikethrough *bool           `json:"strikethrough,omitempty"`
-		Obfuscated    *bool           `json:"obfuscated,omitempty"`
-		Color         Color           `json:"color,omitempty"`
+		Extra         []AnyComponent `json:"extra,omitempty"`
+		Bold          *bool          `json:"bold,omitempty"`
+		Italic        *bool          `json:"italic,omitempty"`
+		Underlined    *bool          `json:"underlined,omitempty"`
+		Strikethrough *bool          `json:"strikethrough,omitempty"`
+		Obfuscated    *bool          `json:"obfuscated,omitempty"`
+		Color         Color          `json:"color,omitempty"`
 
 		ClickEvent *ClickEvent `json:"clickEvent,omitempty"`
 		HoverEvent *HoverEvent `json:"hoverEvent,omitempty"`
@@ -151,8 +151,8 @@ type (
 	// the client's language, substituting in values from the With
 	// slice.
 	TranslateComponent struct {
-		Translate string          `json:"translate,omitempty"`
-		With      []*AnyComponent `json:"with,omitempty"`
+		Translate string         `json:"translate,omitempty"`
+		With      []AnyComponent `json:"with,omitempty"`
 		Component
 	}
 	// ScoreComponent is a component whos value is based on the
@@ -199,6 +199,15 @@ const (
 	LightPurple Color = "light_purple"
 	Yellow      Color = "yellow"
 	White       Color = "white"
+)
+
+// Optional boolean values
+var (
+	vTrue         = true
+	True          = &vTrue
+	vFalse        = false
+	False         = &vFalse
+	Missing *bool = nil
 )
 
 // Valid ClickActions.

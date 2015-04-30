@@ -81,6 +81,13 @@ func (w world) UpdateBlock(x, y, z int) {
 	}
 }
 
+func clearChunks() {
+	for _, c := range chunkMap {
+		c.free()
+	}
+	chunkMap = map[chunkPosition]*chunk{}
+}
+
 type chunkPosition struct {
 	X, Z int
 }

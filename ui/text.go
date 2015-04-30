@@ -24,6 +24,8 @@ type Text struct {
 	value            string
 	Width            float64
 	Visible          bool
+	ScaleX, ScaleY   float64
+	Rotation         float64
 	vAttach, hAttach AttachPoint
 }
 
@@ -34,6 +36,7 @@ func NewText(val string, x, y float64, r, g, b int) *Text {
 		Width: render.SizeOfString(val),
 		R:     r, G: g, B: b,
 		X: x, Y: y,
+		ScaleX: 1, ScaleY: 1,
 		Visible: true,
 	}
 }
@@ -64,7 +67,11 @@ func (t *Text) Update(val string) {
 func (t *Text) Draw(r Region, delta float64) {
 	cw, ch := t.Size()
 	sx, sy := r.W/cw, r.H/ch
-	render.DrawUITextScaled(t.value, r.X, r.Y, sx, sy, t.R, t.G, t.B)
+	if t.Rotation == 0 {
+		render.DrawUITextScaled(t.value, r.X, r.Y, sx*t.ScaleX, sy*t.ScaleY, t.R, t.G, t.B)
+	} else {
+		render.DrawUITextRotated(t.value, r.X, r.Y, sx*t.ScaleX, sy*t.ScaleY, t.Rotation, t.R, t.G, t.B)
+	}
 }
 
 // AttachedTo returns the Drawable this is attached to or nil.
@@ -80,7 +87,7 @@ func (t *Text) Offset() (float64, float64) {
 
 // Size returns the size of this drawable.
 func (t *Text) Size() (float64, float64) {
-	return t.Width + 2, 18
+	return (t.Width + 2) * t.ScaleX, 18 * t.ScaleY
 }
 
 // Remove removes the text element from the draw list.

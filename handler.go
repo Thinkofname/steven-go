@@ -63,6 +63,7 @@ func (handler) ServerMessage(msg *protocol.ServerMessage) {
 }
 
 func (handler) JoinGame(j *protocol.JoinGame) {
+	clearChunks()
 	sendPluginMessage(&pmMinecraftBrand{
 		Brand: "Steven",
 	})
@@ -71,10 +72,7 @@ func (handler) JoinGame(j *protocol.JoinGame) {
 }
 
 func (handler) Respawn(r *protocol.Respawn) {
-	for _, c := range chunkMap {
-		c.free()
-	}
-	chunkMap = map[chunkPosition]*chunk{}
+	clearChunks()
 	Client.GameMode = gameMode(r.Gamemode & 0x7)
 	Client.HardCore = r.Gamemode&0x8 != 0
 }

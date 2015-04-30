@@ -90,7 +90,8 @@ func obtainSkin(hash string, s *skin) {
 	}
 	img, err := png.Decode(r)
 	if err != nil {
-		panic(err)
+		fmt.Printf("Error decoding skin: %s\n", err)
+		return
 	}
 	pix := imgToBytes(img)
 	if !fromCache {

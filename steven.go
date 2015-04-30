@@ -19,21 +19,44 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/ui"
 )
 
-var loadChan = make(chan struct{})
+var (
+	profile       mojang.Profile
+	server        string
+	loadChan      = make(chan struct{})
+	currentScreen screen
+)
 
-func Main(username, uuid, accessToken, server string) {
+type screen interface {
+	tick(delta float64)
+	hover(x, y float64, w, h int)
+	click(x, y float64, w, h int)
+	remove()
+}
 
-	// Start connecting whilst starting the renderer
-	go startConnection(mojang.Profile{
+func setScreen(s screen) {
+	if currentScreen != nil {
+		currentScreen.remove()
+	}
+	currentScreen = s
+	if s != nil {
+		lockMouse = false
+		window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
+	}
+}
+
+func Main(username, uuid, accessToken, s string) {
+	profile = mojang.Profile{
 		Username:    username,
 		ID:          uuid,
 		AccessToken: accessToken,
-	}, server)
+	}
+	server = s
 
 	go func() {
 		render.LoadTextures()
@@ -41,12 +64,37 @@ func Main(username, uuid, accessToken, server string) {
 		loadChan <- struct{}{}
 	}()
 
+	if profile.IsComplete() && server != "" {
+		// Start connecting whilst starting the renderer
+		connect()
+	} else {
+		Client.valid = false
+	}
+
 	startWindow()
+}
+
+func connect() {
+	go startConnection(mojang.Profile{
+		Username:    profile.Username,
+		ID:          profile.ID,
+		AccessToken: profile.AccessToken,
+	}, server)
+	server = ""
 }
 
 func start() {
 	<-loadChan
-	Client.init()
+	if Client.valid {
+		Client.init()
+	} else {
+		fakeGen()
+		if !profile.IsComplete() {
+			setScreen(newLoginScreen())
+		} else {
+			setScreen(newServerList())
+		}
+	}
 	render.Start()
 }
 
@@ -97,15 +145,24 @@ handle:
 
 	width, height := window.GetFramebufferSize()
 
-	if ready {
+	if currentScreen != nil {
+		currentScreen.tick(delta)
+	}
+
+	if ready && Client.valid {
 		Client.renderTick(delta)
-		ui.Draw(width, height, delta)
 		select {
 		case <-ticker.C:
 			tick()
 		default:
 		}
+	} else if !Client.valid {
+		render.Camera.Yaw += 0.005
+		if render.Camera.Yaw > math.Pi*2 {
+			render.Camera.Yaw = 0
+		}
 	}
+	ui.Draw(width, height, delta)
 
 	render.Draw(width, height, delta)
 	chunks := sortedChunks()

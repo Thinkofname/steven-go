@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package ui provides methods to draw a user interface onto the
+// the screen and manage resizing.
 package ui
 
 const (
@@ -41,8 +43,12 @@ type Drawable interface {
 	Attachment() (vAttach, hAttach AttachPoint)
 }
 
-// AddDrawable adds the drawable to the draw list and attaches it
-// to the specified parts of the screen.
+type Interactable interface {
+	Click(r Region, x, y float64)
+	Hover(r Region, x, y float64, over bool)
+}
+
+// AddDrawable adds the drawable to the draw list.
 func AddDrawable(d Drawable) {
 	drawables = append(drawables, d)
 }
@@ -62,6 +68,53 @@ func Draw(width, height int, delta float64) {
 		}
 		r := getDrawRegion(d, sw, sh)
 		d.Draw(r, delta)
+	}
+}
+
+// Hover calls Hover on all interactables at the passed location.
+func Hover(x, y float64, width, height int) {
+	sw := scaledWidth / float64(width)
+	sh := scaledHeight / float64(height)
+	if drawMode == mUnscaled {
+		sw, sh = 1.0, 1.0
+	}
+	x = (x / float64(width)) * scaledWidth
+	y = (y / float64(height)) * scaledHeight
+	for i := range drawables {
+		d := drawables[len(drawables)-1-i]
+		inter, ok := d.(Interactable)
+		if !ok {
+			continue
+		}
+		r := getDrawRegion(d, sw, sh)
+		if x >= r.X && x <= r.X+r.W && y >= r.Y && y <= r.Y+r.H {
+			inter.Hover(r, x, y, true)
+		} else {
+			inter.Hover(r, x, y, false)
+		}
+	}
+}
+
+// Click calls Click on all interactables at the passed location.
+func Click(x, y float64, width, height int) {
+	sw := scaledWidth / float64(width)
+	sh := scaledHeight / float64(height)
+	if drawMode == mUnscaled {
+		sw, sh = 1.0, 1.0
+	}
+	x = (x / float64(width)) * scaledWidth
+	y = (y / float64(height)) * scaledHeight
+	for i := range drawables {
+		d := drawables[len(drawables)-1-i]
+		inter, ok := d.(Interactable)
+		if !ok {
+			continue
+		}
+		r := getDrawRegion(d, sw, sh)
+		if x >= r.X && x <= r.X+r.W && y >= r.Y && y <= r.Y+r.H {
+			inter.Click(r, x, y)
+			break
+		}
 	}
 }
 
@@ -100,6 +153,7 @@ func getDrawRegion(d Drawable, sw, sh float64) Region {
 	return r
 }
 
+// Remove removes the drawable from the screen.
 func Remove(d Drawable) {
 	for i, dd := range drawables {
 		if dd == d {

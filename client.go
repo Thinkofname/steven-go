@@ -23,20 +23,38 @@ import (
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
 	"github.com/thinkofdeath/steven/ui"
+	"github.com/thinkofdeath/steven/ui/scene"
 )
 
 const (
 	playerHeight = 1.62
 )
 
-var Client = ClientState{
-	Bounds: vmath.AABB{
-		Min: vmath.Vector3{-0.3, 0, -0.3},
-		Max: vmath.Vector3{0.3, 1.8, 0.3},
-	},
+var Client ClientState
+
+func init() {
+	initClient()
+}
+
+func initClient() {
+	if Client.valid {
+		Client.scene.Hide()
+	}
+	Client = ClientState{
+		Bounds: vmath.AABB{
+			Min: vmath.Vector3{-0.3, 0, -0.3},
+			Max: vmath.Vector3{0.3, 1.8, 0.3},
+		},
+		valid: true,
+		scene: scene.New(true),
+	}
 }
 
 type ClientState struct {
+	valid bool
+
+	scene *scene.Type
+
 	X, Y, Z    float64
 	Yaw, Pitch float64
 
@@ -79,47 +97,47 @@ func (c *ClientState) init() {
 	widgets := render.GetTexture("gui/widgets")
 	icons := render.GetTexture("gui/icons")
 	// Crosshair
-	ui.AddDrawable(
+	c.scene.AddDrawable(
 		ui.NewImage(icons, 0, 0, 32, 32, 0, 0, 16.0/256.0, 16.0/256.0, 255, 255, 255).
 			Attach(ui.Middle, ui.Center),
 	)
 	// Hotbar
-	ui.AddDrawable(
+	c.scene.AddDrawable(
 		ui.NewImage(widgets, 0, 0, 182*2, 22*2, 0, 0, 182.0/256.0, 22.0/256.0, 255, 255, 255).
 			Attach(ui.Bottom, ui.Center),
 	)
 	c.hotbarUI = ui.NewImage(widgets, -22*2+4, -2, 24*2, 24*2, 0, 22.0/256.0, 24.0/256.0, 24.0/256.0, 255, 255, 255).
 		Attach(ui.Bottom, ui.Center)
-	ui.AddDrawable(c.hotbarUI)
+	c.scene.AddDrawable(c.hotbarUI)
 
 	// Hearts / Food
 	for i := 0; i < 10; i++ {
 		l := ui.NewImage(icons, -182+9+16*float64(i), 22*2+16, 18, 18, 16.0/256.0, 0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
 			Attach(ui.Bottom, ui.Center)
-		ui.AddDrawable(l)
+		c.scene.AddDrawable(l)
 		c.lifeUI = append(c.lifeUI, l)
 		l = ui.NewImage(icons, -182+9+16*float64(i), 22*2+16, 18, 18, (16+9*4)/256.0, 0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
 			Attach(ui.Bottom, ui.Center)
-		ui.AddDrawable(l)
+		c.scene.AddDrawable(l)
 		c.lifeFillUI = append(c.lifeFillUI, l)
 
 		f := ui.NewImage(icons, 182+7-16*float64(10-i), 22*2+16, 18, 18, 16.0/256.0, 27.0/256.0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
 			Attach(ui.Bottom, ui.Center)
-		ui.AddDrawable(f)
+		c.scene.AddDrawable(f)
 		c.foodUI = append(c.foodUI, l)
 		f = ui.NewImage(icons, 182+7-16*float64(10-i), 22*2+16, 18, 18, (16+9*4)/256.0, 27.0/256.0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
 			Attach(ui.Bottom, ui.Center)
-		ui.AddDrawable(f)
+		c.scene.AddDrawable(f)
 		c.foodFillUI = append(c.foodFillUI, l)
 	}
 
 	// Exp bar
-	ui.AddDrawable(
+	c.scene.AddDrawable(
 		ui.NewImage(icons, 0, 22*2+4, 182*2, 10, 0, 64.0/256.0, 182.0/256.0, 5.0/256.0, 255, 255, 255).
 			Attach(ui.Bottom, ui.Center),
 	)
 
-	ui.AddDrawable(&Client.chat)
+	c.scene.AddDrawable(&Client.chat)
 	c.initDebug()
 	c.playerList.init()
 }

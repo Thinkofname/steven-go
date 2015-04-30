@@ -48,6 +48,19 @@ type TextureInfo struct {
 	*atlas.Rect
 }
 
+// Sub returns a subsection of this texture.
+func (ti *TextureInfo) Sub(x, y, w, h int) *TextureInfo {
+	return &TextureInfo{
+		Atlas: ti.Atlas,
+		Rect: &atlas.Rect{
+			X:      ti.X + x,
+			Y:      ti.Y + y,
+			Width:  w,
+			Height: h,
+		},
+	}
+}
+
 // GetTexture returns the related TextureInfo for the requested texture.
 // If the texture isn't found a placeholder is returned instead.
 func GetTexture(name string) *TextureInfo {

@@ -24,6 +24,7 @@ import (
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/ui"
+	"github.com/thinkofdeath/steven/ui/scene"
 )
 
 const playerListWidth = 150
@@ -42,10 +43,9 @@ type playerInfo struct {
 }
 
 type playerListUI struct {
-	enabled bool
-
 	background [4]*ui.Image
 	entries    []*playerListUIEntry
+	scene      *scene.Type
 }
 
 type playerListUIEntry struct {
@@ -63,26 +63,25 @@ func (p playerListUIEntry) set(enabled bool) {
 }
 
 func (p *playerListUI) init() {
+	p.scene = scene.New(false)
 	for i := range p.background {
 		p.background[i] = ui.NewImage(render.GetTexture("solid"), 0, 16, playerListWidth+48, 16, 0, 0, 1, 1, 0, 0, 0)
 		p.background[i].A = 120
 		p.background[i].Visible = false
-		ui.AddDrawable(p.background[i].Attach(ui.Top, ui.Center))
+		p.scene.AddDrawable(p.background[i].Attach(ui.Top, ui.Center))
 	}
 }
 
 func (p *playerListUI) set(enabled bool) {
-	p.enabled = enabled
-	for _, b := range p.background {
-		b.Visible = enabled
-	}
-	for _, e := range p.entries {
-		e.set(enabled)
+	if enabled {
+		p.scene.Show()
+	} else {
+		p.scene.Hide()
 	}
 }
 
 func (p *playerListUI) render(delta float64) {
-	if !p.enabled {
+	if !p.scene.IsVisible() {
 		return
 	}
 	for _, b := range p.background {
@@ -118,16 +117,16 @@ func (p *playerListUI) render(delta float64) {
 		if offset >= len(p.entries) {
 			text := ui.NewText("", 24, 0, 255, 255, 255).
 				Attach(ui.Top, ui.Left)
-			ui.AddDrawable(text)
+			p.scene.AddDrawable(text)
 			icon := ui.NewImage(pl.skin, 0, 0, 16, 16, 8/64.0, 8/64.0, 8/64.0, 8/64.0, 255, 255, 255).
 				Attach(ui.Top, ui.Center)
-			ui.AddDrawable(icon)
+			p.scene.AddDrawable(icon)
 			iconHat := ui.NewImage(pl.skin, 0, 0, 16, 16, 40/64.0, 8/64.0, 8/64.0, 8/64.0, 255, 255, 255).
 				Attach(ui.Top, ui.Center)
-			ui.AddDrawable(iconHat)
+			p.scene.AddDrawable(iconHat)
 			ping := ui.NewImage(render.GetTexture("gui/icons"), 0, 0, 20, 16, 0, 16/256.0, 10/256.0, 8/256.0, 255, 255, 255).
 				Attach(ui.Top, ui.Center)
-			ui.AddDrawable(ping)
+			p.scene.AddDrawable(ping)
 
 			text.Parent = background
 			icon.Parent = background

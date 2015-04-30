@@ -28,24 +28,24 @@ var memoryStats runtime.MemStats
 func (c *ClientState) initDebug() {
 	c.debug.position = ui.NewText("X:0 Y:0 Z:0", 5, 5, 255, 255, 255).
 		Attach(ui.Top, ui.Left)
-	ui.AddDrawable(c.debug.position)
+	c.scene.AddDrawable(c.debug.position)
 	c.debug.facing = ui.NewText("Facing: invalid", 5, 23, 255, 255, 255).
 		Attach(ui.Top, ui.Left)
-	ui.AddDrawable(c.debug.facing)
+	c.scene.AddDrawable(c.debug.facing)
 
 	c.debug.fps = ui.NewText("FPS: 0", 5, 5, 255, 255, 255).
 		Attach(ui.Top, ui.Right)
-	ui.AddDrawable(c.debug.fps)
+	c.scene.AddDrawable(c.debug.fps)
 	c.debug.memory = ui.NewText("0/0", 5, 23, 255, 255, 255).
 		Attach(ui.Top, ui.Right)
-	ui.AddDrawable(c.debug.memory)
+	c.scene.AddDrawable(c.debug.memory)
 
 	c.debug.target = ui.NewText("", 5, 41, 255, 255, 255).
 		Attach(ui.Top, ui.Right)
-	ui.AddDrawable(c.debug.target)
+	c.scene.AddDrawable(c.debug.target)
 	c.debug.targetName = ui.NewText("", 5, 59, 255, 255, 255).
 		Attach(ui.Top, ui.Right)
-	ui.AddDrawable(c.debug.targetName)
+	c.scene.AddDrawable(c.debug.targetName)
 	c.debug.enabled = true
 	c.toggleDebug()
 }
@@ -152,7 +152,7 @@ func (c *ClientState) displayTargetInfo() {
 				ui.NewText("", 5, 59+18*(1+float64(i)), 255, 255, 255).Attach(ui.Top, ui.Right),
 			}
 			for _, t := range c.debug.targetInfo[i] {
-				ui.AddDrawable(t)
+				c.scene.AddDrawable(t)
 			}
 		}
 		v := c.debug.targetInfo[i][0]

@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	resourcesVersion = "1.8.4"
+	ResourcesVersion = "1.8.4"
 	vanillaURL       = "https://s3.amazonaws.com/Minecraft.Download/versions/%[1]s/%[1]s.jar"
 )
 
@@ -86,7 +86,7 @@ func Search(plugin, path, ext string) []string {
 // being an init thing. Also should have a way to get process information.
 
 func init() {
-	defLocation := fmt.Sprintf("./resources-%s", resourcesVersion)
+	defLocation := fmt.Sprintf("./resources-%s", ResourcesVersion)
 	_, err := os.Stat(defLocation)
 	if os.IsNotExist(err) {
 		downloadDefault(defLocation)
@@ -95,9 +95,7 @@ func init() {
 		panic(err)
 	}
 
-	if err := loadZip("./pack.zip"); err != nil {
-		fmt.Printf("Couldn't load pack.zip: %s\n", err)
-	}
+	loadZip("./pack.zip")
 }
 func fromDir(d string) error {
 	p := &pack{
@@ -155,8 +153,8 @@ func fromFile(f *os.File) error {
 }
 
 func downloadDefault(target string) {
-	fmt.Printf("Obtaining vanilla resources for %s, please wait...\n", resourcesVersion)
-	resp, err := http.Get(fmt.Sprintf(vanillaURL, resourcesVersion))
+	fmt.Printf("Obtaining vanilla resources for %s, please wait...\n", ResourcesVersion)
+	resp, err := http.Get(fmt.Sprintf(vanillaURL, ResourcesVersion))
 	if err != nil {
 		panic(err)
 	}
@@ -183,21 +181,23 @@ func downloadDefault(target string) {
 		if !strings.HasPrefix(f.Name, "assets/") {
 			continue
 		}
-		path := filepath.Join(target, f.Name)
-		os.MkdirAll(filepath.Dir(path), 0777)
-		w, err := os.Create(path)
-		if err != nil {
-			panic(err)
-		}
-		defer w.Close()
-		r, err := f.Open()
-		if err != nil {
-			panic(err)
-		}
-		_, err = io.Copy(w, r)
-		if err != nil {
-			panic(err)
-		}
-		r.Close()
+		func() {
+			path := filepath.Join(target, f.Name)
+			os.MkdirAll(filepath.Dir(path), 0777)
+			w, err := os.Create(path)
+			if err != nil {
+				panic(err)
+			}
+			defer w.Close()
+			r, err := f.Open()
+			if err != nil {
+				panic(err)
+			}
+			defer r.Close()
+			_, err = io.Copy(w, r)
+			if err != nil {
+				panic(err)
+			}
+		}()
 	}
 }

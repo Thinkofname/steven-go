@@ -27,7 +27,7 @@ type Image struct {
 	vAttach, hAttach AttachPoint
 }
 
-// NewText creates a new Text drawable.
+// NewImage creates a new image drawable.
 func NewImage(texture *render.TextureInfo, x, y, w, h, tx, ty, tw, th float64, r, g, b int) *Image {
 	return &Image{
 		Texture: texture,

@@ -19,6 +19,7 @@ import (
 	"image"
 	"image/png"
 	"io"
+	"math"
 
 	"github.com/thinkofdeath/steven/resource"
 )
@@ -50,7 +51,18 @@ func DrawUIText(str string, x, y float64, rr, gg, bb int) UIText {
 // DrawUITextScaled draws a UIText element to the screen with
 // the passed text at the location. The text may be tinted and/or
 // scaled too
-func DrawUITextScaled(str string, x, y float64, sx, sy float64, rr, gg, bb int) UIText {
+func DrawUITextScaled(str string, x, y, sx, sy float64, rr, gg, bb int) UIText {
+	return drawUIText(str, x, y, sx, sy, 0, rr, gg, bb)
+}
+
+// DrawUITextRotated draws a UIText element to the screen with
+// the passed text at the location. The text may be tinted,
+// scaled and/or rotated too
+func DrawUITextRotated(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UIText {
+	return drawUIText(str, x, y, sx, sy, rotation, rr, gg, bb)
+}
+
+func drawUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UIText {
 	t := UIText{}
 	offset := 0.0
 	for _, r := range str {
@@ -88,16 +100,34 @@ func DrawUITextScaled(str string, x, y float64, sx, sy float64, rr, gg, bb int) 
 			th = 16.0 / 256.0
 			w = float64(info.End - info.Start)
 		}
-		shadow := DrawUIElement(p, x+(offset+2)*sx, y+2*sy, w*sx, 16*sy, tx, ty, tw, th)
+
+		dsx, dsy := offset+2, 2.0
+		dx, dy := offset, 0.0
+		if rotation != 0 {
+			c := math.Cos(rotation)
+			s := math.Sin(rotation)
+			tmpx := dsx - (w * 0.5)
+			tmpy := dsy - (16 * 0.5)
+			dsx = (w * 0.5) + (tmpx*c - tmpy*s)
+			dsy = (16 * 0.5) + (tmpy*c + tmpx*s)
+			tmpx = dx - (w * 0.5)
+			tmpy = dy - (16 * 0.5)
+			dx = (w * 0.5) + (tmpx*c - tmpy*s)
+			dy = (16 * 0.5) + (tmpy*c + tmpx*s)
+		}
+
+		shadow := DrawUIElement(p, x+dsx*sx, y+dsy*sy, w*sx, 16*sy, tx, ty, tw, th)
 		// Tint the shadow to a darker shade of the original color
 		shadow.R = byte(float64(rr) * 0.25)
 		shadow.G = byte(float64(gg) * 0.25)
 		shadow.B = byte(float64(bb) * 0.25)
+		shadow.Rotation = rotation
 		t.elements = append(t.elements, shadow)
-		text := DrawUIElement(p, x+offset*sx, y, w*sx, 16*sy, tx, ty, tw, th)
+		text := DrawUIElement(p, x+dx*sx, y+dy*sy, w*sx, 16*sy, tx, ty, tw, th)
 		text.R = byte(rr)
 		text.G = byte(gg)
 		text.B = byte(bb)
+		text.Rotation = rotation
 		t.elements = append(t.elements, text)
 		offset += w + 2
 	}

@@ -100,6 +100,7 @@ type UIElement struct {
 	TOffsetX, TOffsetY, TAtlas int16
 	TSizeW, TSizeH             int16
 	R, G, B, A                 byte
+	Rotation                   float64
 }
 
 // DrawUIElement draws a single ui element onto the screen.
@@ -162,8 +163,17 @@ func (u *UIElement) draw() {
 
 func (u *UIElement) appendVertex(x, y float64, tx, ty int16) {
 	uiState.count++
-	uiState.data = appendFloat(uiState.data, float32(x))
-	uiState.data = appendFloat(uiState.data, float32(y))
+	dx, dy := float64(x), float64(y)
+	if u.Rotation != 0 {
+		c := math.Cos(u.Rotation)
+		s := math.Sin(u.Rotation)
+		tmpx := dx - u.X - (u.W / 2)
+		tmpy := dy - u.Y - (u.H / 2)
+		dx = (u.W / 2) + (tmpx*c - tmpy*s) + u.X
+		dy = (u.H / 2) + (tmpy*c + tmpx*s) + u.Y
+	}
+	uiState.data = appendFloat(uiState.data, float32(dx))
+	uiState.data = appendFloat(uiState.data, float32(dy))
 	uiState.data = appendFloat(uiState.data, float32(u.DepthIndex))
 	uiState.data = appendUnsignedShort(uiState.data, u.TX)
 	uiState.data = appendUnsignedShort(uiState.data, u.TY)
