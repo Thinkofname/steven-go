@@ -120,7 +120,7 @@ func draw() {
 	diff := now.Sub(lastFrame)
 	lastFrame = now
 	delta := float64(diff.Nanoseconds()) / (float64(time.Second) / 60)
-	delta = math.Min(math.Max(delta, 0.3), 1.6)
+	delta = math.Min(delta, 1.6)
 handle:
 	for {
 		select {
@@ -161,7 +161,7 @@ handle:
 		default:
 		}
 	} else if !Client.valid {
-		render.Camera.Yaw += 0.005
+		render.Camera.Yaw += 0.005 * delta
 		if render.Camera.Yaw > math.Pi*2 {
 			render.Camera.Yaw = 0
 		}
