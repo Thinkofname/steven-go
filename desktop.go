@@ -62,6 +62,9 @@ func startWindow() {
 }
 
 func onScroll(w *glfw.Window, xoff float64, yoff float64) {
+	if currentScreen != nil || !ready {
+		return
+	}
 	if yoff < 0 {
 		Client.currentHotbarSlot++
 	} else {
