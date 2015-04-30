@@ -15,14 +15,12 @@
 package steven
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/resource/locale"
 	"github.com/thinkofdeath/steven/ui"
 )
 
@@ -32,17 +30,23 @@ const (
 )
 
 type ChatUI struct {
-	Elements []*chatUIElement
+	Lines [chatHistoryLines]chat.AnyComponent
 
-	Lines    [chatHistoryLines]chat.AnyComponent
-	lineFade [chatHistoryLines]float64
+	parts           []*chatLine
+	input           *ui.Text
+	inputBackground *ui.Image
 
-	lineLength float64
+	enteringText    bool
+	wasEnteringText bool
+	inputLine       []rune
+	cursorTick      float64
+	first           bool
+}
 
-	enteringText bool
-	inputLine    []rune
-	cursorTick   float64
-	first        bool
+type chatLine struct {
+	fade       float64
+	text       *ui.Formatted
+	background *ui.Image
 }
 
 func (c *ChatUI) ShouldDraw() bool {
@@ -65,87 +69,86 @@ func (c *ChatUI) AttachedTo() ui.Drawable {
 	return nil
 }
 
+func (c *ChatUI) init() {
+	c.input = ui.NewText("", 5, 1, 255, 255, 255).Attach(ui.Bottom, ui.Left)
+	c.input.Visible = false
+	c.input.Parent = c
+	c.inputBackground = ui.NewImage(render.GetTexture("solid"), 0, 0, 500, 20, 0, 0, 1, 1, 0, 0, 0).Attach(ui.Bottom, ui.Left)
+	c.inputBackground.A = 77
+	c.inputBackground.Parent = c
+	c.inputBackground.Visible = false
+	Client.scene.AddDrawable(c)
+	Client.scene.AddDrawable(c.inputBackground)
+	Client.scene.AddDrawable(c.input)
+}
+
 func (c *ChatUI) Draw(r ui.Region, delta float64) {
-	cw, ch := c.Size()
-	sx, sy := r.W/cw, r.H/ch
-
-	c.Elements = c.Elements[:0]
-	for i, line := range c.Lines {
-		c.newLine()
-		if line.Value == nil {
-			continue
+	if c.wasEnteringText != c.enteringText {
+		if c.wasEnteringText {
+			c.input.Visible = false
+			c.inputBackground.Visible = false
+			c.input.Update(string(c.inputLine))
+			for _, p := range c.parts {
+				p.text.Y += 18
+				p.background.Y += 18
+			}
+		} else {
+			for _, p := range c.parts {
+				p.text.Y -= 18
+				p.background.Y -= 18
+			}
 		}
-		c.lineLength = 0
-		c.renderComponent(i, line.Value, nil)
+		c.wasEnteringText = c.enteringText
 	}
-
 	if c.enteringText {
-		// Shift all the lines up
-		c.newLine()
-		c.lineLength = 0
-
-		color := chat.White
-		gc := func() chat.Color { return color }
-		line := c.inputLine
-		// Make it clear that a command is being typed
-		if len(line) != 0 && line[0] == '/' {
-			color = chat.Gold
-			c.renderText(len(c.Lines), line[:1], gc)
-			color = chat.Yellow
-			line = line[1:]
-		}
-		c.renderText(len(c.Lines), line, gc)
+		c.input.Visible = true
+		c.inputBackground.Visible = true
 		c.cursorTick += delta
 		// Add on our cursor
 		if int(c.cursorTick/30)%2 == 0 {
-			c.renderText(len(c.Lines), []rune{'|'}, gc)
+			c.input.Update(string(c.inputLine) + "|")
+		} else {
+			c.input.Update(string(c.inputLine))
 		}
 		// Lazy way of preventing rounding errors buiding up over time
 		if c.cursorTick > 0xFFFFFF {
 			c.cursorTick = 0
 		}
 	}
-	// Slowly fade out each line
-	for i := range c.lineFade {
-		c.lineFade[i] -= 0.005 * delta
-		if c.lineFade[i] < 0 {
-			c.lineFade[i] = 0
-		}
+	parts := c.parts
+	offset := 0
+	limit := 0.0
+	if c.enteringText {
+		limit = -18
 	}
-	solid := render.GetTexture("solid")
-	first := true
-	top := 0
-	for _, e := range c.Elements {
-		if !e.draw || (!c.enteringText && (e.line >= chatHistoryLines || c.lineFade[e.line] <= 0.0)) {
-			continue
+	for i, p := range parts {
+		if p.background.Y < limit {
+			c.parts = c.parts[i+1-offset:]
+			offset = i + 1
+			p.text.Remove()
+			p.background.Remove()
+		} else {
+			p.fade -= 0.005 * delta
+			if p.fade < 0 {
+				p.fade = 0
+			}
+			for _, t := range p.text.Text {
+				if c.enteringText {
+					t.A = 1.0
+				} else {
+					t.A = p.fade
+				}
+			}
+			ba := 0.3
+			if !c.enteringText {
+				ba -= (1.0 - p.fade) / 2.0
+				ba = math.Min(ba, 0.3)
+			}
+			p.background.A = int(255 * ba)
+			if p.background.A < 0 {
+				p.background.A = 0
+			}
 		}
-		if first {
-			first = false
-			top = e.offset
-		}
-		x, y, w, h := e.x, ch-18*float64(e.offset+1), e.width, 18.0
-		ux, uy := x, y
-		if x == 2 {
-			ux -= 2
-			w += 2
-		}
-		if e.offset == top {
-			uy -= 2
-			h += 2
-		}
-		background := render.DrawUIElement(solid, r.X+ux*sx, r.Y+uy*sy, w*sx, h*sy, 0, 0, 1, 1)
-		background.R = 0
-		background.G = 0
-		background.B = 0
-		ba := 0.3
-		text := render.DrawUITextScaled(e.text, r.X+x*sx, r.Y+y*sy, sx, sy, e.r, e.g, e.b)
-		// If entering text show every line
-		if !c.enteringText {
-			text.Alpha(c.lineFade[e.line])
-			ba -= (1.0 - c.lineFade[e.line]) / 2.0
-			ba = math.Min(ba, 0.3)
-		}
-		background.Alpha(ba)
 	}
 }
 
@@ -176,94 +179,6 @@ func (c *ChatUI) handleChar(w *glfw.Window, char rune) {
 	}
 	if len(c.inputLine) < 100 {
 		c.inputLine = append(c.inputLine, char)
-	}
-}
-
-func (c *ChatUI) renderComponent(line int, co interface{}, color chatGetColorFunc) {
-	switch co := co.(type) {
-	case *chat.TextComponent:
-		getColor := chatGetColor(&co.Component, color)
-		c.renderText(line, []rune(co.Text), getColor)
-		for _, e := range co.Extra {
-			c.renderComponent(line, e.Value, getColor)
-		}
-	case *chat.TranslateComponent:
-		getColor := chatGetColor(&co.Component, color)
-		for _, part := range locale.Get(co.Translate) {
-			switch part := part.(type) {
-			case string:
-				c.renderText(line, []rune(part), getColor)
-			case int:
-				if part < 0 || part >= len(co.With) {
-					continue
-				}
-				c.renderComponent(line, co.With[part].Value, getColor)
-			}
-		}
-		for _, e := range co.Extra {
-			c.renderComponent(line, e.Value, getColor)
-		}
-	default:
-		fmt.Printf("Can't handle %T\n", co)
-	}
-}
-
-func (c *ChatUI) renderText(line int, runes []rune, getColor chatGetColorFunc) {
-	width := 0.0
-	r, g, b := chatColorRGB(getColor())
-	for i := 0; i < len(runes); i++ {
-		size := float64(render.SizeOfCharacter(runes[i]))
-		if c.lineLength+width+size > maxLineWidth {
-			c.appendText(line, string(runes[:i]), r, g, b)
-			c.lineLength = 0
-			runes = runes[i:]
-			i = 0
-			width = 0
-			c.newLine()
-		}
-		width += size
-	}
-	c.lineLength += c.appendText(line, string(runes), r, g, b)
-}
-
-type chatUIElement struct {
-	text    string
-	x       float64
-	width   float64
-	r, g, b int
-	offset  int
-	line    int
-	draw    bool
-}
-
-func (c *ChatUI) appendText(line int, str string, r, g, b int) float64 {
-	if str == "" {
-		return 0
-	}
-	e := &chatUIElement{
-		text:  str,
-		x:     2 + c.lineLength,
-		width: render.SizeOfString(str) + 2,
-		r:     r, g: g, b: b,
-		offset: 0,
-		line:   line,
-		draw:   true,
-	}
-	c.Elements = append(c.Elements, e)
-	return e.width
-}
-
-type chatGetColorFunc func() chat.Color
-
-func chatGetColor(c *chat.Component, parent chatGetColorFunc) chatGetColorFunc {
-	return func() chat.Color {
-		if c.Color != "" {
-			return c.Color
-		}
-		if parent != nil {
-			return parent()
-		}
-		return chat.White
 	}
 }
 
@@ -306,18 +221,28 @@ func chatColorRGB(c chat.Color) (r, g, b int) {
 	return 255, 255, 255
 }
 
-func (c *ChatUI) newLine() {
-	for _, e := range c.Elements {
-		e.offset++
-		if e.offset >= chatHistoryLines {
-			e.draw = false
-		}
-	}
-}
-
 func (c *ChatUI) Add(msg chat.AnyComponent) {
 	copy(c.Lines[0:chatHistoryLines-1], c.Lines[1:])
-	copy(c.lineFade[0:chatHistoryLines-1], c.lineFade[1:])
 	c.Lines[chatHistoryLines-1] = msg
-	c.lineFade[chatHistoryLines-1] = 3.0
+	f := ui.NewFormattedWidth(msg, 5, chatHistoryLines*18+1, 500-10).Attach(ui.Top, ui.Left)
+	f.Parent = c
+	line := &chatLine{
+		text:       f,
+		fade:       3.0,
+		background: ui.NewImage(render.GetTexture("solid"), 0, chatHistoryLines*18, 500, 18, 0, 0, 1, 1, 0, 0, 0),
+	}
+	line.background.Parent = c
+	line.background.A = 77
+	c.parts = append(c.parts, line)
+	Client.scene.AddDrawable(line.background)
+	Client.scene.AddDrawable(f)
+	ff := f
+	for _, f := range c.parts {
+		f.text.Y -= 18 * float64(ff.Lines)
+		f.background.Y -= 18 * float64(ff.Lines)
+	}
+	if c.enteringText {
+		ff.Y -= 18
+		line.background.Y -= 18
+	}
 }

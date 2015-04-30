@@ -137,7 +137,7 @@ func (c *ClientState) init() {
 			Attach(ui.Bottom, ui.Center),
 	)
 
-	c.scene.AddDrawable(&Client.chat)
+	c.chat.init()
 	c.initDebug()
 	c.playerList.init()
 }

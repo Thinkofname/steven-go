@@ -21,6 +21,7 @@ type Text struct {
 	Parent           Drawable
 	X, Y             float64
 	R, G, B          int
+	A                float64
 	value            string
 	Width            float64
 	Visible          bool
@@ -35,6 +36,7 @@ func NewText(val string, x, y float64, r, g, b int) *Text {
 		value: val,
 		Width: render.SizeOfString(val),
 		R:     r, G: g, B: b,
+		A: 1.0,
 		X: x, Y: y,
 		ScaleX: 1, ScaleY: 1,
 		Visible: true,
@@ -68,9 +70,9 @@ func (t *Text) Draw(r Region, delta float64) {
 	cw, ch := t.Size()
 	sx, sy := r.W/cw, r.H/ch
 	if t.Rotation == 0 {
-		render.DrawUITextScaled(t.value, r.X, r.Y, sx*t.ScaleX, sy*t.ScaleY, t.R, t.G, t.B)
+		render.DrawUITextScaled(t.value, r.X, r.Y, sx*t.ScaleX, sy*t.ScaleY, t.R, t.G, t.B).Alpha(t.A)
 	} else {
-		render.DrawUITextRotated(t.value, r.X, r.Y, sx*t.ScaleX, sy*t.ScaleY, t.Rotation, t.R, t.G, t.B)
+		render.DrawUITextRotated(t.value, r.X, r.Y, sx*t.ScaleX, sy*t.ScaleY, t.Rotation, t.R, t.G, t.B).Alpha(t.A)
 	}
 }
 

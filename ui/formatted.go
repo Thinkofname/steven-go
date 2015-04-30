@@ -17,6 +17,7 @@ package ui
 import (
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/resource/locale"
 )
 
 // Formatted is a drawable that draws a string.
@@ -27,9 +28,10 @@ type Formatted struct {
 	MaxWidth         float64
 	Visible          bool
 	ScaleX, ScaleY   float64
+	Lines            int
 	vAttach, hAttach AttachPoint
 
-	text []*Text
+	Text []*Text
 }
 
 // NewFormatted creates a new Formatted drawable.
@@ -76,7 +78,7 @@ func (f *Formatted) ShouldDraw() bool {
 func (f *Formatted) Draw(r Region, delta float64) {
 	cw, ch := f.Size()
 	sx, sy := r.W/cw, r.H/ch
-	for _, t := range f.text {
+	for _, t := range f.Text {
 		r := getDrawRegion(t, sx, sy)
 		t.Draw(r, delta)
 	}
@@ -105,18 +107,21 @@ func (f *Formatted) Remove() {
 
 // Update updates the component drawn by this drawable.
 func (f *Formatted) Update(val chat.AnyComponent) {
-	f.text = f.text[:0]
+	f.Text = f.Text[:0]
 	state := formatState{
 		f: f,
 	}
 	state.build(val, func() chat.Color { return chat.White })
 	f.Height = float64(state.lines+1) * 18
+	f.Width = state.width
+	f.Lines = state.lines + 1
 }
 
 type formatState struct {
 	f      *Formatted
 	lines  int
 	offset float64
+	width  float64
 }
 
 func (f *formatState) build(c chat.AnyComponent, color getColorFunc) {
@@ -127,6 +132,20 @@ func (f *formatState) build(c chat.AnyComponent, color getColorFunc) {
 		for _, e := range c.Extra {
 			f.build(e, gc)
 		}
+	case *chat.TranslateComponent:
+		gc := getColor(&c.Component, color)
+		for _, part := range locale.Get(c.Translate) {
+			switch part := part.(type) {
+			case string:
+				f.appendText(part, gc)
+			case int:
+				if part < 0 || part >= len(c.With) {
+					continue
+				}
+				f.build(c.With[part], gc)
+			}
+		}
+
 	default:
 		panic("unhandled component")
 	}
@@ -145,19 +164,25 @@ func (f *formatState) appendText(text string, color getColorFunc) {
 			if r == '\n' {
 				last++
 			}
-			f.f.text = append(f.f.text, txt)
+			f.f.Text = append(f.f.Text, txt)
 			f.offset = 0
 			f.lines++
 			width = 0
 		}
 		width += s
+		if f.offset+width > f.width {
+			f.width = f.offset + width
+		}
 	}
 	if last != len(text) {
 		r, g, b := colorRGB(color())
 		txt := NewText(text[last:], f.offset, float64(f.lines*18+1), r, g, b)
 		txt.Parent = f.f
-		f.f.text = append(f.f.text, txt)
+		f.f.Text = append(f.f.Text, txt)
 		f.offset += txt.Width + 2
+		if f.offset > f.width {
+			f.width = f.offset
+		}
 	}
 }
 
