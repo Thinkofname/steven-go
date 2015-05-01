@@ -15,7 +15,13 @@
 package steven
 
 import (
+	"bytes"
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
+	"image/png"
 	"math"
+	"strings"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/chat"
@@ -38,6 +44,7 @@ type serverListItem struct {
 
 	container *ui.Container
 	offset    float64
+	id        string
 }
 
 func newServerList() *serverList {
@@ -99,6 +106,7 @@ func (si *serverListItem) updatePosition() {
 func (sl *serverList) redraw() {
 	for _, s := range sl.servers {
 		s.Hide()
+		render.FreeIcon(s.id)
 	}
 	sl.servers = sl.servers[:0]
 	for i, s := range Config.Servers {
@@ -106,10 +114,13 @@ func (sl *serverList) redraw() {
 		container := (&ui.Container{
 			X: 0, Y: float64(i) * 100, W: 700, H: 100,
 		}).Attach(ui.Center, ui.Middle)
+		r := make([]byte, 20)
+		rand.Read(r)
 		si := &serverListItem{
 			Type:      sc,
 			container: container,
 			offset:    float64(i),
+			id:        "servericon:" + string(r),
 		}
 		si.updatePosition()
 		sl.servers = append(sl.servers, si)
@@ -118,17 +129,32 @@ func (sl *serverList) redraw() {
 		bck.A = 100
 		bck.Parent = container
 		sc.AddDrawable(bck)
-		txt := ui.NewText(s.Name, 5, 5, 255, 255, 255).Attach(ui.Top, ui.Left)
+		txt := ui.NewText(s.Name, 90+10, 5, 255, 255, 255).Attach(ui.Top, ui.Left)
 		txt.Parent = container
 		sc.AddDrawable(txt)
 
+		icon := ui.NewImage(render.GetTexture("misc/unknown_server"), 5, 5, 90, 90, 0, 0, 1, 1, 255, 255, 255).
+			Attach(ui.Top, ui.Left)
+		icon.Parent = container
+		sc.AddDrawable(icon)
+
+		ping := ui.NewImage(render.GetTexture("gui/icons"), 5, 5, 20, 16, 0, 56/256.0, 10/256.0, 8/256.0, 255, 255, 255).
+			Attach(ui.Top, ui.Right)
+		ping.Parent = container
+		sc.AddDrawable(ping)
+
+		players := ui.NewText("???", 30, 5, 255, 255, 255).
+			Attach(ui.Top, ui.Right)
+		players.Parent = container
+		sc.AddDrawable(players)
+
 		msg := &chat.TextComponent{Text: "Connecting..."}
-		motd := ui.NewFormattedWidth(chat.AnyComponent{msg}, 5, 5+18, 690).Attach(ui.Top, ui.Left)
+		motd := ui.NewFormattedWidth(chat.AnyComponent{msg}, 90+10, 5+18, 700-(90+10+5)).Attach(ui.Top, ui.Left)
 		motd.Parent = container
 		sc.AddDrawable(motd)
 		s := s
 		go func() {
-			sl.pingServer(s.Address, motd)
+			sl.pingServer(s.Address, motd, icon, si.id, ping, players)
 		}()
 		container.ClickFunc = func() {
 			sl.connect(s.Address)
@@ -144,7 +170,8 @@ func (sl *serverList) redraw() {
 	}
 }
 
-func (sl *serverList) pingServer(addr string, motd *ui.Formatted) {
+func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
+	icon *ui.Image, id string, ping *ui.Image, players *ui.Text) {
 	conn, err := protocol.Dial(addr)
 	if err != nil {
 		syncChan <- func() {
@@ -154,7 +181,7 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted) {
 		}
 		return
 	}
-	resp, ping, err := conn.RequestStatus()
+	resp, pingTime, err := conn.RequestStatus()
 	syncChan <- func() {
 		if err != nil {
 			msg := &chat.TextComponent{Text: err.Error()}
@@ -162,10 +189,46 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted) {
 			motd.Update(chat.AnyComponent{msg})
 			return
 		}
-		_ = ping // TODO
+		y := 0.0
+		pt := pingTime.Seconds() / 1000
+		switch {
+		case pt <= 75:
+			y = 16 / 256.0
+		case pt <= 150:
+			y = 24 / 256.0
+		case pt <= 225:
+			y = 32 / 256.0
+		case pt <= 350:
+			y = 40 / 256.0
+		case pt < 999:
+			y = 48 / 256.0
+		default:
+			y = 56 / 256.0
+		}
+		ping.TY = y
+
+		players.Update(fmt.Sprintf("%d/%d", resp.Players.Online, resp.Players.Max))
+
 		desc := resp.Description
 		chat.ConvertLegacy(desc)
 		motd.Update(desc)
+
+		if strings.HasPrefix(resp.Favicon, "data:image/png;base64,") {
+			favicon := resp.Favicon[len("data:image/png;base64,"):]
+			data, err := base64.StdEncoding.DecodeString(favicon)
+			if err != nil {
+				fmt.Printf("error base64 decoding favicon: %s\n", err)
+				return
+			}
+			img, err := png.Decode(bytes.NewReader(data))
+			if err != nil {
+				fmt.Printf("error decoding favicon: %s\n", err)
+				return
+			}
+			render.AddIcon(id, img)
+			icon.Texture = render.Icon(id)
+		}
+
 	}
 }
 
@@ -192,5 +255,6 @@ func (sl *serverList) remove() {
 	sl.scene.Hide()
 	for _, s := range sl.servers {
 		s.Hide()
+		render.FreeIcon(s.id)
 	}
 }

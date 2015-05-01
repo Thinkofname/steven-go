@@ -145,3 +145,29 @@ func getSkinInfo() *TextureInfo {
 	info, freeSkinTextures = freeSkinTextures[l-1], freeSkinTextures[:l-1]
 	return info
 }
+
+// So I reuse the skins for icons
+// hacky but it works
+
+func FreeIcon(id string) {
+	FreeSkin(id)
+}
+
+func Icon(id string) *TextureInfo {
+	return Skin(id)
+}
+
+func AddIcon(id string, pix image.Image) {
+	s := skins[id]
+	if s != nil {
+		s.refCount++
+		return
+	}
+	info := getSkinInfo()
+	uploadTexture(info, imgToBytes(pix))
+	s = &skin{
+		info:     info,
+		refCount: 1,
+	}
+	skins[id] = s
+}
