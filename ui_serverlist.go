@@ -15,9 +15,9 @@
 package steven
 
 import (
-	crand "crypto/rand"
-	"encoding/hex"
+	"math"
 
+	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
@@ -30,22 +30,23 @@ type serverList struct {
 	scene *scene.Type
 	logo  uiLogo
 
-	servers []*scene.Type
+	servers []*serverListItem
+}
+
+type serverListItem struct {
+	*scene.Type
+
+	container *ui.Container
+	offset    float64
 }
 
 func newServerList() *serverList {
 	sl := &serverList{
 		scene: scene.New(true),
 	}
-	if Config.ClientToken == "" {
-		data := make([]byte, 16)
-		crand.Read(data)
-		Config.ClientToken = hex.EncodeToString(data)
-		saveConfig()
-	}
-
 	Client.scene.Hide()
 	sl.logo.init(sl.scene)
+	window.SetScrollCallback(sl.onScroll)
 
 	sl.scene.AddDrawable(
 		ui.NewText("Steven - "+resource.ResourcesVersion, 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
@@ -56,7 +57,43 @@ func newServerList() *serverList {
 
 	sl.redraw()
 
+	refresh := ui.NewButton(300, -12-50, 100, 22)
+	refresh, txt := newButtonText("Refresh", 300, -50-15, 100, 30)
+	sl.scene.AddDrawable(refresh.Attach(ui.Center, ui.Middle))
+	sl.scene.AddDrawable(txt)
+	refresh.ClickFunc = sl.redraw
+
 	return sl
+}
+
+func (sl *serverList) onScroll(w *glfw.Window, xoff float64, yoff float64) {
+	if len(sl.servers) == 0 {
+		return
+	}
+	diff := yoff / 10
+	if s := sl.servers[len(sl.servers)-1]; s.offset+diff <= 2 {
+		diff = 2 - s.offset
+	}
+	if s := sl.servers[0]; s.offset+diff >= 0 {
+		diff = -s.offset
+	}
+	for _, s := range sl.servers {
+		s.offset += diff
+		s.updatePosition()
+	}
+}
+
+func (si *serverListItem) updatePosition() {
+	if si.offset < 0 {
+		si.container.Y = si.offset * 200
+		si.container.X = -math.Abs(si.offset) * 300
+	} else if si.offset >= 2 {
+		si.container.Y = si.offset * 100
+		si.container.X = -math.Abs(si.offset-2) * 300
+	} else {
+		si.container.X = 0
+		si.container.Y = si.offset * 100
+	}
 }
 
 func (sl *serverList) redraw() {
@@ -66,10 +103,17 @@ func (sl *serverList) redraw() {
 	sl.servers = sl.servers[:0]
 	for i, s := range Config.Servers {
 		sc := scene.New(true)
-		sl.servers = append(sl.servers, sc)
 		container := (&ui.Container{
-			X: 0, Y: -16 + float64(i)*100, W: 700, H: 100,
+			X: 0, Y: float64(i) * 100, W: 700, H: 100,
 		}).Attach(ui.Center, ui.Middle)
+		si := &serverListItem{
+			Type:      sc,
+			container: container,
+			offset:    float64(i),
+		}
+		si.updatePosition()
+		sl.servers = append(sl.servers, si)
+
 		bck := ui.NewImage(render.GetTexture("solid"), 0, 0, 700, 100, 0, 0, 1, 1, 0, 0, 0).Attach(ui.Top, ui.Left)
 		bck.A = 100
 		bck.Parent = container
@@ -144,6 +188,7 @@ func (sl *serverList) tick(delta float64) {
 }
 
 func (sl *serverList) remove() {
+	window.SetScrollCallback(onScroll)
 	sl.scene.Hide()
 	for _, s := range sl.servers {
 		s.Hide()

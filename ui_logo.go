@@ -103,7 +103,8 @@ func (u *uiLogo) init(scene *scene.Type) {
 	txt.Rotation = -math.Pi / 8
 	u.scene.AddDrawable(txt)
 	u.text = txt
-	u.textBaseScale = 300 / txt.Width
+	width, _ := txt.Size()
+	u.textBaseScale = 300 / width
 	if u.textBaseScale > 1 {
 		u.textBaseScale = 1
 	}
@@ -113,13 +114,14 @@ func (u *uiLogo) init(scene *scene.Type) {
 
 func (u *uiLogo) tick(delta float64) {
 	u.textTimer += delta
-	if u.textTimer > 120 {
-		u.textTimer -= 120
+	if u.textTimer > 60 {
+		u.textTimer -= 60
 	}
-	off := (u.textTimer / 60)
+	off := (u.textTimer / 30)
 	if off > 1.0 {
 		off = 2.0 - off
 	}
+	off = (math.Cos(off*math.Pi) + 1) / 2
 	u.text.ScaleX = (0.7 + (off / 3)) * u.textBaseScale
 	u.text.ScaleY = (0.7 + (off / 3)) * u.textBaseScale
 	u.text.X = u.origX

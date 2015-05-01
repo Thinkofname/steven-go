@@ -14,7 +14,11 @@
 
 package ui
 
-import "github.com/thinkofdeath/steven/render"
+import (
+	"math"
+
+	"github.com/thinkofdeath/steven/render"
+)
 
 // Text is a drawable that draws a string.
 type Text struct {
@@ -72,7 +76,13 @@ func (t *Text) Draw(r Region, delta float64) {
 	if t.Rotation == 0 {
 		render.DrawUITextScaled(t.value, r.X, r.Y, sx*t.ScaleX, sy*t.ScaleY, t.R, t.G, t.B).Alpha(t.A)
 	} else {
-		render.DrawUITextRotated(t.value, r.X, r.Y, sx*t.ScaleX, sy*t.ScaleY, t.Rotation, t.R, t.G, t.B).Alpha(t.A)
+		c := math.Cos(t.Rotation)
+		s := math.Sin(t.Rotation)
+		tmpx := r.W / 2
+		tmpy := r.H / 2
+		w := math.Abs(tmpx*c - tmpy*s)
+		h := math.Abs(tmpy*c + tmpx*s)
+		render.DrawUITextRotated(t.value, r.X+w-(r.W/2), r.Y+h-(r.H/2), sx*t.ScaleX, sy*t.ScaleY, t.Rotation, t.R, t.G, t.B).Alpha(t.A)
 	}
 }
 
@@ -84,12 +94,14 @@ func (t *Text) AttachedTo() Drawable {
 // Offset returns the offset of this drawable from the attachment
 // point.
 func (t *Text) Offset() (float64, float64) {
-	return t.X, t.Y
+	x, y := t.X, t.Y
+	return x, y
 }
 
 // Size returns the size of this drawable.
 func (t *Text) Size() (float64, float64) {
-	return (t.Width + 2) * t.ScaleX, 18 * t.ScaleY
+	w, h := (t.Width + 2), 18.0
+	return w * t.ScaleX, h * t.ScaleY
 }
 
 // Remove removes the text element from the draw list.

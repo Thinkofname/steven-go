@@ -83,21 +83,11 @@ func newLoginScreen() *loginScreen {
 	ls.password = text
 	btn.ClickFunc = func() { ls.focused = ls.password }
 
-	btn = ui.NewButton(0, 100, 400, 40).Attach(ui.Middle, ui.Center)
-	ls.scene.AddDrawable(btn)
-	text = ui.NewText("Login", 0, 0, 255, 255, 255).Attach(ui.Middle, ui.Center)
-	text.Parent = btn
-	ls.scene.AddDrawable(text)
-	btn.HoverFunc = func(over bool) {
-		if over && !ls.loginBtn.Disabled {
-			text.B = 160
-		} else {
-			text.B = 255
-		}
-	}
-	btn.ClickFunc = ls.login
-	ls.loginBtn = btn
-	ls.loginTxt = text
+	ls.loginBtn, ls.loginTxt = newButtonText("Login", 0, 100, 400, 40)
+	ls.loginBtn.Attach(ui.Middle, ui.Center)
+	ls.scene.AddDrawable(ls.loginBtn)
+	ls.scene.AddDrawable(ls.loginTxt)
+	ls.loginBtn.ClickFunc = ls.login
 
 	ls.scene.AddDrawable(
 		ui.NewText("Steven - "+resource.ResourcesVersion, 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
