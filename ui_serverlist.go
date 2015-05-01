@@ -42,6 +42,7 @@ type serverList struct {
 type serverListItem struct {
 	*scene.Type
 
+	X, Y      float64
 	container *ui.Container
 	offset    float64
 	id        string
@@ -92,14 +93,14 @@ func (sl *serverList) onScroll(w *glfw.Window, xoff float64, yoff float64) {
 
 func (si *serverListItem) updatePosition() {
 	if si.offset < 0 {
-		si.container.Y = si.offset * 200
-		si.container.X = -math.Abs(si.offset) * 300
+		si.Y = si.offset * 200
+		si.X = -math.Abs(si.offset) * 300
 	} else if si.offset >= 2 {
-		si.container.Y = si.offset * 100
-		si.container.X = -math.Abs(si.offset-2) * 300
+		si.Y = si.offset * 100
+		si.X = -math.Abs(si.offset-2) * 300
 	} else {
-		si.container.X = 0
-		si.container.Y = si.offset * 100
+		si.X = 0
+		si.Y = si.offset * 100
 	}
 }
 
@@ -249,6 +250,20 @@ func (sl *serverList) click(x, y float64, w, h int) {
 }
 func (sl *serverList) tick(delta float64) {
 	sl.logo.tick(delta)
+	for _, s := range sl.servers {
+		dx := s.X - s.container.X
+		dy := s.Y - s.container.Y
+		if dx*dx > 1 {
+			s.container.X += delta * dx * 0.1
+		} else {
+			s.container.X = s.X
+		}
+		if dy*dy > 1 {
+			s.container.Y += delta * dy * 0.1
+		} else {
+			s.container.Y = s.Y
+		}
+	}
 }
 
 func (sl *serverList) remove() {
