@@ -173,6 +173,7 @@ func (sl *serverList) redraw() {
 func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 	icon *ui.Image, id string, ping *ui.Image, players *ui.Text) {
 	conn, err := protocol.Dial(addr)
+	defer conn.Close()
 	if err != nil {
 		syncChan <- func() {
 			msg := &chat.TextComponent{Text: err.Error()}
