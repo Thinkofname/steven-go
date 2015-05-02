@@ -54,10 +54,10 @@ func initUI() {
 	uiState.shader.TextureInfo.Enable()
 	uiState.shader.TextureOffset.Enable()
 	uiState.shader.Color.Enable()
-	uiState.shader.Position.Pointer(3, gl.Float, false, 30, 0)
-	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 30, 12)
-	uiState.shader.TextureOffset.PointerInt(3, gl.Short, 30, 20)
-	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 30, 26)
+	uiState.shader.Position.PointerInt(2, gl.Short, 22, 0)
+	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 22, 4)
+	uiState.shader.TextureOffset.PointerInt(3, gl.Short, 22, 12)
+	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 22, 18)
 }
 
 func drawUI() {
@@ -70,13 +70,16 @@ func drawUI() {
 	uiState.elementCount = 0
 
 	// Prevent clipping with the world
-	gl.Clear(gl.DepthBufferBit)
+	gl.Disable(gl.DepthTest)
 	gl.Enable(gl.Blend)
 
 	uiState.program.Use()
 	uiState.shader.Texture.Int(0)
 	if uiState.count > 0 {
 		uiState.array.Bind()
+
+		uiState.shader.ScreenSize.Float2(float32(lastWidth), float32(lastHeight))
+
 		uiState.buffer.Bind(gl.ArrayBuffer)
 		if len(uiState.data) > uiState.prevSize {
 			uiState.prevSize = len(uiState.data)
@@ -89,13 +92,13 @@ func drawUI() {
 		gl.DrawArrays(gl.Triangles, 0, uiState.count)
 	}
 	gl.Disable(gl.Blend)
+	gl.Enable(gl.DepthTest)
 }
 
 // UIElement is a single element on the screen. It is a rectangle
 // with a texture and a tint.
 type UIElement struct {
 	X, Y, W, H                 float64
-	DepthIndex                 float64
 	TX, TY, TW, TH             uint16
 	TOffsetX, TOffsetY, TAtlas int16
 	TSizeW, TSizeH             int16
@@ -112,8 +115,8 @@ func DrawUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th
 	}
 	e := &uiState.elements[uiState.elementCount]
 	// (Re)set the information for the element
-	e.X = (x + 0.01) / uiWidth
-	e.Y = (y + 0.01) / uiHeight
+	e.X = x / uiWidth
+	e.Y = y / uiHeight
 	e.W = width / uiWidth
 	e.H = height / uiHeight
 	e.TX = uint16(tex.X)
@@ -129,7 +132,6 @@ func DrawUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th
 	e.G = 255
 	e.B = 255
 	e.A = 255
-	e.DepthIndex = -float64(uiState.elementCount) / float64(math.MaxInt16)
 	uiState.elementCount++
 	return e
 }
@@ -172,9 +174,8 @@ func (u *UIElement) appendVertex(x, y float64, tx, ty int16) {
 		dx = (u.W / 2) + (tmpx*c - tmpy*s) + u.X
 		dy = (u.H / 2) + (tmpy*c + tmpx*s) + u.Y
 	}
-	uiState.data = appendFloat(uiState.data, float32(dx))
-	uiState.data = appendFloat(uiState.data, float32(dy))
-	uiState.data = appendFloat(uiState.data, float32(u.DepthIndex))
+	uiState.data = appendShort(uiState.data, int16(math.Floor((dx*float64(lastWidth))+0.5)))
+	uiState.data = appendShort(uiState.data, int16(math.Floor((dy*float64(lastHeight))+0.5)))
 	uiState.data = appendUnsignedShort(uiState.data, u.TX)
 	uiState.data = appendUnsignedShort(uiState.data, u.TY)
 	uiState.data = appendUnsignedShort(uiState.data, u.TW)

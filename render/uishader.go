@@ -22,12 +22,13 @@ type uiShader struct {
 	TextureOffset gl.Attribute `gl:"aTextureOffset"`
 	Color         gl.Attribute `gl:"aColor"`
 	Texture       gl.Uniform   `gl:"textures"`
+	ScreenSize    gl.Uniform   `gl:"screenSize"`
 }
 
 const (
 	vertexUI = `
 #version 150
-in vec3 aPosition;
+in ivec2 aPosition;
 in vec4 aTextureInfo;
 in ivec3 aTextureOffset;
 in vec4 aColor;
@@ -37,8 +38,11 @@ out vec4 vTextureInfo;
 out vec2 vTextureOffset;
 out float vAtlas;
 
+uniform vec2 screenSize;
+
 void main() {
-	gl_Position = vec4((aPosition.x-0.5)*2.0, -(aPosition.y-0.5)*2.0, aPosition.z, 1.0);
+	vec2 pos = aPosition / screenSize;
+	gl_Position = vec4((pos.x-0.5)*2.0, -(pos.y-0.5)*2.0, 0.0, 1.0);
 	vColor = aColor;
 	vTextureInfo = aTextureInfo;
 	vTextureOffset = aTextureOffset.xy / 16.0;
