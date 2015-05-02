@@ -45,6 +45,7 @@ const (
 	StencilTest  Flag = gl.STENCIL_TEST
 	Blend        Flag = gl.BLEND
 	DebugOutput  Flag = gl.DEBUG_OUTPUT
+	Multisample  Flag = gl.MULTISAMPLE
 )
 
 // Face specifies a face to act on.

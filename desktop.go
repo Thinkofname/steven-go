@@ -36,6 +36,7 @@ func startWindow() {
 	glfw.WindowHint(glfw.ContextVersionMinor, 2)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+	glfw.WindowHint(glfw.Samples, Config.Render.Samples)
 
 	var err error
 	window, err = glfw.CreateWindow(800, 480, "Steven", nil, nil)

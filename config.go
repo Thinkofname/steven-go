@@ -28,6 +28,10 @@ type ConfigData struct {
 	ClientToken string
 
 	Servers []ConfigServer
+
+	Render struct {
+		Samples int
+	}
 }
 
 type ConfigServer struct {

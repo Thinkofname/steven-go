@@ -117,6 +117,8 @@ sync:
 		gl.Viewport(0, 0, width, height)
 	}
 
+	gl.Enable(gl.Multisample)
+
 	glTexture.Bind(gl.Texture2DArray)
 	gl.ActiveTexture(0)
 
@@ -180,6 +182,7 @@ sync:
 		}
 	}
 	gl.Disable(gl.Blend)
+	gl.Disable(gl.Multisample)
 
 	drawUI()
 }
