@@ -17,7 +17,6 @@ package steven
 import (
 	crand "crypto/rand"
 	"encoding/hex"
-	"strings"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/protocol/mojang"
@@ -30,13 +29,9 @@ type loginScreen struct {
 	scene *scene.Type
 	logo  uiLogo
 
-	username    *ui.Text
-	password    *ui.Text
-	focused     *ui.Text
-	lastFocused *ui.Text
-
-	inputUsername string
-	inputPassword string
+	user    *textBox
+	pass    *textBox
+	focused *textBox
 
 	loginBtn   *ui.Button
 	loginTxt   *ui.Text
@@ -59,29 +54,34 @@ func newLoginScreen() *loginScreen {
 	Client.scene.Hide()
 	ls.logo.init(ls.scene)
 
-	btn := ui.NewButton(0, -20, 400, 40).Attach(ui.Middle, ui.Center)
-	btn.Disabled = true
-	ls.scene.AddDrawable(btn)
+	ls.user = newTextBox(0, -20, 400, 40)
+	ls.user.back.Attach(ui.Middle, ui.Center)
+	ls.user.add(ls.scene)
 	label := ui.NewText("Username/Email:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
-	label.Parent = btn
+	label.Parent = ls.user.back
 	ls.scene.AddDrawable(label)
-	text := ui.NewText("", 5, 0, 255, 255, 255).Attach(ui.Middle, ui.Left)
-	text.Parent = btn
-	ls.scene.AddDrawable(text)
-	ls.username = text
-	btn.ClickFunc = func() { ls.focused = ls.username }
+	ls.user.back.ClickFunc = func() {
+		if ls.focused != nil {
+			ls.focused.Focused = false
+		}
+		ls.user.Focused = true
+		ls.focused = ls.user
+	}
 
-	btn = ui.NewButton(0, 40, 400, 40).Attach(ui.Middle, ui.Center)
-	btn.Disabled = true
-	ls.scene.AddDrawable(btn)
+	ls.pass = newTextBox(0, 40, 400, 40)
+	ls.pass.back.Attach(ui.Middle, ui.Center)
+	ls.pass.add(ls.scene)
 	label = ui.NewText("Password:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
-	label.Parent = btn
+	label.Parent = ls.pass.back
 	ls.scene.AddDrawable(label)
-	text = ui.NewText("", 5, 0, 255, 255, 255).Attach(ui.Middle, ui.Left)
-	text.Parent = btn
-	ls.scene.AddDrawable(text)
-	ls.password = text
-	btn.ClickFunc = func() { ls.focused = ls.password }
+	ls.pass.back.ClickFunc = func() {
+		if ls.focused != nil {
+			ls.focused.Focused = false
+		}
+		ls.pass.Focused = true
+		ls.focused = ls.pass
+	}
+	ls.pass.Password = true
 
 	ls.loginBtn, ls.loginTxt = newButtonText("Login", 0, 100, 400, 40)
 	ls.loginBtn.Attach(ui.Middle, ui.Center)
@@ -151,29 +151,20 @@ func (ls *loginScreen) login() {
 	ls.loginBtn.Disabled = true
 	ls.loginTxt.Update("Logging in...")
 	go func() {
-		p, err := mojang.Login(ls.inputUsername, ls.inputPassword, Config.ClientToken)
+		p, err := mojang.Login(ls.user.input, ls.pass.input, Config.ClientToken)
 		syncChan <- func() { ls.postLogin(p, err) }
 	}()
 }
 
 func (ls *loginScreen) tick(delta float64) {
 	if ls.loginBtn.Disabled {
-		ls.focused = nil
-	}
-	if ls.focused == ls.username {
-		ls.username.Update(ls.inputUsername + "|")
-	} else if ls.focused == ls.password {
-		ls.password.Update(strings.Repeat("*", len(ls.inputPassword)) + "|")
-	}
-	if ls.lastFocused != nil && ls.lastFocused != ls.focused {
-		if ls.lastFocused == ls.username {
-			ls.username.Update(ls.inputUsername)
-		} else if ls.lastFocused == ls.password {
-			ls.password.Update(strings.Repeat("*", len(ls.inputPassword)))
+		if ls.focused != nil {
+			ls.focused.Focused = false
+			ls.focused = nil
 		}
 	}
-	ls.lastFocused = ls.focused
-
+	ls.user.tick(delta)
+	ls.pass.tick(delta)
 	ls.logo.tick(delta)
 }
 
@@ -183,40 +174,31 @@ func (ls *loginScreen) handleKey(w *glfw.Window, key glfw.Key, scancode int, act
 	}
 
 	if (key == glfw.KeyEnter || key == glfw.KeyTab) && action == glfw.Release {
-		if ls.focused == ls.username {
-			ls.focused = ls.password
-		} else if ls.focused == ls.password {
+		if ls.focused == ls.user {
+			ls.user.Focused = false
+			ls.focused = ls.pass
+			ls.pass.Focused = true
+		} else if ls.focused == ls.pass {
+			ls.pass.Focused = false
 			ls.focused = nil
 			ls.login()
 		}
+		return
 	}
 
 	if key == glfw.KeyEscape && action == glfw.Release {
+		ls.focused.Focused = false
 		ls.focused = nil
 	}
 
-	if key == glfw.KeyBackspace && action != glfw.Release {
-		if ls.focused == ls.username {
-			if len(ls.inputUsername) > 0 {
-				ls.inputUsername = ls.inputUsername[:len(ls.inputUsername)-1]
-			}
-			return
-		}
-		if len(ls.inputPassword) > 0 {
-			ls.inputPassword = ls.inputPassword[:len(ls.inputPassword)-1]
-		}
-	}
+	ls.focused.handleKey(w, key, scancode, action, mods)
 }
 
 func (ls *loginScreen) handleChar(w *glfw.Window, char rune) {
 	if ls.focused == nil {
 		return
 	}
-	if ls.focused == ls.username {
-		ls.inputUsername += string(char)
-		return
-	}
-	ls.inputPassword += string(char)
+	ls.focused.handleChar(w, char)
 }
 
 func (ls *loginScreen) remove() {
