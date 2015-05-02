@@ -110,6 +110,11 @@ func (u Uniform) Float(val float32) {
 	gl.Uniform1f(int32(u), val)
 }
 
+// Float2 sets the value of the uniform to the passed floats.
+func (u Uniform) Float2(x, y float32) {
+	gl.Uniform2f(int32(u), x, y)
+}
+
 // Float3 sets the value of the uniform to the passed floats.
 func (u Uniform) Float3(x, y, z float32) {
 	gl.Uniform3f(int32(u), x, y, z)
