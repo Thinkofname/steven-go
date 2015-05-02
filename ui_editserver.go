@@ -91,6 +91,14 @@ func newEditServer(index int) *editServer {
 		se.focused = se.address
 	}
 
+	if index != -1 {
+		server := Config.Servers[index]
+		se.name.input = server.Name
+		se.name.text.Update(se.name.input)
+		se.address.input = server.Address
+		se.address.text.Update(se.address.input)
+	}
+
 	return se
 }
 
@@ -104,6 +112,7 @@ func (se *editServer) save() {
 		Config.Servers[se.index].Name = se.name.input
 		Config.Servers[se.index].Address = se.address.input
 	}
+	saveConfig()
 	setScreen(newServerList())
 }
 

@@ -190,7 +190,26 @@ func (sl *serverList) redraw() {
 				bck.A = 100
 			}
 		}
+
 		sc.AddDrawable(container)
+
+		index := i
+		del, txt := newButtonText("X", 0, 0, 25, 25)
+		del.Parent = container
+		sc.AddDrawable(del.Attach(ui.Bottom, ui.Right))
+		sc.AddDrawable(txt)
+		del.ClickFunc = func() {
+			Config.Servers = append(Config.Servers[:index], Config.Servers[index+1:]...)
+			saveConfig()
+			sl.redraw()
+		}
+		edit, txt := newButtonText("E", 25, 0, 25, 25)
+		edit.Parent = container
+		sc.AddDrawable(edit.Attach(ui.Bottom, ui.Right))
+		sc.AddDrawable(txt)
+		edit.ClickFunc = func() {
+			setScreen(newEditServer(index))
+		}
 	}
 }
 
