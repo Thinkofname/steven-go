@@ -186,7 +186,7 @@ handle:
 			tick()
 		default:
 		}
-	} else if !Client.valid {
+	} else {
 		render.Camera.Yaw += 0.005 * delta
 		if render.Camera.Yaw > math.Pi*2 {
 			render.Camera.Yaw = 0
