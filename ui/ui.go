@@ -67,8 +67,17 @@ func Draw(width, height int, delta float64) {
 			continue
 		}
 		r := getDrawRegion(d, sw, sh)
-		d.Draw(r, delta)
+		if r.intersects(screen) {
+			d.Draw(r, delta)
+		}
 	}
+}
+
+func (r Region) intersects(o Region) bool {
+	return !(r.X+r.W < o.X ||
+		r.X > o.X+o.W ||
+		r.Y+r.H < o.Y ||
+		r.Y > o.Y+o.H)
 }
 
 // Hover calls Hover on all interactables at the passed location.
