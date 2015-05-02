@@ -7,6 +7,8 @@ Don't expect it to go anywhere, just doing this for fun.
 
 ![Steven](http://i.imgur.com/VVnmbkV.png)
 
+![Steven's server list after disconnecting from a server](https://i.imgur.com/JRFXt0e.png)
+
 ## Building
 
 To build:
