@@ -101,7 +101,7 @@ func fakeGen() {
 					}
 				}
 				cx, cz := cx, cz
-				syncChan <- func() { loadChunk(cx, cz, data, mask, true, true) }
+				loadChunk(cx, cz, data, mask, true, true)
 			}
 		}
 	}()
