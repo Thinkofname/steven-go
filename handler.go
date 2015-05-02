@@ -76,6 +76,13 @@ func (handler) Respawn(r *protocol.Respawn) {
 	Client.GameMode = gameMode(r.Gamemode & 0x7)
 	Client.HardCore = r.Gamemode&0x8 != 0
 }
+
+func (handler) Disconnect(d *protocol.Disconnect) {
+	disconnectReason = d.Reason
+	fmt.Println("Disconnect: ", disconnectReason)
+	closeWithError(errManualDisconnect)
+}
+
 func (handler) ChangeGameState(c *protocol.ChangeGameState) {
 	switch c.Reason {
 	case 3: // Change game mode

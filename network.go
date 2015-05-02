@@ -92,9 +92,6 @@ func closeWithError(err error) {
 	case errorChan <- err:
 	default:
 	}
-	if conn != nil {
-		conn.Close()
-	}
 }
 
 func writeHandler(conn *protocol.Conn) {

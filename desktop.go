@@ -159,7 +159,7 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		}
 	case glfw.KeyF2:
 		if action == glfw.Release {
-			conn.Close()
+			closeWithError(errManualDisconnect)
 		}
 	case glfw.KeyF3:
 		if action == glfw.Release {

@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"image/png"
 	"math"
@@ -30,6 +31,11 @@ import (
 	"github.com/thinkofdeath/steven/resource"
 	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/ui/scene"
+)
+
+var (
+	disconnectReason    chat.AnyComponent
+	errManualDisconnect = errors.New("manual disconnect")
 )
 
 type serverList struct {
@@ -70,6 +76,16 @@ func newServerList() *serverList {
 	sl.scene.AddDrawable(refresh.Attach(ui.Center, ui.Middle))
 	sl.scene.AddDrawable(txt)
 	refresh.ClickFunc = sl.redraw
+
+	if disconnectReason.Value != nil {
+		disMsg := ui.NewText("Disconnected", 0, 32, 255, 0, 0).Attach(ui.Top, ui.Center)
+		dis := ui.NewFormattedWidth(disconnectReason, 0, 48, 600)
+		disB := ui.NewImage(render.GetTexture("solid"), 0, 30, math.Max(dis.Width, disMsg.Width)+4, dis.Height+4+16, 0, 0, 1, 1, 0, 0, 0)
+		disB.A = 100
+		sl.scene.AddDrawable(disB.Attach(ui.Top, ui.Center))
+		sl.scene.AddDrawable(dis.Attach(ui.Top, ui.Center))
+		sl.scene.AddDrawable(disMsg)
+	}
 
 	return sl
 }

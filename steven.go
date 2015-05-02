@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
+	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/ui"
@@ -31,6 +32,7 @@ var (
 	server        string
 	loadChan      = make(chan struct{})
 	currentScreen screen
+	connected     bool
 )
 
 type screen interface {
@@ -76,6 +78,8 @@ func Main(username, uuid, accessToken, s string) {
 }
 
 func connect() {
+	connected = true
+	disconnectReason.Value = nil
 	go startConnection(mojang.Profile{
 		Username:    profile.Username,
 		ID:          profile.ID,
@@ -115,6 +119,32 @@ var (
 	lastFrame        = time.Now()
 )
 
+func handleErrors() {
+handle:
+	for {
+		select {
+		case err := <-errorChan:
+			if !connected {
+				continue
+			}
+			connected = false
+			if conn != nil {
+				conn.Close()
+			}
+			fmt.Printf("Disconnected: %s\n", err)
+			ready = false
+			if err != errManualDisconnect && disconnectReason.Value == nil {
+				txt := &chat.TextComponent{Text: err.Error()}
+				txt.Color = chat.Red
+				disconnectReason.Value = txt
+			}
+			setScreen(newServerList())
+		default:
+			break handle
+		}
+	}
+}
+
 func draw() {
 	now := time.Now()
 	diff := now.Sub(lastFrame)
@@ -124,13 +154,6 @@ func draw() {
 handle:
 	for {
 		select {
-		case err := <-errorChan:
-			if conn != nil {
-				conn.Close()
-			}
-			fmt.Printf("Disconnected: %s\n", err)
-			ready = false
-			setScreen(newServerList())
 		case packet := <-readChan:
 			defaultHandler.Handle(packet)
 		case pos := <-completeBuilders:
@@ -148,6 +171,7 @@ handle:
 			break handle
 		}
 	}
+	handleErrors()
 
 	width, height := window.GetFramebufferSize()
 
