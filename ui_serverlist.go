@@ -126,10 +126,11 @@ func (sl *serverList) redraw() {
 		render.FreeIcon(s.id)
 	}
 	sl.servers = sl.servers[:0]
+	sw, _ := window.GetFramebufferSize()
 	for i, s := range Config.Servers {
 		sc := scene.New(true)
 		container := (&ui.Container{
-			X: 0, Y: float64(i) * 100, W: 700, H: 100,
+			X: -float64(sw * 2), Y: float64(i) * 100, W: 700, H: 100,
 		}).Attach(ui.Center, ui.Middle)
 		r := make([]byte, 20)
 		rand.Read(r)
