@@ -63,7 +63,7 @@ func Dial(address string) (*Conn, error) {
 	if !strings.ContainsRune(address, ':') {
 		// Attempt a srv lookup first (like vanilla)
 		_, srvs, err := net.LookupSRV("minecraft", "tcp", address)
-		if err == nil {
+		if err == nil && len(srvs) > 0 {
 			address = fmt.Sprintf("%s:%d", srvs[0].Target, srvs[0].Port)
 		} else {
 			// Fallback to the default port
