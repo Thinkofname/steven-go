@@ -56,7 +56,7 @@ func initUI() {
 	uiState.shader.Color.Enable()
 	uiState.shader.Position.Pointer(3, gl.Float, false, 30, 0)
 	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 30, 12)
-	uiState.shader.TextureOffset.Pointer(3, gl.Short, false, 30, 20)
+	uiState.shader.TextureOffset.PointerInt(3, gl.Short, 30, 20)
 	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 30, 26)
 }
 
@@ -112,8 +112,8 @@ func DrawUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th
 	}
 	e := &uiState.elements[uiState.elementCount]
 	// (Re)set the information for the element
-	e.X = x / uiWidth
-	e.Y = y / uiHeight
+	e.X = (x + 0.01) / uiWidth
+	e.Y = (y + 0.01) / uiHeight
 	e.W = width / uiWidth
 	e.H = height / uiHeight
 	e.TX = uint16(tex.X)

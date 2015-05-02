@@ -29,18 +29,20 @@ const (
 #version 150
 in vec3 aPosition;
 in vec4 aTextureInfo;
-in vec3 aTextureOffset;
+in ivec3 aTextureOffset;
 in vec4 aColor;
 
 out vec4 vColor;
 out vec4 vTextureInfo;
-out vec3 vTextureOffset;
+out vec2 vTextureOffset;
+out float vAtlas;
 
 void main() {
 	gl_Position = vec4((aPosition.x-0.5)*2.0, -(aPosition.y-0.5)*2.0, aPosition.z, 1.0);
 	vColor = aColor;
 	vTextureInfo = aTextureInfo;
-	vTextureOffset = aTextureOffset;
+	vTextureOffset = aTextureOffset.xy / 16.0;
+	vAtlas = aTextureOffset.z;
 }
 `
 	fragmentUI = `
@@ -52,17 +54,17 @@ uniform sampler2DArray textures;
 
 in vec4 vColor;
 in vec4 vTextureInfo;
-in vec3 vTextureOffset;
+in vec2 vTextureOffset;
+in float vAtlas;
 
 out vec4 fragColor;
 
 void main() {
-	vec2 tPos = vTextureOffset.xy / 16.0;
+	vec2 tPos = floor(vTextureOffset);
 	tPos = mod(tPos, vTextureInfo.zw);
-	vec2 offset = vTextureInfo.xy;
-	tPos += offset;
+	tPos += vTextureInfo.xy;
 	tPos /= atlasSize;
-	vec4 col = texture(textures, vec3(tPos, vTextureOffset.z));
+	vec4 col = texture(textures, vec3(tPos, vAtlas));
 	col *= vColor;
 	if (col.a == 0.0) discard;
 	fragColor = col;
