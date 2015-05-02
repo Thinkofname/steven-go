@@ -43,22 +43,23 @@ uniform ivec3 offset;
 
 out vec3 vColor;
 out vec4 vTextureInfo;
-out vec3 vTextureOffset;
+out vec2 vTextureOffset;
+out float vAtlas;
 out float vLighting;
 out float dist;
 
 void main() {
-	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
+	ivec3 pos = ivec3(aPosition.x, -aPosition.y, aPosition.z);
 	vec3 o = vec3(offset.x, -offset.y, offset.z);
 	gl_Position = perspectiveMatrix * cameraMatrix * vec4((pos / 256.0) + o * 16.0, 1.0);
 	vColor = aColor;
 	vTextureInfo = aTextureInfo;
-	vTextureOffset = aTextureOffset;
+	vTextureOffset = aTextureOffset.xy / 16.0;
+	vAtlas = aTextureOffset.z;
 
 	float light = max(aLighting.x, aLighting.y * 1.0);
 	float val = pow(0.9, 16.0 - light) * 2.0;
 	vLighting = clamp(pow(val, 1.5) * 0.5, 0.0, 1.0);
-	dist = gl_Position.z;
 }
 `
 	fragment = `
@@ -70,19 +71,18 @@ uniform sampler2DArray textures;
 
 in vec3 vColor;
 in vec4 vTextureInfo;
-in vec3 vTextureOffset;
+in vec2 vTextureOffset;
+in float vAtlas;
 in float vLighting;
-in float dist;
 
 out vec4 fragColor;
 
 void main() {
-	vec2 tPos = vTextureOffset.xy / 16.0;
+	vec2 tPos = vTextureOffset;
 	tPos = mod(tPos, vTextureInfo.zw);
-	vec2 offset = vTextureInfo.xy;
-	tPos += offset;
+	tPos += vTextureInfo.xy;
 	tPos /= atlasSize;
-	vec4 col = texture(textures, vec3(tPos, vTextureOffset.z));
+	vec4 col = texture(textures, vec3(tPos, vAtlas));
 	#ifndef alpha
 	if (col.a < 0.5) discard;
 	#endif
