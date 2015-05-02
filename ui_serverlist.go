@@ -71,11 +71,17 @@ func newServerList() *serverList {
 
 	sl.redraw()
 
-	refresh := ui.NewButton(300, -12-50, 100, 22)
 	refresh, txt := newButtonText("Refresh", 300, -50-15, 100, 30)
 	sl.scene.AddDrawable(refresh.Attach(ui.Center, ui.Middle))
 	sl.scene.AddDrawable(txt)
 	refresh.ClickFunc = sl.redraw
+
+	add, txt := newButtonText("Add", 200, -50-15, 100, 30)
+	sl.scene.AddDrawable(add.Attach(ui.Center, ui.Middle))
+	sl.scene.AddDrawable(txt)
+	add.ClickFunc = func() {
+		setScreen(newEditServer(-1))
+	}
 
 	if disconnectReason.Value != nil {
 		disMsg := ui.NewText("Disconnected", 0, 32, 255, 0, 0).Attach(ui.Top, ui.Center)

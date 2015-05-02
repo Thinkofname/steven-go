@@ -31,16 +31,16 @@ import (
 type uiLogo struct {
 	scene *scene.Type
 
-	textTimer     float64
 	text          *ui.Text
 	origX         float64
 	textBaseScale float64
 }
 
 var (
-	r           = rand.New(rand.NewSource(time.Now().UnixNano()))
-	logoTexture = r.Intn(4)
-	logoText    = stevenLogoLines[r.Intn(len(stevenLogoLines))]
+	r             = rand.New(rand.NewSource(time.Now().UnixNano()))
+	logoTexture   = r.Intn(4)
+	logoText      = stevenLogoLines[r.Intn(len(stevenLogoLines))]
+	logoTextTimer float64
 )
 
 func (u *uiLogo) init(scene *scene.Type) {
@@ -113,11 +113,11 @@ func (u *uiLogo) init(scene *scene.Type) {
 }
 
 func (u *uiLogo) tick(delta float64) {
-	u.textTimer += delta
-	if u.textTimer > 60 {
-		u.textTimer -= 60
+	logoTextTimer += delta
+	if logoTextTimer > 60 {
+		logoTextTimer -= 60
 	}
-	off := (u.textTimer / 30)
+	off := (logoTextTimer / 30)
 	if off > 1.0 {
 		off = 2.0 - off
 	}
