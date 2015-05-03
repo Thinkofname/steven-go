@@ -120,6 +120,7 @@ const (
 	KeyBackwards
 	KeyLeft
 	KeyRight
+	KeySprint
 )
 
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
@@ -149,6 +150,10 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 	case glfw.KeyD:
 		if action != glfw.Repeat {
 			Client.KeyState[KeyRight] = action == glfw.Press
+		}
+	case glfw.KeyLeftControl:
+		if action != glfw.Repeat {
+			Client.KeyState[KeySprint] = action == glfw.Press
 		}
 	case glfw.KeyF1:
 		if action == glfw.Release {

@@ -60,7 +60,7 @@ type ClientState struct {
 
 	Jumping  bool
 	VSpeed   float64
-	KeyState [4]bool
+	KeyState [5]bool
 	OnGround bool
 
 	GameMode gameMode
@@ -154,8 +154,12 @@ func (c *ClientState) renderTick(delta float64) {
 		c.Z -= forward * math.Sin(yaw) * -math.Cos(c.Pitch) * delta * 0.2
 		c.Y -= forward * math.Sin(c.Pitch) * delta * 0.2
 	} else if chunkMap[chunkPosition{int(c.X) >> 4, int(c.Z) >> 4}] != nil {
-		c.X += forward * math.Cos(yaw) * delta * 0.1
-		c.Z -= forward * math.Sin(yaw) * delta * 0.1
+		speed := 4.317 / 60.0
+		if c.KeyState[KeySprint] {
+			speed = 5.612 / 60.0
+		}
+		c.X += forward * math.Cos(yaw) * delta * speed
+		c.Z -= forward * math.Sin(yaw) * delta * speed
 		if !c.OnGround {
 			c.VSpeed -= 0.01 * delta
 			if c.VSpeed < -0.3 {
