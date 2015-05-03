@@ -168,7 +168,7 @@ var stevenLogoLines = []string{
 	"Come chat on IRC!",
 }
 
-var stevenLogo = `
+const stevenLogo = `
    SSSSSSSSSSSSSSS          tttt                                                                                             
  SS:::::::::::::::S      ttt:::t                                                                                             
 S:::::SSSSSS::::::S      t:::::t                                                                                             
