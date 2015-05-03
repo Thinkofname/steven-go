@@ -1264,3 +1264,227 @@ func (b *blockPistonHead) toData() int {
 	}
 	return data
 }
+
+// Slabs
+
+type slabHalf int
+
+const (
+	slabTop slabHalf = iota
+	slabBottom
+)
+
+func (s slabHalf) String() string {
+	switch s {
+	case slabTop:
+		return "top"
+	case slabBottom:
+		return "bottom"
+	}
+	return fmt.Sprintf("slabHalf(%d)", s)
+}
+
+type slabVariant int
+
+const (
+	slabStone slabVariant = iota
+	slabSandstone
+	slabWooden
+	slabCobblestone
+	slabBricks
+	slabStoneBrick
+	slabNetherBrick
+	slabQuartz
+	slabRedSandstone
+	slabOak
+	slabSpruce
+	slabBirch
+	slabJungle
+	slabAcacia
+	slabDarkOak
+)
+
+func (s slabVariant) String() string {
+	switch s {
+	case slabStone:
+		return "stone"
+	case slabSandstone:
+		return "sandstone"
+	case slabWooden:
+		return "wood_old"
+	case slabCobblestone:
+		return "cobblestone"
+	case slabBricks:
+		return "brick"
+	case slabStoneBrick:
+		return "stone_brick"
+	case slabNetherBrick:
+		return "nether_brick"
+	case slabQuartz:
+		return "quartz"
+	case slabRedSandstone:
+		return "red_sandstone"
+	case slabOak:
+		return "oak"
+	case slabSpruce:
+		return "spruce"
+	case slabBirch:
+		return "birch"
+	case slabJungle:
+		return "jungle"
+	case slabAcacia:
+		return "acacia"
+	case slabDarkOak:
+		return "dark_oak"
+	}
+	return fmt.Sprintf("slabVariant(%d)", s)
+}
+
+type blockSlab struct {
+	baseBlock
+	Half    slabHalf    `state:"half,0-1"`
+	Variant slabVariant `state:"variant,@TypeRange"`
+	Type    string
+}
+
+func (b *blockSlab) load(tag reflect.StructTag) {
+	b.Type = tag.Get("variant")
+	b.cullAgainst = false
+}
+
+func (b *blockSlab) TypeRange() (int, int) {
+	switch b.Type {
+	case "stone":
+		return 0, 7
+	case "stone2":
+		return 8, 8
+	case "wood":
+		return 9, 14
+	}
+	panic("invalid type " + b.Type)
+}
+
+func (b *blockSlab) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			*vmath.NewAABB(0, 0, 0, 1.0, 0.5, 1.0),
+		}
+		if b.Half == slabTop {
+			b.bounds[0].Shift(0, 0.5, 0.0)
+		}
+	}
+	return b.bounds
+}
+
+func (b *blockSlab) ModelVariant() string {
+	return fmt.Sprintf("half=%s", b.Half)
+}
+
+func (b *blockSlab) ModelName() string {
+	return fmt.Sprintf("%s_slab", b.Variant)
+}
+
+func (b *blockSlab) toData() int {
+	data := 0
+	switch b.Type {
+	case "stone":
+		data = int(b.Variant)
+	case "stone2":
+		data = int(b.Variant - 8)
+	case "wood":
+		data = int(b.Variant - 9)
+	}
+	if b.Half == slabTop {
+		data |= 0x8
+	}
+	return data
+}
+
+type blockSlabDouble struct {
+	baseBlock
+	Variant slabVariant `state:"variant,@TypeRange"`
+	Type    string
+}
+
+func (b *blockSlabDouble) load(tag reflect.StructTag) {
+	b.Type = tag.Get("variant")
+}
+
+func (b *blockSlabDouble) TypeRange() (int, int) {
+	switch b.Type {
+	case "stone":
+		return 0, 7
+	case "stone2":
+		return 8, 8
+	case "wood":
+		return 9, 14
+	}
+	panic("invalid type " + b.Type)
+}
+
+func (b *blockSlabDouble) ModelName() string {
+	return fmt.Sprintf("%s_double_slab", b.Variant)
+}
+
+func (b *blockSlabDouble) toData() int {
+	data := 0
+	switch b.Type {
+	case "stone":
+		data = int(b.Variant)
+	case "stone2":
+		data = int(b.Variant - 8)
+	case "wood":
+		data = int(b.Variant - 9)
+	}
+	return data
+}
+
+type blockSlabDoubleSeamless struct {
+	baseBlock
+	Seamless bool        `state:"seamless"`
+	Variant  slabVariant `state:"variant,@TypeRange"`
+	Type     string
+}
+
+func (b *blockSlabDoubleSeamless) load(tag reflect.StructTag) {
+	b.Type = tag.Get("variant")
+}
+
+func (b *blockSlabDoubleSeamless) TypeRange() (int, int) {
+	switch b.Type {
+	case "stone":
+		return 0, 7
+	case "stone2":
+		return 8, 8
+	case "wood":
+		return 9, 14
+	}
+	panic("invalid type " + b.Type)
+}
+
+func (b *blockSlabDoubleSeamless) ModelVariant() string {
+	if b.Seamless {
+		return "all"
+	}
+	return "normal"
+}
+
+func (b *blockSlabDoubleSeamless) ModelName() string {
+	return fmt.Sprintf("%s_double_slab", b.Variant)
+}
+
+func (b *blockSlabDoubleSeamless) toData() int {
+	data := 0
+	switch b.Type {
+	case "stone":
+		data = int(b.Variant)
+	case "stone2":
+		data = int(b.Variant - 8)
+	case "wood":
+		data = int(b.Variant - 9)
+	}
+	if b.Seamless {
+		data |= 0x8
+	}
+	return data
+}

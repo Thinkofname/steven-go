@@ -65,8 +65,8 @@ var Blocks = struct {
 	RedMushrrom                *BlockSet `cullAgainst:"false" collidable:"false"`
 	GoldBlock                  *BlockSet
 	IronBlock                  *BlockSet
-	DoubleStoneSlab            *BlockSet
-	StoneSlab                  *BlockSet
+	DoubleStoneSlab            *BlockSet `type:"slabDoubleSeamless" variant:"stone"`
+	StoneSlab                  *BlockSet `type:"slab" variant:"stone"`
 	BrickBlock                 *BlockSet
 	TNT                        *BlockSet
 	BookShelf                  *BlockSet
@@ -147,8 +147,8 @@ var Blocks = struct {
 	DragonEgg                  *BlockSet
 	RedstoneLamp               *BlockSet
 	RedstoneLampLit            *BlockSet
-	DoubleWoodenSlab           *BlockSet
-	WoodenSlab                 *BlockSet
+	DoubleWoodenSlab           *BlockSet `type:"slabDouble" variant:"wood"`
+	WoodenSlab                 *BlockSet `type:"slab" variant:"wood"`
 	Cocoa                      *BlockSet
 	SandstoneStairs            *BlockSet `type:"stairs"`
 	EmeraldOre                 *BlockSet
@@ -203,8 +203,8 @@ var Blocks = struct {
 	DaylightDetectorInverted   *BlockSet
 	RedSandstone               *BlockSet
 	RedSandstoneStairs         *BlockSet `type:"stairs"`
-	DoubleStoneSlab2           *BlockSet
-	StoneSlab2                 *BlockSet
+	DoubleStoneSlab2           *BlockSet `type:"slabDoubleSeamless" variant:"stone2"`
+	StoneSlab2                 *BlockSet `type:"slab" variant:"stone2"`
 	SpruceFenceGate            *BlockSet `type:"fenceGate"`
 	BirchFenceGate             *BlockSet `type:"fenceGate"`
 	JungleFenceGate            *BlockSet `type:"fenceGate"`

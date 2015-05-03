@@ -43,4 +43,7 @@ func init() {
 	registerBlockType("connectable", &blockConnectable{})
 	registerBlockType("vines", &blockVines{})
 	registerBlockType("wall", &blockWall{})
+	registerBlockType("slab", &blockSlab{})
+	registerBlockType("slabDouble", &blockSlabDouble{})
+	registerBlockType("slabDoubleSeamless", &blockSlabDoubleSeamless{})
 }
