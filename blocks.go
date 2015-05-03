@@ -188,7 +188,7 @@ var Blocks = struct {
 	AcaciaStairs               *BlockSet `type:"stairs"`
 	DarkOakStairs              *BlockSet `type:"stairs"`
 	Slime                      *BlockSet
-	Barrier                    *BlockSet
+	Barrier                    *BlockSet `cullAgainst:"false" renderable:"false"`
 	IronTrapDoor               *BlockSet
 	Prismarine                 *BlockSet
 	SeaLantern                 *BlockSet
