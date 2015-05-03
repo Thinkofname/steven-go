@@ -46,4 +46,6 @@ func init() {
 	registerBlockType("slab", &blockSlab{})
 	registerBlockType("slabDouble", &blockSlabDouble{})
 	registerBlockType("slabDoubleSeamless", &blockSlabDoubleSeamless{})
+	registerBlockType("carpet", &blockCarpet{})
+	registerBlockType("torch", &blockTorch{})
 }

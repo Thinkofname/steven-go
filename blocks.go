@@ -72,7 +72,7 @@ var Blocks = struct {
 	BookShelf                  *BlockSet
 	MossyCobblestone           *BlockSet
 	Obsidian                   *BlockSet
-	Torch                      *BlockSet
+	Torch                      *BlockSet `type:"torch" model:"torch"`
 	Fire                       *BlockSet
 	MobSpawner                 *BlockSet
 	OakStairs                  *BlockSet `type:"stairs"`
@@ -97,8 +97,8 @@ var Blocks = struct {
 	WoodenPressurePlate        *BlockSet
 	RedstoneOre                *BlockSet
 	RedstoneOreLit             *BlockSet
-	RedstoneTorchUnlit         *BlockSet
-	RedstoneTorch              *BlockSet
+	RedstoneTorchUnlit         *BlockSet `type:"torch" model:"unlit_redstone_torch`
+	RedstoneTorch              *BlockSet `type:"torch" model:"redstone_torch"`
 	StoneButton                *BlockSet
 	SnowLayer                  *BlockSet
 	Ice                        *BlockSet
@@ -193,7 +193,7 @@ var Blocks = struct {
 	Prismarine                 *BlockSet
 	SeaLantern                 *BlockSet
 	HayBlock                   *BlockSet
-	Carpet                     *BlockSet
+	Carpet                     *BlockSet `type:"carpet"`
 	HardenedClay               *BlockSet
 	CoalBlock                  *BlockSet
 	PackedIce                  *BlockSet

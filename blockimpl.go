@@ -1488,3 +1488,89 @@ func (b *blockSlabDoubleSeamless) toData() int {
 	}
 	return data
 }
+
+// Carpet
+
+type blockCarpet struct {
+	baseBlock
+	Color color `state:"color,0-15"`
+}
+
+func (b *blockCarpet) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+}
+
+func (b *blockCarpet) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			*vmath.NewAABB(0, 0, 0, 1.0, 1.0/16.0, 1.0),
+		}
+	}
+	return b.bounds
+}
+
+func (b *blockCarpet) ModelName() string {
+	return b.Color.String() + "_carpet"
+}
+
+func (b *blockCarpet) toData() int {
+	return int(b.Color)
+}
+
+// Torch
+
+type blockTorch struct {
+	baseBlock
+	Facing int `state:"facing,0-4"`
+	Model  string
+}
+
+func (b *blockTorch) load(tag reflect.StructTag) {
+	b.Model = tag.Get("model")
+	b.cullAgainst = false
+}
+
+func (b *blockTorch) LightEmitted() int {
+	return 13
+}
+
+func (b *blockTorch) ModelName() string {
+	return b.Model
+}
+
+func (b *blockTorch) ModelVariant() string {
+	facing := b.facing()
+	return fmt.Sprintf("facing=%s", facing)
+}
+
+func (b *blockTorch) facing() direction.Type {
+	switch b.Facing {
+	case 0:
+		return direction.East
+	case 1:
+		return direction.West
+	case 2:
+		return direction.South
+	case 3:
+		return direction.North
+	case 4:
+		return direction.Up
+	}
+	return direction.Invalid
+}
+
+func (b *blockTorch) toData() int {
+	switch b.facing() {
+	case direction.East:
+		return 1
+	case direction.West:
+		return 2
+	case direction.South:
+		return 3
+	case direction.North:
+		return 4
+	case direction.Up:
+		return 5
+	}
+	return -1
+}
