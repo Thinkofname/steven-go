@@ -352,7 +352,7 @@ func calculateBiome(bs *blocksSnapshot, x, z int, img *image.NRGBA) (byte, byte,
 }
 
 func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
-	x, y, z float64, face direction.Type, smooth, force bool) (byte, byte) {
+	x, y, z float64, face direction.Type, smooth, force bool) (uint16, uint16) {
 	if !smooth {
 		ox, oy, oz := face.Offset()
 		if !bs.block(origX, origY, origZ).ShouldCullAgainst() {
@@ -360,69 +360,34 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 		}
 		blockLight := bs.blockLight(origX+ox, origY+oy, origZ+oz)
 		skyLight := bs.skyLight(origX+ox, origY+oy, origZ+oz)
-		return blockLight, skyLight
+		return uint16(blockLight) * 4000, uint16(skyLight) * 4000
 	}
-	blockLight := bs.blockLight(origX, origY, origZ)
-	skyLight := bs.skyLight(origX, origY, origZ)
-	count := 1
+	blockLight := 0
+	skyLight := 0
+	count := 0
 
-	// TODO(Think) Document/cleanup this
-	// it was taken from and older renderer of mine
-	// (thinkmap).
-
-	var pox, poy, poz, nox, noy, noz int
-
-	switch face {
-	case direction.Up: // Up
-		poz, pox = 0, 0
-		noz, nox = -1, -1
-		poy = 1
-		noy = 0
-	case direction.Down: // Down
-		poz, pox = 0, 0
-		noz, nox = -1, -1
-		poy = -1
-		noy = -2
-	case direction.North: // North
-		poy, pox = 0, 0
-		noy, nox = -1, -1
-		poz = -1
-		noz = -2
-	case direction.South: // South
-		poy, pox = 0, 0
-		noy, nox = -1, -1
-		poz = 1
-		noz = 0
-	case direction.West: // West
-		poz, poy = 0, 0
-		noz, noy = -1, -1
-		pox = -1
-		nox = -2
-	case direction.East: // East
-		poz, poy = 0, 0
-		noz, noy = -1, -1
-		pox = 1
-		nox = 0
-	}
-	for ox := nox; ox <= pox; ox++ {
-		for oy := noy; oy <= poy; oy++ {
-			for oz := noz; oz <= poz; oz++ {
-				bx := round(x + float64(ox))
-				by := round(y + float64(oy))
-				bz := round(z + float64(oz))
-				count++
-				blockLight += bs.blockLight(bx, by, bz)
-				if !force {
-					skyLight += bs.skyLight(bx, by, bz)
-				} else if bl := bs.block(bx, by, bz); bl.Is(Blocks.Air) {
-					skyLight += 15
+	dx, dy, dz := face.Offset()
+	for ox := -1; ox <= 0; ox++ {
+		for oy := -1; oy <= 0; oy++ {
+			for oz := -1; oz <= 0; oz++ {
+				lx := round(x + float64(ox)*0.6 + float64(dx)*0.6)
+				ly := round(y + float64(oy)*0.6 + float64(dy)*0.6)
+				lz := round(z + float64(oz)*0.6 + float64(dz)*0.6)
+				bl := int(bs.blockLight(lx, ly, lz))
+				sl := int(bs.skyLight(lx, ly, lz))
+				if force && !bs.block(lx, ly, lz).Is(Blocks.Air) {
+					bl = 0
+					sl = 0
 				}
+				blockLight += bl
+				skyLight += sl
+				count++
 			}
 		}
 
 	}
 
-	return blockLight / byte(count), skyLight / byte(count)
+	return uint16((float64(blockLight) / float64(count)) * 4000), uint16((float64(skyLight) / float64(count)) * 4000)
 }
 
 func round(f float64) int {

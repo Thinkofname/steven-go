@@ -58,8 +58,7 @@ void main() {
 	vAtlas = aTextureOffset.z;
 
 	float light = max(aLighting.x, aLighting.y * 1.0);
-	float val = pow(0.9, 16.0 - light) * 2.0;
-	vLighting = clamp(pow(val, 1.5) * 0.5, 0.0, 1.0);
+	vLighting = light / (4000.0 * 16.0);
 }
 `
 	fragment = `

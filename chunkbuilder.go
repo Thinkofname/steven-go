@@ -29,7 +29,7 @@ type chunkVertex struct {
 	TX, TY, TW, TH             uint16
 	TOffsetX, TOffsetY, TAtlas int16
 	R, G, B                    byte
-	BlockLight, SkyLight       byte
+	BlockLight, SkyLight       uint16
 }
 
 type buildPos struct {
@@ -238,6 +238,7 @@ func buildVertex(b *builder.Buffer, v chunkVertex) {
 	b.UnsignedByte(v.R)
 	b.UnsignedByte(v.G)
 	b.UnsignedByte(v.B)
-	b.UnsignedByte(v.BlockLight)
-	b.UnsignedByte(v.SkyLight)
+	b.UnsignedByte(255)
+	b.UnsignedShort(v.BlockLight)
+	b.UnsignedShort(v.SkyLight)
 }
