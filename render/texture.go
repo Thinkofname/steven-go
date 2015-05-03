@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
-	"image/color"
 	"image/draw"
 	"image/png"
 	"sort"
@@ -74,8 +73,9 @@ func GetTexture(name string) *TextureInfo {
 }
 
 type sortableTexture struct {
-	Area int
-	File string
+	Area  int
+	File  string
+	Image image.Image
 }
 
 type sortableTextures []sortableTexture
@@ -118,13 +118,14 @@ func LoadTextures() {
 		}
 		width, height := img.Bounds().Dx(), img.Bounds().Dy()
 		tList = append(tList, sortableTexture{
-			Area: width * height,
-			File: file,
+			Area:  width * height,
+			File:  file,
+			Image: img,
 		})
 	}
 	sort.Sort(tList)
 	for _, st := range tList {
-		loadTexFile(st.File)
+		loadTexFile(st)
 	}
 
 	pix := []byte{255, 255, 255, 255}
@@ -137,16 +138,9 @@ func LoadTextures() {
 	loadFontPage(0)
 }
 
-func loadTexFile(file string) {
-	r, err := resource.Open("minecraft", file)
-	if err != nil {
-		panic(err)
-	}
-	defer r.Close()
-	ii, err := png.Decode(r)
-	if err != nil {
-		panic(err)
-	}
+func loadTexFile(st sortableTexture) {
+	file := st.File
+	ii := st.Image
 	img := ii.(draw.Image)
 	width, height := img.Bounds().Dx(), img.Bounds().Dy()
 	var ani *animatedTexture
@@ -182,19 +176,9 @@ func imgToBytes(img image.Image) []byte {
 	case *image.RGBA:
 		return img.Pix
 	case *image.Paletted:
-		width, height := img.Bounds().Dx(), img.Bounds().Dy()
-		pix := make([]byte, width*height*4)
-		for y := 0; y < height; y++ {
-			for x := 0; x < width; x++ {
-				col := color.NRGBAModel.Convert(img.At(x, y)).(color.NRGBA)
-				index := (y*width + x) * 4
-				pix[index] = col.R
-				pix[index+1] = col.G
-				pix[index+2] = col.B
-				pix[index+3] = col.A
-			}
-		}
-		return pix
+		temp := image.NewNRGBA(img.Bounds())
+		draw.Draw(temp, img.Bounds(), img, image.ZP, draw.Over)
+		return temp.Pix
 	default:
 		panic(fmt.Sprintf("unsupported image type %T", img))
 	}
@@ -214,7 +198,12 @@ func addTexture(pix []byte, width, height int) *TextureInfo {
 			return info
 		}
 	}
-	a := atlas.New(AtlasSize, AtlasSize, 4)
+	var a *atlas.Type
+	if texturesCreated {
+		a = atlas.NewLight(AtlasSize, AtlasSize, 0)
+	} else {
+		a = atlas.New(AtlasSize, AtlasSize, 4)
+	}
 	textures = append(textures, a)
 	rect, err := a.Add(pix, width, height)
 	if err != nil {
