@@ -76,6 +76,27 @@ func NewPadded(width, height, pixelSize, padding int) *Type {
 	return a
 }
 
+// NewLight creates an atlas of the specified
+// size. Textures are padded with the passed
+// number of pixels around each size. This is
+// useful for filtering textures without other
+// textures bleeding through.
+// pixelSize controls the number of bytes per
+// a pixel. This will have no backing buffer.
+func NewLight(width, height, padding int) *Type {
+	a := &Type{
+		width:  width,
+		height: height,
+	}
+	a.freeSpace = append(a.freeSpace, &Rect{
+		X:      0,
+		Y:      0,
+		Width:  width,
+		Height: height,
+	})
+	return a
+}
+
 // Add adds the passed texture to the atlas and
 // returns the location in the atlas. This method
 // panics if the atlas has been baked.
@@ -110,7 +131,9 @@ func (a *Type) Add(image []byte, width, height int) (*Rect, error) {
 	}
 
 	// Copy the image into the atlas
-	CopyImage(image, a.Buffer, target.X, target.Y, w, h, a.width, a.height, a.pixelSize, a.padding)
+	if a.Buffer != nil {
+		CopyImage(image, a.Buffer, target.X, target.Y, w, h, a.width, a.height, a.pixelSize, a.padding)
+	}
 
 	tx := target.X + a.padding
 	ty := target.Y + a.padding
