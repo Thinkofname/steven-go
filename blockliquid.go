@@ -56,7 +56,7 @@ func (l *blockLiquid) toData() int {
 	return l.Level
 }
 
-func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder.Buffer) {
+func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf, bufI *builder.Buffer) {
 	var tex *render.TextureInfo
 	var b1, b2 *BlockSet
 	if l.Lava {
@@ -93,12 +93,17 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder
 			cg = 255
 			cb = 255
 
+			ii := int32(buf.Count())
+			for _, ind := range vert.indices {
+				bufI.UnsignedInt(uint32(ii + ind))
+			}
+
 			// TODO: Needs fixing (maybe?)
 			ux1 := int16(0)
 			ux2 := int16(16 * tex.Width)
 			uy1 := int16(0)
 			uy2 := int16(16 * tex.Height)
-			for _, vert := range vert {
+			for _, vert := range vert.verts {
 				vert.TX = uint16(tex.X)
 				vert.TY = uint16(tex.Y)
 				vert.TW = uint16(tex.Width)

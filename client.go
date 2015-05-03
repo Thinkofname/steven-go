@@ -219,6 +219,15 @@ func (c *ClientState) renderTick(delta float64) {
 		c.checkGround()
 	}
 
+	c.Pitch = math.Mod(c.Pitch, math.Pi*2)
+	c.Yaw = math.Mod(c.Yaw, math.Pi*2)
+	if c.Pitch < 0 {
+		c.Pitch += math.Pi * 2
+	}
+	if c.Yaw < 0 {
+		c.Yaw += math.Pi * 2
+	}
+
 	c.copyToCamera()
 
 	//  Highlights the target block

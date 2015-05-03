@@ -171,6 +171,10 @@ func DrawArrays(ty DrawType, offset, count int) {
 	gl.DrawArrays(uint32(ty), int32(offset), int32(count))
 }
 
+func DrawElements(ty DrawType, count int, dty Type) {
+	gl.DrawElements(uint32(ty), int32(count), uint32(dty), nil)
+}
+
 // CheckError panics if there has been an error reported to the
 // context. This is normally not a cheap call so shouldn't be
 // used in production.

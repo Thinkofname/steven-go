@@ -81,6 +81,12 @@ func (b *Buffer) Short(i int16) {
 	b.UnsignedShort(uint16(i))
 }
 
+func (b *Buffer) UnsignedInt(i uint32) {
+	d := b.scratch[:4]
+	native.Order.PutUint32(d, i)
+	b.buf.Write(d)
+}
+
 // Float writes a float to the buffer
 func (b *Buffer) Float(f float32) {
 	d := b.scratch[:4]

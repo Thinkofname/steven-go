@@ -25,6 +25,7 @@ type Type uint32
 const (
 	UnsignedByte  Type = gl.UNSIGNED_BYTE
 	UnsignedShort Type = gl.UNSIGNED_SHORT
+	UnsignedInt   Type = gl.UNSIGNED_INT
 	Short         Type = gl.SHORT
 	Float         Type = gl.FLOAT
 )

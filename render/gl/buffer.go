@@ -25,7 +25,8 @@ type BufferTarget uint32
 
 const (
 	// ArrayBuffer is a buffer target intended for vertex data.
-	ArrayBuffer BufferTarget = gl.ARRAY_BUFFER
+	ArrayBuffer        BufferTarget = gl.ARRAY_BUFFER
+	ElementArrayBuffer BufferTarget = gl.ELEMENT_ARRAY_BUFFER
 )
 
 // BufferUsage states how a buffer is going to be used by the program.

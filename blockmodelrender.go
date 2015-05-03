@@ -31,6 +31,7 @@ type processedFace struct {
 	cullFace  direction.Type
 	facing    direction.Type
 	vertices  []chunkVertex
+	indices   []int32
 	shade     bool
 	tintIndex int
 }
@@ -130,27 +131,27 @@ func precomputeModel(bm *blockModel) *processedModel {
 			var minX, minY, minZ int16 = math.MaxInt16, math.MaxInt16, math.MaxInt16
 			var maxX, maxY, maxZ int16 = math.MinInt16, math.MinInt16, math.MinInt16
 
-			for v := range vert {
-				vert[v].TX = uint16(tex.X)
-				vert[v].TY = uint16(tex.Y)
-				vert[v].TW = uint16(tex.Width)
-				vert[v].TH = uint16(tex.Height)
-				vert[v].TAtlas = int16(tex.Atlas)
+			for v := range vert.verts {
+				vert.verts[v].TX = uint16(tex.X)
+				vert.verts[v].TY = uint16(tex.Y)
+				vert.verts[v].TW = uint16(tex.Width)
+				vert.verts[v].TH = uint16(tex.Height)
+				vert.verts[v].TAtlas = int16(tex.Atlas)
 
-				if vert[v].X == 0 {
-					vert[v].X = int16(el.from[0] * 16)
+				if vert.verts[v].X == 0 {
+					vert.verts[v].X = int16(el.from[0] * 16)
 				} else {
-					vert[v].X = int16(el.to[0] * 16)
+					vert.verts[v].X = int16(el.to[0] * 16)
 				}
-				if vert[v].Y == 0 {
-					vert[v].Y = int16(el.from[1] * 16)
+				if vert.verts[v].Y == 0 {
+					vert.verts[v].Y = int16(el.from[1] * 16)
 				} else {
-					vert[v].Y = int16(el.to[1] * 16)
+					vert.verts[v].Y = int16(el.to[1] * 16)
 				}
-				if vert[v].Z == 0 {
-					vert[v].Z = int16(el.from[2] * 16)
+				if vert.verts[v].Z == 0 {
+					vert.verts[v].Z = int16(el.from[2] * 16)
 				} else {
-					vert[v].Z = int16(el.to[2] * 16)
+					vert.verts[v].Z = int16(el.to[2] * 16)
 				}
 
 				if el.rotation != nil {
@@ -160,26 +161,26 @@ func precomputeModel(bm *blockModel) *processedModel {
 						rotY := -r.angle * (math.Pi / 180)
 						c := math.Cos(rotY)
 						s := math.Sin(rotY)
-						x := float64(vert[v].X) - r.origin[0]*16
-						z := float64(vert[v].Z) - r.origin[2]*16
-						vert[v].X = int16(r.origin[0]*16 + (x*c - z*s))
-						vert[v].Z = int16(r.origin[2]*16 + (z*c + x*s))
+						x := float64(vert.verts[v].X) - r.origin[0]*16
+						z := float64(vert.verts[v].Z) - r.origin[2]*16
+						vert.verts[v].X = int16(r.origin[0]*16 + (x*c - z*s))
+						vert.verts[v].Z = int16(r.origin[2]*16 + (z*c + x*s))
 					case "x":
 						rotX := r.angle * (math.Pi / 180)
 						c := math.Cos(-rotX)
 						s := math.Sin(-rotX)
-						z := float64(vert[v].Z) - r.origin[2]*16
-						y := float64(vert[v].Y) - r.origin[1]*16
-						vert[v].Z = int16(r.origin[2]*16 + (z*c - y*s))
-						vert[v].Y = int16(r.origin[1]*16 + (y*c + z*s))
+						z := float64(vert.verts[v].Z) - r.origin[2]*16
+						y := float64(vert.verts[v].Y) - r.origin[1]*16
+						vert.verts[v].Z = int16(r.origin[2]*16 + (z*c - y*s))
+						vert.verts[v].Y = int16(r.origin[1]*16 + (y*c + z*s))
 					case "z":
 						rotZ := -r.angle * (math.Pi / 180)
 						c := math.Cos(-rotZ)
 						s := math.Sin(-rotZ)
-						x := float64(vert[v].X) - r.origin[0]*16
-						y := float64(vert[v].Y) - r.origin[1]*16
-						vert[v].X = int16(r.origin[0]*16 + (x*c - y*s))
-						vert[v].Y = int16(r.origin[1]*16 + (y*c + x*s))
+						x := float64(vert.verts[v].X) - r.origin[0]*16
+						y := float64(vert.verts[v].Y) - r.origin[1]*16
+						vert.verts[v].X = int16(r.origin[0]*16 + (x*c - y*s))
+						vert.verts[v].Y = int16(r.origin[1]*16 + (y*c + x*s))
 					}
 				}
 
@@ -187,41 +188,41 @@ func precomputeModel(bm *blockModel) *processedModel {
 					rotX := bm.x * (math.Pi / 180)
 					c := int16(math.Cos(rotX))
 					s := int16(math.Sin(rotX))
-					z := vert[v].Z - 8*16
-					y := vert[v].Y - 8*16
-					vert[v].Z = 8*16 + int16(z*c-y*s)
-					vert[v].Y = 8*16 + int16(y*c+z*s)
+					z := vert.verts[v].Z - 8*16
+					y := vert.verts[v].Y - 8*16
+					vert.verts[v].Z = 8*16 + int16(z*c-y*s)
+					vert.verts[v].Y = 8*16 + int16(y*c+z*s)
 				}
 
 				if bm.y > 0 {
 					rotY := bm.y * (math.Pi / 180)
 					c := int16(math.Cos(rotY))
 					s := int16(math.Sin(rotY))
-					x := vert[v].X - 8*16
-					z := vert[v].Z - 8*16
-					vert[v].X = 8*16 + int16(x*c-z*s)
-					vert[v].Z = 8*16 + int16(z*c+x*s)
+					x := vert.verts[v].X - 8*16
+					z := vert.verts[v].Z - 8*16
+					vert.verts[v].X = 8*16 + int16(x*c-z*s)
+					vert.verts[v].Z = 8*16 + int16(z*c+x*s)
 				}
 
-				if vert[v].TOffsetX == 0 {
-					vert[v].TOffsetX = int16(ux1)
+				if vert.verts[v].TOffsetX == 0 {
+					vert.verts[v].TOffsetX = int16(ux1)
 				} else {
-					vert[v].TOffsetX = int16(ux2)
+					vert.verts[v].TOffsetX = int16(ux2)
 				}
-				if vert[v].TOffsetY == 0 {
-					vert[v].TOffsetY = int16(uy1)
+				if vert.verts[v].TOffsetY == 0 {
+					vert.verts[v].TOffsetY = int16(uy1)
 				} else {
-					vert[v].TOffsetY = int16(uy2)
+					vert.verts[v].TOffsetY = int16(uy2)
 				}
 
 				if face.rotation > 0 {
 					rotY := -float64(face.rotation) * (math.Pi / 180)
 					c := int16(math.Cos(rotY))
 					s := int16(math.Sin(rotY))
-					x := vert[v].TOffsetX - 8*tw
-					y := vert[v].TOffsetY - 8*th
-					vert[v].TOffsetX = 8*tw + int16(x*c-y*s)
-					vert[v].TOffsetY = 8*th + int16(y*c+x*s)
+					x := vert.verts[v].TOffsetX - 8*tw
+					y := vert.verts[v].TOffsetY - 8*th
+					vert.verts[v].TOffsetX = 8*tw + int16(x*c-y*s)
+					vert.verts[v].TOffsetY = 8*th + int16(y*c+x*s)
 				}
 
 				if bm.uvLock && bm.y > 0 &&
@@ -229,10 +230,10 @@ func precomputeModel(bm *blockModel) *processedModel {
 					rotY := float64(-bm.y) * (math.Pi / 180)
 					c := int16(math.Cos(rotY))
 					s := int16(math.Sin(rotY))
-					x := vert[v].TOffsetX - 8*16
-					y := vert[v].TOffsetY - 8*16
-					vert[v].TOffsetX = 8*16 + int16(x*c+y*s)
-					vert[v].TOffsetY = 8*16 + int16(y*c-x*s)
+					x := vert.verts[v].TOffsetX - 8*16
+					y := vert.verts[v].TOffsetY - 8*16
+					vert.verts[v].TOffsetX = 8*16 + int16(x*c+y*s)
+					vert.verts[v].TOffsetY = 8*16 + int16(y*c-x*s)
 				}
 
 				if bm.uvLock && bm.x > 0 &&
@@ -240,27 +241,27 @@ func precomputeModel(bm *blockModel) *processedModel {
 					rotY := float64(bm.x) * (math.Pi / 180)
 					c := int16(math.Cos(rotY))
 					s := int16(math.Sin(rotY))
-					x := vert[v].TOffsetX - 8*16
-					y := vert[v].TOffsetY - 8*16
-					vert[v].TOffsetX = 8*16 + int16(x*c+y*s)
-					vert[v].TOffsetY = 8*16 + int16(y*c-x*s)
+					x := vert.verts[v].TOffsetX - 8*16
+					y := vert.verts[v].TOffsetY - 8*16
+					vert.verts[v].TOffsetX = 8*16 + int16(x*c+y*s)
+					vert.verts[v].TOffsetY = 8*16 + int16(y*c-x*s)
 				}
 
 				if el.rotation != nil && el.rotation.rescale {
-					if vert[v].X < minX {
-						minX = vert[v].X
-					} else if vert[v].X > maxX {
-						maxX = vert[v].X
+					if vert.verts[v].X < minX {
+						minX = vert.verts[v].X
+					} else if vert.verts[v].X > maxX {
+						maxX = vert.verts[v].X
 					}
-					if vert[v].Y < minY {
-						minY = vert[v].Y
-					} else if vert[v].Y > maxY {
-						maxY = vert[v].Y
+					if vert.verts[v].Y < minY {
+						minY = vert.verts[v].Y
+					} else if vert.verts[v].Y > maxY {
+						maxY = vert.verts[v].Y
 					}
-					if vert[v].Z < minZ {
-						minZ = vert[v].Z
-					} else if vert[v].Z > maxZ {
-						maxZ = vert[v].Z
+					if vert.verts[v].Z < minZ {
+						minZ = vert.verts[v].Z
+					} else if vert.verts[v].Z > maxZ {
+						maxZ = vert.verts[v].Z
 					}
 				}
 			}
@@ -269,14 +270,15 @@ func precomputeModel(bm *blockModel) *processedModel {
 				diffX := float64(maxX - minX)
 				diffY := float64(maxY - minY)
 				diffZ := float64(maxZ - minZ)
-				for v := range vert {
-					vert[v].X = int16((float64(vert[v].X-minX) / diffX) * 256)
-					vert[v].Y = int16((float64(vert[v].Y-minY) / diffY) * 256)
-					vert[v].Z = int16((float64(vert[v].Z-minZ) / diffZ) * 256)
+				for v := range vert.verts {
+					vert.verts[v].X = int16((float64(vert.verts[v].X-minX) / diffX) * 256)
+					vert.verts[v].Y = int16((float64(vert.verts[v].Y-minY) / diffY) * 256)
+					vert.verts[v].Z = int16((float64(vert.verts[v].Z-minZ) / diffZ) * 256)
 				}
 			}
 
-			pFace.vertices = vert[:]
+			pFace.vertices = vert.verts[:]
+			pFace.indices = vert.indices[:]
 
 			p.faces = append(p.faces, pFace)
 		}
@@ -284,7 +286,7 @@ func precomputeModel(bm *blockModel) *processedModel {
 	return p
 }
 
-func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf *builder.Buffer) {
+func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf, bufI *builder.Buffer) {
 	this := bs.block(x, y, z)
 	for _, f := range p.faces {
 		if f.cullFace != direction.Invalid {
@@ -308,6 +310,11 @@ func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf *builder.Buf
 			cr = byte(float64(cr) * 0.8)
 			cg = byte(float64(cg) * 0.8)
 			cb = byte(float64(cb) * 0.8)
+		}
+
+		ii := int32(buf.Count())
+		for _, ind := range f.indices {
+			bufI.UnsignedInt(uint32(ii + ind))
 		}
 
 		for _, vert := range f.vertices {
@@ -397,60 +404,65 @@ func round(f float64) int {
 	return int(f + 0.5)
 }
 
-// Precomputed face vertices
-var faceVertices = [6][6]chunkVertex{
-	{ // Up
-		{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
-		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 1},
+type faceDetails struct {
+	indices [6]int32
+	verts   [4]chunkVertex
+}
 
-		{X: 1, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 1},
-		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
+// Precomputed face vertices
+var faceVertices = [6]faceDetails{
+	{ // Up
+		indices: [6]int32{0, 1, 2, 3, 2, 1},
+		verts: [4]chunkVertex{
+			{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
+			{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
+			{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 1},
+			{X: 1, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 1},
+		},
 	},
 	{ // Down
-		{X: 0, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
-		{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
-
-		{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
-		{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 0},
+		indices: [6]int32{0, 1, 2, 3, 2, 1},
+		verts: [4]chunkVertex{
+			{X: 0, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
+			{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 0},
+			{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
+			{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 0},
+		},
 	},
 	{ // North
-		{X: 0, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
-		{X: 1, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-
-		{X: 1, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
-		{X: 0, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
+		indices: [6]int32{0, 1, 2, 3, 2, 1},
+		verts: [4]chunkVertex{
+			{X: 0, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
+			{X: 1, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
+			{X: 0, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
+			{X: 1, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
+		},
 	},
 	{ // South
-		{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
-
-		{X: 1, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
+		indices: [6]int32{0, 1, 2, 3, 2, 1},
+		verts: [4]chunkVertex{
+			{X: 0, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
+			{X: 0, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
+			{X: 1, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
+			{X: 1, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 0},
+		},
 	},
 	{ // West
-		{X: 0, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
-		{X: 0, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
-
-		{X: 0, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 0},
-		{X: 0, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
-		{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
+		indices: [6]int32{0, 1, 2, 3, 2, 1},
+		verts: [4]chunkVertex{
+			{X: 0, Y: 0, Z: 0, TOffsetX: 0, TOffsetY: 1},
+			{X: 0, Y: 1, Z: 0, TOffsetX: 0, TOffsetY: 0},
+			{X: 0, Y: 0, Z: 1, TOffsetX: 1, TOffsetY: 1},
+			{X: 0, Y: 1, Z: 1, TOffsetX: 1, TOffsetY: 0},
+		},
 	},
 	{ // East
-		{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
-		{X: 1, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
-		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-
-		{X: 1, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
-		{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
-		{X: 1, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
+		indices: [6]int32{0, 1, 2, 3, 2, 1},
+		verts: [4]chunkVertex{
+			{X: 1, Y: 0, Z: 0, TOffsetX: 1, TOffsetY: 1},
+			{X: 1, Y: 0, Z: 1, TOffsetX: 0, TOffsetY: 1},
+			{X: 1, Y: 1, Z: 0, TOffsetX: 1, TOffsetY: 0},
+			{X: 1, Y: 1, Z: 1, TOffsetX: 0, TOffsetY: 0},
+		},
 	},
 }

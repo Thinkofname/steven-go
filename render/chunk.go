@@ -32,18 +32,20 @@ type ChunkBuffer struct {
 
 	array       gl.VertexArray
 	buffer      gl.Buffer
+	bufferI     gl.Buffer
 	bufferSize  int
 	count       int
 	arrayT      gl.VertexArray
 	bufferT     gl.Buffer
+	bufferTI    gl.Buffer
 	bufferTSize int
 	countT      int
 	cullBits    uint64
 
 	renderedOn uint
 
-	transData []byte
 	transInfo objectInfoList
+	transData []byte
 
 	neighborChunks [6]*ChunkBuffer
 }
@@ -105,17 +107,18 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 }
 
 // Upload uploads the passed vertex data to the buffer.
-func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
+func (cb *ChunkBuffer) Upload(data, dataI []byte, cullBits uint64) {
 	if cb.invalid {
 		return
 	}
 	cb.cullBits = cullBits
 	var n bool
 
-	if count == 0 {
+	if len(dataI) == 0 {
 		if cb.array.IsValid() {
 			cb.array.Delete()
 			cb.buffer.Delete()
+			cb.bufferI.Delete()
 		}
 		return
 	}
@@ -123,6 +126,7 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 	if !cb.array.IsValid() {
 		cb.array = gl.CreateVertexArray()
 		cb.buffer = gl.CreateBuffer()
+		cb.bufferI = gl.CreateBuffer()
 		n = true
 	}
 
@@ -132,6 +136,9 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 	shaderChunk.TextureOffset.Enable()
 	shaderChunk.Color.Enable()
 	shaderChunk.Lighting.Enable()
+
+	cb.bufferI.Bind(gl.ElementArrayBuffer)
+	cb.bufferI.Data(dataI, gl.DynamicDraw)
 
 	cb.buffer.Bind(gl.ArrayBuffer)
 	if n || len(data) > cb.bufferSize {
@@ -148,21 +155,21 @@ func (cb *ChunkBuffer) Upload(data []byte, count int, cullBits uint64) {
 	shaderChunk.Color.Pointer(3, gl.UnsignedByte, true, 28, 20)
 	shaderChunk.Lighting.Pointer(2, gl.UnsignedShort, false, 28, 24)
 
-	cb.count = count
+	cb.count = len(dataI) / 4
 }
 
 // UploadTrans uploads the passed vertex data to the translucent buffer.
-func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, count int) {
+func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data, dataI []byte) {
 	if cb.invalid {
 		return
 	}
 	var n bool
-	if count == 0 {
+	if len(dataI) == 0 {
 		if cb.arrayT.IsValid() {
 			cb.arrayT.Delete()
 			cb.bufferT.Delete()
+			cb.bufferTI.Delete()
 		}
-		cb.transData = nil
 		cb.transInfo = nil
 		return
 	}
@@ -170,10 +177,9 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, count int) {
 	if !cb.arrayT.IsValid() {
 		cb.arrayT = gl.CreateVertexArray()
 		cb.bufferT = gl.CreateBuffer()
+		cb.bufferTI = gl.CreateBuffer()
 		n = true
 	}
-	cb.transData = make([]byte, len(data))
-	copy(cb.transData, data)
 
 	cb.arrayT.Bind()
 	shaderChunkT.Position.Enable()
@@ -182,10 +188,15 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, count int) {
 	shaderChunkT.Color.Enable()
 	shaderChunkT.Lighting.Enable()
 
+	cb.bufferTI.Bind(gl.ElementArrayBuffer)
+	cb.bufferTI.Data(dataI, gl.DynamicDraw)
+	cb.transData = make([]byte, len(dataI))
+	copy(cb.transData, dataI)
+
 	cb.bufferT.Bind(gl.ArrayBuffer)
-	if n || len(cb.transData) > cb.bufferTSize {
-		cb.bufferTSize = len(cb.transData)
-		cb.bufferT.Data(cb.transData, gl.StreamDraw)
+	if n || len(data) > cb.bufferTSize {
+		cb.bufferTSize = len(data)
+		cb.bufferT.Data(data, gl.StreamDraw)
 	}
 	shaderChunkT.Position.PointerInt(3, gl.Short, 28, 0)
 	shaderChunkT.TextureInfo.Pointer(4, gl.UnsignedShort, false, 28, 6)
@@ -193,7 +204,7 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, count int) {
 	shaderChunkT.Color.Pointer(3, gl.UnsignedByte, true, 28, 20)
 	shaderChunkT.Lighting.Pointer(2, gl.UnsignedShort, false, 28, 24)
 
-	cb.countT = count
+	cb.countT = len(dataI)
 	cb.transInfo = info
 }
 
@@ -206,8 +217,8 @@ func (cb *ChunkBuffer) Free() {
 	cb.invalid = true
 	cb.count = 0
 	cb.countT = 0
-	cb.transData = nil
 	cb.transInfo = nil
+	cb.transData = nil
 	cb.cullBits = math.MaxUint64
 
 	if cb.buffer.IsValid() {

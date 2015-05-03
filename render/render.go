@@ -170,15 +170,15 @@ sync:
 			shaderChunkT.Offset.Int3(chunk.X, chunk.Y, chunk.Z)
 
 			chunk.arrayT.Bind()
-			chunk.bufferT.Bind(gl.ArrayBuffer)
+			chunk.bufferTI.Bind(gl.ElementArrayBuffer)
 			offset := 0
 			sort.Sort(chunk.transInfo)
-			data := chunk.bufferT.Map(gl.WriteOnly, len(chunk.transData))
+			data := chunk.bufferTI.Map(gl.WriteOnly, len(chunk.transData))
 			for _, i := range chunk.transInfo {
 				offset += copy(data[offset:], chunk.transData[i.Offset:i.Offset+i.Count])
 			}
-			chunk.bufferT.Unmap()
-			gl.DrawArrays(gl.Triangles, 0, chunk.countT)
+			chunk.bufferTI.Unmap()
+			gl.DrawElements(gl.Triangles, chunk.countT, gl.UnsignedInt)
 		}
 	}
 	gl.Disable(gl.Blend)
@@ -228,7 +228,7 @@ itQueue:
 			shaderChunk.Offset.Int3(chunk.X, chunk.Y, chunk.Z)
 
 			chunk.array.Bind()
-			gl.DrawArrays(gl.Triangles, 0, chunk.count)
+			gl.DrawElements(gl.Triangles, chunk.count, gl.UnsignedInt)
 		}
 
 		for _, dir := range direction.Values {
