@@ -176,11 +176,15 @@ sync:
 			offset := 0
 			sort.Sort(chunk.transInfo)
 			data := chunk.bufferTI.Map(gl.WriteOnly, len(chunk.transData))
+			m := 2
+			if chunk.bufferTIType == gl.UnsignedInt {
+				m = 4
+			}
 			for _, i := range chunk.transInfo {
-				offset += copy(data[offset:], chunk.transData[i.Offset:i.Offset+i.Count])
+				offset += copy(data[offset:], chunk.transData[i.Offset*m:(i.Offset+i.Count)*m])
 			}
 			chunk.bufferTI.Unmap()
-			gl.DrawElements(gl.Triangles, chunk.countT, gl.UnsignedInt)
+			gl.DrawElements(gl.Triangles, chunk.countT, chunk.bufferTIType)
 		}
 	}
 	gl.Disable(gl.Blend)
@@ -230,7 +234,7 @@ itQueue:
 			shaderChunk.Offset.Int3(chunk.X, chunk.Y, chunk.Z)
 
 			chunk.array.Bind()
-			gl.DrawElements(gl.Triangles, chunk.count, gl.UnsignedInt)
+			gl.DrawElements(gl.Triangles, chunk.count, elementBufferType)
 		}
 
 		for _, dir := range direction.Values {

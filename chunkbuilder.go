@@ -94,8 +94,8 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 								X:      (cs.chunk.X << 4) + x,
 								Y:      (cs.Y << 4) + y,
 								Z:      (cs.chunk.Z << 4) + z,
-								Offset: offset * 4,
-								Count:  count * 4,
+								Offset: offset,
+								Count:  count,
 							})
 						}
 						continue
@@ -113,8 +113,8 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 								X:      (cs.chunk.X << 4) + x,
 								Y:      (cs.Y << 4) + y,
 								Z:      (cs.chunk.Z << 4) + z,
-								Offset: offset * 4,
-								Count:  count * 4,
+								Offset: offset,
+								Count:  count,
 							})
 						}
 					}

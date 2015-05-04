@@ -26,6 +26,7 @@ var (
 	buffers           = make(map[position]*ChunkBuffer)
 	elementBuffer     gl.Buffer
 	elementBufferSize int
+	elementBufferType gl.Type = gl.UnsignedShort
 )
 
 // ChunkBuffer is a renderable chunk section
@@ -33,16 +34,17 @@ type ChunkBuffer struct {
 	position
 	invalid bool
 
-	array       gl.VertexArray
-	buffer      gl.Buffer
-	bufferSize  int
-	count       int
-	arrayT      gl.VertexArray
-	bufferT     gl.Buffer
-	bufferTI    gl.Buffer
-	bufferTSize int
-	countT      int
-	cullBits    uint64
+	array        gl.VertexArray
+	buffer       gl.Buffer
+	bufferSize   int
+	count        int
+	arrayT       gl.VertexArray
+	bufferT      gl.Buffer
+	bufferTI     gl.Buffer
+	bufferTIType gl.Type
+	bufferTSize  int
+	countT       int
+	cullBits     uint64
 
 	renderedOn uint
 
@@ -110,23 +112,33 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 
 func ensureElementBuffer(size int) {
 	if elementBufferSize < size {
-		data := genElementBuffer(size)
+		data, ty := genElementBuffer(size)
+		elementBufferType = ty
 		elementBuffer.Bind(gl.ElementArrayBuffer)
 		elementBuffer.Data(data, gl.DynamicDraw)
 		elementBufferSize = size
 	}
 }
 
-func genElementBuffer(size int) []byte {
+func genElementBuffer(size int) ([]byte, gl.Type) {
 	data := make([]byte, size*4)
 	offset := 0
+	ty := gl.UnsignedShort
+	if uint32(size/6)*4+3 >= math.MaxUint16 {
+		ty = gl.UnsignedInt
+	}
 	for i := 0; i < size/6; i++ {
 		for _, val := range []uint32{0, 1, 2, 3, 2, 1} {
-			native.Order.PutUint32(data[offset:], uint32(i)*4+val)
-			offset += 4
+			if ty == gl.UnsignedInt {
+				native.Order.PutUint32(data[offset:], uint32(i)*4+val)
+				offset += 4
+			} else {
+				native.Order.PutUint16(data[offset:], uint16(uint32(i)*4+val))
+				offset += 2
+			}
 		}
 	}
-	return data
+	return data, ty
 }
 
 // Upload uploads the passed vertex data to the buffer.
@@ -210,7 +222,7 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, indices int) 
 	shaderChunkT.Lighting.Enable()
 
 	cb.bufferTI.Bind(gl.ElementArrayBuffer)
-	cb.transData = genElementBuffer(indices)
+	cb.transData, cb.bufferTIType = genElementBuffer(indices)
 	cb.bufferTI.Data(cb.transData, gl.DynamicDraw)
 
 	cb.bufferT.Bind(gl.ArrayBuffer)
