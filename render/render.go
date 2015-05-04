@@ -41,6 +41,8 @@ var (
 	glTexture       gl.Texture
 	textureDepth    int
 	texturesCreated bool
+
+	MultiSample bool
 )
 
 // Start starts the renderer
@@ -119,7 +121,9 @@ sync:
 		gl.Viewport(0, 0, width, height)
 	}
 
-	gl.Enable(gl.Multisample)
+	if MultiSample {
+		gl.Enable(gl.Multisample)
+	}
 
 	glTexture.Bind(gl.Texture2DArray)
 	gl.ActiveTexture(0)
@@ -188,7 +192,9 @@ sync:
 		}
 	}
 	gl.Disable(gl.Blend)
-	gl.Disable(gl.Multisample)
+	if MultiSample {
+		gl.Disable(gl.Multisample)
+	}
 
 	drawUI()
 }

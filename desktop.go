@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/protocol"
+	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/render/gl"
 )
 
@@ -37,6 +38,7 @@ func startWindow() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	glfw.WindowHint(glfw.Samples, Config.Render.Samples)
+	render.MultiSample = Config.Render.Samples > 0
 
 	var err error
 	window, err = glfw.CreateWindow(800, 480, "Steven", nil, nil)
@@ -44,7 +46,7 @@ func startWindow() {
 		panic(err)
 	}
 	window.MakeContextCurrent()
-	glfw.SwapInterval(1)
+	glfw.SwapInterval(0)
 
 	window.SetCursorPosCallback(onMouseMove)
 	window.SetMouseButtonCallback(onMouseClick)
