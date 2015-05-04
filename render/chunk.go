@@ -253,6 +253,9 @@ func (cb *ChunkBuffer) Free() {
 	if cb.arrayT.IsValid() {
 		cb.arrayT.Delete()
 	}
+	if cb.bufferTI.IsValid() {
+		cb.bufferTI.Delete()
+	}
 }
 
 // ObjectInfo contains information about an renderable object that needs
