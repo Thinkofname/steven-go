@@ -135,8 +135,9 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 	}
 	switch key {
 	case glfw.KeyEscape:
-		lockMouse = false
-		w.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
+		if action == glfw.Release {
+			setScreen(newGameMenu())
+		}
 	case glfw.KeyW:
 		if action != glfw.Repeat {
 			Client.KeyState[KeyForward] = action == glfw.Press
@@ -164,10 +165,6 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 			} else {
 				Client.scene.Show()
 			}
-		}
-	case glfw.KeyF2:
-		if action == glfw.Release {
-			closeWithError(errManualDisconnect)
 		}
 	case glfw.KeyF3:
 		if action == glfw.Release {
