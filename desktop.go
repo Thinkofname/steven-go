@@ -46,7 +46,7 @@ func startWindow() {
 		panic(err)
 	}
 	window.MakeContextCurrent()
-	glfw.SwapInterval(0)
+	glfw.SwapInterval(1)
 
 	window.SetCursorPosCallback(onMouseMove)
 	window.SetMouseButtonCallback(onMouseClick)
