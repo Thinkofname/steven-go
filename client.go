@@ -68,10 +68,7 @@ type ClientState struct {
 
 	Bounds vmath.AABB
 
-	fps       int
-	frames    int
-	lastCount time.Time
-	debug     struct {
+	debug struct {
 		enabled  bool
 		position *ui.Text
 		facing   *ui.Text
@@ -81,6 +78,10 @@ type ClientState struct {
 		target     *ui.Text
 		targetName *ui.Text
 		targetInfo [][2]*ui.Text
+
+		fpsValue  int
+		frames    int
+		lastCount time.Time
 	}
 	hotbarUI          *ui.Image
 	currentHotbarSlot int
@@ -143,8 +144,6 @@ func (c *ClientState) init() {
 }
 
 func (c *ClientState) renderTick(delta float64) {
-	c.frames++
-
 	c.hotbarUI.X = -184 + 24 + 40*float64(c.currentHotbarSlot)
 
 	forward, yaw := c.calculateMovement()

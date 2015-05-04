@@ -77,13 +77,14 @@ func (c *ClientState) renderDebug() {
 	runtime.ReadMemStats(&memoryStats)
 	c.debug.memory.Update(fmt.Sprintf("%s/%s", formatMemory(memoryStats.Alloc), formatMemory(memoryStats.Sys)))
 
+	c.debug.frames++
 	now := time.Now()
-	if now.Sub(c.lastCount) > time.Second {
-		c.lastCount = now
-		c.fps = c.frames
-		c.frames = 0
+	if now.Sub(c.debug.lastCount) >= time.Second {
+		c.debug.lastCount = now
+		c.debug.fpsValue = c.debug.frames
+		c.debug.frames = 0
 	}
-	c.debug.fps.Update(fmt.Sprintf("FPS: %d", c.fps))
+	c.debug.fps.Update(fmt.Sprintf("FPS: %d", c.debug.fpsValue))
 }
 
 func formatMemory(alloc uint64) string {
