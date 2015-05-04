@@ -15,6 +15,7 @@
 package steven
 
 import (
+	"math"
 	"strings"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
@@ -47,7 +48,7 @@ type textBox struct {
 }
 
 func newTextBox(x, y, w, h float64) *textBox {
-	btn := ui.NewButton(x, y, w, h).Attach(ui.Middle, ui.Center)
+	btn := ui.NewButton(x, y, w, h)
 	btn.Disabled = true
 	text := ui.NewText("", 5, 0, 255, 255, 255).Attach(ui.Middle, ui.Left)
 	text.Parent = btn
@@ -102,4 +103,68 @@ func (t *textBox) tick(delta float64) {
 	if t.cursorTick > 0xFFFFFF {
 		t.cursorTick = 0
 	}
+}
+
+type slider struct {
+	back       *ui.Button
+	slider     *ui.Button
+	Value      float64
+	sliding    bool
+	UpdateFunc func()
+}
+
+func newSlider(x, y, w, h float64) *slider {
+	btn := ui.NewButton(x, y, w, h)
+	btn.Disabled = true
+	sl := ui.NewButton(0, 0, 20, h).Attach(ui.Left, ui.Top)
+	sl.Parent = btn
+	return &slider{
+		back:   btn,
+		slider: sl,
+	}
+}
+
+func (sl *slider) update() {
+	ww, _ := sl.back.Size()
+	sl.slider.X = (sl.Value * (ww - 20))
+	if sl.UpdateFunc != nil {
+		sl.UpdateFunc()
+	}
+}
+
+func (sl *slider) click(down bool, x, y float64, w, h int) {
+	if !down {
+		if sl.sliding {
+			sl.sliding = false
+		}
+		return
+	}
+	_, _, ok := ui.Intersects(sl.slider, x, y, w, h)
+	if ok {
+		sl.sliding = true
+	} else {
+		ox, _, ok := ui.Intersects(sl.back, x, y, w, h)
+		if ok {
+			ww, _ := sl.back.Size()
+			v := math.Min(ww-10, math.Max(10, ox)) - 10
+			sl.Value = v / (ww - 20)
+			sl.update()
+		}
+	}
+}
+func (sl *slider) hover(x, y float64, w, h int) {
+	if sl.sliding {
+		ox, _, ok := ui.Intersects(sl.back, x, y, w, h)
+		if ok {
+			ww, _ := sl.back.Size()
+			v := math.Min(ww-10, math.Max(10, ox)) - 10
+			sl.Value = v / (ww - 20)
+			sl.update()
+		}
+	}
+}
+
+func (sl *slider) add(s *scene.Type) {
+	s.AddDrawable(sl.back)
+	s.AddDrawable(sl.slider)
 }

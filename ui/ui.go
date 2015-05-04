@@ -127,6 +127,25 @@ func Click(x, y float64, width, height int) {
 	}
 }
 
+// Intersects returns whether the point x,y intersects with the drawable
+func Intersects(d Drawable, x, y float64, width, height int) (float64, float64, bool) {
+	sw := scaledWidth / float64(width)
+	sh := scaledHeight / float64(height)
+	if drawMode == mUnscaled {
+		sw, sh = 1.0, 1.0
+	}
+	x = (x / float64(width)) * scaledWidth
+	y = (y / float64(height)) * scaledHeight
+	r := getDrawRegion(d, sw, sh)
+	if x >= r.X && x <= r.X+r.W && y >= r.Y && y <= r.Y+r.H {
+		w, h := d.Size()
+		ox := ((x - r.X) / r.W) * w
+		oy := ((y - r.Y) / r.H) * h
+		return ox, oy, true
+	}
+	return 0, 0, false
+}
+
 func getDrawRegion(d Drawable, sw, sh float64) Region {
 	parent := d.AttachedTo()
 	var superR Region

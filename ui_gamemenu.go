@@ -52,6 +52,7 @@ func newGameMenu() *gameMenu {
 	option, txt := newButtonText("Options", 0, 0, 400, 40)
 	gm.scene.AddDrawable(option.Attach(ui.Center, ui.Middle))
 	gm.scene.AddDrawable(txt)
+	option.ClickFunc = func() { setScreen(newOptionMenu()) }
 
 	gm.scene.AddDrawable(
 		ui.NewText("Steven - "+resource.ResourcesVersion, 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
@@ -62,7 +63,10 @@ func newGameMenu() *gameMenu {
 func (gm *gameMenu) hover(x, y float64, w, h int) {
 	ui.Hover(x, y, w, h)
 }
-func (gm *gameMenu) click(x, y float64, w, h int) {
+func (gm *gameMenu) click(down bool, x, y float64, w, h int) {
+	if down {
+		return
+	}
 	ui.Click(x, y, w, h)
 }
 func (gm *gameMenu) tick(delta float64) {

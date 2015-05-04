@@ -101,12 +101,12 @@ func onMouseMove(w *glfw.Window, xpos float64, ypos float64) {
 
 func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mod glfw.ModifierKey) {
 	if currentScreen != nil {
-		if button != glfw.MouseButtonLeft || action != glfw.Release {
+		if button != glfw.MouseButtonLeft || action == glfw.Repeat {
 			return
 		}
 		width, height := w.GetFramebufferSize()
 		xpos, ypos := w.GetCursorPos()
-		currentScreen.click(xpos, ypos, width, height)
+		currentScreen.click(action == glfw.Press, xpos, ypos, width, height)
 		return
 	}
 	if button == glfw.MouseButtonLeft && action == glfw.Press && !Client.chat.enteringText {

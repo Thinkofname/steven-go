@@ -38,7 +38,7 @@ var (
 type screen interface {
 	tick(delta float64)
 	hover(x, y float64, w, h int)
-	click(x, y float64, w, h int)
+	click(down bool, x, y float64, w, h int)
 	remove()
 }
 
@@ -100,6 +100,7 @@ func start() {
 			setScreen(newServerList())
 		}
 	}
+	render.FOV = Config.Render.FOV
 	render.Start()
 }
 

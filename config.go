@@ -31,6 +31,7 @@ type ConfigData struct {
 
 	Render struct {
 		Samples int
+		FOV     int
 	}
 }
 
@@ -40,6 +41,9 @@ type ConfigServer struct {
 }
 
 func init() {
+	// Defaults
+	Config.Render.FOV = 90
+
 	f, err := os.Open("config.json")
 	if err != nil {
 		return

@@ -32,6 +32,7 @@ var (
 	lineProgram   gl.Program
 	shaderLine    *lineShader
 
+	FOV, lastFOV          int = 90, 90
 	lastWidth, lastHeight int = -1, -1
 	perspectiveMatrix         = vmath.NewMatrix4()
 	cameraMatrix              = vmath.NewMatrix4()
@@ -107,13 +108,14 @@ sync:
 	}
 
 	// Only update the viewport if the window was resized
-	if lastHeight != height || lastWidth != width {
+	if lastHeight != height || lastWidth != width || lastFOV != FOV {
 		lastWidth = width
 		lastHeight = height
+		lastFOV = FOV
 
 		perspectiveMatrix.Identity()
 		perspectiveMatrix.Perspective(
-			(math.Pi/180)*90,
+			(math.Pi/180)*float32(FOV),
 			float32(width)/float32(height),
 			0.1,
 			10000.0,

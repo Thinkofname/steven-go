@@ -119,7 +119,10 @@ func (se *editServer) save() {
 func (se *editServer) hover(x, y float64, w, h int) {
 	ui.Hover(x, y, w, h)
 }
-func (se *editServer) click(x, y float64, w, h int) {
+func (se *editServer) click(down bool, x, y float64, w, h int) {
+	if down {
+		return
+	}
 	ui.Click(x, y, w, h)
 }
 func (se *editServer) tick(delta float64) {
