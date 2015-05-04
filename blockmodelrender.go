@@ -286,7 +286,7 @@ func precomputeModel(bm *blockModel) *processedModel {
 	return p
 }
 
-func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf, bufI *builder.Buffer) {
+func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf *builder.Buffer, indices *int) {
 	this := bs.block(x, y, z)
 	for _, f := range p.faces {
 		if f.cullFace != direction.Invalid {
@@ -312,10 +312,7 @@ func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf, bufI *build
 			cb = byte(float64(cb) * 0.8)
 		}
 
-		ii := int32(buf.Count())
-		for _, ind := range f.indices {
-			bufI.UnsignedInt(uint32(ii + ind))
-		}
+		*indices += len(f.indices)
 
 		for _, vert := range f.vertices {
 			vert.R = cr

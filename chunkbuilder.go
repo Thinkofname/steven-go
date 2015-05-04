@@ -55,9 +55,9 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 	bs.z = -2
 	go func() {
 		bO := builderPool.Get().(*builder.Buffer)
-		bOI := builderPool.Get().(*builder.Buffer)
 		bT := builderPool.Get().(*builder.Buffer)
-		bTI := builderPool.Get().(*builder.Buffer)
+		bOI := new(int)
+		bTI := new(int)
 
 		r := rand.New(rand.NewSource(int64(cs.chunk.X) | (int64(cs.chunk.Z) << 32)))
 		var tInfo []render.ObjectInfo
@@ -81,21 +81,21 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 						b = bT
 						bI = bTI
 					}
-					offset := len(bI.Data())
+					offset := *bI
 
 					// Liquids can't be represented by the model system
 					// due to the number of possible states they have
 					if l, ok := bl.(*blockLiquid); ok {
 						l.renderLiquid(bs, x, y, z, b, bI)
 						r.Int() // See the comment above for air
-						count := len(bI.Data()) - offset
+						count := *bI - offset
 						if bl.IsTranslucent() && count > 0 {
 							tInfo = append(tInfo, render.ObjectInfo{
 								X:      (cs.chunk.X << 4) + x,
 								Y:      (cs.Y << 4) + y,
 								Z:      (cs.chunk.Z << 4) + z,
-								Offset: offset,
-								Count:  count,
+								Offset: offset * 4,
+								Count:  count * 4,
 							})
 						}
 						continue
@@ -107,14 +107,14 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 
 					if variant := bl.Models().selectModel(index); variant != nil {
 						variant.Render(x, y, z, bs, b, bI)
-						count := len(bI.Data()) - offset
+						count := *bI - offset
 						if bl.IsTranslucent() && count > 0 {
 							tInfo = append(tInfo, render.ObjectInfo{
 								X:      (cs.chunk.X << 4) + x,
 								Y:      (cs.Y << 4) + y,
 								Z:      (cs.chunk.Z << 4) + z,
-								Offset: offset,
-								Count:  count,
+								Offset: offset * 4,
+								Count:  count * 4,
 							})
 						}
 					}
@@ -128,16 +128,12 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 
 		// Upload the buffers on the render goroutine
 		render.Sync(func() {
-			cs.Buffer.Upload(bO.Data(), bOI.Data(), cullBits)
-			cs.Buffer.UploadTrans(tInfo, bT.Data(), bTI.Data())
+			cs.Buffer.Upload(bO.Data(), *bOI, cullBits)
+			cs.Buffer.UploadTrans(tInfo, bT.Data(), *bTI)
 			bO.Reset()
 			bT.Reset()
-			bOI.Reset()
-			bTI.Reset()
 			builderPool.Put(bO)
 			builderPool.Put(bT)
-			builderPool.Put(bOI)
-			builderPool.Put(bTI)
 		})
 		// Free up the builder
 		complete <- buildPos{cs.chunk.X, cs.Y, cs.chunk.Z}

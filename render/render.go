@@ -79,6 +79,8 @@ func Start() {
 	initLineDraw()
 
 	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
+
+	elementBuffer = gl.CreateBuffer()
 }
 
 var (

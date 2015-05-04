@@ -17,12 +17,15 @@ package render
 import (
 	"math"
 
+	"github.com/thinkofdeath/steven/native"
 	"github.com/thinkofdeath/steven/render/gl"
 	"github.com/thinkofdeath/steven/type/direction"
 )
 
 var (
-	buffers = make(map[position]*ChunkBuffer)
+	buffers           = make(map[position]*ChunkBuffer)
+	elementBuffer     gl.Buffer
+	elementBufferSize int
 )
 
 // ChunkBuffer is a renderable chunk section
@@ -32,7 +35,6 @@ type ChunkBuffer struct {
 
 	array       gl.VertexArray
 	buffer      gl.Buffer
-	bufferI     gl.Buffer
 	bufferSize  int
 	count       int
 	arrayT      gl.VertexArray
@@ -106,19 +108,39 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 	return c
 }
 
+func ensureElementBuffer(size int) {
+	if elementBufferSize < size {
+		data := genElementBuffer(size)
+		elementBuffer.Bind(gl.ElementArrayBuffer)
+		elementBuffer.Data(data, gl.DynamicDraw)
+		elementBufferSize = size
+	}
+}
+
+func genElementBuffer(size int) []byte {
+	data := make([]byte, size*4)
+	offset := 0
+	for i := 0; i < size/6; i++ {
+		for _, val := range []uint32{0, 1, 2, 3, 2, 1} {
+			native.Order.PutUint32(data[offset:], uint32(i)*4+val)
+			offset += 4
+		}
+	}
+	return data
+}
+
 // Upload uploads the passed vertex data to the buffer.
-func (cb *ChunkBuffer) Upload(data, dataI []byte, cullBits uint64) {
+func (cb *ChunkBuffer) Upload(data []byte, indices int, cullBits uint64) {
 	if cb.invalid {
 		return
 	}
 	cb.cullBits = cullBits
 	var n bool
 
-	if len(dataI) == 0 {
+	if indices == 0 {
 		if cb.array.IsValid() {
 			cb.array.Delete()
 			cb.buffer.Delete()
-			cb.bufferI.Delete()
 		}
 		return
 	}
@@ -126,7 +148,6 @@ func (cb *ChunkBuffer) Upload(data, dataI []byte, cullBits uint64) {
 	if !cb.array.IsValid() {
 		cb.array = gl.CreateVertexArray()
 		cb.buffer = gl.CreateBuffer()
-		cb.bufferI = gl.CreateBuffer()
 		n = true
 	}
 
@@ -137,8 +158,8 @@ func (cb *ChunkBuffer) Upload(data, dataI []byte, cullBits uint64) {
 	shaderChunk.Color.Enable()
 	shaderChunk.Lighting.Enable()
 
-	cb.bufferI.Bind(gl.ElementArrayBuffer)
-	cb.bufferI.Data(dataI, gl.DynamicDraw)
+	ensureElementBuffer(indices)
+	elementBuffer.Bind(gl.ElementArrayBuffer)
 
 	cb.buffer.Bind(gl.ArrayBuffer)
 	if n || len(data) > cb.bufferSize {
@@ -155,16 +176,16 @@ func (cb *ChunkBuffer) Upload(data, dataI []byte, cullBits uint64) {
 	shaderChunk.Color.Pointer(3, gl.UnsignedByte, true, 28, 20)
 	shaderChunk.Lighting.Pointer(2, gl.UnsignedShort, false, 28, 24)
 
-	cb.count = len(dataI) / 4
+	cb.count = indices
 }
 
 // UploadTrans uploads the passed vertex data to the translucent buffer.
-func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data, dataI []byte) {
+func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, indices int) {
 	if cb.invalid {
 		return
 	}
 	var n bool
-	if len(dataI) == 0 {
+	if indices == 0 {
 		if cb.arrayT.IsValid() {
 			cb.arrayT.Delete()
 			cb.bufferT.Delete()
@@ -189,9 +210,8 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data, dataI []byte) {
 	shaderChunkT.Lighting.Enable()
 
 	cb.bufferTI.Bind(gl.ElementArrayBuffer)
-	cb.bufferTI.Data(dataI, gl.DynamicDraw)
-	cb.transData = make([]byte, len(dataI))
-	copy(cb.transData, dataI)
+	cb.transData = genElementBuffer(indices)
+	cb.bufferTI.Data(cb.transData, gl.DynamicDraw)
 
 	cb.bufferT.Bind(gl.ArrayBuffer)
 	if n || len(data) > cb.bufferTSize {
@@ -204,7 +224,7 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data, dataI []byte) {
 	shaderChunkT.Color.Pointer(3, gl.UnsignedByte, true, 28, 20)
 	shaderChunkT.Lighting.Pointer(2, gl.UnsignedShort, false, 28, 24)
 
-	cb.countT = len(dataI)
+	cb.countT = indices
 	cb.transInfo = info
 }
 
