@@ -177,6 +177,9 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 			Client.playerList.set(false)
 		}
 	case glfw.KeyT, glfw.KeySlash:
+		for i := range Client.KeyState {
+			Client.KeyState[i] = false
+		}
 		Client.chat.enteringText = true
 		Client.chat.first = true
 		if key == glfw.KeySlash {

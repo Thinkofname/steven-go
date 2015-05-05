@@ -50,6 +50,9 @@ func setScreen(s screen) {
 	if s != nil {
 		lockMouse = false
 		window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
+		for i := range Client.KeyState {
+			Client.KeyState[i] = false
+		}
 	} else {
 		Client.scene.Show()
 	}
