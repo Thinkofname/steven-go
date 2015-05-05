@@ -26,20 +26,17 @@ var (
 	writeChan = make(chan protocol.Packet, 200)
 	readChan  = make(chan protocol.Packet, 200)
 	errorChan = make(chan error, 1)
+	killChan  = make(chan struct{})
 	conn      *protocol.Conn
 )
 
 func startConnection(profile mojang.Profile, server string) {
-	writeChan = make(chan protocol.Packet, 200)
-	readChan = make(chan protocol.Packet, 200)
-	errorChan = make(chan error, 1)
 	var err error
 	conn, err = protocol.Dial(server)
 	if err != nil {
 		closeWithError(err)
 		return
 	}
-	defer conn.Close()
 
 	err = conn.LoginToServer(profile)
 	if err != nil {
@@ -47,6 +44,7 @@ func startConnection(profile mojang.Profile, server string) {
 		return
 	}
 
+	defer fmt.Println("Read handler closed")
 preLogin:
 	for {
 		packet, err := conn.ReadPacket()
@@ -70,7 +68,6 @@ preLogin:
 	for {
 		packet, err := conn.ReadPacket()
 		if err != nil {
-			// Try to save the error if one isn't already there
 			closeWithError(err)
 			return
 		}
@@ -88,6 +85,7 @@ preLogin:
 }
 
 func closeWithError(err error) {
+	// Try to save the error if one isn't already there
 	select {
 	case errorChan <- err:
 	default:
@@ -95,16 +93,17 @@ func closeWithError(err error) {
 }
 
 func writeHandler(conn *protocol.Conn) {
+	defer fmt.Println("Write handler closed")
 	for {
-		packet := <-writeChan
-		err := conn.WritePacket(packet)
-		if err != nil {
-			// Try to save the error if one isn't already there
-			select {
-			case errorChan <- err:
-			default:
+		select {
+		case packet := <-writeChan:
+			err := conn.WritePacket(packet)
+			if err != nil {
+				closeWithError(err)
+				<-killChan
+				return
 			}
-			conn.Close()
+		case <-killChan:
 			return
 		}
 	}

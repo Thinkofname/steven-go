@@ -22,6 +22,7 @@ import (
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/ui"
@@ -134,6 +135,9 @@ handle:
 				continue
 			}
 			connected = false
+			killChan <- struct{}{}
+			close(writeChan)
+			writeChan = make(chan protocol.Packet, 200)
 			if conn != nil {
 				conn.Close()
 			}
