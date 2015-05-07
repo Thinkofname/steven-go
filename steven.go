@@ -86,11 +86,7 @@ func Main(username, uuid, accessToken, s string) {
 func connect() {
 	connected = true
 	disconnectReason.Value = nil
-	go startConnection(mojang.Profile{
-		Username:    profile.Username,
-		ID:          profile.ID,
-		AccessToken: profile.AccessToken,
-	}, server)
+	go startConnection(profile, server)
 	server = ""
 }
 
