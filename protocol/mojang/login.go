@@ -87,6 +87,9 @@ type refreshRequest struct {
 	ClientToken string `json:"clientToken"`
 }
 
+// Refresh attempts to refresh the passed profile's accessToken
+// for futher use. The passed token should be the same as the
+// one passed to Login.
 func Refresh(profile Profile, token string) (Profile, error) {
 	req := refreshRequest{
 		AccessToken: profile.AccessToken,
