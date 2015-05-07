@@ -22,6 +22,7 @@ import (
 )
 
 type editServer struct {
+	baseUI
 	scene *scene.Type
 	logo  uiLogo
 
@@ -116,15 +117,6 @@ func (se *editServer) save() {
 	setScreen(newServerList())
 }
 
-func (se *editServer) hover(x, y float64, w, h int) {
-	ui.Hover(x, y, w, h)
-}
-func (se *editServer) click(down bool, x, y float64, w, h int) {
-	if down {
-		return
-	}
-	ui.Click(x, y, w, h)
-}
 func (se *editServer) tick(delta float64) {
 	se.logo.tick(delta)
 	se.name.tick(delta)

@@ -25,6 +25,7 @@ import (
 )
 
 type optionMenu struct {
+	baseUI
 	scene *scene.Type
 
 	background *ui.Image
@@ -37,7 +38,6 @@ func newOptionMenu() *optionMenu {
 		scene: scene.New(true),
 	}
 	Client.scene.Hide()
-	window.SetKeyCallback(om.handleKey)
 
 	om.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 800, 480, 0, 0, 1, 1, 0, 0, 0)
 	om.background.A = 160
@@ -100,6 +100,10 @@ func newOptionMenu() *optionMenu {
 		ui.NewText("Steven - "+resource.ResourcesVersion, 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
 	)
 	return om
+}
+
+func (om *optionMenu) init() {
+	window.SetKeyCallback(om.handleKey)
 }
 
 func (om *optionMenu) hover(x, y float64, w, h int) {

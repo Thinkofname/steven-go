@@ -23,6 +23,7 @@ import (
 )
 
 type gameMenu struct {
+	baseUI
 	scene *scene.Type
 
 	background *ui.Image
@@ -33,7 +34,6 @@ func newGameMenu() *gameMenu {
 		scene: scene.New(true),
 	}
 	Client.scene.Hide()
-	window.SetKeyCallback(gm.handleKey)
 
 	gm.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 800, 480, 0, 0, 1, 1, 0, 0, 0)
 	gm.background.A = 160
@@ -60,15 +60,10 @@ func newGameMenu() *gameMenu {
 	return gm
 }
 
-func (gm *gameMenu) hover(x, y float64, w, h int) {
-	ui.Hover(x, y, w, h)
+func (gm *gameMenu) init() {
+	window.SetKeyCallback(gm.handleKey)
 }
-func (gm *gameMenu) click(down bool, x, y float64, w, h int) {
-	if down {
-		return
-	}
-	ui.Click(x, y, w, h)
-}
+
 func (gm *gameMenu) tick(delta float64) {
 	width, height := window.GetFramebufferSize()
 	gm.background.W = float64(width)

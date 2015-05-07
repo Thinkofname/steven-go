@@ -37,6 +37,7 @@ var (
 )
 
 type screen interface {
+	init()
 	tick(delta float64)
 	hover(x, y float64, w, h int)
 	click(down bool, x, y float64, w, h int)
@@ -54,6 +55,7 @@ func setScreen(s screen) {
 		for i := range Client.KeyState {
 			Client.KeyState[i] = false
 		}
+		s.init()
 	} else {
 		Client.scene.Show()
 	}

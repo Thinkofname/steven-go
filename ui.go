@@ -23,6 +23,17 @@ import (
 	"github.com/thinkofdeath/steven/ui/scene"
 )
 
+type baseUI struct{}
+
+func (b *baseUI) init()                        {}
+func (b *baseUI) hover(x, y float64, w, h int) { ui.Hover(x, y, w, h) }
+func (b *baseUI) click(down bool, x, y float64, w, h int) {
+	if down {
+		return
+	}
+	ui.Click(x, y, w, h)
+}
+
 func newButtonText(str string, x, y, w, h float64) (*ui.Button, *ui.Text) {
 	btn := ui.NewButton(x, y, w, h)
 	text := ui.NewText(str, 0, 0, 255, 255, 255).Attach(ui.Middle, ui.Center)

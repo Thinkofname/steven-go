@@ -26,6 +26,7 @@ import (
 )
 
 type loginScreen struct {
+	baseUI
 	scene *scene.Type
 	logo  uiLogo
 
@@ -104,15 +105,6 @@ func newLoginScreen() *loginScreen {
 	}
 
 	return ls
-}
-func (ls *loginScreen) hover(x, y float64, w, h int) {
-	ui.Hover(x, y, w, h)
-}
-func (ls *loginScreen) click(down bool, x, y float64, w, h int) {
-	if down {
-		return
-	}
-	ui.Click(x, y, w, h)
 }
 
 func (ls *loginScreen) postLogin(p mojang.Profile, err error) {

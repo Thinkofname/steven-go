@@ -39,6 +39,7 @@ var (
 )
 
 type serverList struct {
+	baseUI
 	scene *scene.Type
 	logo  uiLogo
 
@@ -284,15 +285,6 @@ func (sl *serverList) connect(s string) {
 	setScreen(nil)
 }
 
-func (sl *serverList) hover(x, y float64, w, h int) {
-	ui.Hover(x, y, w, h)
-}
-func (sl *serverList) click(down bool, x, y float64, w, h int) {
-	if down {
-		return
-	}
-	ui.Click(x, y, w, h)
-}
 func (sl *serverList) tick(delta float64) {
 	sl.logo.tick(delta)
 	for _, s := range sl.servers {
