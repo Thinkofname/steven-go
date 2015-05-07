@@ -42,6 +42,9 @@ type loginReply struct {
 	}
 }
 
+// Login tries to login using the passed username (or email) and password
+// and returns the complete profile. error is non-nil if the login
+// fails.
 func Login(username, password, token string) (Profile, error) {
 	req := loginRequest{
 		Username:    username,
