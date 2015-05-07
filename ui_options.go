@@ -77,6 +77,22 @@ func newOptionMenu() *optionMenu {
 	fov.Value = (float64(Config.Render.FOV) - 60) / 119.0
 	fov.update()
 
+	vsync, vtxt := newButtonText("", -160, -50, 300, 40)
+	om.scene.AddDrawable(vsync.Attach(ui.Center, ui.Middle))
+	om.scene.AddDrawable(vtxt)
+	vsync.ClickFunc = func() {
+		Config.Render.VSync = !Config.Render.VSync
+		if Config.Render.VSync {
+			vtxt.Update("VSync: Enabled")
+			glfw.SwapInterval(1)
+		} else {
+			vtxt.Update("VSync: Disabled")
+			glfw.SwapInterval(0)
+		}
+	}
+	Config.Render.VSync = !Config.Render.VSync
+	vsync.ClickFunc()
+
 	om.scene.AddDrawable(
 		ui.NewText("* Requires a client restart to take effect", 0, 100, 255, 200, 200).Attach(ui.Bottom, ui.Middle),
 	)
@@ -105,8 +121,9 @@ func (om *optionMenu) tick(delta float64) {
 	om.background.H = float64(height)
 }
 
-func (m *optionMenu) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+func (om *optionMenu) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	if key == glfw.KeyEscape && action == glfw.Release {
+		saveConfig()
 		setScreen(newGameMenu())
 	}
 }

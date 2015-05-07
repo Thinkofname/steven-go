@@ -46,7 +46,11 @@ func startWindow() {
 		panic(err)
 	}
 	window.MakeContextCurrent()
-	glfw.SwapInterval(1)
+	if Config.Render.VSync {
+		glfw.SwapInterval(1)
+	} else {
+		glfw.SwapInterval(0)
+	}
 
 	window.SetCursorPosCallback(onMouseMove)
 	window.SetMouseButtonCallback(onMouseClick)

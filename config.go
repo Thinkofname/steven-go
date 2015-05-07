@@ -32,6 +32,7 @@ type ConfigData struct {
 	Render struct {
 		Samples int
 		FOV     int
+		VSync   bool
 	}
 }
 
@@ -43,6 +44,7 @@ type ConfigServer struct {
 func init() {
 	// Defaults
 	Config.Render.FOV = 90
+	Config.Render.VSync = true
 
 	f, err := os.Open("config.json")
 	if err != nil {
