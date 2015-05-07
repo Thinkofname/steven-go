@@ -26,7 +26,6 @@ var (
 	writeChan = make(chan protocol.Packet, 200)
 	readChan  = make(chan protocol.Packet, 200)
 	errorChan = make(chan error, 1)
-	killChan  = make(chan struct{})
 	conn      *protocol.Conn
 )
 
@@ -84,6 +83,8 @@ preLogin:
 	}
 }
 
+// Closes the connection with the passed error value
+// if one isn't already queued.
 func closeWithError(err error) {
 	// Try to save the error if one isn't already there
 	select {
@@ -94,16 +95,10 @@ func closeWithError(err error) {
 
 func writeHandler(conn *protocol.Conn) {
 	defer fmt.Println("Write handler closed")
-	for {
-		select {
-		case packet := <-writeChan:
-			err := conn.WritePacket(packet)
-			if err != nil {
-				closeWithError(err)
-				<-killChan
-				return
-			}
-		case <-killChan:
+	for packet := range writeChan {
+		err := conn.WritePacket(packet)
+		if err != nil {
+			closeWithError(err)
 			return
 		}
 	}

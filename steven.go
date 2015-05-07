@@ -135,13 +135,15 @@ handle:
 				continue
 			}
 			connected = false
-			killChan <- struct{}{}
+
+			// Replace the writer ready for the next connection
 			close(writeChan)
 			writeChan = make(chan protocol.Packet, 200)
-			if conn != nil {
-				conn.Close()
-			}
+
+			conn.Close()
 			fmt.Printf("Disconnected: %s\n", err)
+			// Reset the ready state to stop packets from being
+			// sent.
 			ready = false
 			if err != errManualDisconnect && disconnectReason.Value == nil {
 				txt := &chat.TextComponent{Text: err.Error()}
