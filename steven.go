@@ -138,7 +138,9 @@ handle:
 			close(writeChan)
 			writeChan = make(chan protocol.Packet, 200)
 
-			conn.Close()
+			if conn != nil {
+				conn.Close()
+			}
 			fmt.Printf("Disconnected: %s\n", err)
 			// Reset the ready state to stop packets from being
 			// sent.
