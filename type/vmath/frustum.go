@@ -98,8 +98,8 @@ func (f *Frustum) SetCamera(p, l, u mgl32.Vec3) {
 
 func (f *Frustum) IsSphereInside(x, y, z, radius float32) bool {
 	p := mgl32.Vec3{x, y, z}
-	for _, pl := range f.planes {
-		dist := pl.D + pl.N.Dot(p)
+	for i := range f.planes {
+		dist := f.planes[i].D + f.planes[i].N.Dot(p)
 		if dist < -radius {
 			return false
 		}

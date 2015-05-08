@@ -226,40 +226,39 @@ const (
 
 var rQueue renderQueue
 
-func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
+func renderBuffer(ch *ChunkBuffer, po position, fr direction.Type) {
 	cam := mgl32.Vec3{float32(-Camera.X), float32(-Camera.Y), float32(Camera.Z)}
 	frustum.SetCamera(
 		cam,
 		cam.Add(mgl32.Vec3{-viewVector.X(), -viewVector.Y(), viewVector.Z()}),
 		mgl32.Vec3{0, -1, 0},
 	)
-	rQueue.Append(renderRequest{chunk, pos, from})
+	rQueue.Append(renderRequest{ch, po, fr})
 itQueue:
 	for !rQueue.Empty() {
 		req := rQueue.Take()
-		chunk, pos, from = req.chunk, req.pos, req.from
-		if chunk == nil || chunk.renderedOn == frameID {
+		if req.chunk == nil || req.chunk.renderedOn == frameID {
 			continue itQueue
 		}
-		if !frustum.IsSphereInside(float32((pos.X<<4)+8), float32((pos.Y<<4)+8), -float32((pos.Z<<4)+8), 10) {
+		if !frustum.IsSphereInside(float32((req.pos.X<<4)+8), float32((req.pos.Y<<4)+8), -float32((req.pos.Z<<4)+8), 10) {
 			continue itQueue
 		}
-		chunk.renderedOn = frameID
-		renderOrder = append(renderOrder, chunk)
+		req.chunk.renderedOn = frameID
+		renderOrder = append(renderOrder, req.chunk)
 
-		if chunk.count > 0 && chunk.buffer.IsValid() {
-			shaderChunk.Offset.Int3(chunk.X, chunk.Y, chunk.Z)
+		if req.chunk.count != 0 && req.chunk.buffer.IsValid() {
+			shaderChunk.Offset.Int3(req.chunk.X, req.chunk.Y, req.chunk.Z)
 
-			chunk.array.Bind()
-			gl.DrawElements(gl.Triangles, chunk.count, elementBufferType)
+			req.chunk.array.Bind()
+			gl.DrawElements(gl.Triangles, req.chunk.count, elementBufferType)
 		}
 
 		for _, dir := range direction.Values {
-			c := chunk.neighborChunks[dir]
-			if dir != from && c != nil && c.renderedOn != frameID &&
-				(from == direction.Invalid || (chunk.IsVisible(from, dir) && validDirs[dir])) {
+			c := req.chunk.neighborChunks[dir]
+			if dir != req.from && c != nil && c.renderedOn != frameID &&
+				(req.from == direction.Invalid || (req.chunk.IsVisible(req.from, dir) && validDirs[dir])) {
 				ox, oy, oz := dir.Offset()
-				pos := position{pos.X + ox, pos.Y + oy, pos.Z + oz}
+				pos := position{req.pos.X + ox, req.pos.Y + oy, req.pos.Z + oz}
 				rQueue.Append(renderRequest{c, pos, dir.Opposite()})
 			}
 		}
