@@ -75,6 +75,10 @@ func (bs *blocksSnapshot) init(x, y, z, w, h, d int) {
 	for i := range bs.Biome {
 		bs.Biome[i] = biome.Invalid
 	}
+	for i := range bs.SkyLight {
+		bs.SkyLight[i] = 0xFF
+		bs.BlockLight[i] = 0x00
+	}
 
 	cx1 := int(math.Floor(float64(x) / 16.0))
 	cx2 := int(math.Ceil(float64(x+w) / 16.0))

@@ -405,10 +405,11 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 			}
 		}
 
+		self := c
 		for xx := -1; xx <= 1; xx++ {
 			for zz := -1; zz <= 1; zz++ {
 				c := chunkMap[chunkPosition{x + xx, z + zz}]
-				if c != nil {
+				if c != nil && c != self {
 					for _, section := range c.Sections {
 						if section == nil {
 							continue

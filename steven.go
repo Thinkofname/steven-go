@@ -169,11 +169,9 @@ handle:
 		case packet := <-readChan:
 			defaultHandler.Handle(packet)
 		case pos := <-completeBuilders:
-			c := chunkMap[chunkPosition{pos.X, pos.Z}]
 			freeBuilders++
-			if c != nil {
-				s := c.Sections[pos.Y]
-				if s != nil {
+			if c := chunkMap[chunkPosition{pos.X, pos.Z}]; c != nil {
+				if s := c.Sections[pos.Y]; s != nil {
 					s.building = false
 				}
 			}
