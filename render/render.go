@@ -135,8 +135,6 @@ sync:
 	chunkProgram.Use()
 
 	cameraMatrix = mgl32.Ident4()
-	// +1.62 for the players height.
-	// TODO(Think) Change this?
 	cameraMatrix = cameraMatrix.Mul4(mgl32.Rotate3DX(-float32(Camera.Pitch)).Mat4())
 	cameraMatrix = cameraMatrix.Mul4(mgl32.Rotate3DY(float32(Camera.Yaw)).Mat4())
 	cameraMatrix = cameraMatrix.Mul4(mgl32.Translate3D(float32(Camera.X), float32(Camera.Y), float32(-Camera.Z)))
