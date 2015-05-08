@@ -17,8 +17,8 @@ package gl
 import (
 	"unsafe"
 
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/gl/v3.2-core/gl"
-	"github.com/thinkofdeath/steven/type/vmath"
 )
 
 // ShaderType is type of shader to be used, different types run
@@ -86,7 +86,7 @@ func (p Program) UniformLocation(name string) Uniform {
 }
 
 // Matrix4 sets the value of the uniform to the passed matrix.
-func (u Uniform) Matrix4(matrix *vmath.Matrix4) {
+func (u Uniform) Matrix4(matrix *mgl32.Mat4) {
 	gl.UniformMatrix4fv(int32(u), 1, false, (*float32)(unsafe.Pointer(matrix)))
 }
 

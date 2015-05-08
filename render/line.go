@@ -46,8 +46,8 @@ func initLineDraw() {
 func drawLines() {
 	if lineState.count > 0 {
 		lineState.program.Use()
-		lineState.shader.PerspectiveMatrix.Matrix4(perspectiveMatrix)
-		lineState.shader.CameraMatrix.Matrix4(cameraMatrix)
+		lineState.shader.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
+		lineState.shader.CameraMatrix.Matrix4(&cameraMatrix)
 		lineState.array.Bind()
 		lineState.buffer.Bind(gl.ArrayBuffer)
 		if len(lineState.data) > lineState.prevSize {

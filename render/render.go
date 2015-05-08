@@ -19,6 +19,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/render/gl"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
@@ -34,8 +35,8 @@ var (
 
 	FOV, lastFOV          int = 90, 90
 	lastWidth, lastHeight int = -1, -1
-	perspectiveMatrix         = vmath.NewMatrix4()
-	cameraMatrix              = vmath.NewMatrix4()
+	perspectiveMatrix         = mgl32.Mat4{}
+	cameraMatrix              = mgl32.Mat4{}
 
 	syncChan = make(chan func(), 500)
 
@@ -113,8 +114,7 @@ sync:
 		lastHeight = height
 		lastFOV = FOV
 
-		perspectiveMatrix.Identity()
-		perspectiveMatrix.Perspective(
+		perspectiveMatrix = mgl32.Perspective(
 			(math.Pi/180)*float32(FOV),
 			float32(width)/float32(height),
 			0.1,
@@ -134,16 +134,16 @@ sync:
 
 	chunkProgram.Use()
 
-	cameraMatrix.Identity()
+	cameraMatrix = mgl32.Ident4()
 	// +1.62 for the players height.
 	// TODO(Think) Change this?
-	cameraMatrix.Translate(float32(Camera.X), float32(Camera.Y), float32(-Camera.Z))
-	cameraMatrix.RotateY(float32(Camera.Yaw))
-	cameraMatrix.RotateX(float32(Camera.Pitch))
-	cameraMatrix.Scale(-1.0, 1.0, 1.0)
+	cameraMatrix = cameraMatrix.Mul4(mgl32.Rotate3DX(-float32(Camera.Pitch)).Mat4())
+	cameraMatrix = cameraMatrix.Mul4(mgl32.Rotate3DY(float32(Camera.Yaw)).Mat4())
+	cameraMatrix = cameraMatrix.Mul4(mgl32.Translate3D(float32(Camera.X), float32(Camera.Y), float32(-Camera.Z)))
+	cameraMatrix = cameraMatrix.Mul4(mgl32.Scale3D(-1.0, 1.0, 1.0))
 
-	shaderChunk.PerspectiveMatrix.Matrix4(perspectiveMatrix)
-	shaderChunk.CameraMatrix.Matrix4(cameraMatrix)
+	shaderChunk.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
+	shaderChunk.CameraMatrix.Matrix4(&cameraMatrix)
 	shaderChunk.Texture.Int(0)
 
 	chunkPos := position{
@@ -167,8 +167,8 @@ sync:
 	drawLines()
 
 	chunkProgramT.Use()
-	shaderChunkT.PerspectiveMatrix.Matrix4(perspectiveMatrix)
-	shaderChunkT.CameraMatrix.Matrix4(cameraMatrix)
+	shaderChunkT.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
+	shaderChunkT.CameraMatrix.Matrix4(&cameraMatrix)
 	shaderChunkT.Texture.Int(0)
 
 	gl.Enable(gl.Blend)
