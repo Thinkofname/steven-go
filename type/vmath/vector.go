@@ -52,21 +52,6 @@ func (v Vector3) Length() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
 }
 
-func (v *Vector3) Apply(m *Matrix4) float64 {
-	x := v.X
-	y := v.Y
-	z := v.Z
-	w := float64(m[3])*x + float64(m[7])*y + float64(m[11])*z + float64(m[15])
-	if w == 0 {
-		w = 1
-	}
-
-	v.X = (float64(m[0])*x + float64(m[4])*y + float64(m[8])*z + float64(m[12])) / w
-	v.Y = (float64(m[1])*x + float64(m[5])*y + float64(m[9])*z + float64(m[13])) / w
-	v.Z = (float64(m[2])*x + float64(m[6])*y + float64(m[10])*z + float64(m[14])) / w
-	return w
-}
-
 func (v Vector3) AngleTo(other Vector3) float64 {
 	return v.Dot(other) / (v.Length() + other.Length())
 }

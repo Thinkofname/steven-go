@@ -14,6 +14,8 @@
 
 package vmath
 
+import "github.com/go-gl/mathgl/mgl32"
+
 type Frustum struct {
 	planes [6]fPlane
 }
@@ -23,16 +25,16 @@ type fPlane struct {
 	D float64
 }
 
-func (f *Frustum) FromMatrix(m *Matrix4) {
+func (f *Frustum) FromMatrix(m mgl32.Mat4) {
 	for i := range f.planes {
 		off := i >> 1
 		f.planes[i] = fPlane{
 			N: Vector3{
-				X: float64(m.Get(0, 3) - m.Get(0, off)),
-				Y: float64(m.Get(1, 3) - m.Get(1, off)),
-				Z: float64(m.Get(2, 3) - m.Get(2, off)),
+				X: float64(m.At(0, 3) - m.At(0, off)),
+				Y: float64(m.At(1, 3) - m.At(1, off)),
+				Z: float64(m.At(2, 3) - m.At(2, off)),
 			},
-			D: float64(m.Get(3, 3) - m.Get(3, off)),
+			D: float64(m.At(3, 3) - m.At(3, off)),
 		}
 	}
 
