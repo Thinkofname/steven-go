@@ -36,7 +36,7 @@ func (f *fPlane) setPoints(v1, v2, v3 mgl32.Vec3) {
 	aux2 := v3.Sub(v2)
 
 	f.N = aux2.Cross(aux1)
-	f.N.Normalize()
+	f.N = f.N.Normalize()
 	f.P = v2
 	f.D = -(f.N.Dot(f.P))
 }
@@ -60,10 +60,10 @@ func (f *Frustum) SetPerspective(fovy, aspect, near, far float32) {
 
 func (f *Frustum) SetCamera(p, l, u mgl32.Vec3) {
 	Z := p.Sub(l)
-	Z.Normalize()
+	Z = Z.Normalize()
 
 	X := u.Cross(Z)
-	X.Normalize()
+	X = X.Normalize()
 
 	Y := Z.Cross(X)
 
@@ -88,8 +88,8 @@ func (f *Frustum) SetCamera(p, l, u mgl32.Vec3) {
 		nearP
 		farP
 	)
-	f.planes[top].setPoints(ntr, ntl, ftl)
-	f.planes[bottom].setPoints(nbr, nbl, fbl)
+	f.planes[top].setPoints(ntl, ntl, ftl)
+	f.planes[bottom].setPoints(nbl, nbr, fbr)
 	f.planes[left].setPoints(ntl, nbl, fbl)
 	f.planes[right].setPoints(nbr, ntr, fbr)
 	f.planes[nearP].setPoints(ntl, ntr, nbr)

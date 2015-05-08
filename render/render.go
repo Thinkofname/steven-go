@@ -141,7 +141,7 @@ sync:
 
 	chunkProgram.Use()
 
-	viewVector := mgl32.Vec3{
+	viewVector = mgl32.Vec3{
 		float32(math.Cos(Camera.Yaw-math.Pi/2) * -math.Cos(Camera.Pitch)),
 		float32(-math.Sin(Camera.Pitch)),
 		float32(-math.Sin(Camera.Yaw-math.Pi/2) * -math.Cos(Camera.Pitch)),
@@ -240,7 +240,7 @@ itQueue:
 		if req.chunk == nil || req.chunk.renderedOn == frameID {
 			continue itQueue
 		}
-		if !frustum.IsSphereInside(float32((req.pos.X<<4)+8), float32((req.pos.Y<<4)+8), -float32((req.pos.Z<<4)+8), 10) {
+		if !frustum.IsSphereInside(-float32((req.pos.X<<4)+8), -float32((req.pos.Y<<4)+8), float32((req.pos.Z<<4)+8), 16) {
 			continue itQueue
 		}
 		req.chunk.renderedOn = frameID
