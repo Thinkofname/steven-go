@@ -1528,6 +1528,7 @@ type blockTorch struct {
 func (b *blockTorch) load(tag reflect.StructTag) {
 	b.Model = tag.Get("model")
 	b.cullAgainst = false
+	b.collidable = false
 }
 
 func (b *blockTorch) LightEmitted() int {
