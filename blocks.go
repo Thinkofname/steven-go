@@ -97,7 +97,7 @@ var Blocks = struct {
 	WoodenPressurePlate        *BlockSet
 	RedstoneOre                *BlockSet
 	RedstoneOreLit             *BlockSet
-	RedstoneTorchUnlit         *BlockSet `type:"torch" model:"unlit_redstone_torch`
+	RedstoneTorchUnlit         *BlockSet `type:"torch" model:"unlit_redstone_torch"`
 	RedstoneTorch              *BlockSet `type:"torch" model:"redstone_torch"`
 	StoneButton                *BlockSet
 	SnowLayer                  *BlockSet
