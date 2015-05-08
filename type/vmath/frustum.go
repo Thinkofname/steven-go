@@ -14,39 +14,93 @@
 
 package vmath
 
-import "github.com/go-gl/mathgl/mgl32"
+import (
+	"math"
+
+	"github.com/go-gl/mathgl/mgl32"
+)
 
 type Frustum struct {
-	planes [6]fPlane
+	planes                  [6]fPlane
+	fovy, aspect, near, far float32
+	tang, nh, nw, fh, fw    float32
 }
 
 type fPlane struct {
-	N Vector3
-	D float64
+	N, P mgl32.Vec3
+	D    float32
 }
 
-func (f *Frustum) FromMatrix(m mgl32.Mat4) {
-	for i := range f.planes {
-		off := i >> 1
-		f.planes[i] = fPlane{
-			N: Vector3{
-				X: float64(m.At(0, 3) - m.At(0, off)),
-				Y: float64(m.At(1, 3) - m.At(1, off)),
-				Z: float64(m.At(2, 3) - m.At(2, off)),
-			},
-			D: float64(m.At(3, 3) - m.At(3, off)),
-		}
-	}
+func (f *fPlane) setPoints(v1, v2, v3 mgl32.Vec3) {
+	aux1 := v1.Sub(v2)
+	aux2 := v3.Sub(v2)
 
-	for i := range f.planes {
-		f.planes[i].N.Normalize()
-	}
+	f.N = aux2.Cross(aux1)
+	f.N.Normalize()
+	f.P = v2
+	f.D = -(f.N.Dot(f.P))
 }
 
-func (f *Frustum) IsSphereInside(x, y, z, radius float64) bool {
-	center := Vector3{x, y, z}
-	for i := 0; i < 6; i++ {
-		if center.Dot(f.planes[i].N)+f.planes[i].D+radius <= 0 {
+func NewFrustum() *Frustum {
+	return &Frustum{}
+}
+
+func (f *Frustum) SetPerspective(fovy, aspect, near, far float32) {
+	f.fovy = fovy
+	f.aspect = aspect
+	f.near = near
+	f.far = far
+
+	f.tang = float32(math.Tan(float64(fovy * 0.5)))
+	f.nh = near * f.tang
+	f.nw = f.nh * aspect
+	f.fh = far * f.tang
+	f.fw = f.fh * aspect
+}
+
+func (f *Frustum) SetCamera(p, l, u mgl32.Vec3) {
+	Z := p.Sub(l)
+	Z.Normalize()
+
+	X := u.Cross(Z)
+	X.Normalize()
+
+	Y := Z.Cross(X)
+
+	nc := p.Sub(Z.Mul(f.near))
+	fc := p.Sub(Z.Mul(f.far))
+
+	ntl := nc.Add(Y.Mul(f.nh)).Sub(X.Mul(f.nw))
+	ntr := nc.Add(Y.Mul(f.nh)).Add(X.Mul(f.nw))
+	nbl := nc.Sub(Y.Mul(f.nh)).Sub(X.Mul(f.nw))
+	nbr := nc.Sub(Y.Mul(f.nh)).Add(X.Mul(f.nw))
+
+	ftl := fc.Add(Y.Mul(f.fh)).Sub(X.Mul(f.fw))
+	ftr := fc.Add(Y.Mul(f.fh)).Add(X.Mul(f.fw))
+	fbl := fc.Sub(Y.Mul(f.fh)).Sub(X.Mul(f.fw))
+	fbr := fc.Sub(Y.Mul(f.fh)).Add(X.Mul(f.fw))
+
+	const (
+		top = iota
+		bottom
+		left
+		right
+		nearP
+		farP
+	)
+	f.planes[top].setPoints(ntr, ntl, ftl)
+	f.planes[bottom].setPoints(nbr, nbl, fbl)
+	f.planes[left].setPoints(ntl, nbl, fbl)
+	f.planes[right].setPoints(nbr, ntr, fbr)
+	f.planes[nearP].setPoints(ntl, ntr, nbr)
+	f.planes[farP].setPoints(ftr, ftl, fbl)
+}
+
+func (f *Frustum) IsSphereInside(x, y, z, radius float32) bool {
+	p := mgl32.Vec3{x, y, z}
+	for _, pl := range f.planes {
+		dist := pl.D + pl.N.Dot(p)
+		if dist < -radius {
 			return false
 		}
 	}

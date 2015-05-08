@@ -17,7 +17,7 @@ package direction
 import (
 	"fmt"
 
-	"github.com/thinkofdeath/steven/type/vmath"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 // Type is a direction in the minecraft world.
@@ -85,10 +85,10 @@ func (d Type) Offset() (x, y, z int) {
 
 }
 
-// AsVector returns a vector of the direction's offset.
-func (d Type) AsVector() vmath.Vector3 {
+// AsVec returns a vector of the direction's offset.
+func (d Type) AsVec() mgl32.Vec3 {
 	x, y, z := d.Offset()
-	return vmath.Vector3{float64(x), float64(y), float64(z)}
+	return mgl32.Vec3{float32(x), float32(y), float32(z)}
 }
 
 // Opposite returns the direction directly opposite to this

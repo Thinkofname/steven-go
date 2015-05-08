@@ -37,6 +37,7 @@ var (
 	lastWidth, lastHeight int = -1, -1
 	perspectiveMatrix         = mgl32.Mat4{}
 	cameraMatrix              = mgl32.Mat4{}
+	frustum                   = vmath.NewFrustum()
 
 	syncChan = make(chan func(), 500)
 
@@ -91,7 +92,7 @@ var (
 	textureIds    []int
 	frameID       uint
 	nearestBuffer *ChunkBuffer
-	viewVector    vmath.Vector3
+	viewVector    mgl32.Vec3
 )
 
 // Draw draws a single frame
@@ -121,6 +122,12 @@ sync:
 			10000.0,
 		)
 		gl.Viewport(0, 0, width, height)
+		frustum.SetPerspective(
+			(math.Pi/180)*float32(FOV),
+			float32(width)/float32(height),
+			0.1,
+			10000.0,
+		)
 	}
 
 	if MultiSample {
@@ -134,10 +141,17 @@ sync:
 
 	chunkProgram.Use()
 
-	cameraMatrix = mgl32.Ident4()
-	cameraMatrix = cameraMatrix.Mul4(mgl32.Rotate3DX(-float32(Camera.Pitch)).Mat4())
-	cameraMatrix = cameraMatrix.Mul4(mgl32.Rotate3DY(float32(Camera.Yaw)).Mat4())
-	cameraMatrix = cameraMatrix.Mul4(mgl32.Translate3D(float32(Camera.X), float32(Camera.Y), float32(-Camera.Z)))
+	viewVector := mgl32.Vec3{
+		float32(math.Cos(Camera.Yaw-math.Pi/2) * -math.Cos(Camera.Pitch)),
+		float32(-math.Sin(Camera.Pitch)),
+		float32(-math.Sin(Camera.Yaw-math.Pi/2) * -math.Cos(Camera.Pitch)),
+	}
+	cam := mgl32.Vec3{-float32(Camera.X), -float32(Camera.Y), float32(Camera.Z)}
+	cameraMatrix = mgl32.LookAtV(
+		cam,
+		cam.Add(mgl32.Vec3{-viewVector.X(), -viewVector.Y(), viewVector.Z()}),
+		mgl32.Vec3{0, -1, 0},
+	)
 	cameraMatrix = cameraMatrix.Mul4(mgl32.Scale3D(-1.0, 1.0, 1.0))
 
 	shaderChunk.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
@@ -151,12 +165,8 @@ sync:
 	}
 	nearestBuffer = buffers[chunkPos]
 
-	viewVector.X = math.Cos(Camera.Yaw-math.Pi/2) * -math.Cos(Camera.Pitch)
-	viewVector.Z = -math.Sin(Camera.Yaw-math.Pi/2) * -math.Cos(Camera.Pitch)
-	viewVector.Y = -math.Sin(Camera.Pitch)
-
 	for _, dir := range direction.Values {
-		validDirs[dir] = viewVector.Dot(dir.AsVector()) > -0.8
+		validDirs[dir] = viewVector.Dot(dir.AsVec()) > -0.8
 	}
 
 	renderOrder = renderOrder[:0]
@@ -217,20 +227,21 @@ const (
 var rQueue renderQueue
 
 func renderBuffer(chunk *ChunkBuffer, pos position, from direction.Type) {
+	cam := mgl32.Vec3{float32(-Camera.X), float32(-Camera.Y), float32(Camera.Z)}
+	frustum.SetCamera(
+		cam,
+		cam.Add(mgl32.Vec3{-viewVector.X(), -viewVector.Y(), viewVector.Z()}),
+		mgl32.Vec3{0, -1, 0},
+	)
 	rQueue.Append(renderRequest{chunk, pos, from})
 itQueue:
 	for !rQueue.Empty() {
 		req := rQueue.Take()
 		chunk, pos, from = req.chunk, req.pos, req.from
-		v := vmath.Vector3{
-			float64((pos.X<<4)+8) - Camera.X,
-			float64((pos.Y<<4)+8) - Camera.Y,
-			float64((pos.Z<<4)+8) - Camera.Z,
-		}
-		if v.LengthSquared() > 40*40 && v.Dot(viewVector) < 0 {
+		if chunk == nil || chunk.renderedOn == frameID {
 			continue itQueue
 		}
-		if chunk == nil || chunk.renderedOn == frameID {
+		if !frustum.IsSphereInside(float32((pos.X<<4)+8), float32((pos.Y<<4)+8), -float32((pos.Z<<4)+8), 10) {
 			continue itQueue
 		}
 		chunk.renderedOn = frameID

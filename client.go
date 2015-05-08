@@ -18,6 +18,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/type/direction"
@@ -42,8 +43,8 @@ func initClient() {
 	}
 	Client = ClientState{
 		Bounds: vmath.AABB{
-			Min: vmath.Vector3{-0.3, 0, -0.3},
-			Max: vmath.Vector3{0.3, 1.8, 0.3},
+			Min: mgl32.Vec3{-0.3, 0, -0.3},
+			Max: mgl32.Vec3{0.3, 1.8, 0.3},
 		},
 		valid: true,
 		scene: scene.New(true),
@@ -183,12 +184,12 @@ func (c *ClientState) renderTick(delta float64) {
 		// effect when pushing up against walls.
 
 		bounds, xhit := c.checkCollisions(c.Bounds)
-		c.X = bounds.Min.X + 0.3
+		c.X = float64(bounds.Min[0] + 0.3)
 		c.copyToCamera()
 
 		c.Z = cz
 		bounds, zhit := c.checkCollisions(c.Bounds)
-		c.Z = bounds.Min.Z + 0.3
+		c.Z = float64(bounds.Min[2] + 0.3)
 		c.copyToCamera()
 
 		// Half block jumps
@@ -203,7 +204,7 @@ func (c *ClientState) renderTick(delta float64) {
 			c.X, c.Z = cx, cz
 			for i := 1.0 / 16.0; i <= 0.5; i += 1.0 / 16.0 {
 				mini := c.Bounds
-				mini.Shift(0, i, 0)
+				mini.Shift(0, float32(i), 0)
 				_, hit := c.checkCollisions(mini)
 				if !hit {
 					cy += i
@@ -217,7 +218,7 @@ func (c *ClientState) renderTick(delta float64) {
 
 		c.Y = cy
 		bounds, _ = c.checkCollisions(c.Bounds)
-		c.Y = bounds.Min.Y
+		c.Y = float64(bounds.Min.Y())
 
 		c.checkGround()
 	}
@@ -245,41 +246,41 @@ func (c *ClientState) renderTick(delta float64) {
 func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 	const max = 4.0
 	block = Blocks.Air.Base
-	s := vmath.Vector3{c.X, c.Y + playerHeight, c.Z}
+	s := mgl32.Vec3{float32(c.X), float32(c.Y + playerHeight), float32(c.Z)}
 	d := c.viewVector()
 
 	type gen struct {
 		count   int
-		base, d float64
+		base, d float32
 	}
-	newGen := func(start, d float64) *gen {
+	newGen := func(start, d float32) *gen {
 		g := &gen{}
 		if d > 0 {
-			g.base = (math.Ceil(start) - start) / d
+			g.base = (float32(math.Ceil(float64(start))) - start) / d
 		} else if d < 0 {
-			d = math.Abs(d)
-			g.base = (start - math.Floor(start)) / d
+			d = float32(math.Abs(float64(d)))
+			g.base = (start - float32(math.Floor(float64(start)))) / d
 		}
 		g.d = d
 		return g
 	}
-	next := func(g *gen) float64 {
+	next := func(g *gen) float32 {
 		g.count++
 		if g.d == 0 {
-			return math.Inf(1)
+			return float32(math.Inf(1))
 		}
-		return g.base + float64(g.count-1)/g.d
+		return g.base + float32(g.count-1)/g.d
 	}
 
-	aGen := newGen(s.X, d.X)
-	bGen := newGen(s.Y, d.Y)
-	cGen := newGen(s.Z, d.Z)
-	prevN := 0.0
+	aGen := newGen(s.X(), d.X())
+	bGen := newGen(s.Y(), d.Y())
+	cGen := newGen(s.Z(), d.Z())
+	prevN := float32(0.0)
 	nextNA := next(aGen)
 	nextNB := next(bGen)
 	nextNC := next(cGen)
 	for {
-		nextN := 0.0
+		nextN := float32(0.0)
 		if nextNA < nextNB {
 			if nextNA < nextNC {
 				nextN = nextNA
@@ -306,12 +307,13 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 			final = true
 			n = max
 		}
-		bx, by, bz := int(math.Floor(s.X+d.X*n)), int(math.Floor(s.Y+d.Y*n)), int(math.Floor(s.Z+d.Z*n))
+		bv := s.Add(d.Mul(n))
+		bx, by, bz := int(math.Floor(float64(bv.X()))), int(math.Floor(float64(bv.Y()))), int(math.Floor(float64(bv.Z())))
 		b := chunkMap.Block(bx, by, bz)
 		if _, ok := b.(*blockLiquid); !b.Is(Blocks.Air) && !ok {
 			bb := b.CollisionBounds()
 			for _, bound := range bb {
-				bound.Shift(float64(bx), float64(by), float64(bz))
+				bound.Shift(float32(bx), float32(by), float32(bz))
 				if bound.IntersectsLine(s, d) {
 					x, y, z = bx, by, bz
 					block = b
@@ -339,39 +341,39 @@ func (c *ClientState) highlightTarget() {
 		return
 	}
 	for _, b := range b.CollisionBounds() {
-		b.Shift(float64(tx), float64(ty), float64(tz))
+		b.Shift(float32(tx), float32(ty), float32(tz))
 
 		points := [][2]float64{
-			{b.Min.X, b.Min.Z},
-			{b.Min.X, b.Max.Z},
-			{b.Max.X, b.Min.Z},
-			{b.Max.X, b.Max.Z},
+			{float64(b.Min.X()), float64(b.Min.Z())},
+			{float64(b.Min.X()), float64(b.Max.Z())},
+			{float64(b.Max.X()), float64(b.Min.Z())},
+			{float64(b.Max.X()), float64(b.Max.Z())},
 		}
 
 		for _, p := range points {
 			render.DrawBox(
-				p[0]-lineSize, b.Min.Y-lineSize, p[1]-lineSize,
-				p[0]+lineSize, b.Max.Y+lineSize, p[1]+lineSize,
+				p[0]-lineSize, float64(b.Min.Y())-lineSize, p[1]-lineSize,
+				p[0]+lineSize, float64(b.Max.Y())+lineSize, p[1]+lineSize,
 				0, 0, 0, 255,
 			)
 		}
 
 		topPoints := [][4]float64{
-			{b.Min.X, b.Min.Z, b.Max.X, b.Min.Z},
-			{b.Min.X, b.Max.Z, b.Max.X, b.Max.Z},
-			{b.Min.X, b.Min.Z, b.Min.X, b.Max.Z},
-			{b.Max.X, b.Min.Z, b.Max.X, b.Max.Z},
+			{float64(b.Min.X()), float64(b.Min.Z()), float64(b.Max.X()), float64(b.Min.Z())},
+			{float64(b.Min.X()), float64(b.Max.Z()), float64(b.Max.X()), float64(b.Max.Z())},
+			{float64(b.Min.X()), float64(b.Min.Z()), float64(b.Min.X()), float64(b.Max.Z())},
+			{float64(b.Max.X()), float64(b.Min.Z()), float64(b.Max.X()), float64(b.Max.Z())},
 		}
 		for _, p := range topPoints {
 			p2 := p[2:]
 			render.DrawBox(
-				p[0]-lineSize, b.Min.Y-lineSize, p[1]-lineSize,
-				p2[0]+lineSize, b.Min.Y+lineSize, p2[1]+lineSize,
+				p[0]-lineSize, float64(b.Min.Y())-lineSize, p[1]-lineSize,
+				p2[0]+lineSize, float64(b.Min.Y())+lineSize, p2[1]+lineSize,
 				0, 0, 0, 255,
 			)
 			render.DrawBox(
-				p[0]-lineSize, b.Max.Y-lineSize, p[1]-lineSize,
-				p2[0]+lineSize, b.Max.Y+lineSize, p2[1]+lineSize,
+				p[0]-lineSize, float64(b.Max.Y())-lineSize, p[1]-lineSize,
+				p2[0]+lineSize, float64(b.Max.Y())+lineSize, p2[1]+lineSize,
 				0, 0, 0, 255,
 			)
 		}
@@ -380,8 +382,8 @@ func (c *ClientState) highlightTarget() {
 
 func (c *ClientState) checkGround() {
 	ground := vmath.AABB{
-		Min: vmath.Vector3{-0.3, -0.05, -0.3},
-		Max: vmath.Vector3{0.3, 0.0, 0.3},
+		Min: mgl32.Vec3{-0.3, -0.05, -0.3},
+		Max: mgl32.Vec3{0.3, 0.0, 0.3},
 	}
 	_, c.OnGround = c.checkCollisions(ground)
 }
@@ -416,32 +418,32 @@ func (c *ClientState) calculateMovement() (float64, float64) {
 func (c *ClientState) facingDirection() direction.Type {
 	viewVector := c.viewVector()
 	for _, d := range direction.Values {
-		if d.AsVector().Dot(viewVector) > 0.5 {
+		if d.AsVec().Dot(viewVector) > 0.5 {
 			return d
 		}
 	}
 	return direction.Invalid
 }
 
-func (c *ClientState) viewVector() vmath.Vector3 {
-	var viewVector vmath.Vector3
-	viewVector.X = math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
-	viewVector.Z = -math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
-	viewVector.Y = -math.Sin(c.Pitch)
-	return viewVector
+func (c *ClientState) viewVector() mgl32.Vec3 {
+	return mgl32.Vec3{
+		float32(math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)),
+		float32(-math.Sin(c.Pitch)),
+		float32(-math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)),
+	}
 }
 
 func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
-	bounds.Shift(c.X, c.Y, c.Z)
+	bounds.Shift(float32(c.X), float32(c.Y), float32(c.Z))
 
-	dir := &vmath.Vector3{
-		X: -(render.Camera.X - c.X),
-		Y: -(render.Camera.Y - playerHeight - c.Y),
-		Z: -(render.Camera.Z - c.Z),
+	dir := mgl32.Vec3{
+		-float32(render.Camera.X - c.X),
+		-float32(render.Camera.Y - playerHeight - c.Y),
+		-float32(render.Camera.Z - c.Z),
 	}
 
-	minX, minY, minZ := int(bounds.Min.X-1), int(bounds.Min.Y-1), int(bounds.Min.Z-1)
-	maxX, maxY, maxZ := int(bounds.Max.X+1), int(bounds.Max.Y+1), int(bounds.Max.Z+1)
+	minX, minY, minZ := int(bounds.Min.X()-1), int(bounds.Min.Y()-1), int(bounds.Min.Z()-1)
+	maxX, maxY, maxZ := int(bounds.Max.X()+1), int(bounds.Max.Y()+1), int(bounds.Max.Z()+1)
 
 	hit := false
 	for y := minY; y < maxY; y++ {
@@ -451,7 +453,7 @@ func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
 
 				if b.Collidable() {
 					for _, bb := range b.CollisionBounds() {
-						bb.Shift(float64(x), float64(y), float64(z))
+						bb.Shift(float32(x), float32(y), float32(z))
 						if bb.Intersects(&bounds) {
 							bounds.MoveOutOf(&bb, dir)
 							hit = true

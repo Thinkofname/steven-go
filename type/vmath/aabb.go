@@ -16,89 +16,84 @@ package vmath
 
 import (
 	"fmt"
+
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type AABB struct {
-	Min Vector3
-	Max Vector3
+	Min mgl32.Vec3
+	Max mgl32.Vec3
 }
 
-func NewAABB(x1, y1, z1, x2, y2, z2 float64) *AABB {
+func NewAABB(x1, y1, z1, x2, y2, z2 float32) *AABB {
 	return &AABB{
-		Min: Vector3{x1, y1, z1},
-		Max: Vector3{x2, y2, z2},
+		Min: mgl32.Vec3{x1, y1, z1},
+		Max: mgl32.Vec3{x2, y2, z2},
 	}
 }
 
-func (a *AABB) RotateX(an, ox, oy, oz float64) {
-	a.Max.RotateX(an, ox, oy, oz)
-	a.Min.RotateX(an, ox, oy, oz)
+func (a *AABB) RotateX(an, ox, oy, oz float32) {
+	mat := mgl32.Rotate3DX(an)
+	o := mgl32.Vec3{ox, oy, oz}
+	a.Max = mat.Mul3x1(a.Max.Sub(o)).Add(o)
+	a.Min = mat.Mul3x1(a.Min.Sub(o)).Add(o)
 	a.fixBounds()
 }
 
-func (a *AABB) RotateY(an, ox, oy, oz float64) {
-	a.Max.RotateY(an, ox, oy, oz)
-	a.Min.RotateY(an, ox, oy, oz)
+func (a *AABB) RotateY(an, ox, oy, oz float32) {
+	mat := mgl32.Rotate3DY(an)
+	o := mgl32.Vec3{ox, oy, oz}
+	a.Max = mat.Mul3x1(a.Max.Sub(o)).Add(o)
+	a.Min = mat.Mul3x1(a.Min.Sub(o)).Add(o)
 	a.fixBounds()
 }
 
 func (a *AABB) fixBounds() {
-	if a.Max.X < a.Min.X || a.Min.X > a.Max.X {
-		a.Max.X, a.Min.X = a.Min.X, a.Max.X
-	}
-	if a.Max.Y < a.Min.Y || a.Min.Y > a.Max.Y {
-		a.Max.Y, a.Min.Y = a.Min.Y, a.Max.Y
-	}
-	if a.Max.Z < a.Min.Z || a.Min.Z > a.Max.Z {
-		a.Max.Z, a.Min.Z = a.Min.Z, a.Max.Z
+	for i := range a.Min {
+		if a.Max[i] < a.Min[i] || a.Min[i] > a.Max[i] {
+			a.Max[i], a.Min[i] = a.Min[i], a.Max[i]
+		}
 	}
 }
 
 func (a *AABB) Intersects(o *AABB) bool {
-	return !(o.Min.X >= a.Max.X ||
-		o.Max.X <= a.Min.X ||
-		o.Min.Y >= a.Max.Y ||
-		o.Max.Y <= a.Min.Y ||
-		o.Min.Z >= a.Max.Z ||
-		o.Max.Z <= a.Min.Z)
+	return !(o.Min.X() >= a.Max.X() ||
+		o.Max.X() <= a.Min.X() ||
+		o.Min.Y() >= a.Max.Y() ||
+		o.Max.Y() <= a.Min.Y() ||
+		o.Min.Z() >= a.Max.Z() ||
+		o.Max.Z() <= a.Min.Z())
 }
 
-func (a *AABB) IntersectsLine(origin, dir Vector3) bool {
+func (a *AABB) IntersectsLine(origin, dir mgl32.Vec3) bool {
 	const right, left, middle = 0, 1, 2
 	var (
 		quadrant       [3]int
-		candidatePlane [3]float64
-		maxT           = [3]float64{-1, -1, -1}
+		candidatePlane [3]float32
+		maxT           = [3]float32{-1, -1, -1}
 	)
 	inside := true
-	findC := func(i int, x, minX, maxX float64) {
-		if x < minX {
+	for i := range origin {
+		if origin[i] < a.Min[i] {
 			quadrant[i] = left
-			candidatePlane[i] = minX
+			candidatePlane[i] = a.Min[i]
 			inside = false
-		} else if x > maxX {
+		} else if origin[i] > a.Max[i] {
 			quadrant[i] = right
-			candidatePlane[i] = maxX
+			candidatePlane[i] = a.Max[i]
 			inside = false
 		} else {
 			quadrant[i] = middle
 		}
 	}
-	findC(0, origin.X, a.Min.X, a.Max.X)
-	findC(1, origin.Y, a.Min.Y, a.Max.Y)
-	findC(2, origin.Z, a.Min.Z, a.Max.Z)
 	if inside {
 		return true
 	}
 
-	if quadrant[0] != middle && dir.X != 0 {
-		maxT[0] = (candidatePlane[0] - origin.X) / dir.X
-	}
-	if quadrant[1] != middle && dir.Y != 0 {
-		maxT[1] = (candidatePlane[1] - origin.Y) / dir.Y
-	}
-	if quadrant[2] != middle && dir.Z != 0 {
-		maxT[2] = (candidatePlane[2] - origin.Z) / dir.Z
+	for i := range dir {
+		if quadrant[i] != middle && dir[i] != 0 {
+			maxT[i] = (candidatePlane[i] - origin[i]) / dir[i]
+		}
 	}
 	whichPlane := 0
 	for i := 1; i < 3; i++ {
@@ -109,69 +104,60 @@ func (a *AABB) IntersectsLine(origin, dir Vector3) bool {
 	if maxT[whichPlane] < 0 {
 		return false
 	}
-	check := func(i int, oX, dX, min, max float64) bool {
+
+	for i := range origin {
 		if whichPlane != i {
-			coord := oX + maxT[whichPlane]*dX
-			if coord < min || coord > max {
+			coord := origin[i] + maxT[whichPlane]*dir[i]
+			if coord < a.Min[i] || coord > a.Max[i] {
 				return false
 			}
 		}
-		return true
-	}
-	if !check(0, origin.X, dir.X, a.Min.X, a.Max.X) {
-		return false
-	}
-	if !check(1, origin.Y, dir.Y, a.Min.Y, a.Max.Y) {
-		return false
-	}
-	if !check(2, origin.Z, dir.Z, a.Min.Z, a.Max.Z) {
-		return false
 	}
 	return true
 }
 
-func (a *AABB) Shift(x, y, z float64) {
-	a.Min.X += x
-	a.Max.X += x
-	a.Min.Y += y
-	a.Max.Y += y
-	a.Min.Z += z
-	a.Max.Z += z
+func (a *AABB) Shift(x, y, z float32) {
+	a.Min[0] += x
+	a.Max[0] += x
+	a.Min[1] += y
+	a.Max[1] += y
+	a.Min[2] += z
+	a.Max[2] += z
 }
 
-func (a *AABB) MoveOutOf(o *AABB, dir *Vector3) {
-	if dir.X != 0 {
-		if dir.X > 0 {
-			ox := a.Max.X
-			a.Max.X = o.Min.X - 0.0001
-			a.Min.X += a.Max.X - ox
+func (a *AABB) MoveOutOf(o *AABB, dir mgl32.Vec3) {
+	if dir.X() != 0 {
+		if dir.X() > 0 {
+			ox := a.Max.X()
+			a.Max[0] = o.Min.X() - 0.0001
+			a.Min[0] += a.Max.X() - ox
 		} else {
-			ox := a.Min.X
-			a.Min.X = o.Max.X + 0.0001
-			a.Max.X += a.Min.X - ox
+			ox := a.Min.X()
+			a.Min[0] = o.Max.X() + 0.0001
+			a.Max[0] += a.Min.X() - ox
 		}
 	}
-	if dir.Y != 0 {
-		if dir.Y > 0 {
-			oy := a.Max.Y
-			a.Max.Y = o.Min.Y - 0.0001
-			a.Min.Y += a.Max.Y - oy
+	if dir.Y() != 0 {
+		if dir.Y() > 0 {
+			oy := a.Max.Y()
+			a.Max[1] = o.Min.Y() - 0.0001
+			a.Min[1] += a.Max.Y() - oy
 		} else {
-			oy := a.Min.Y
-			a.Min.Y = o.Max.Y + 0.0001
-			a.Max.Y += a.Min.Y - oy
+			oy := a.Min.Y()
+			a.Min[1] = o.Max.Y() + 0.0001
+			a.Max[1] += a.Min.Y() - oy
 		}
 	}
 
-	if dir.Z != 0 {
-		if dir.Z > 0 {
-			oz := a.Max.Z
-			a.Max.Z = o.Min.Z - 0.0001
-			a.Min.Z += a.Max.Z - oz
+	if dir.Z() != 0 {
+		if dir.Z() > 0 {
+			oz := a.Max.Z()
+			a.Max[2] = o.Min.Z() - 0.0001
+			a.Min[2] += a.Max.Z() - oz
 		} else {
-			oz := a.Min.Z
-			a.Min.Z = o.Max.Z + 0.0001
-			a.Max.Z += a.Min.Z - oz
+			oz := a.Min.Z()
+			a.Min[2] = o.Max.Z() + 0.0001
+			a.Max[2] += a.Min.Z() - oz
 		}
 	}
 }
