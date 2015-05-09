@@ -190,7 +190,7 @@ func (r *reading) readNamed(t, name string, tag reflect.StructTag) {
 	if len(funcName) != 0 {
 		if notProtocol {
 			funcName = "protocol." + funcName
-			imports["github.com/thinkofdeath/steven/protocol"] = struct{}{}
+			imports["github.com/thinkofdeath/phteven/protocol"] = struct{}{}
 		}
 		fmt.Fprintf(&r.buf, "if %s, err = %s(rr); err != nil { return  }\n", name, funcName)
 	}

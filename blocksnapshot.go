@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"math"
 	"sync"
 
-	"github.com/thinkofdeath/steven/type/nibble"
-	"github.com/thinkofdeath/steven/world/biome"
+	"github.com/thinkofdeath/phteven/type/nibble"
+	"github.com/thinkofdeath/phteven/world/biome"
 )
 
 type blocksSnapshot struct {

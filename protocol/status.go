@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/phteven/chat"
 )
 
 // StatusReply is the reply retrieved from a server when pinging

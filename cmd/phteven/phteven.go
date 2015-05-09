@@ -18,7 +18,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/thinkofdeath/steven"
+	"github.com/thinkofdeath/phteven"
 )
 
 func main() {
@@ -40,5 +40,5 @@ func main() {
 			server = os.Args[i+1]
 		}
 	}
-	steven.Main(username, uuid, accessToken, server)
+	phteven.Main(username, uuid, accessToken, server)
 }

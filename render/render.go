@@ -20,9 +20,9 @@ import (
 	"strings"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/thinkofdeath/steven/render/gl"
-	"github.com/thinkofdeath/steven/type/direction"
-	"github.com/thinkofdeath/steven/type/vmath"
+	"github.com/thinkofdeath/phteven/render/gl"
+	"github.com/thinkofdeath/phteven/type/direction"
+	"github.com/thinkofdeath/phteven/type/vmath"
 )
 
 var (

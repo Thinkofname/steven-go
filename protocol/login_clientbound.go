@@ -17,7 +17,7 @@
 package protocol
 
 import (
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/phteven/chat"
 )
 
 // LoginDisconnect is sent by the server if there was any issues

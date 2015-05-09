@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"math/rand"
 	"sync"
 
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/render/builder"
-	"github.com/thinkofdeath/steven/type/bit"
-	"github.com/thinkofdeath/steven/type/direction"
+	"github.com/thinkofdeath/phteven/render"
+	"github.com/thinkofdeath/phteven/render/builder"
+	"github.com/thinkofdeath/phteven/type/bit"
+	"github.com/thinkofdeath/phteven/type/direction"
 )
 
 type chunkVertex struct {

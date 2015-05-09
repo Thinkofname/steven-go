@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"math"
 	"time"
 
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/thinkofdeath/steven/protocol"
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/type/direction"
-	"github.com/thinkofdeath/steven/type/vmath"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
+	"github.com/thinkofdeath/phteven/protocol"
+	"github.com/thinkofdeath/phteven/render"
+	"github.com/thinkofdeath/phteven/type/direction"
+	"github.com/thinkofdeath/phteven/type/vmath"
+	"github.com/thinkofdeath/phteven/ui"
+	"github.com/thinkofdeath/phteven/ui/scene"
 )
 
 const (

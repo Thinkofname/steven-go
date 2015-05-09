@@ -14,7 +14,7 @@
 
 package ui
 
-import "github.com/thinkofdeath/steven/render"
+import "github.com/thinkofdeath/phteven/render"
 
 // Image is a drawable that draws a texture.
 type Image struct {

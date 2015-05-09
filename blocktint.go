@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ import (
 	icolor "image/color"
 	"image/png"
 
-	"github.com/thinkofdeath/steven/resource"
+	"github.com/thinkofdeath/phteven/resource"
 )
 
 var (

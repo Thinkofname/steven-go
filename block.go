@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"bytes"
@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/thinkofdeath/steven/type/vmath"
+	"github.com/thinkofdeath/phteven/type/vmath"
 )
 
 var (

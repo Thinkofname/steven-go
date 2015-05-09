@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"fmt"
 
-	"github.com/thinkofdeath/steven/protocol"
-	"github.com/thinkofdeath/steven/protocol/mojang"
+	"github.com/thinkofdeath/phteven/protocol"
+	"github.com/thinkofdeath/phteven/protocol/mojang"
 )
 
 var (

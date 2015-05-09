@@ -8,9 +8,9 @@
   (touching two different packages for example)
 * Commit messages should be in the form `packagename: commit message` where the commit message
   should be in lower case (exluding acronyms like HTTP and JSON)
-* For the commit messages the root package `github.com/thinkofdeath/steven` is referred to as `steven`
+* For the commit messages the root package `github.com/thinkofdeath/phteven` is referred to as `phteven`
 * In the case where multiple packages are touched and it doesn't make sense to split the commits 
-  the package names can be seperated in a list via a comma e.g. `render,steven: commit message`
+  the package names can be seperated in a list via a comma e.g. `render,phteven: commit message`
 * The code must work on Linux, Windows and Mac unless its in a platform specific area file 
   (with a build tag or file extension)
 
@@ -19,6 +19,6 @@
 * Logs/Crash logs should be wrapped in \`\`\` to keep it readable. 
 * In the case the log is too large use https://gist.github.com
 * The title of the issue should clearly state the issue and the package (if known) that the issue occurs in
-  e.g. `steven: missing model for red flowers`
+  e.g. `phteven: missing model for red flowers`
 * Please include details about your operating system and graphics card in the issue to help with
   tracking down issues

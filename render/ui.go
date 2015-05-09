@@ -17,8 +17,8 @@ package render
 import (
 	"math"
 
-	"github.com/thinkofdeath/steven/native"
-	"github.com/thinkofdeath/steven/render/gl"
+	"github.com/thinkofdeath/phteven/native"
+	"github.com/thinkofdeath/phteven/render/gl"
 )
 
 const (

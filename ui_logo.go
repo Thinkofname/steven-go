@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"fmt"
@@ -22,10 +22,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/thinkofdeath/steven/native"
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
+	"github.com/thinkofdeath/phteven/native"
+	"github.com/thinkofdeath/phteven/render"
+	"github.com/thinkofdeath/phteven/ui"
+	"github.com/thinkofdeath/phteven/ui/scene"
 )
 
 type uiLogo struct {
@@ -39,7 +39,7 @@ type uiLogo struct {
 var (
 	r             = rand.New(rand.NewSource(time.Now().UnixNano()))
 	logoTexture   = r.Intn(4)
-	logoText      = stevenLogoLines[r.Intn(len(stevenLogoLines))]
+	logoText      = phtevenLogoLines[r.Intn(len(phtevenLogoLines))]
 	logoTextTimer float64
 )
 
@@ -60,7 +60,7 @@ func (u *uiLogo) init(scene *scene.Type) {
 	titleBox := (&ui.Container{
 		Y: 8,
 	}).Attach(ui.Top, ui.Center)
-	for _, line := range strings.Split(stevenLogo, "\n") {
+	for _, line := range strings.Split(phtevenLogo, "\n") {
 		if line == "" {
 			continue
 		}
@@ -128,13 +128,13 @@ func (u *uiLogo) tick(delta float64) {
 	u.text.X *= u.text.ScaleX * u.textBaseScale
 }
 
-var stevenLogoLines = []string{
+var phtevenLogoLines = []string{
 	"I blame Xor",
 	"Its not a bug its a feature!",
 	"Don't go to #think, tis a silly place",
 	"Tested! (In production)",
 	"Not in scala!",
-	"Its steven not phteven!",
+	"Its phteven not phteven!",
 	"Now webscale!",
 	"Meow",
 	"I bet one of cindy's cats broke it!",
@@ -148,7 +148,7 @@ var stevenLogoLines = []string{
 	"I blame Mojang",
 	"The logo is totally not ascii art rendered as textures",
 	"Look, it works on my machine.",
-	"Open Source! https://github.com/thinkofdeath/steven",
+	"Open Source! https://github.com/thinkofdeath/phteven",
 	"Built with Go!",
 	"Your machine uses " + native.Order.String() + " byte order!",
 	fmt.Sprintf("You have %d CPUs!", runtime.NumCPU()),
@@ -168,21 +168,21 @@ var stevenLogoLines = []string{
 	"Come chat on IRC!",
 }
 
-const stevenLogo = `
-   SSSSSSSSSSSSSSS          tttt                                                                                             
- SS:::::::::::::::S      ttt:::t                                                                                             
-S:::::SSSSSS::::::S      t:::::t                                                                                             
-S:::::S     SSSSSSS      t:::::t                                                                                             
-S:::::S            ttttttt:::::ttttttt        eeeeeeeeeeee    vvvvvvv           vvvvvvv    eeeeeeeeeeee    nnnn  nnnnnnnn    
-S:::::S            t:::::::::::::::::t      ee::::::::::::ee   v:::::v         v:::::v   ee::::::::::::ee  n:::nn::::::::nn  
- S::::SSSS         t:::::::::::::::::t     e::::::eeeee:::::ee  v:::::v       v:::::v   e::::::eeeee:::::een::::::::::::::nn 
-  SS::::::SSSSS    tttttt:::::::tttttt    e::::::e     e:::::e   v:::::v     v:::::v   e::::::e     e:::::enn:::::::::::::::n
-    SSS::::::::SS        t:::::t          e:::::::eeeee::::::e    v:::::v   v:::::v    e:::::::eeeee::::::e  n:::::nnnn:::::n
-       SSSSSS::::S       t:::::t          e:::::::::::::::::e      v:::::v v:::::v     e:::::::::::::::::e   n::::n    n::::n
-            S:::::S      t:::::t          e::::::eeeeeeeeeee        v:::::v:::::v      e::::::eeeeeeeeeee    n::::n    n::::n
-            S:::::S      t:::::t    tttttte:::::::e                  v:::::::::v       e:::::::e             n::::n    n::::n
-SSSSSSS     S:::::S      t::::::tttt:::::te::::::::e                  v:::::::v        e::::::::e            n::::n    n::::n
-S::::::SSSSSS:::::S      tt::::::::::::::t e::::::::eeeeeeee           v:::::v          e::::::::eeeeeeee    n::::n    n::::n
-S:::::::::::::::SS         tt:::::::::::tt  ee:::::::::::::e            v:::v            ee:::::::::::::e    n::::n    n::::n
- SSSSSSSSSSSSSSS             ttttttttttt      eeeeeeeeeeeeee             vvv               eeeeeeeeeeeeee    nnnnnn    nnnnnn                                         
+const phtevenLogo = `
+PPPPPPPPPPPP       hhhhhh                      tttt
+PP::::::::::PPP    hh::hh                   ttt:::t
+P::::::::::::::PP  hh::hh                   t:::::t
+P:::::PPPPPP:::::P hh::hh                   t:::::t
+P:::::P     P::::P hh::hh             ttttttt:::::ttttttt        eeeeeeeeeeee    vvvvvvv           vvvvvvv    eeeeeeeeeeee    nnnn  nnnnnnnn
+P:::::P     P::::P hh::hh             t:::::::::::::::::t      ee::::::::::::ee   v:::::v         v:::::v   ee::::::::::::ee  n:::nn::::::::nn
+P:::::PPPPPP:::::P hh::hhhhhhhhhhh    t:::::::::::::::::t     e::::::eeeee:::::ee  v:::::v       v:::::v   e::::::eeeee:::::een::::::::::::::nn
+P::::::::::::::PP  hh:::::::::::::hh  tttttt:::::::tttttt    e::::::e     e:::::e   v:::::v     v:::::v   e::::::e     e:::::enn:::::::::::::::n
+P:::::PPPPPPPP     hh::::hhhhhhh::::hh      t:::::t          e:::::::eeeee::::::e    v:::::v   v:::::v    e:::::::eeeee::::::e  n:::::nnnn:::::n
+P:::::P            hh::hh       hh::hh      t:::::t          e:::::::::::::::::e      v:::::v v:::::v     e:::::::::::::::::e   n::::n    n::::n
+P:::::P            hh::hh       hh::hh      t:::::t          e::::::eeeeeeeeeee        v:::::v:::::v      e::::::eeeeeeeeeee    n::::n    n::::n
+P:::::P            hh::hh       hh::hh      t:::::t    tttttte:::::::e                  v:::::::::v       e:::::::e             n::::n    n::::n
+P:::::P            hh::hh       hh::hh      t::::::tttt:::::te::::::::e                  v:::::::v        e::::::::e            n::::n    n::::n
+P:::::P            hh::hh       hh::hh      tt::::::::::::::t e::::::::eeeeeeee           v:::::v          e::::::::eeeeeeee    n::::n    n::::n
+P:::::P            hh::hh       hh::hh        tt:::::::::::tt  ee:::::::::::::e            v:::v            ee:::::::::::::e    n::::n    n::::n
+PPPPPPP            hhhhhh       hhhhhh          ttttttttttt      eeeeeeeeeeeeee             vvv               eeeeeeeeeeeeee    nnnnnn    nnnnnn
 `

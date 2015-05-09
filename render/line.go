@@ -14,7 +14,7 @@
 
 package render
 
-import "github.com/thinkofdeath/steven/render/gl"
+import "github.com/thinkofdeath/phteven/render/gl"
 
 var lineState = struct {
 	program  gl.Program

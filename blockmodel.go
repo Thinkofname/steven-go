@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"fmt"
@@ -21,11 +21,11 @@ import (
 
 	realjson "encoding/json"
 
-	"github.com/thinkofdeath/steven/encoding/json"
+	"github.com/thinkofdeath/phteven/encoding/json"
 
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/resource"
-	"github.com/thinkofdeath/steven/type/direction"
+	"github.com/thinkofdeath/phteven/render"
+	"github.com/thinkofdeath/phteven/resource"
+	"github.com/thinkofdeath/phteven/type/direction"
 )
 
 var (

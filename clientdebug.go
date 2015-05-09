@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"fmt"
 	"runtime"
 	"time"
 
-	"github.com/thinkofdeath/steven/chat"
-	"github.com/thinkofdeath/steven/ui"
+	"github.com/thinkofdeath/phteven/chat"
+	"github.com/thinkofdeath/phteven/ui"
 )
 
 var memoryStats runtime.MemStats

@@ -18,7 +18,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/thinkofdeath/steven/encoding/nbt"
+	"github.com/thinkofdeath/phteven/encoding/nbt"
 )
 
 const varPart = uint32(0x7F)

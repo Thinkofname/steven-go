@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"fmt"
@@ -20,8 +20,8 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/thinkofdeath/steven/type/direction"
-	"github.com/thinkofdeath/steven/type/vmath"
+	"github.com/thinkofdeath/phteven/type/direction"
+	"github.com/thinkofdeath/phteven/type/vmath"
 )
 
 // Stone

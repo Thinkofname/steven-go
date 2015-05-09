@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"encoding/binary"
 	"sort"
 
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/type/direction"
-	"github.com/thinkofdeath/steven/type/nibble"
-	"github.com/thinkofdeath/steven/world/biome"
+	"github.com/thinkofdeath/phteven/render"
+	"github.com/thinkofdeath/phteven/type/direction"
+	"github.com/thinkofdeath/phteven/type/nibble"
+	"github.com/thinkofdeath/phteven/world/biome"
 )
 
 var chunkMap world = map[chunkPosition]*chunk{}

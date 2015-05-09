@@ -17,7 +17,7 @@ package ui
 import (
 	"math"
 
-	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/phteven/render"
 )
 
 // Text is a drawable that draws a string.

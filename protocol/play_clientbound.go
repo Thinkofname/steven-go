@@ -17,8 +17,8 @@
 package protocol
 
 import (
-	"github.com/thinkofdeath/steven/chat"
-	"github.com/thinkofdeath/steven/encoding/nbt"
+	"github.com/thinkofdeath/phteven/chat"
+	"github.com/thinkofdeath/phteven/encoding/nbt"
 )
 
 // KeepAliveClientbound is sent by a server to check if the

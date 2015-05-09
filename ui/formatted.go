@@ -15,9 +15,9 @@
 package ui
 
 import (
-	"github.com/thinkofdeath/steven/chat"
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/resource/locale"
+	"github.com/thinkofdeath/phteven/chat"
+	"github.com/thinkofdeath/phteven/render"
+	"github.com/thinkofdeath/phteven/resource/locale"
 )
 
 // Formatted is a drawable that draws a string.
