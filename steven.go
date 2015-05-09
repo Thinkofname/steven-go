@@ -69,6 +69,8 @@ func Main(username, uuid, accessToken, s string) {
 	}
 	server = s
 
+	// Done on its own goroutine so the connection
+	// + window opening, can't be done in parallel
 	go func() {
 		render.LoadTextures()
 		initBlocks()
