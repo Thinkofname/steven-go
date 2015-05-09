@@ -29,8 +29,6 @@ import (
 
 const playerListWidth = 150
 
-var playerList = map[protocol.UUID]*playerInfo{}
-
 type playerInfo struct {
 	name        string
 	uuid        protocol.UUID
@@ -43,6 +41,7 @@ type playerInfo struct {
 }
 
 type playerListUI struct {
+	info       map[protocol.UUID]*playerInfo
 	background [4]*ui.Image
 	entries    []*playerListUIEntry
 	scene      *scene.Type
@@ -63,6 +62,7 @@ func (p playerListUIEntry) set(enabled bool) {
 }
 
 func (p *playerListUI) init() {
+	p.info = map[protocol.UUID]*playerInfo{}
 	p.scene = scene.New(false)
 	for i := range p.background {
 		p.background[i] = ui.NewImage(render.GetTexture("solid"), 0, 16, playerListWidth+48, 16, 0, 0, 1, 1, 0, 0, 0)
@@ -201,7 +201,7 @@ func (p *playerListUI) render(delta float64) {
 }
 
 func (p *playerListUI) players() (out []*playerInfo) {
-	for _, pl := range playerList {
+	for _, pl := range p.info {
 		out = append(out, pl)
 	}
 	sort.Sort(sortedPlayerList(out))
@@ -220,6 +220,7 @@ func (s sortedPlayerList) Less(a, b int) bool {
 func (s sortedPlayerList) Swap(a, b int) { s[a], s[b] = s[b], s[a] }
 
 func (handler) PlayerListInfo(p *protocol.PlayerInfo) {
+	playerList := Client.playerList.info
 	for _, pl := range p.Players {
 		if _, ok := playerList[pl.UUID]; (!ok && p.Action != 0) || (ok && p.Action == 0) {
 			continue
