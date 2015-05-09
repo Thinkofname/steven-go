@@ -100,7 +100,8 @@ func onMouseMove(w *glfw.Window, xpos float64, ypos float64) {
 	ww, hh := float64(width/2), float64(height/2)
 	w.SetCursorPos(ww, hh)
 
-	rotate((xpos-ww)/2000.0, (ypos-hh)/2000.0)
+	s := float64(Config.Game.MouseSensitivity)
+	rotate((xpos-ww)/s, (ypos-hh)/s)
 }
 
 func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mod glfw.ModifierKey) {

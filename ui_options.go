@@ -31,6 +31,7 @@ type optionMenu struct {
 	background *ui.Image
 	samples    *slider
 	fov        *slider
+	mouseS     *slider
 }
 
 func newOptionMenu() *optionMenu {
@@ -93,6 +94,20 @@ func newOptionMenu() *optionMenu {
 	Config.Render.VSync = !Config.Render.VSync
 	vsync.ClickFunc()
 
+	mouseS := newSlider(160, -50, 300, 40)
+	mouseS.back.Attach(ui.Center, ui.Middle)
+	mouseS.add(om.scene)
+	om.mouseS = mouseS
+	mtxt := ui.NewText("", 0, 0, 255, 255, 255).Attach(ui.Center, ui.Middle)
+	mtxt.Parent = mouseS.back
+	om.scene.AddDrawable(mtxt)
+	mouseS.UpdateFunc = func() {
+		Config.Game.MouseSensitivity = 500 + round(10000.0*mouseS.Value)
+		mtxt.Update(fmt.Sprintf("Mouse Speed: %d", Config.Game.MouseSensitivity))
+	}
+	mouseS.Value = (float64(Config.Game.MouseSensitivity) - 500) / 10000.0
+	mouseS.update()
+
 	om.scene.AddDrawable(
 		ui.NewText("* Requires a client restart to take effect", 0, 100, 255, 200, 200).Attach(ui.Bottom, ui.Middle),
 	)
@@ -109,11 +124,13 @@ func (om *optionMenu) init() {
 func (om *optionMenu) hover(x, y float64, w, h int) {
 	om.samples.hover(x, y, w, h)
 	om.fov.hover(x, y, w, h)
+	om.mouseS.hover(x, y, w, h)
 	ui.Hover(x, y, w, h)
 }
 func (om *optionMenu) click(down bool, x, y float64, w, h int) {
 	om.samples.click(down, x, y, w, h)
 	om.fov.click(down, x, y, w, h)
+	om.mouseS.click(down, x, y, w, h)
 	if down {
 		return
 	}

@@ -34,6 +34,9 @@ type ConfigData struct {
 		FOV     int
 		VSync   bool
 	}
+	Game struct {
+		MouseSensitivity int
+	}
 }
 
 type ConfigServer struct {
@@ -45,6 +48,7 @@ func init() {
 	// Defaults
 	Config.Render.FOV = 90
 	Config.Render.VSync = true
+	Config.Game.MouseSensitivity = 2000
 
 	f, err := os.Open("config.json")
 	if err != nil {
