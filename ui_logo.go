@@ -134,7 +134,7 @@ var phtevenLogoLines = []string{
 	"Don't go to #think, tis a silly place",
 	"Tested! (In production)",
 	"Not in scala!",
-	"Its phteven not phteven!",
+	"Its phteven not steven!",
 	"Now webscale!",
 	"Meow",
 	"I bet one of cindy's cats broke it!",
