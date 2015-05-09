@@ -302,9 +302,21 @@ func loadJSON(plugin, name string, target interface{}) error {
 		return err
 	}
 	defer r.Close()
-	d, err := ioutil.ReadAll(r)
+	err = realjson.NewDecoder(r).Decode(target)
 	if err != nil {
-		return err
+		// Take the slow path through our preprocessor.
+		// Hopefully this can be removed in later minecraft versions.d, err := ioutil.ReadAll(r)
+		r.Close()
+		r, err = resource.Open(plugin, name)
+		if err != nil {
+			return err
+		}
+
+		d, err := ioutil.ReadAll(r)
+		if err != nil {
+			return err
+		}
+		return json.Unmarshal(d, target)
 	}
-	return json.Unmarshal(d, target)
+	return err
 }
