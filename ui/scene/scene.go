@@ -22,6 +22,7 @@ type Type struct {
 	visible bool
 
 	drawables []ui.Drawable
+	hidding   bool
 }
 
 // New creates a new scene.
@@ -38,7 +39,7 @@ func (t *Type) Show() {
 	}
 	t.visible = true
 	for _, d := range t.drawables {
-		ui.AddDrawable(d)
+		ui.AddDrawableHook(d, t.removeHook)
 	}
 }
 
@@ -48,17 +49,32 @@ func (t *Type) Hide() {
 		return
 	}
 	t.visible = false
+	t.hidding = true
 	for _, d := range t.drawables {
 		ui.Remove(d)
 	}
+	t.hidding = false
 }
 
 // AddDrawable adds the drawable to the draw list.
 func (t *Type) AddDrawable(d ui.Drawable) {
 	t.drawables = append(t.drawables, d)
 	if t.visible {
-		ui.AddDrawable(d)
+		ui.AddDrawableHook(d, t.removeHook)
 	}
+}
+
+func (t *Type) removeHook(d ui.Drawable) {
+	if t.hidding {
+		return
+	}
+	for i, dd := range t.drawables {
+		if dd == d {
+			t.drawables = append(t.drawables[:i], t.drawables[i+1:]...)
+			return
+		}
+	}
+
 }
 
 // IsVisible returns whether the scene is currently visible.

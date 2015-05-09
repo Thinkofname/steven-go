@@ -22,8 +22,13 @@ const (
 
 var (
 	drawMode  = mScaled
-	drawables []Drawable
+	drawables []drawRef
 )
+
+type drawRef struct {
+	Drawable
+	removeHook func(d Drawable)
+}
 
 // Region is an area for a Drawable to draw to
 type Region struct {
@@ -50,7 +55,14 @@ type Interactable interface {
 
 // AddDrawable adds the drawable to the draw list.
 func AddDrawable(d Drawable) {
-	drawables = append(drawables, d)
+	drawables = append(drawables, drawRef{Drawable: d})
+}
+
+// AddDrawableHook adds the drawable to the draw list.
+// The passed function will be called when the drawable
+// is removed.
+func AddDrawableHook(d Drawable, hook func(d Drawable)) {
+	drawables = append(drawables, drawRef{Drawable: d, removeHook: hook})
 }
 
 var screen = Region{W: scaledWidth, H: scaledHeight}
@@ -91,7 +103,7 @@ func Hover(x, y float64, width, height int) {
 	y = (y / float64(height)) * scaledHeight
 	for i := range drawables {
 		d := drawables[len(drawables)-1-i]
-		inter, ok := d.(Interactable)
+		inter, ok := d.Drawable.(Interactable)
 		if !ok {
 			continue
 		}
@@ -115,7 +127,7 @@ func Click(x, y float64, width, height int) {
 	y = (y / float64(height)) * scaledHeight
 	for i := range drawables {
 		d := drawables[len(drawables)-1-i]
-		inter, ok := d.(Interactable)
+		inter, ok := d.Drawable.(Interactable)
 		if !ok {
 			continue
 		}
@@ -184,7 +196,10 @@ func getDrawRegion(d Drawable, sw, sh float64) Region {
 // Remove removes the drawable from the screen.
 func Remove(d Drawable) {
 	for i, dd := range drawables {
-		if dd == d {
+		if dd.Drawable == d {
+			if dd.removeHook != nil {
+				dd.removeHook(d)
+			}
 			drawables = append(drawables[:i], drawables[i+1:]...)
 			return
 		}
