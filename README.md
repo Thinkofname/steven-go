@@ -15,7 +15,7 @@ To build:
 
 ```
 export GOPATH=your/install/directory
-go get github.com/thinkofdeath/steven/cmd/steven
+go get github.com/thinkofdeath/phteven/cmd/phteven
 ```
 
 To update, run `go get` with the `-u` option.
@@ -47,10 +47,10 @@ Builds for Linux (64bit only) and Windows(32bit and 64bit) can be found
 
 You need to create a new profile (or edit an existing one) on the Minecraft 
 launcher and modify the profile to look like the above but replace the path
-to steven with the location you built it at or downloaded it too and change the 
+to phteven with the location you built it at or downloaded it too and change the 
 `server` parameter to the target server. Currently only works in online mode
 (with no plans for offline mode currently).
 
-It is possible to run steven without the launcher, but you must obtain the access token,
-UUID (whithout dashes) and the username, and pass them as arguments to steven, as well as
+It is possible to run phteven without the launcher, but you must obtain the access token,
+UUID (whithout dashes) and the username, and pass them as arguments to phteven, as well as
 the server.

@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	crand "crypto/rand"
 	"encoding/hex"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/thinkofdeath/steven/protocol/mojang"
-	"github.com/thinkofdeath/steven/resource"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
+	"github.com/thinkofdeath/phteven/protocol/mojang"
+	"github.com/thinkofdeath/phteven/resource"
+	"github.com/thinkofdeath/phteven/ui"
+	"github.com/thinkofdeath/phteven/ui/scene"
 )
 
 type loginScreen struct {

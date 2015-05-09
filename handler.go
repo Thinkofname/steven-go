@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/thinkofdeath/steven/protocol"
+	"github.com/thinkofdeath/phteven/protocol"
 )
 
 type handler map[reflect.Type]reflect.Value

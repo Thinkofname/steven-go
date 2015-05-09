@@ -24,7 +24,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/thinkofdeath/steven/resource"
+	"github.com/thinkofdeath/phteven/resource"
 )
 
 var (

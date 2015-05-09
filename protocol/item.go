@@ -18,7 +18,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/thinkofdeath/steven/encoding/nbt"
+	"github.com/thinkofdeath/phteven/encoding/nbt"
 )
 
 // ItemStack is a stack of items of a single type that can be serilized

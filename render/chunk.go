@@ -17,9 +17,9 @@ package render
 import (
 	"math"
 
-	"github.com/thinkofdeath/steven/native"
-	"github.com/thinkofdeath/steven/render/gl"
-	"github.com/thinkofdeath/steven/type/direction"
+	"github.com/thinkofdeath/phteven/native"
+	"github.com/thinkofdeath/phteven/render/gl"
+	"github.com/thinkofdeath/phteven/type/direction"
 )
 
 var (

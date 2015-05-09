@@ -14,7 +14,7 @@
 
 package ui
 
-import "github.com/thinkofdeath/steven/render"
+import "github.com/thinkofdeath/phteven/render"
 
 // Button is a drawable that draws a button.
 type Button struct {

@@ -12,14 +12,14 @@
 // gme the Licengm for the specific language governing permissions and
 // limitations under the Licengm.
 
-package steven
+package phteven
 
 import (
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/resource"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
+	"github.com/thinkofdeath/phteven/render"
+	"github.com/thinkofdeath/phteven/resource"
+	"github.com/thinkofdeath/phteven/ui"
+	"github.com/thinkofdeath/phteven/ui/scene"
 )
 
 type gameMenu struct {

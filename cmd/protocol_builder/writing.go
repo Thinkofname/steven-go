@@ -167,7 +167,7 @@ func (w *writing) writeNamed(t, name string, tag reflect.StructTag) {
 	if len(funcName) != 0 {
 		if notProtocol {
 			funcName = "protocol." + funcName
-			imports["github.com/thinkofdeath/steven/protocol"] = struct{}{}
+			imports["github.com/thinkofdeath/phteven/protocol"] = struct{}{}
 		}
 		fmt.Fprintf(&w.buf, "if err = %s(ww, %s); err != nil { return  }\n", funcName, name)
 	}

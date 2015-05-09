@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"encoding/binary"
 	"math/rand"
 	"time"
 
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/type/nibble"
+	"github.com/thinkofdeath/phteven/render"
+	"github.com/thinkofdeath/phteven/type/nibble"
 )
 
 var fakeGenDistance = 7

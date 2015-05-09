@@ -19,7 +19,7 @@ import (
 	"bytes"
 	"math"
 
-	"github.com/thinkofdeath/steven/native"
+	"github.com/thinkofdeath/phteven/native"
 )
 
 // Types allowed to be used in a buffer.

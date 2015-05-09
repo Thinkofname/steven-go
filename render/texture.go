@@ -24,9 +24,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/thinkofdeath/steven/render/atlas"
-	"github.com/thinkofdeath/steven/render/gl"
-	"github.com/thinkofdeath/steven/resource"
+	"github.com/thinkofdeath/phteven/render/atlas"
+	"github.com/thinkofdeath/phteven/render/gl"
+	"github.com/thinkofdeath/phteven/resource"
 )
 
 var (

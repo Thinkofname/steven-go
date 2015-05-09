@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/thinkofdeath/steven/protocol"
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/render/gl"
+	"github.com/thinkofdeath/phteven/protocol"
+	"github.com/thinkofdeath/phteven/render"
+	"github.com/thinkofdeath/phteven/render/gl"
 )
 
 var window *glfw.Window

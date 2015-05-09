@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package steven
+package phteven
 
 import (
 	"bytes"
@@ -25,12 +25,12 @@ import (
 	"strings"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/thinkofdeath/steven/chat"
-	"github.com/thinkofdeath/steven/protocol"
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/resource"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
+	"github.com/thinkofdeath/phteven/chat"
+	"github.com/thinkofdeath/phteven/protocol"
+	"github.com/thinkofdeath/phteven/render"
+	"github.com/thinkofdeath/phteven/resource"
+	"github.com/thinkofdeath/phteven/ui"
+	"github.com/thinkofdeath/phteven/ui/scene"
 )
 
 var (

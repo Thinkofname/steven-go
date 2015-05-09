@@ -17,7 +17,7 @@
 package protocol
 
 import (
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/phteven/chat"
 )
 
 // KeepAliveServerbound is sent by a client as a response to a

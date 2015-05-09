@@ -21,7 +21,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/thinkofdeath/steven/protocol/mojang"
+	"github.com/thinkofdeath/phteven/protocol/mojang"
 )
 
 // BUG(Think) LoginToServer doesn't support offline mode. Call it a feature?

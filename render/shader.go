@@ -17,7 +17,7 @@ package render
 import (
 	"reflect"
 
-	"github.com/thinkofdeath/steven/render/gl"
+	"github.com/thinkofdeath/phteven/render/gl"
 )
 
 // CreateProgram creates an OpenGL shader program from the
