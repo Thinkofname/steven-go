@@ -46,6 +46,7 @@ func init() {
 		go func() {
 			getAuthlib()
 			parseAuthlibKey()
+			hasAuthlib = true
 			authlibLock.Unlock()
 		}()
 	} else {
@@ -134,5 +135,4 @@ func getAuthlib() {
 			}
 		}()
 	}
-	hasAuthlib = true
 }
