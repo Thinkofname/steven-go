@@ -222,6 +222,7 @@ func chatColorRGB(c chat.Color) (r, g, b int) {
 }
 
 func (c *ChatUI) Add(msg chat.AnyComponent) {
+	chat.ConvertLegacy(msg)
 	copy(c.Lines[0:chatHistoryLines-1], c.Lines[1:])
 	c.Lines[chatHistoryLines-1] = msg
 	f := ui.NewFormattedWidth(msg, 5, chatHistoryLines*18+1, 500-10).Attach(ui.Top, ui.Left)
