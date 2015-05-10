@@ -14,7 +14,7 @@
 
 package steven
 
-import "github.com/thinkofdeath/steven/es"
+import "github.com/thinkofdeath/steven/entitysys"
 
 var entityTypes = map[int]func() Entity{
 	92: newCow,
@@ -22,11 +22,11 @@ var entityTypes = map[int]func() Entity{
 
 type clientEntities struct {
 	entities  map[int]Entity
-	container *es.Container
+	container *entitysys.Container
 }
 
 func (ce *clientEntities) init() {
-	ce.container = es.NewContainer()
+	ce.container = entitysys.NewContainer()
 	ce.entities = map[int]Entity{}
 	ce.register()
 }
