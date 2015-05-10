@@ -18,28 +18,36 @@ import (
 	"reflect"
 )
 
-type Desc interface {
+// Matcher is used to select when an entity is used for a
+// system.
+type Matcher interface {
 	Match(e interface{}) bool
 }
 
-type typeDesc struct {
+type typeMatcher struct {
 	Type reflect.Type
 }
 
-func (t typeDesc) Match(e interface{}) bool { return reflect.TypeOf(e).Implements(t.Type) }
+func (t typeMatcher) Match(e interface{}) bool { return reflect.TypeOf(e).Implements(t.Type) }
 
-func Type(t interface{}) Desc {
-	return typeDesc{
+// Type returns a Matcher that matches when the type of element
+// of the passed to this is implemented by the entity.
+//
+// This method should be used as followed for interfaces
+//     Type((*MyInterface)(nil))
+func Type(t interface{}) Matcher {
+	return typeMatcher{
 		Type: reflect.TypeOf(t).Elem(),
 	}
 }
 
-type notDesc struct {
-	child Desc
+type notMatcher struct {
+	child Matcher
 }
 
-func (n notDesc) Match(e interface{}) bool { return !n.child.Match(e) }
+func (n notMatcher) Match(e interface{}) bool { return !n.child.Match(e) }
 
-func Not(d Desc) Desc {
-	return notDesc{child: d}
+// Not inverts the passed Matcher.
+func Not(d Matcher) Matcher {
+	return notMatcher{child: d}
 }

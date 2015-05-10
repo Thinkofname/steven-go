@@ -12,20 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package entitysys provides a simple entity component system
+// for handling entities.
 package entitysys
 
 import (
 	"reflect"
 )
 
+// Container stores multiple systems and their entities.
 type Container struct {
 	systems []*system
 }
 
+// NewContainer creates a new Container.
 func NewContainer() *Container {
 	return &Container{}
 }
 
+// AddEntity adds the entity to all systems that are compatible
+// with the entity.
 func (c *Container) AddEntity(entity interface{}) {
 	re := reflect.ValueOf(entity)
 	for _, sys := range c.systems {
@@ -44,22 +50,14 @@ func (c *Container) AddEntity(entity interface{}) {
 	}
 }
 
-func (c *Container) AddSystem(f interface{}, desc ...Desc) {
-	s := &system{
-		f:    reflect.ValueOf(f),
-		desc: desc,
-	}
-	t := s.f.Type()
-	for i := 0; i < t.NumIn(); i++ {
-		s.params = append(s.params, t.In(i))
-		s.desc = append(s.desc, typeDesc{Type: t.In(i)})
-	}
-	c.systems = append(c.systems, s)
-}
-
+// RemoveEntity removes the entity from all systems it is
+// attached too.
 func (c *Container) RemoveEntity(e interface{}) {
 	re := reflect.ValueOf(e)
 	for _, sys := range c.systems {
+		if !sys.Matches(e) {
+			continue
+		}
 	seLoop:
 		for i, se := range sys.entities {
 			if se.v == re {
@@ -70,6 +68,24 @@ func (c *Container) RemoveEntity(e interface{}) {
 	}
 }
 
+// AddSystem adds the system to the container, the passed desc
+// values will be used to match when an entity is added. f will
+// called for all matching entities each 'tick'. All parameters
+// to f are automatically added to matchers.
+func (c *Container) AddSystem(f interface{}, matchers ...Matcher) {
+	s := &system{
+		f:        reflect.ValueOf(f),
+		matchers: matchers,
+	}
+	t := s.f.Type()
+	for i := 0; i < t.NumIn(); i++ {
+		s.params = append(s.params, t.In(i))
+		s.matchers = append(s.matchers, typeMatcher{Type: t.In(i)})
+	}
+	c.systems = append(c.systems, s)
+}
+
+// Tick ticks all systems and their entities.
 func (c *Container) Tick() {
 	for _, sys := range c.systems {
 		for _, e := range sys.entities {
@@ -79,16 +95,16 @@ func (c *Container) Tick() {
 }
 
 type system struct {
-	f      reflect.Value
-	params []reflect.Type
-	desc   []Desc
+	f        reflect.Value
+	params   []reflect.Type
+	matchers []Matcher
 
 	entities []*systemEntity
 }
 
 func (s *system) Matches(e interface{}) bool {
-	for _, desc := range s.desc {
-		if !desc.Match(e) {
+	for _, matcher := range s.matchers {
+		if !matcher.Match(e) {
 			return false
 		}
 	}
