@@ -128,7 +128,7 @@ func (b *baseBlock) Collidable() bool {
 func (b *baseBlock) CollisionBounds() []vmath.AABB {
 	if b.bounds == nil {
 		b.bounds = []vmath.AABB{
-			*vmath.NewAABB(0, 0, 0, 1.0, 1.0, 1.0),
+			vmath.NewAABB(0, 0, 0, 1.0, 1.0, 1.0),
 		}
 	}
 	return b.bounds

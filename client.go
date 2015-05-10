@@ -96,6 +96,9 @@ type ClientState struct {
 
 	chat       ChatUI
 	playerList playerListUI
+	entities   clientEntities
+
+	delta float64
 }
 
 func (c *ClientState) init() {
@@ -148,9 +151,11 @@ func (c *ClientState) init() {
 	c.chat.init()
 	c.initDebug()
 	c.playerList.init()
+	c.entities.init()
 }
 
 func (c *ClientState) renderTick(delta float64) {
+	c.delta = delta
 	c.hotbarUI.X = -184 + 24 + 40*float64(c.currentHotbarSlot)
 
 	forward, yaw := c.calculateMovement()
@@ -247,6 +252,7 @@ func (c *ClientState) renderTick(delta float64) {
 	c.renderDebug()
 
 	c.playerList.render(delta)
+	c.entities.tick()
 }
 
 func (c *ClientState) UpdateHealth(health float64) {

@@ -171,7 +171,7 @@ func (b *blockBed) load(tag reflect.StructTag) {
 func (b *blockBed) CollisionBounds() []vmath.AABB {
 	if b.bounds == nil {
 		b.bounds = []vmath.AABB{
-			*vmath.NewAABB(0, 0, 0, 1, 9.0/16.0, 1),
+			vmath.NewAABB(0, 0, 0, 1, 9.0/16.0, 1),
 		}
 	}
 	return b.bounds
@@ -409,7 +409,7 @@ func (b *blockPoweredRail) load(tag reflect.StructTag) {
 func (b *blockPoweredRail) CollisionBounds() []vmath.AABB {
 	if b.bounds == nil {
 		b.bounds = []vmath.AABB{
-			*vmath.NewAABB(0, 0, 0, 1.0, 1.0/16.0, 1.0),
+			vmath.NewAABB(0, 0, 0, 1.0, 1.0/16.0, 1.0),
 		}
 	}
 	return b.bounds
@@ -441,7 +441,7 @@ func (b *blockRail) load(tag reflect.StructTag) {
 func (b *blockRail) CollisionBounds() []vmath.AABB {
 	if b.bounds == nil {
 		b.bounds = []vmath.AABB{
-			*vmath.NewAABB(0, 0, 0, 1.0, 1.0/16.0, 1.0),
+			vmath.NewAABB(0, 0, 0, 1.0, 1.0/16.0, 1.0),
 		}
 	}
 	return b.bounds
@@ -751,7 +751,7 @@ func (b *blockConnectable) CollisionBounds() []vmath.AABB {
 		if !b.East && !all {
 			aa.Max[0] = 9.0 / 16.0
 		}
-		b.bounds = []vmath.AABB{*aa, *bb}
+		b.bounds = []vmath.AABB{aa, bb}
 	}
 	return b.bounds
 }
@@ -830,7 +830,7 @@ func (b *blockStainedGlassPane) CollisionBounds() []vmath.AABB {
 		if !b.East && !all {
 			aa.Max[0] = 9.0 / 16.0
 		}
-		b.bounds = []vmath.AABB{*aa, *bb}
+		b.bounds = []vmath.AABB{aa, bb}
 	}
 	return b.bounds
 }
@@ -923,34 +923,34 @@ func (b *blockStairs) CollisionBounds() []vmath.AABB {
 		switch b.Shape {
 		case ssStraight:
 			b.bounds = []vmath.AABB{
-				*vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
-				*vmath.NewAABB(0, 0.5, 0, 1, 1, 0.5),
+				vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
+				vmath.NewAABB(0, 0.5, 0, 1, 1, 0.5),
 			}
 		case ssInnerLeft:
 			b.bounds = []vmath.AABB{
-				*vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
-				*vmath.NewAABB(0, 0.5, 0, 1, 1, 0.5),
-				*vmath.NewAABB(0, 0.5, 0.5, 0.5, 1, 1.0),
+				vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
+				vmath.NewAABB(0, 0.5, 0, 1, 1, 0.5),
+				vmath.NewAABB(0, 0.5, 0.5, 0.5, 1, 1.0),
 			}
 		case ssInnerRight:
 			b.bounds = []vmath.AABB{
-				*vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
-				*vmath.NewAABB(0, 0.5, 0, 1, 1, 0.5),
-				*vmath.NewAABB(0.5, 0.5, 0.5, 1.0, 1, 1.0),
+				vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
+				vmath.NewAABB(0, 0.5, 0, 1, 1, 0.5),
+				vmath.NewAABB(0.5, 0.5, 0.5, 1.0, 1, 1.0),
 			}
 		case ssOuterLeft:
 			b.bounds = []vmath.AABB{
-				*vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
-				*vmath.NewAABB(0, 0.5, 0, 0.5, 1, 0.5),
+				vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
+				vmath.NewAABB(0, 0.5, 0, 0.5, 1, 0.5),
 			}
 		case ssOuterRight:
 			b.bounds = []vmath.AABB{
-				*vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
-				*vmath.NewAABB(0.5, 0.5, 0, 1.0, 1, 0.5),
+				vmath.NewAABB(0, 0, 0, 1, 0.5, 1),
+				vmath.NewAABB(0.5, 0.5, 0, 1.0, 1, 0.5),
 			}
 		default:
 			b.bounds = []vmath.AABB{
-				*vmath.NewAABB(0, 0, 0, 1, 1, 1),
+				vmath.NewAABB(0, 0, 0, 1, 1, 1),
 			}
 		}
 		for i := range b.bounds {
@@ -1124,7 +1124,7 @@ func (b *blockPiston) load(tag reflect.StructTag) {
 
 func (b *blockPiston) CollisionBounds() []vmath.AABB {
 	if b.bounds == nil {
-		bo := *vmath.NewAABB(0, 0, 0, 1.0, 1.0, 1.0)
+		bo := vmath.NewAABB(0, 0, 0, 1.0, 1.0, 1.0)
 		if b.Extended {
 			bo.Min[2] = 4.0 / 16.0
 		}
@@ -1207,8 +1207,8 @@ func (b *blockPistonHead) load(tag reflect.StructTag) {
 func (b *blockPistonHead) CollisionBounds() []vmath.AABB {
 	if b.bounds == nil {
 		b.bounds = []vmath.AABB{
-			*vmath.NewAABB(0, 0, 0, 1.0, 1.0, 4.0/16.0),
-			*vmath.NewAABB(6.0/16.0, 6.0/16.0, 4.0/16.0, 10.0/16.0, 10.0/16.0, 1.0),
+			vmath.NewAABB(0, 0, 0, 1.0, 1.0, 4.0/16.0),
+			vmath.NewAABB(6.0/16.0, 6.0/16.0, 4.0/16.0, 10.0/16.0, 10.0/16.0, 1.0),
 		}
 		if !b.Short {
 			b.bounds[1].Max[2] += 4.0 / 16.0
@@ -1367,7 +1367,7 @@ func (b *blockSlab) TypeRange() (int, int) {
 func (b *blockSlab) CollisionBounds() []vmath.AABB {
 	if b.bounds == nil {
 		b.bounds = []vmath.AABB{
-			*vmath.NewAABB(0, 0, 0, 1.0, 0.5, 1.0),
+			vmath.NewAABB(0, 0, 0, 1.0, 0.5, 1.0),
 		}
 		if b.Half == slabTop {
 			b.bounds[0].Shift(0, 0.5, 0.0)
@@ -1503,7 +1503,7 @@ func (b *blockCarpet) load(tag reflect.StructTag) {
 func (b *blockCarpet) CollisionBounds() []vmath.AABB {
 	if b.bounds == nil {
 		b.bounds = []vmath.AABB{
-			*vmath.NewAABB(0, 0, 0, 1.0, 1.0/16.0, 1.0),
+			vmath.NewAABB(0, 0, 0, 1.0, 1.0/16.0, 1.0),
 		}
 	}
 	return b.bounds

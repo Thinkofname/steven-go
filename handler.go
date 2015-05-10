@@ -165,6 +165,113 @@ func (handler) SetBlockBatch(b *protocol.MultiBlockChange) {
 	}
 }
 
+func (handler) SpawnPlayer(s *protocol.SpawnPlayer) {
+	e := newPlayer()
+	if p, ok := e.(PositionComponent); ok {
+		p.SetPosition(
+			float64(s.X)/32,
+			float64(s.Y)/32,
+			float64(s.Z)/32,
+		)
+	}
+	if p, ok := e.(TargetPositionComponent); ok {
+		p.SetTargetPosition(
+			float64(s.X)/32,
+			float64(s.Y)/32,
+			float64(s.Z)/32,
+		)
+	}
+	Client.entities.add(int(s.EntityID), e)
+}
+
+func (handler) SpawnMob(s *protocol.SpawnMob) {
+	et, ok := entityTypes[int(s.Type)]
+	if !ok {
+		return
+	}
+	e := et()
+	if p, ok := e.(PositionComponent); ok {
+		p.SetPosition(
+			float64(s.X)/32,
+			float64(s.Y)/32,
+			float64(s.Z)/32,
+		)
+	}
+	if p, ok := e.(TargetPositionComponent); ok {
+		p.SetTargetPosition(
+			float64(s.X)/32,
+			float64(s.Y)/32,
+			float64(s.Z)/32,
+		)
+	}
+	Client.entities.add(int(s.EntityID), e)
+}
+
+func (handler) EntityTeleport(t *protocol.EntityTeleport) {
+	e, ok := Client.entities.entities[int(t.EntityID)]
+	if !ok {
+		return
+	}
+	if p, ok := e.(PositionComponent); ok {
+		p.SetPosition(
+			float64(t.X)/32,
+			float64(t.Y)/32,
+			float64(t.Z)/32,
+		)
+	}
+	if p, ok := e.(TargetPositionComponent); ok {
+		p.SetTargetPosition(
+			float64(t.X)/32,
+			float64(t.Y)/32,
+			float64(t.Z)/32,
+		)
+	}
+}
+
+func (handler) EntityMove(m *protocol.EntityMove) {
+	e, ok := Client.entities.entities[int(m.EntityID)]
+	if !ok {
+		return
+	}
+	dx, dy, dz := float64(m.DeltaX)/32, float64(m.DeltaY)/32, float64(m.DeltaZ)/32
+	relMove(e, dx, dy, dz)
+}
+
+func (handler) EntityMoveLook(m *protocol.EntityLookAndMove) {
+	e, ok := Client.entities.entities[int(m.EntityID)]
+	if !ok {
+		return
+	}
+	dx, dy, dz := float64(m.DeltaX)/32, float64(m.DeltaY)/32, float64(m.DeltaZ)/32
+	relMove(e, dx, dy, dz)
+}
+
+func relMove(e Entity, dx, dy, dz float64) {
+	if p, ok := e.(TargetPositionComponent); ok {
+		x, y, z := p.TargetPosition()
+		p.SetTargetPosition(
+			x+dx,
+			y+dy,
+			z+dz,
+		)
+		return
+	}
+	if p, ok := e.(PositionComponent); ok {
+		x, y, z := p.Position()
+		p.SetPosition(
+			x+dx,
+			y+dy,
+			z+dz,
+		)
+	}
+}
+
+func (handler) DestoryEntities(e *protocol.EntityDestroy) {
+	for _, id := range e.EntityIDs {
+		Client.entities.remove(int(id))
+	}
+}
+
 func (handler) PlayerListInfo(p *protocol.PlayerInfo) {
 	playerList := Client.playerList.info
 	for _, pl := range p.Players {

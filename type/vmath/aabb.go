@@ -25,8 +25,8 @@ type AABB struct {
 	Max mgl32.Vec3
 }
 
-func NewAABB(x1, y1, z1, x2, y2, z2 float32) *AABB {
-	return &AABB{
+func NewAABB(x1, y1, z1, x2, y2, z2 float32) AABB {
+	return AABB{
 		Min: mgl32.Vec3{x1, y1, z1},
 		Max: mgl32.Vec3{x2, y2, z2},
 	}
@@ -163,5 +163,5 @@ func (a *AABB) MoveOutOf(o *AABB, dir mgl32.Vec3) {
 }
 
 func (a AABB) String() string {
-	return fmt.Sprintf("[%s->%s]", a.Min, a.Max)
+	return fmt.Sprintf("[%v->%v]", a.Min, a.Max)
 }
