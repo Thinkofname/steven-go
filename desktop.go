@@ -89,9 +89,10 @@ func onScroll(w *glfw.Window, xoff float64, yoff float64) {
 var lockMouse bool
 
 func onMouseMove(w *glfw.Window, xpos float64, ypos float64) {
-	width, height := w.GetFramebufferSize()
+	width, height := w.GetSize()
 	if currentScreen != nil {
-		currentScreen.hover(xpos, ypos, width, height)
+		fw, fh := w.GetFramebufferSize()
+		currentScreen.hover(xpos*(float64(fw)/float64(width)), ypos*(float64(fh)/float64(height)), fw, fh)
 		return
 	}
 	if !lockMouse {
@@ -109,9 +110,10 @@ func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, m
 		if button != glfw.MouseButtonLeft || action == glfw.Repeat {
 			return
 		}
-		width, height := w.GetFramebufferSize()
+		width, height := w.GetSize()
 		xpos, ypos := w.GetCursorPos()
-		currentScreen.click(action == glfw.Press, xpos, ypos, width, height)
+		fw, fh := w.GetFramebufferSize()
+		currentScreen.click(action == glfw.Press, xpos*(float64(fw)/float64(width)), ypos*(float64(fh)/float64(height)), fw, fh)
 		return
 	}
 	if button == glfw.MouseButtonLeft && action == glfw.Press && !Client.chat.enteringText {
