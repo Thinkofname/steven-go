@@ -17,11 +17,11 @@ package steven
 import "github.com/thinkofdeath/steven/render"
 
 func (ce *clientEntities) register() {
-	ce.container.AddSystem(es_moveToTarget)
-	ce.container.AddSystem(es_drawOutline)
+	ce.container.AddSystem(esMoveToTarget)
+	ce.container.AddSystem(esDrawOutline)
 }
 
-func es_drawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
+func esDrawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
 	bounds := s.Bounds()
 	x, y, z := p.Position()
 	bounds.Shift(float32(x), float32(y), float32(z))
@@ -38,7 +38,7 @@ func es_drawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
 	)
 }
 
-func es_moveToTarget(p PositionComponent, t TargetPositionComponent) {
+func esMoveToTarget(p PositionComponent, t TargetPositionComponent) {
 	px, py, pz := p.Position()
 	tx, ty, tz := t.TargetPosition()
 
