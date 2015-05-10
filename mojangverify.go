@@ -112,7 +112,6 @@ func getAuthlib() {
 	f.Seek(0, 0) // Go back to the start
 	fr, err := zip.NewReader(f, size)
 
-	// Copy the assets (not the classes) in the new zip
 	for _, f := range fr.File {
 		if f.Name != authlibKeyPath {
 			continue
