@@ -62,10 +62,10 @@ type ClientState struct {
 	Health float64
 	Hunger float64
 
-	Jumping  bool
-	VSpeed   float64
-	KeyState [5]bool
-	OnGround bool
+	Jumping                  bool
+	VSpeed                   float64
+	KeyState                 [5]bool
+	OnGround, didTouchGround bool
 
 	GameMode gameMode
 	HardCore bool
@@ -433,7 +433,11 @@ func (c *ClientState) checkGround() {
 		Min: mgl32.Vec3{-0.3, -0.05, -0.3},
 		Max: mgl32.Vec3{0.3, 0.0, 0.3},
 	}
+	prev := c.OnGround
 	_, c.OnGround = c.checkCollisions(ground)
+	if !prev && c.OnGround {
+		c.didTouchGround = true
+	}
 }
 
 func (c *ClientState) calculateMovement() (float64, float64) {
@@ -536,13 +540,23 @@ func (c *ClientState) tick() {
 	// (correctly) detect this as cheating. Its Minecraft
 	// what did you expect?
 	// TODO(Think) Use the smaller packets when possible
+
+	// Force the server to know when touched the ground
+	// otherwise if it happens between ticks the server
+	// will think we are flying.
+	onGround := c.OnGround
+	if c.didTouchGround {
+		c.didTouchGround = false
+		onGround = true
+	}
+
 	writeChan <- &protocol.PlayerPositionLook{
 		X:        c.X,
 		Y:        c.Y,
 		Z:        c.Z,
 		Yaw:      float32(-c.Yaw * (180 / math.Pi)),
 		Pitch:    float32((-c.Pitch - math.Pi) * (180 / math.Pi)),
-		OnGround: c.OnGround,
+		OnGround: onGround,
 	}
 }
 
