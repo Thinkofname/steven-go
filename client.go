@@ -59,6 +59,9 @@ type ClientState struct {
 	X, Y, Z    float64
 	Yaw, Pitch float64
 
+	Health float64
+	Hunger float64
+
 	Jumping  bool
 	VSpeed   float64
 	KeyState [5]bool
@@ -104,33 +107,36 @@ func (c *ClientState) init() {
 			Attach(ui.Middle, ui.Center),
 	)
 	// Hotbar
-	c.scene.AddDrawable(
-		ui.NewImage(widgets, 0, 0, 182*2, 22*2, 0, 0, 182.0/256.0, 22.0/256.0, 255, 255, 255).
-			Attach(ui.Bottom, ui.Center),
-	)
+	hotbar := ui.NewImage(widgets, 0, 0, 182*2, 22*2, 0, 0, 182.0/256.0, 22.0/256.0, 255, 255, 255).
+		Attach(ui.Bottom, ui.Center)
+	c.scene.AddDrawable(hotbar)
 	c.hotbarUI = ui.NewImage(widgets, -22*2+4, -2, 24*2, 24*2, 0, 22.0/256.0, 24.0/256.0, 24.0/256.0, 255, 255, 255).
 		Attach(ui.Bottom, ui.Center)
 	c.scene.AddDrawable(c.hotbarUI)
 
 	// Hearts / Food
 	for i := 0; i < 10; i++ {
-		l := ui.NewImage(icons, -182+9+16*float64(i), 22*2+16, 18, 18, 16.0/256.0, 0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
-			Attach(ui.Bottom, ui.Center)
+		l := ui.NewImage(icons, 16*float64(i), -16-8-10, 18, 18, 16.0/256.0, 0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
+			Attach(ui.Top, ui.Left)
+		l.Parent = hotbar
 		c.scene.AddDrawable(l)
 		c.lifeUI = append(c.lifeUI, l)
-		l = ui.NewImage(icons, -182+9+16*float64(i), 22*2+16, 18, 18, (16+9*4)/256.0, 0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
-			Attach(ui.Bottom, ui.Center)
+		l = ui.NewImage(icons, 16*float64(i), -16-8-10, 18, 18, (16+9*4)/256.0, 0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
+			Attach(ui.Top, ui.Left)
+		l.Parent = hotbar
 		c.scene.AddDrawable(l)
 		c.lifeFillUI = append(c.lifeFillUI, l)
 
-		f := ui.NewImage(icons, 182+7-16*float64(10-i), 22*2+16, 18, 18, 16.0/256.0, 27.0/256.0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
-			Attach(ui.Bottom, ui.Center)
+		f := ui.NewImage(icons, 16*float64(i), -16-8-10, 18, 18, 16.0/256.0, 27.0/256.0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
+			Attach(ui.Top, ui.Right)
+		f.Parent = hotbar
 		c.scene.AddDrawable(f)
-		c.foodUI = append(c.foodUI, l)
-		f = ui.NewImage(icons, 182+7-16*float64(10-i), 22*2+16, 18, 18, (16+9*4)/256.0, 27.0/256.0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
-			Attach(ui.Bottom, ui.Center)
+		c.foodUI = append(c.foodUI, f)
+		f = ui.NewImage(icons, 16*float64(i), -16-8-10, 18, 18, (16+9*4)/256.0, 27.0/256.0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
+			Attach(ui.Top, ui.Right)
+		f.Parent = hotbar
 		c.scene.AddDrawable(f)
-		c.foodFillUI = append(c.foodFillUI, l)
+		c.foodFillUI = append(c.foodFillUI, f)
 	}
 
 	// Exp bar
@@ -241,6 +247,48 @@ func (c *ClientState) renderTick(delta float64) {
 	c.renderDebug()
 
 	c.playerList.render(delta)
+}
+
+func (c *ClientState) UpdateHealth(health float64) {
+	const maxHealth = 20.0
+	c.Health = health
+	hp := (health / maxHealth) * float64(len(c.lifeFillUI))
+	for i, img := range c.lifeFillUI {
+		i := float64(i)
+		if i+0.5 < hp {
+			img.Visible = true
+			img.TW = 9.0 / 256.0
+			img.W = 18
+		} else if i < hp {
+			img.Visible = true
+			img.TW = 4.5 / 256.0
+			img.W = 9
+		} else {
+			img.Visible = false
+		}
+	}
+}
+
+func (c *ClientState) UpdateHunger(hunger float64) {
+	const maxHunger = 20.0
+	c.Hunger = hunger
+	hp := (hunger / maxHunger) * float64(len(c.foodFillUI))
+	for i, img := range c.foodFillUI {
+		i := float64(i)
+		if i+0.5 < hp {
+			img.Visible = true
+			img.TX = (16 + 9*4) / 256.0
+			img.TW = 9.0 / 256.0
+			img.W = 18
+		} else if i < hp {
+			img.Visible = true
+			img.TX = (16+9*4)/256.0 + (4.5 / 256.0)
+			img.TW = 4.5 / 256.0
+			img.W = 9
+		} else {
+			img.Visible = false
+		}
+	}
 }
 
 func (c *ClientState) targetBlock() (x, y, z int, block Block) {

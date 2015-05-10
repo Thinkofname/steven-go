@@ -88,6 +88,11 @@ func (handler) Disconnect(d *protocol.Disconnect) {
 	closeWithError(errManualDisconnect)
 }
 
+func (handler) UpdateHealth(u *protocol.UpdateHealth) {
+	Client.UpdateHealth(float64(u.Health))
+	Client.UpdateHunger(float64(u.Food))
+}
+
 func (handler) ChangeGameState(c *protocol.ChangeGameState) {
 	switch c.Reason {
 	case 3: // Change game mode
