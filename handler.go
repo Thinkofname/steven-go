@@ -16,11 +16,16 @@ package steven
 
 import (
 	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
+	"strings"
 
 	"github.com/thinkofdeath/steven/protocol"
+	"github.com/thinkofdeath/steven/render"
 )
 
 type handler map[reflect.Type]reflect.Value
@@ -154,6 +159,79 @@ func (handler) SetBlockBatch(b *protocol.MultiBlockChange) {
 		chunkMap.UpdateBlock((chunk.X<<4)+x, y, (chunk.Z<<4)+z)
 	}
 }
+
+func (handler) PlayerListInfo(p *protocol.PlayerInfo) {
+	playerList := Client.playerList.info
+	for _, pl := range p.Players {
+		if _, ok := playerList[pl.UUID]; (!ok && p.Action != 0) || (ok && p.Action == 0) {
+			continue
+		}
+		switch p.Action {
+		case 0: // Add
+			i := &playerInfo{
+				name:        pl.Name,
+				uuid:        pl.UUID,
+				displayName: pl.DisplayName,
+				gameMode:    gameMode(pl.GameMode),
+				ping:        int(pl.Ping),
+			}
+			for _, prop := range pl.Properties {
+				if prop.Name == "textures" {
+					if !prop.IsSigned {
+						closeWithError(errors.New("Missing signature from textures"))
+						return
+					}
+					data, err := base64.StdEncoding.DecodeString(prop.Value)
+					if err != nil {
+						closeWithError(err)
+						continue
+					}
+
+					sig, err := base64.StdEncoding.DecodeString(prop.Signature)
+					if err != nil {
+						closeWithError(err)
+						continue
+					}
+
+					if err := verifySkinSignature([]byte(prop.Value), sig); err != nil {
+						closeWithError(err)
+						return
+					}
+
+					var blob skinBlob
+					err = json.Unmarshal(data, &blob)
+					if err != nil {
+						closeWithError(err)
+						continue
+					}
+					url := blob.Textures.Skin.Url
+					if strings.HasPrefix(url, "http://textures.minecraft.net/texture/") {
+						i.skinHash = url[len("http://textures.minecraft.net/texture/"):]
+						render.RefSkin(i.skinHash)
+						i.skin = render.Skin(i.skinHash)
+					}
+				}
+			}
+			if i.skin == nil {
+				i.skin = render.GetTexture("entity/steve")
+			}
+			playerList[pl.UUID] = i
+		case 1: // Update gamemode
+			playerList[pl.UUID].gameMode = gameMode(pl.GameMode)
+		case 2: // Update ping
+			playerList[pl.UUID].ping = int(pl.Ping)
+		case 3: // Update display name
+			playerList[pl.UUID].displayName = pl.DisplayName
+		case 4: // Remove
+			i := playerList[pl.UUID]
+			if i.skinHash != "" {
+				render.FreeSkin(i.skinHash)
+			}
+			delete(playerList, pl.UUID)
+		}
+	}
+}
+
 func (h handler) PluginMessage(p *protocol.PluginMessageClientbound) {
 	h.handlePluginMessage(p.Channel, bytes.NewReader(p.Data), false)
 }

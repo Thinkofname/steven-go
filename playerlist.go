@@ -15,10 +15,7 @@
 package steven
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"sort"
-	"strings"
 
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol"
@@ -218,60 +215,6 @@ func (s sortedPlayerList) Less(a, b int) bool {
 	return false
 }
 func (s sortedPlayerList) Swap(a, b int) { s[a], s[b] = s[b], s[a] }
-
-func (handler) PlayerListInfo(p *protocol.PlayerInfo) {
-	playerList := Client.playerList.info
-	for _, pl := range p.Players {
-		if _, ok := playerList[pl.UUID]; (!ok && p.Action != 0) || (ok && p.Action == 0) {
-			continue
-		}
-		switch p.Action {
-		case 0: // Add
-			i := &playerInfo{
-				name:        pl.Name,
-				uuid:        pl.UUID,
-				displayName: pl.DisplayName,
-				gameMode:    gameMode(pl.GameMode),
-				ping:        int(pl.Ping),
-			}
-			for _, prop := range pl.Properties {
-				if prop.Name == "textures" {
-					data, err := base64.URLEncoding.DecodeString(prop.Value)
-					if err != nil {
-						continue
-					}
-					var blob skinBlob
-					err = json.Unmarshal(data, &blob)
-					if err != nil {
-						continue
-					}
-					url := blob.Textures.Skin.Url
-					if strings.HasPrefix(url, "http://textures.minecraft.net/texture/") {
-						i.skinHash = url[len("http://textures.minecraft.net/texture/"):]
-						render.RefSkin(i.skinHash)
-						i.skin = render.Skin(i.skinHash)
-					}
-				}
-			}
-			if i.skin == nil {
-				i.skin = render.GetTexture("entity/steve")
-			}
-			playerList[pl.UUID] = i
-		case 1: // Update gamemode
-			playerList[pl.UUID].gameMode = gameMode(pl.GameMode)
-		case 2: // Update ping
-			playerList[pl.UUID].ping = int(pl.Ping)
-		case 3: // Update display name
-			playerList[pl.UUID].displayName = pl.DisplayName
-		case 4: // Remove
-			i := playerList[pl.UUID]
-			if i.skinHash != "" {
-				render.FreeSkin(i.skinHash)
-			}
-			delete(playerList, pl.UUID)
-		}
-	}
-}
 
 type skinBlob struct {
 	Timestamp     int64
