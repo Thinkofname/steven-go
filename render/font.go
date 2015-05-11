@@ -135,6 +135,29 @@ func drawUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UITe
 	return t
 }
 
+// CharacterTexture returns the TextureInfo for the passed rune
+// or nil if one doesn't exist.
+func CharacterTexture(r rune) *TextureInfo {
+	page := int(r >> 8)
+	// Lazy loading to save memory
+	if !isFontLoaded[page] {
+		loadFontPage(page)
+	}
+	p := fontPages[page]
+	// We don't have font pages for every character
+	if p == nil {
+		return nil
+	}
+	c := int(r & 0xFF)
+	cx, cy := c&0xF, c>>4
+	info := fontCharacterInfo[r]
+	if page == 0 {
+		sw, sh := int(aPageWidth/16), int(aPageHeight/16)
+		return p.Sub(cx*sw+info.Start, cy*sh, info.End-info.Start, sh)
+	}
+	return p.Sub(cx*16+info.Start, cy*16, info.End-info.Start, 16)
+}
+
 // Returns the size of the passed character in pixels.
 func SizeOfCharacter(r rune) float64 {
 	if r == ' ' {
