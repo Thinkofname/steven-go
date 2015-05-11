@@ -132,6 +132,7 @@ func DrawUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th
 	e.G = 255
 	e.B = 255
 	e.A = 255
+	e.Rotation = 0
 	uiState.elementCount++
 	return e
 }
