@@ -107,8 +107,8 @@ func (c *Container) RemoveEntity(e interface{}) {
 
 // AddSystem adds the system to the container, the passed desc
 // values will be used to match when an entity is added. f will
-// called for all matching entities each 'tick'. All parameters
-// to f are automatically added to matchers.
+// called for all matching entities depending on the stage. All
+// parameters to f are automatically added to matchers.
 func (c *Container) AddSystem(stage Stage, f interface{}, matchers ...Matcher) {
 	s := &system{
 		f:        reflect.ValueOf(f),
