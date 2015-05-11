@@ -17,6 +17,17 @@ package steven
 import "github.com/thinkofdeath/steven/entitysys"
 
 var entityTypes = map[int]func() Entity{
+	50: newCreeper,
+	51: newSkeleton,
+	52: newSpider,
+	// 53: Giant Zombie, TODO: Do we need this?
+	54: newZombie,
+	55: newSlime,
+	56: newGhast,
+	57: newZombiePigman,
+	58: newEnderman,
+	59: newCaveSpider,
+	60: newSilverfish,
 	92: newCow,
 }
 
