@@ -181,6 +181,7 @@ func (handler) SpawnPlayer(s *protocol.SpawnPlayer) {
 			float64(s.Z)/32,
 		)
 	}
+	e.(PlayerComponent).SetUUID(s.UUID)
 	Client.entities.add(int(s.EntityID), e)
 }
 

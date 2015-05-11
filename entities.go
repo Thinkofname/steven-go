@@ -22,11 +22,10 @@ func newPlayer() Entity {
 		targetPositionComponent
 		sizeComponent
 
-		debugComponent
+		playerComponent
+		playerModelComponent
 	}
-	p := &player{
-		debugComponent: debugComponent{255, 0, 255},
-	}
+	p := &player{}
 	p.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 1.8, 0.6)
 	return p
 }

@@ -14,7 +14,10 @@
 
 package steven
 
-import "github.com/thinkofdeath/steven/type/vmath"
+import (
+	"github.com/thinkofdeath/steven/protocol"
+	"github.com/thinkofdeath/steven/type/vmath"
+)
 
 // Networkable
 
@@ -76,6 +79,24 @@ func (s sizeComponent) Bounds() vmath.AABB { return s.bounds }
 
 type SizeComponent interface {
 	Bounds() vmath.AABB
+}
+
+// Player
+
+type playerComponent struct {
+	uuid protocol.UUID
+}
+
+func (p *playerComponent) SetUUID(u protocol.UUID) {
+	p.uuid = u
+}
+func (p *playerComponent) UUID() protocol.UUID {
+	return p.uuid
+}
+
+type PlayerComponent interface {
+	SetUUID(protocol.UUID)
+	UUID() protocol.UUID
 }
 
 // Debug

@@ -14,9 +14,7 @@
 
 package builder
 
-import (
-	"reflect"
-)
+import "reflect"
 
 // Struct returns a function that will serialize
 // structs of the type passed to Struct originally.
@@ -24,6 +22,11 @@ import (
 // passed to New
 func Struct(i interface{}) (func(*Buffer, interface{}), []Type) {
 	t := reflect.TypeOf(i)
+	isPtr := false
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+		isPtr = true
+	}
 	l := t.NumField()
 
 	var funcs []func(buf *Buffer, v reflect.Value)
@@ -71,6 +74,9 @@ func Struct(i interface{}) (func(*Buffer, interface{}), []Type) {
 
 	return func(buf *Buffer, i interface{}) {
 		v := reflect.ValueOf(i)
+		if isPtr {
+			v = v.Elem()
+		}
 
 		for _, f := range funcs {
 			f(buf, v)

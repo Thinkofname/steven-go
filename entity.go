@@ -61,6 +61,7 @@ func (ce *clientEntities) init() {
 	ce.container = entitysys.NewContainer()
 	ce.entities = map[int]Entity{}
 	ce.register()
+	ce.registerModels()
 	ce.registerBlockEntities()
 }
 
