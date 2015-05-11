@@ -70,34 +70,16 @@ func drawUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UITe
 			offset += 6
 			continue
 		}
-		page := int(r >> 8)
-		// Lazy loading to save memory
-		if !isFontLoaded[page] {
-			loadFontPage(page)
-		}
-		p := fontPages[page]
-		// We don't have font pages for every character
-		if p == nil {
+		texture := CharacterTexture(r)
+		if texture == nil {
 			continue
 		}
-		c := int(r & 0xFF)
 		var w float64
-		var tx, ty, tw, th float64
-		cx, cy := c&0xF, c>>4
 		info := fontCharacterInfo[r]
-		if page == 0 {
-			sw, sh := aPageWidth/16, aPageHeight/16
-			// The first page is 128x128 instead of 256x256
-			tx = float64(cx*int(sw)+info.Start) / aPageWidth
-			tw = float64(info.End-info.Start) / aPageWidth
-			ty = float64(cy*int(sh)) / aPageHeight
-			th = sh / aPageHeight
+		if r>>8 == 0 {
+			sw := float64(aPageWidth) / 16
 			w = (float64(info.End-info.Start) / sw) * 16
 		} else {
-			tx = float64(cx*16+info.Start) / 256.0
-			tw = float64(info.End-info.Start) / 256.0
-			ty = float64(cy*16) / 256.0
-			th = 16.0 / 256.0
 			w = float64(info.End - info.Start)
 		}
 
@@ -116,14 +98,14 @@ func drawUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UITe
 			dy = (16 * 0.5) + (tmpy*c + tmpx*s)
 		}
 
-		shadow := DrawUIElement(p, x+dsx*sx, y+dsy*sy, w*sx, 16*sy, tx, ty, tw, th)
+		shadow := DrawUIElement(texture, x+dsx*sx, y+dsy*sy, w*sx, 16*sy, 0, 0, 1, 1)
 		// Tint the shadow to a darker shade of the original color
 		shadow.R = byte(float64(rr) * 0.25)
 		shadow.G = byte(float64(gg) * 0.25)
 		shadow.B = byte(float64(bb) * 0.25)
 		shadow.Rotation = rotation
 		t.elements = append(t.elements, shadow)
-		text := DrawUIElement(p, x+dx*sx, y+dy*sy, w*sx, 16*sy, tx, ty, tw, th)
+		text := DrawUIElement(texture, x+dx*sx, y+dy*sy, w*sx, 16*sy, 0, 0, 1, 1)
 		text.R = byte(rr)
 		text.G = byte(gg)
 		text.B = byte(bb)
