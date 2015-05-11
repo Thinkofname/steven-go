@@ -20,9 +20,26 @@ import (
 	"reflect"
 )
 
+// Stage is used to specify when a system is called.
+type Stage int
+
+const (
+	// Add marks the system for being called when a entity is
+	// added to a container.
+	Add Stage = iota
+	// Tick marks the system for being called when a entity is
+	// ticked.
+	Tick
+	// Remove marks the system for being called when a entity is
+	// removed from a container.
+	Remove
+)
+
 // Container stores multiple systems and their entities.
 type Container struct {
-	systems []*system
+	systems     []*system
+	preSystems  []*system
+	postSystems []*system
 }
 
 // NewContainer creates a new Container.
@@ -48,6 +65,16 @@ func (c *Container) AddEntity(entity interface{}) {
 
 		sys.entities = append(sys.entities, se)
 	}
+	for _, sys := range c.preSystems {
+		if !sys.Matches(entity) {
+			continue
+		}
+		params := make([]reflect.Value, len(sys.params))
+		for i := range sys.params {
+			params[i] = re
+		}
+		sys.f.Call(params)
+	}
 }
 
 // RemoveEntity removes the entity from all systems it is
@@ -66,13 +93,23 @@ func (c *Container) RemoveEntity(e interface{}) {
 			}
 		}
 	}
+	for _, sys := range c.postSystems {
+		if !sys.Matches(e) {
+			continue
+		}
+		params := make([]reflect.Value, len(sys.params))
+		for i := range sys.params {
+			params[i] = re
+		}
+		sys.f.Call(params)
+	}
 }
 
 // AddSystem adds the system to the container, the passed desc
 // values will be used to match when an entity is added. f will
 // called for all matching entities each 'tick'. All parameters
 // to f are automatically added to matchers.
-func (c *Container) AddSystem(f interface{}, matchers ...Matcher) {
+func (c *Container) AddSystem(stage Stage, f interface{}, matchers ...Matcher) {
 	s := &system{
 		f:        reflect.ValueOf(f),
 		matchers: matchers,
@@ -82,7 +119,14 @@ func (c *Container) AddSystem(f interface{}, matchers ...Matcher) {
 		s.params = append(s.params, t.In(i))
 		s.matchers = append(s.matchers, typeMatcher{Type: t.In(i)})
 	}
-	c.systems = append(c.systems, s)
+	switch stage {
+	case Add:
+		c.preSystems = append(c.preSystems, s)
+	case Tick:
+		c.systems = append(c.systems, s)
+	case Remove:
+		c.postSystems = append(c.postSystems, s)
+	}
 }
 
 // Tick ticks all systems and their entities.

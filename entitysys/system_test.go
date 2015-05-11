@@ -45,7 +45,7 @@ func TestBasic(t *testing.T) {
 	tSys := func(n Nameable) {
 		n.SetName("test_" + n.Name())
 	}
-	c.AddSystem(tSys)
+	c.AddSystem(Tick, tSys)
 
 	type testEntity struct {
 		nameable
@@ -75,7 +75,7 @@ func TestDifferent(t *testing.T) {
 	tSys := func(n Nameable) {
 		n.SetName("test_" + n.Name())
 	}
-	c.AddSystem(tSys)
+	c.AddSystem(Tick, tSys)
 
 	type testEntity struct {
 		nameable
@@ -117,7 +117,7 @@ func TestNot(t *testing.T) {
 	tSys := func(n Nameable) {
 		n.SetName("test_" + n.Name())
 	}
-	c.AddSystem(tSys, Not(Type((*Countable)(nil))))
+	c.AddSystem(Tick, tSys, Not(Type((*Countable)(nil))))
 
 	type testEntity struct {
 		nameable
@@ -159,11 +159,11 @@ func TestMultiple(t *testing.T) {
 	tSys := func(n Nameable) {
 		n.SetName("test_" + n.Name())
 	}
-	c.AddSystem(tSys)
+	c.AddSystem(Tick, tSys)
 	tSys2 := func(c Countable) {
 		c.IncCounter()
 	}
-	c.AddSystem(tSys2)
+	c.AddSystem(Tick, tSys2)
 
 	type testEntity struct {
 		nameable
@@ -210,7 +210,7 @@ func TestDuel(t *testing.T) {
 		n.SetName("test_" + n.Name())
 		c.IncCounter()
 	}
-	c.AddSystem(tSys)
+	c.AddSystem(Tick, tSys)
 
 	type testEntity struct {
 		nameable
@@ -247,6 +247,76 @@ func TestDuel(t *testing.T) {
 	}
 	if t3.name != "steven" {
 		t.Log(t3.name)
+		t.FailNow()
+	}
+}
+
+func TestAdd(t *testing.T) {
+	c := NewContainer()
+	tSys := func(n Nameable) {
+		n.SetName("add_" + n.Name())
+	}
+	c.AddSystem(Add, tSys)
+
+	type testEntity struct {
+		nameable
+	}
+	t1 := &testEntity{}
+	t1.name = "bob"
+	t2 := &testEntity{}
+	t2.name = "steven"
+
+	c.AddEntity(t1)
+	c.AddEntity(t2)
+
+	if t1.name != "add_bob" {
+		t.Log(t1.name)
+		t.FailNow()
+	}
+	if t2.name != "add_steven" {
+		t.Log(t2.name)
+		t.FailNow()
+	}
+}
+
+func TestRemove(t *testing.T) {
+	c := NewContainer()
+	tSys := func(n Nameable) {
+		n.SetName("remove_" + n.Name())
+	}
+	c.AddSystem(Remove, tSys)
+
+	type testEntity struct {
+		nameable
+	}
+	t1 := &testEntity{}
+	t1.name = "bob"
+	t2 := &testEntity{}
+	t2.name = "steven"
+
+	c.AddEntity(t1)
+	c.AddEntity(t2)
+
+	if t1.name != "bob" {
+		t.Log(t1.name)
+		t.FailNow()
+	}
+	if t2.name != "steven" {
+		t.Log(t2.name)
+		t.FailNow()
+	}
+
+	c.RemoveEntity(t1)
+
+	if t1.name != "remove_bob" {
+		t.Log(t1.name)
+		t.FailNow()
+	}
+
+	c.RemoveEntity(t2)
+
+	if t2.name != "remove_steven" {
+		t.Log(t2.name)
 		t.FailNow()
 	}
 }
