@@ -14,11 +14,14 @@
 
 package steven
 
-import "github.com/thinkofdeath/steven/render"
+import (
+	"github.com/thinkofdeath/steven/entitysys"
+	"github.com/thinkofdeath/steven/render"
+)
 
 func (ce *clientEntities) register() {
-	ce.container.AddSystem(esMoveToTarget)
-	ce.container.AddSystem(esDrawOutline)
+	ce.container.AddSystem(entitysys.Tick, esMoveToTarget)
+	ce.container.AddSystem(entitysys.Tick, esDrawOutline)
 }
 
 func esDrawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
