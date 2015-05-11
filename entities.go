@@ -201,6 +201,176 @@ func newSilverfish() Entity {
 	return s
 }
 
+func newBlaze() Entity {
+	type blaze struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	b := &blaze{
+		debugComponent: debugComponent{184, 61, 0},
+	}
+	b.networkID = 61
+	b.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 1.8, 0.6)
+	return b
+}
+
+func newMagmaCube() Entity {
+	type magmaCube struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	m := &magmaCube{
+		debugComponent: debugComponent{186, 28, 28},
+	}
+	m.networkID = 62
+	m.bounds = vmath.NewAABB(-0.5, 0, -0.5, 1, 1, 1)
+	return m
+}
+
+func newEnderDragon() Entity {
+	type enderDragon struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	e := &enderDragon{
+		debugComponent: debugComponent{122, 59, 117},
+	}
+	e.networkID = 63
+	e.bounds = vmath.NewAABB(-8, 0, -8, 16, 8, 16)
+	return e
+}
+
+func newWither() Entity {
+	type wither struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	w := &wither{
+		debugComponent: debugComponent{64, 64, 64},
+	}
+	w.networkID = 64
+	w.bounds = vmath.NewAABB(-0.45, 0, -0.45, 0.9, 3.5, 0.9)
+	return w
+}
+
+func newBat() Entity {
+	type bat struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	b := &bat{
+		debugComponent: debugComponent{8, 8, 8},
+	}
+	b.networkID = 65
+	b.bounds = vmath.NewAABB(-0.25, 0, -0.25, 0.5, 0.9, 0.5)
+	return b
+}
+
+func newWitch() Entity {
+	type witch struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	w := &witch{
+		debugComponent: debugComponent{87, 64, 0},
+	}
+	w.networkID = 66
+	w.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 1.8, 0.6)
+	return w
+}
+
+func newEndermite() Entity {
+	type endermite struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	e := &endermite{
+		debugComponent: debugComponent{69, 47, 71},
+	}
+	e.networkID = 67
+	e.bounds = vmath.NewAABB(-0.2, 0, -0.2, 0.4, 0.3, 0.4)
+	return e
+}
+
+func newGuardian() Entity {
+	type guardian struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	g := &guardian{
+		debugComponent: debugComponent{69, 47, 71},
+	}
+	g.networkID = 68
+	g.bounds = vmath.NewAABB(-0.425, 0, -0.425, 0.85, 0.85, 0.85)
+	return g
+}
+
+func newPig() Entity {
+	type pig struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	p := &pig{
+		debugComponent: debugComponent{252, 0, 194},
+	}
+	p.networkID = 90
+	p.bounds = vmath.NewAABB(-0.45, 0, -0.45, 0.9, 0.9, 0.9)
+	return p
+}
+
+func newSheep() Entity {
+	type sheep struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	s := &sheep{
+		debugComponent: debugComponent{232, 232, 232},
+	}
+	s.networkID = 91
+	s.bounds = vmath.NewAABB(-0.45, 0, -0.45, 0.9, 1.3, 0.9)
+	return s
+}
+
 func newCow() Entity {
 	type cow struct {
 		networkComponent
@@ -216,4 +386,174 @@ func newCow() Entity {
 	c.networkID = 92
 	c.bounds = vmath.NewAABB(-0.45, 0, -0.45, 0.9, 1.3, 0.9)
 	return c
+}
+
+func newChicken() Entity {
+	type chicken struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	c := &chicken{
+		debugComponent: debugComponent{217, 217, 217},
+	}
+	c.networkID = 93
+	c.bounds = vmath.NewAABB(-0.2, 0, -0.2, 0.4, 0.7, 0.4)
+	return c
+}
+
+func newSquid() Entity {
+	type squid struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	s := &squid{
+		debugComponent: debugComponent{84, 39, 245},
+	}
+	s.networkID = 94
+	s.bounds = vmath.NewAABB(-0.475, 0, -0.475, 0.95, 0.95, 0.95)
+	return s
+}
+
+func newWolf() Entity {
+	type wolf struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	w := &wolf{
+		debugComponent: debugComponent{148, 148, 148},
+	}
+	w.networkID = 95
+	w.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 0.8, 0.6)
+	return w
+}
+
+func newMooshroom() Entity {
+	type mooshroom struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	m := &mooshroom{
+		debugComponent: debugComponent{145, 41, 0},
+	}
+	m.networkID = 96
+	m.bounds = vmath.NewAABB(-0.45, 0, -0.45, 0.9, 1.3, 0.9)
+	return m
+}
+
+func newSnowman() Entity {
+	type snowman struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	s := &snowman{
+		debugComponent: debugComponent{225, 225, 255},
+	}
+	s.networkID = 97
+	s.bounds = vmath.NewAABB(-0.35, 0, -0.35, 0.7, 1.9, 0.7)
+	return s
+}
+
+func newOcelot() Entity {
+	type ocelot struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	o := &ocelot{
+		debugComponent: debugComponent{242, 222, 0},
+	}
+	o.networkID = 98
+	o.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 0.8, 0.6)
+	return o
+}
+
+func newIronGolem() Entity {
+	type ironGolem struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	i := &ironGolem{
+		debugComponent: debugComponent{125, 125, 125},
+	}
+	i.networkID = 99
+	i.bounds = vmath.NewAABB(-0.7, 0, -0.7, 1.4, 2.9, 1.4)
+	return i
+}
+
+func newHorse() Entity {
+	type horse struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	h := &horse{
+		debugComponent: debugComponent{191, 156, 0},
+	}
+	h.networkID = 100
+	h.bounds = vmath.NewAABB(-0.7, 0, -0.7, 1.4, 1.6, 1.4)
+	return h
+}
+
+func newRabbit() Entity {
+	type rabbit struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	r := &rabbit{
+		debugComponent: debugComponent{181, 123, 42},
+	}
+	r.networkID = 101
+	r.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 0.7, 0.6)
+	return r
+}
+
+func newVillager() Entity {
+	type villager struct {
+		networkComponent
+		positionComponent
+		targetPositionComponent
+		sizeComponent
+
+		debugComponent
+	}
+	v := &villager{
+		debugComponent: debugComponent{212, 183, 142},
+	}
+	v.networkID = 120
+	v.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 1.8, 0.6)
+	return v
 }
