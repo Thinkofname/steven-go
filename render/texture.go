@@ -175,12 +175,10 @@ func imgToBytes(img image.Image) []byte {
 		return img.Pix
 	case *image.RGBA:
 		return img.Pix
-	case *image.Paletted:
+	default:
 		temp := image.NewNRGBA(img.Bounds())
 		draw.Draw(temp, img.Bounds(), img, image.ZP, draw.Over)
 		return temp.Pix
-	default:
-		panic(fmt.Sprintf("unsupported image type %T", img))
 	}
 }
 
