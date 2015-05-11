@@ -61,19 +61,24 @@ var (
 		"blocks/log_acacia",
 		"blocks/red_sandstone_carved",
 	}
-	r             = rand.New(rand.NewSource(time.Now().UnixNano()))
-	logoTexture   = logoTextures[r.Intn(len(logoTextures))]
-	logoText      = stevenLogoLines[r.Intn(len(stevenLogoLines))]
-	logoTextTimer float64
+	r                         = rand.New(rand.NewSource(time.Now().UnixNano()))
+	logoTexture               = logoTextures[r.Intn(len(logoTextures))]
+	logoTargetTexture         = logoTextures[r.Intn(len(logoTextures))]
+	logoText                  = stevenLogoLines[r.Intn(len(stevenLogoLines))]
+	logoTextTimer             float64
+	logoLayers                [2][]*ui.Image
+	logoTimer, logoTransTimer float64
 )
 
 func (u *uiLogo) init(scene *scene.Type) {
 	u.scene = scene
 	row := 0
-	tex := render.GetTexture(logoTexture)
+	tex, tex2 := render.GetTexture(logoTexture), render.GetTexture(logoTargetTexture)
 	titleBox := (&ui.Container{
 		Y: 8,
 	}).Attach(ui.Top, ui.Center)
+	logoTimer = r.Float64() * 60 * 30
+	logoTransTimer = 120
 	for _, line := range strings.Split(stevenLogo, "\n") {
 		if line == "" {
 			continue
@@ -96,6 +101,7 @@ func (u *uiLogo) init(scene *scene.Type) {
 			shadow.A = 100
 			shadow.Parent = titleBox
 			u.scene.AddDrawable(shadow)
+
 			img := ui.NewImage(
 				tex,
 				float64(x), float64(y), 4, 8,
@@ -104,6 +110,18 @@ func (u *uiLogo) init(scene *scene.Type) {
 			)
 			img.Parent = titleBox
 			u.scene.AddDrawable(img)
+			logoLayers[0] = append(logoLayers[0], img)
+
+			img = ui.NewImage(
+				tex2,
+				float64(x), float64(y), 4, 8,
+				float64(x%16)/16.0, float64(y%16)/16.0, 4/16.0, 8/16.0,
+				rr, gg, bb,
+			)
+			img.Parent = titleBox
+			img.A = 0
+			u.scene.AddDrawable(img)
+			logoLayers[1] = append(logoLayers[1], img)
 			if titleBox.W < float64(x+4) {
 				titleBox.W = float64(x + 4)
 			}
@@ -127,6 +145,35 @@ func (u *uiLogo) init(scene *scene.Type) {
 }
 
 func (u *uiLogo) tick(delta float64) {
+	if logoTimer > 0 {
+		logoTimer -= delta
+	} else if logoTransTimer < 0 {
+		logoTransTimer = 120
+		logoTimer = r.Float64() * 60 * 30
+		logoTexture = logoTargetTexture
+		logoTargetTexture = logoTextures[r.Intn(len(logoTextures))]
+		logoText = stevenLogoLines[r.Intn(len(stevenLogoLines))]
+		u.text.Update(logoText)
+		width, _ := u.text.Size()
+		u.textBaseScale = 300 / width
+		if u.textBaseScale > 1 {
+			u.textBaseScale = 1
+		}
+		u.text.X = (-u.text.Width / 2) * u.textBaseScale
+		u.origX = u.text.X
+	} else {
+		logoTransTimer -= delta
+	}
+
+	tex, tex2 := render.GetTexture(logoTexture), render.GetTexture(logoTargetTexture)
+	for i := range logoLayers[0] {
+		logoLayers[0][i].Texture = tex
+		logoLayers[1][i].Texture = tex2
+
+		logoLayers[0][i].A = int(255 * (logoTransTimer / 120))
+		logoLayers[1][i].A = int(255 * (1 - (logoTransTimer / 120)))
+	}
+
 	logoTextTimer += delta
 	if logoTextTimer > 60 {
 		logoTextTimer -= 60
