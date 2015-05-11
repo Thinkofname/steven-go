@@ -121,7 +121,21 @@ func (c *chunk) setBlock(b Block, x, y, z int) {
 		sec = newChunkSection(c, s)
 		sec.Buffer = render.AllocateChunkBuffer(c.X, s, c.Z)
 	}
+
+	pos := Position{X: x, Y: y, Z: z}
+	pos = pos.Shift(c.X<<4, 0, c.Z<<4)
+	if be, ok := sec.BlockEntities[pos]; ok {
+		delete(sec.BlockEntities, pos)
+		Client.entities.container.RemoveEntity(be)
+	}
 	sec.setBlock(b, x, y&0xF, z)
+
+	if be := b.CreateBlockEntity(); be != nil {
+		sec.BlockEntities[pos] = be
+		be.SetPosition(pos)
+		Client.entities.container.AddEntity(be)
+	}
+
 	var maxB, maxS int8
 	for _, d := range direction.Values {
 		ox, oy, oz := d.Offset()
@@ -262,6 +276,9 @@ func (c *chunk) free() {
 	for _, s := range c.Sections {
 		if s != nil {
 			s.Buffer.Free()
+			for _, e := range s.BlockEntities {
+				Client.entities.container.RemoveEntity(e)
+			}
 		}
 	}
 	render.FreeColumn(c.X, c.Z)
@@ -274,6 +291,8 @@ type chunkSection struct {
 	Blocks     [16 * 16 * 16]uint16
 	BlockLight nibble.Array
 	SkyLight   nibble.Array
+
+	BlockEntities map[Position]BlockEntity
 
 	Buffer *render.ChunkBuffer
 
@@ -307,10 +326,11 @@ func (cs *chunkSection) setSkyLight(l byte, x, y, z int) {
 
 func newChunkSection(c *chunk, y int) *chunkSection {
 	cs := &chunkSection{
-		chunk:      c,
-		Y:          y,
-		BlockLight: nibble.New(16 * 16 * 16),
-		SkyLight:   nibble.New(16 * 16 * 16),
+		chunk:         c,
+		Y:             y,
+		BlockLight:    nibble.New(16 * 16 * 16),
+		SkyLight:      nibble.New(16 * 16 * 16),
+		BlockEntities: map[Position]BlockEntity{},
 	}
 	for i := range cs.Blocks {
 		cs.Blocks[i] = Blocks.Air.Blocks[0].SID()
@@ -350,7 +370,14 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 		}
 
 		for i := 0; i < 16*16*16; i++ {
-			section.Blocks[i] = GetBlockByCombinedID(binary.LittleEndian.Uint16(data[offset:])).SID()
+			block := GetBlockByCombinedID(binary.LittleEndian.Uint16(data[offset:]))
+			section.Blocks[i] = block.SID()
+			if be := block.CreateBlockEntity(); be != nil {
+				pos := Position{X: i & 0xF, Z: (i >> 4) & 0xF, Y: i >> 8}
+				pos = pos.Shift(x<<4, section.Y<<4, z<<4)
+				be.SetPosition(pos)
+				section.BlockEntities[pos] = be
+			}
 			offset += 2
 		}
 	}

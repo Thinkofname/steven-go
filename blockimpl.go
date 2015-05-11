@@ -1575,3 +1575,29 @@ func (b *blockTorch) toData() int {
 	}
 	return -1
 }
+
+// Wall Sign
+
+type blockWallSign struct {
+	baseBlock
+	Facing direction.Type `state:"facing,2-5"`
+	Model  string
+}
+
+func (b *blockWallSign) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.collidable = false
+	b.renderable = false
+}
+
+func (b *blockWallSign) CreateBlockEntity() BlockEntity {
+	type wallSign struct {
+		blockComponent
+	}
+	w := &wallSign{}
+	return w
+}
+
+func (b *blockWallSign) toData() int {
+	return int(b.Facing)
+}

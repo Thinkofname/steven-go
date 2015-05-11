@@ -82,6 +82,7 @@ func Start() {
 
 	initUI()
 	initLineDraw()
+	initStatic()
 
 	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
 
@@ -173,6 +174,7 @@ sync:
 	renderBuffer(nearestBuffer, chunkPos, direction.Invalid)
 
 	drawLines()
+	drawStatic()
 
 	chunkProgramT.Use()
 	shaderChunkT.PerspectiveMatrix.Matrix4(&perspectiveMatrix)

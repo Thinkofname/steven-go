@@ -62,6 +62,8 @@ type Block interface {
 	LightEmitted() int
 	String() string
 
+	CreateBlockEntity() BlockEntity
+
 	init(name string)
 	toData() int
 }
@@ -174,6 +176,10 @@ func (b *baseBlock) TintImage() *image.NRGBA {
 
 func (b *baseBlock) IsTranslucent() bool {
 	return b.translucent
+}
+
+func (b *baseBlock) CreateBlockEntity() BlockEntity {
+	return nil
 }
 
 func (b *baseBlock) UpdateState(x, y, z int) Block {

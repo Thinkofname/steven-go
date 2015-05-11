@@ -90,7 +90,7 @@ var Blocks = struct {
 	Ladder                     *BlockSet
 	Rail                       *BlockSet `type:"rail"`
 	StoneStairs                *BlockSet `type:"stairs"`
-	WallSign                   *BlockSet
+	WallSign                   *BlockSet `type:"wallSign"`
 	Lever                      *BlockSet
 	StonePressurePlate         *BlockSet
 	IronDoor                   *BlockSet `type:"door"`

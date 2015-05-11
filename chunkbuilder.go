@@ -223,10 +223,6 @@ func floodFill(bs *blocksSnapshot, visited bit.Set, x, y, z int) uint8 {
 	return touched
 }
 
-type position struct {
-	X, Y, Z int
-}
-
 // builder.Struct works by reflection which is to slow for this
 // as its called so often.
 func buildVertex(b *builder.Buffer, v chunkVertex) {
