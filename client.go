@@ -40,6 +40,10 @@ func init() {
 func initClient() {
 	if Client.valid {
 		Client.scene.Hide()
+		// Cleanup
+		for _, e := range Client.entities.entities {
+			Client.entities.container.RemoveEntity(e)
+		}
 	}
 	Client = ClientState{
 		Bounds: vmath.AABB{
