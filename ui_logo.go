@@ -166,6 +166,11 @@ var stevenLogoLines = []string{
 	"Mac support! (in theory)",
 	"Could have used vanilla's splash text!",
 	"Come chat on IRC!",
+	"Knowing Murphy's Law doesn't help",
+	"Minecraft Multi-processing: breaking three things at once",
+	"Silly Mortal...",
+	"Software isn't released. It's allowed to escape.",
+	"General System Error: Please sacrafice a cow and two chickens to continue",
 }
 
 const stevenLogo = `
