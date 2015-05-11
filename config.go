@@ -36,8 +36,16 @@ type ConfigData struct {
 	}
 	Game struct {
 		MouseSensitivity int
+		UIScale          string
 	}
 }
+
+const (
+	uiAuto   = "auto"
+	uiSmall  = "small"
+	uiMedium = "medium"
+	uiLarge  = "large"
+)
 
 type ConfigServer struct {
 	Name    string
@@ -49,6 +57,7 @@ func init() {
 	Config.Render.FOV = 90
 	Config.Render.VSync = true
 	Config.Game.MouseSensitivity = 2000
+	Config.Game.UIScale = "auto"
 
 	f, err := os.Open("config.json")
 	if err != nil {

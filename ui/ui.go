@@ -21,7 +21,11 @@ const (
 )
 
 var (
-	drawMode  = mScaled
+	// DrawMode is the scaling mode used.
+	DrawMode = Scaled
+	// Scale controls the scaling manually when DrawModel is Unscaled
+	Scale = 1.0
+
 	drawables []drawRef
 )
 
@@ -71,8 +75,8 @@ var screen = Region{W: scaledWidth, H: scaledHeight}
 func Draw(width, height int, delta float64) {
 	sw := scaledWidth / float64(width)
 	sh := scaledHeight / float64(height)
-	if drawMode == mUnscaled {
-		sw, sh = 1.0, 1.0
+	if DrawMode == Unscaled {
+		sw, sh = Scale, Scale
 	}
 	for _, d := range drawables {
 		if !d.ShouldDraw() {
@@ -96,8 +100,8 @@ func (r Region) intersects(o Region) bool {
 func Hover(x, y float64, width, height int) {
 	sw := scaledWidth / float64(width)
 	sh := scaledHeight / float64(height)
-	if drawMode == mUnscaled {
-		sw, sh = 1.0, 1.0
+	if DrawMode == Unscaled {
+		sw, sh = Scale, Scale
 	}
 	x = (x / float64(width)) * scaledWidth
 	y = (y / float64(height)) * scaledHeight
@@ -120,8 +124,8 @@ func Hover(x, y float64, width, height int) {
 func Click(x, y float64, width, height int) {
 	sw := scaledWidth / float64(width)
 	sh := scaledHeight / float64(height)
-	if drawMode == mUnscaled {
-		sw, sh = 1.0, 1.0
+	if DrawMode == Unscaled {
+		sw, sh = Scale, Scale
 	}
 	x = (x / float64(width)) * scaledWidth
 	y = (y / float64(height)) * scaledHeight
@@ -143,8 +147,8 @@ func Click(x, y float64, width, height int) {
 func Intersects(d Drawable, x, y float64, width, height int) (float64, float64, bool) {
 	sw := scaledWidth / float64(width)
 	sh := scaledHeight / float64(height)
-	if drawMode == mUnscaled {
-		sw, sh = 1.0, 1.0
+	if DrawMode == Unscaled {
+		sw, sh = Scale, Scale
 	}
 	x = (x / float64(width)) * scaledWidth
 	y = (y / float64(height)) * scaledHeight

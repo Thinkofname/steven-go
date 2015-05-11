@@ -66,8 +66,8 @@ func (gm *gameMenu) init() {
 
 func (gm *gameMenu) tick(delta float64) {
 	width, height := window.GetFramebufferSize()
-	gm.background.W = float64(width)
-	gm.background.H = float64(height)
+	gm.background.W = float64(width) / ui.Scale
+	gm.background.H = float64(height) / ui.Scale
 }
 
 func (m *gameMenu) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {

@@ -114,6 +114,30 @@ func newOptionMenu() *optionMenu {
 	om.scene.AddDrawable(
 		ui.NewText("Steven - "+resource.ResourcesVersion, 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
 	)
+
+	scales := []string{
+		uiAuto, uiSmall, uiMedium, uiLarge,
+	}
+	curScale := func() int {
+		for i, s := range scales {
+			if s == Config.Game.UIScale {
+				return i
+			}
+		}
+		return 0
+	}
+
+	uiScale, utxt := newButtonText("", -160, 0, 300, 40)
+	om.scene.AddDrawable(uiScale.Attach(ui.Center, ui.Middle))
+	om.scene.AddDrawable(utxt)
+	uiScale.ClickFunc = func() {
+		Config.Game.UIScale = scales[(curScale()+1)%len(scales)]
+		utxt.Update(fmt.Sprintf("UI Scale: %s", Config.Game.UIScale))
+		setUIScale()
+	}
+	Config.Game.UIScale = scales[(len(scales)+curScale()-1)%len(scales)]
+	uiScale.ClickFunc()
+
 	return om
 }
 
@@ -138,8 +162,8 @@ func (om *optionMenu) click(down bool, x, y float64, w, h int) {
 }
 func (om *optionMenu) tick(delta float64) {
 	width, height := window.GetFramebufferSize()
-	om.background.W = float64(width)
-	om.background.H = float64(height)
+	om.background.W = float64(width) / ui.Scale
+	om.background.H = float64(height) / ui.Scale
 }
 
 func (om *optionMenu) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {

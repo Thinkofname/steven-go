@@ -14,11 +14,13 @@
 
 package ui
 
-type mode int
+// Mode defines the way the ui is rendered.
+type Mode int
 
+// Valid modes
 const (
-	mScaled mode = iota
-	mUnscaled
+	Scaled Mode = iota
+	Unscaled
 )
 
 // AttachPoint is a side of the screen that an element

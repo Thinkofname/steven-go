@@ -84,6 +84,8 @@ func Main(username, uuid, accessToken, s string) {
 		Client.valid = false
 	}
 
+	setUIScale()
+
 	startWindow()
 }
 
@@ -92,6 +94,23 @@ func connect() {
 	disconnectReason.Value = nil
 	go startConnection(profile, server)
 	server = ""
+}
+
+func setUIScale() {
+	switch Config.Game.UIScale {
+	case uiAuto:
+		ui.DrawMode = ui.Scaled
+		ui.Scale = 1.0
+	case uiSmall:
+		ui.DrawMode = ui.Unscaled
+		ui.Scale = 0.3
+	case uiMedium:
+		ui.DrawMode = ui.Unscaled
+		ui.Scale = 0.6
+	case uiLarge:
+		ui.DrawMode = ui.Unscaled
+		ui.Scale = 1.0
+	}
 }
 
 func start() {
