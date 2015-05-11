@@ -100,6 +100,13 @@ func ConvertLegacy(c AnyComponent) {
 
 			c.Extra = append(parts, c.Extra...)
 		}
+	case *TranslateComponent:
+		for _, w := range c.With {
+			ConvertLegacy(w)
+		}
+		for _, e := range c.Extra {
+			ConvertLegacy(e)
+		}
 	default:
 		panic("unhandled component")
 	}
