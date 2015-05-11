@@ -37,8 +37,34 @@ type uiLogo struct {
 }
 
 var (
+	logoTextures = []string{
+		"blocks/cobblestone",
+		"blocks/netherrack",
+		"blocks/dirt",
+		"blocks/planks_oak",
+		"blocks/brick",
+		"blocks/snow",
+		"blocks/sand",
+		"blocks/gravel",
+		"blocks/hardened_clay",
+		"blocks/diamond_ore",
+		"blocks/clay",
+		"blocks/bedrock",
+		"blocks/obsidian",
+		"blocks/end_stone",
+		"blocks/stone_andesite",
+		"blocks/dirt_podzol_top",
+		"blocks/portal",
+		"blocks/prismarine_rough",
+		"blocks/soul_sand",
+		"blocks/lava_still",
+		"blocks/hay_block_top",
+		"blocks/log_acacia",
+		"blocks/red_sandstone_carved",
+		"blocks/command_block",
+	}
 	r             = rand.New(rand.NewSource(time.Now().UnixNano()))
-	logoTexture   = r.Intn(4)
+	logoTexture   = logoTextures[r.Intn(len(logoTextures))]
 	logoText      = stevenLogoLines[r.Intn(len(stevenLogoLines))]
 	logoTextTimer float64
 )
@@ -46,17 +72,7 @@ var (
 func (u *uiLogo) init(scene *scene.Type) {
 	u.scene = scene
 	row := 0
-	var tex *render.TextureInfo
-	switch logoTexture {
-	case 0:
-		tex = render.GetTexture("blocks/cobblestone")
-	case 1:
-		tex = render.GetTexture("blocks/netherrack")
-	case 2:
-		tex = render.GetTexture("blocks/dirt")
-	case 3:
-		tex = render.GetTexture("blocks/planks_oak")
-	}
+	var tex *render.TextureInfo = render.GetTexture(logoTexture)
 	titleBox := (&ui.Container{
 		Y: 8,
 	}).Attach(ui.Top, ui.Center)
@@ -171,6 +187,29 @@ var stevenLogoLines = []string{
 	"Silly Mortal...",
 	"Software isn't released. It's allowed to escape.",
 	"General System Error: Please sacrafice a cow and two chickens to continue",
+	"Do you want to build a client?",
+	"sudo rm -rf --no-preserve-root /",
+	fmt.Sprintf("Splash generated at %s", time.Now().Unix()),
+	"Thinkofdeath.getClass().getField(\"sanity\").set(Thinkofdeath, null);",
+	"There is no God, only Zuul",
+	"Now with potatoes!",
+	"ask :: String -> Int; ask x = 42",
+	"And then you cleanse them in a ball of atomic fire!",
+	"I'm a little matrix, square and stout,",
+	"this is my transpose, this is my count.",
+	"But I am le tired!",
+	"<?php if(\"6 geese\" + \"4 chickens\" == \"10 birds\") echo(\"lolphp\");",
+	"All hail the Cat Godess!",
+	"var f = function() { return f; };",
+	"unsafe.allocateObject(Unsafe.class);",
+	":(){ :|:& };:",
+	"You must pay to view this content.",
+	"No touchy the topic", "You will never find this splash!",
+	"Ceci n'est pas un splash.",
+	"Xor is not actually a cat.",
+	"The MD5 of md_5 is e14cfacdd442a953343ebd8529138680",
+	"Gas powered stick! It never runs out of gas!",
+	"\"Command Blocks are awesome!\" -- no one ever",
 }
 
 const stevenLogo = `
