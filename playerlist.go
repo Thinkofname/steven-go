@@ -69,6 +69,13 @@ func (p *playerListUI) init() {
 	}
 }
 
+func (p *playerListUI) free() {
+	for _, pl := range p.info {
+		if pl.skinHash != "" {
+			render.FreeSkin(pl.skinHash)
+		}
+	}
+}
 func (p *playerListUI) set(enabled bool) {
 	if enabled {
 		p.scene.Show()

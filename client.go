@@ -44,6 +44,7 @@ func initClient() {
 		for _, e := range Client.entities.entities {
 			Client.entities.container.RemoveEntity(e)
 		}
+		Client.playerList.free()
 	}
 	Client = ClientState{
 		Bounds: vmath.AABB{
