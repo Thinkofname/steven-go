@@ -26,6 +26,7 @@ import (
 func (ce *clientEntities) registerModels() {
 	ce.container.AddSystem(entitysys.Add, esPlayerModelAdd)
 	ce.container.AddSystem(entitysys.Tick, esPlayerModelTick)
+	ce.container.AddSystem(entitysys.Remove, esPlayerModelRemove)
 
 	// Generic removal
 	ce.container.AddSystem(entitysys.Remove, esModelRemove)
@@ -64,6 +65,7 @@ func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures 
 
 type playerModelComponent struct {
 	model *render.StaticModel
+	skin  string
 
 	dir      float64
 	time     float64
@@ -82,13 +84,16 @@ const (
 )
 
 func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
-
 	uuid := pl.UUID()
 	info := Client.playerList.info[uuid]
 	if info == nil {
 		panic("missing player info")
 	}
 	skin := info.skin
+	p.skin = info.skinHash
+	if p.skin != "" {
+		render.RefSkin(p.skin)
+	}
 
 	hverts := appendBox(nil, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(8, 8, 8, 8),
@@ -161,6 +166,12 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		playerModelArmRight: lverts[3],
 	})
 	p.model = model
+}
+
+func esPlayerModelRemove(p *playerModelComponent) {
+	if p.skin != "" {
+		render.FreeSkin(p.skin)
+	}
 }
 
 func esModelRemove(p interface {
