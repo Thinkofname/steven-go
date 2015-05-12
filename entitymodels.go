@@ -117,7 +117,7 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 		direction.Up:    skin.Sub(8, 0, 8, 8),
 		direction.Down:  skin.Sub(16, 0, 8, 8),
 	})
-	hverts = appendBox(hverts, -4.1/16.0, -.1/16.0, -4.1/16.0, 8.2/16.0, 8.2/16.0, 8.2/16.0, [6]*render.TextureInfo{
+	hverts = appendBox(hverts, -4.2/16.0, -.2/16.0, -4.2/16.0, 8.4/16.0, 8.4/16.0, 8.4/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(8+32, 8, 8, 8),
 		direction.South: skin.Sub(24+32, 8, 8, 8),
 		direction.West:  skin.Sub(0+32, 8, 8, 8),
@@ -134,7 +134,7 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 		direction.Up:    skin.Sub(20, 16, 8, 4),
 		direction.Down:  skin.Sub(28, 16, 8, 4),
 	})
-	bverts = appendBox(bverts, -4.1/16.0, -6.1/16.0, -2.1/16.0, 8.2/16.0, 12.2/16.0, 4.2/16.0, [6]*render.TextureInfo{
+	bverts = appendBox(bverts, -4.2/16.0, -6.2/16.0, -2.2/16.0, 8.4/16.0, 12.4/16.0, 4.4/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(20, 20+16, 8, 12),
 		direction.South: skin.Sub(32, 20+16, 8, 12),
 		direction.West:  skin.Sub(16, 20+16, 4, 12),
@@ -161,7 +161,7 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 			direction.Down:  skin.Sub(ox+8, oy, 4, 4),
 		})
 		ox, oy = off[2], off[3]
-		lverts[i] = appendBox(lverts[i], -2.1/16.0, -12.1/16.0, -2.1/16.0, 4.2/16.0, 12.2/16.0, 4.2/16.0, [6]*render.TextureInfo{
+		lverts[i] = appendBox(lverts[i], -2.2/16.0, -12.2/16.0, -2.2/16.0, 4.4/16.0, 12.4/16.0, 4.4/16.0, [6]*render.TextureInfo{
 			direction.North: skin.Sub(ox+4, oy+4, 4, 12),
 			direction.South: skin.Sub(ox+12, oy+4, 4, 12),
 			direction.West:  skin.Sub(ox+0, oy+4, 4, 12),
