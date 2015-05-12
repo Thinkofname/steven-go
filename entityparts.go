@@ -36,7 +36,8 @@ type NetworkComponent interface {
 // Position
 
 type positionComponent struct {
-	X, Y, Z float64
+	X, Y, Z    float64
+	LX, LY, LZ float64
 }
 
 func (p *positionComponent) Position() (x, y, z float64) {

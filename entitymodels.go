@@ -188,7 +188,8 @@ func esModelRemove(p interface {
 	p.Model().Free()
 }
 
-func esPlayerModelTick(p PlayerModelComponent, pos PositionComponent, r RotationComponent) {
+func esPlayerModelTick(p PlayerModelComponent,
+	pos PositionComponent, t TargetPositionComponent, r RotationComponent) {
 	x, y, z := pos.Position()
 	offMat := mgl32.Translate3D(float32(x), -float32(y), float32(z)).
 		Mul4(mgl32.Rotate3DY(math.Pi - float32(r.Yaw())).Mat4())
@@ -202,6 +203,7 @@ func esPlayerModelTick(p PlayerModelComponent, pos PositionComponent, r Rotation
 	dir := p.Dir()
 	if dir == 0 {
 		dir = 1
+		time = 15
 	}
 	ang := ((time / 15) - 1) * (math.Pi / 4)
 
@@ -215,13 +217,27 @@ func esPlayerModelTick(p PlayerModelComponent, pos PositionComponent, r Rotation
 	model.Matrix[playerModelArmRight] = offMat.Mul4(mgl32.Translate3D(-6/16.0, -12/16.0-12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(float32(ang * 0.75)).Mat4())
 
-	time += Client.delta * dir
-	if time > 30 {
-		time = 30
-		dir = -1
-	} else if time < 0 {
-		time = 0
-		dir = 1
+	tx, _, tz := t.TargetPosition()
+	update := true
+	d := (tx-x)*(tx-x) + (tz-z)*(tz-z)
+	if d < 0.0001 {
+		if math.Abs(time-15) < 0.1 {
+			time = 15
+			update = false
+		}
+		dir = math.Copysign(1, 15-time)
+		d = 0.06
+	}
+
+	if update {
+		time += Client.delta * (d * 30) * dir
+		if time > 30 {
+			time = 30
+			dir = -1
+		} else if time < 0 {
+			time = 0
+			dir = 1
+		}
 	}
 	p.SetDir(dir)
 	p.SetTime(time)
