@@ -45,6 +45,7 @@ func initLineDraw() {
 
 func drawLines() {
 	if lineState.count > 0 {
+		gl.Enable(gl.Blend)
 		lineState.program.Use()
 		lineState.shader.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
 		lineState.shader.CameraMatrix.Matrix4(&cameraMatrix)
@@ -61,6 +62,7 @@ func drawLines() {
 		gl.DrawArrays(gl.Triangles, 0, lineState.count)
 		lineState.count = 0
 		lineState.data = lineState.data[:0]
+		gl.Disable(gl.Blend)
 	}
 }
 

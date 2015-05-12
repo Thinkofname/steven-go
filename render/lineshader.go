@@ -27,12 +27,12 @@ const (
 	vertexLine = `
 #version 150
 in vec3 aPosition;
-in vec3 aColor;
+in vec4 aColor;
 
 uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
 
-out vec3 vColor;
+out vec4 vColor;
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
@@ -45,12 +45,12 @@ void main() {
 
 const float atlasSize = ` + atlasSizeStr + `;
 
-in vec3 vColor;
+in vec4 vColor;
 
 out vec4 fragColor;
 
 void main() {
-	fragColor = vec4(vColor, 1.0);
+	fragColor = vec4(vColor);
 }
 `
 )
