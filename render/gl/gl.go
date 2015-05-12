@@ -171,8 +171,8 @@ func DrawArrays(ty DrawType, offset, count int) {
 	gl.DrawArrays(uint32(ty), int32(offset), int32(count))
 }
 
-func DrawElements(ty DrawType, count int, dty Type) {
-	gl.DrawElements(uint32(ty), int32(count), uint32(dty), nil)
+func DrawElements(ty DrawType, count int, dty Type, offset int) {
+	gl.DrawElements(uint32(ty), int32(count), uint32(dty), uintptr(offset))
 }
 
 // CheckError panics if there has been an error reported to the

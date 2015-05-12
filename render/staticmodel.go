@@ -121,7 +121,7 @@ func drawStatic() {
 	for _, mdl := range staticState.models {
 		staticState.shader.ModelMatrix.Matrix4(&mdl.Matrix)
 		mdl.array.Bind()
-		gl.DrawElements(gl.Triangles, mdl.count, staticState.indexType)
+		gl.DrawElements(gl.Triangles, mdl.count, staticState.indexType, 0)
 	}
 
 	gl.Disable(gl.Blend)
