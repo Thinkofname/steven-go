@@ -61,23 +61,18 @@ func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures 
 // Player
 
 type playerModelComponent struct {
-	head *render.StaticModel
-	body *render.StaticModel
+	model *render.StaticModel
 }
 
-func (p *playerModelComponent) SetHead(h *render.StaticModel) { p.head = h }
-func (p *playerModelComponent) Head() *render.StaticModel     { return p.head }
-func (p *playerModelComponent) SetBody(b *render.StaticModel) { p.body = b }
-func (p *playerModelComponent) Body() *render.StaticModel     { return p.body }
+func (p *playerModelComponent) SetModel(m *render.StaticModel) { p.model = m }
+func (p *playerModelComponent) Model() *render.StaticModel     { return p.model }
 
 // Marker method
 func (*playerModelComponent) playerModel() {}
 
 type PlayerModelComponent interface {
-	SetHead(b *render.StaticModel)
-	Head() *render.StaticModel
-	SetBody(b *render.StaticModel)
-	Body() *render.StaticModel
+	SetModel(m *render.StaticModel)
+	Model() *render.StaticModel
 
 	playerModel()
 }
@@ -91,7 +86,6 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 	}
 	skin := info.skin
 
-	head := render.NewStaticModel()
 	var hverts []*render.StaticVertex
 	hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(8, 8, 8, 8),
@@ -109,10 +103,7 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 		direction.Up:    skin.Sub(8+32, 0, 8, 8),
 		direction.Down:  skin.Sub(16+32, 0, 8, 8),
 	})
-	head.Data(hverts)
-	p.SetHead(head)
 
-	body := render.NewStaticModel()
 	var bverts []*render.StaticVertex
 	bverts = appendBox(bverts, -4/16.0, -6/16.0, -2/16.0, 8/16.0, 12/16.0, 4/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(20, 20, 8, 12),
@@ -130,13 +121,15 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 		direction.Up:    skin.Sub(20, 16+16, 8, 4),
 		direction.Down:  skin.Sub(28, 16+16, 8, 4),
 	})
-	body.Data(bverts)
-	p.SetBody(body)
+
+	model := render.NewStaticModel([][]*render.StaticVertex{
+		hverts, bverts,
+	})
+	p.SetModel(model)
 }
 
 func esPlayerModelRemove(p PlayerModelComponent) {
-	p.Head().Free()
-	p.Body().Free()
+	p.Model().Free()
 }
 
 func esPlayerModelTick(p PlayerModelComponent, pos PositionComponent, r RotationComponent) {
@@ -144,9 +137,8 @@ func esPlayerModelTick(p PlayerModelComponent, pos PositionComponent, r Rotation
 	offMat := mgl32.Translate3D(float32(x), -float32(y), float32(z)).
 		Mul4(mgl32.Rotate3DY(math.Pi - float32(r.Yaw())).Mat4())
 
-	head := p.Head()
-	head.Matrix = offMat.Mul4(mgl32.Translate3D(0, -1.62+(4/16.0), 0)).
+	model := p.Model()
+	model.Matrix[0] = offMat.Mul4(mgl32.Translate3D(0, -1.62+(4/16.0), 0)).
 		Mul4(mgl32.Rotate3DX(float32(r.Pitch())).Mat4())
-	body := p.Body()
-	body.Matrix = offMat.Mul4(mgl32.Translate3D(0, -1.62+(10/16.0), 0))
+	model.Matrix[1] = offMat.Mul4(mgl32.Translate3D(0, -1.62+(10/16.0), 0))
 }

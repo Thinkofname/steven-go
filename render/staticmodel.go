@@ -39,14 +39,15 @@ type StaticVertex struct {
 var staticFunc, staticTypes = builder.Struct(&StaticVertex{})
 
 type StaticModel struct {
-	Matrix     mgl32.Mat4
+	Matrix     []mgl32.Mat4
 	array      gl.VertexArray
 	buffer     gl.Buffer
 	bufferSize int
 	count      int
+	ranges     [][2]int
 }
 
-func NewStaticModel() *StaticModel {
+func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
 	model := &StaticModel{}
 
 	model.array = gl.CreateVertexArray()
@@ -63,11 +64,24 @@ func NewStaticModel() *StaticModel {
 	staticState.shader.TextureOffset.PointerInt(3, gl.Short, 30, 20)
 	staticState.shader.Color.Pointer(4, gl.UnsignedByte, true, 30, 26)
 
+	model.Matrix = make([]mgl32.Mat4, len(parts))
+	model.ranges = make([][2]int, len(parts))
+	var all []*StaticVertex
+	for i, p := range parts {
+		model.Matrix[i] = mgl32.Ident4()
+		model.ranges[i] = [2]int{
+			(len(all) / 4) * 6,
+			(len(p) / 4) * 6,
+		}
+		all = append(all, p...)
+	}
+	model.data(all)
+
 	staticState.models = append(staticState.models, model)
 	return model
 }
 
-func (sm *StaticModel) Data(verts []*StaticVertex) {
+func (sm *StaticModel) data(verts []*StaticVertex) {
 	sm.count = (len(verts) / 4) * 6
 	if staticState.maxIndex < sm.count {
 		var data []byte
@@ -113,15 +127,22 @@ func drawStatic() {
 	if len(staticState.models) == 0 {
 		return
 	}
+	m := 4
+	if staticState.indexType == gl.UnsignedShort {
+		m = 2
+	}
+
 	gl.Enable(gl.Blend)
 	staticState.program.Use()
 	staticState.shader.Texture.Int(0)
 	staticState.shader.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
 	staticState.shader.CameraMatrix.Matrix4(&cameraMatrix)
 	for _, mdl := range staticState.models {
-		staticState.shader.ModelMatrix.Matrix4(&mdl.Matrix)
 		mdl.array.Bind()
-		gl.DrawElements(gl.Triangles, mdl.count, staticState.indexType, 0)
+		for i := range mdl.Matrix {
+			staticState.shader.ModelMatrix.Matrix4(&mdl.Matrix[i])
+			gl.DrawElements(gl.Triangles, mdl.ranges[i][1], staticState.indexType, mdl.ranges[i][0]*m)
+		}
 	}
 
 	gl.Disable(gl.Blend)
