@@ -64,10 +64,17 @@ func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures 
 
 type playerModelComponent struct {
 	model *render.StaticModel
+
+	dir  float64
+	time float64
 }
 
 func (p *playerModelComponent) SetModel(m *render.StaticModel) { p.model = m }
 func (p *playerModelComponent) Model() *render.StaticModel     { return p.model }
+func (p *playerModelComponent) SetDir(d float64)               { p.dir = d }
+func (p *playerModelComponent) Dir() float64                   { return p.dir }
+func (p *playerModelComponent) SetTime(t float64)              { p.time = t }
+func (p *playerModelComponent) Time() float64                  { return p.time }
 
 // Marker method
 func (*playerModelComponent) playerModel() {}
@@ -76,12 +83,21 @@ type PlayerModelComponent interface {
 	SetModel(m *render.StaticModel)
 	Model() *render.StaticModel
 
+	SetDir(d float64)
+	Dir() float64
+	SetTime(t float64)
+	Time() float64
+
 	playerModel()
 }
 
 const (
 	playerModelHead = iota
 	playerModelBody
+	playerModelLegLeft
+	playerModelLegRight
+	playerModelArmLeft
+	playerModelArmRight
 )
 
 func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
@@ -93,45 +109,75 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 	}
 	skin := info.skin
 
-	var hverts []*render.StaticVertex
-	hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
+	hverts := appendBox(nil, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(8, 8, 8, 8),
 		direction.South: skin.Sub(24, 8, 8, 8),
-		direction.East:  skin.Sub(0, 8, 8, 8),
-		direction.West:  skin.Sub(16, 8, 8, 8),
+		direction.West:  skin.Sub(0, 8, 8, 8),
+		direction.East:  skin.Sub(16, 8, 8, 8),
 		direction.Up:    skin.Sub(8, 0, 8, 8),
 		direction.Down:  skin.Sub(16, 0, 8, 8),
 	})
-	hverts = appendBox(hverts, -4.5/16.0, -.5/16.0, -4.5/16.0, 9/16.0, 9/16.0, 9/16.0, [6]*render.TextureInfo{
+	hverts = appendBox(hverts, -4.1/16.0, -.1/16.0, -4.1/16.0, 8.2/16.0, 8.2/16.0, 8.2/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(8+32, 8, 8, 8),
 		direction.South: skin.Sub(24+32, 8, 8, 8),
-		direction.East:  skin.Sub(0+32, 8, 8, 8),
-		direction.West:  skin.Sub(16+32, 8, 8, 8),
+		direction.West:  skin.Sub(0+32, 8, 8, 8),
+		direction.East:  skin.Sub(16+32, 8, 8, 8),
 		direction.Up:    skin.Sub(8+32, 0, 8, 8),
 		direction.Down:  skin.Sub(16+32, 0, 8, 8),
 	})
 
-	var bverts []*render.StaticVertex
-	bverts = appendBox(bverts, -4/16.0, -6/16.0, -2/16.0, 8/16.0, 12/16.0, 4/16.0, [6]*render.TextureInfo{
+	bverts := appendBox(nil, -4/16.0, -6/16.0, -2/16.0, 8/16.0, 12/16.0, 4/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(20, 20, 8, 12),
 		direction.South: skin.Sub(32, 20, 8, 12),
-		direction.East:  skin.Sub(16, 20, 4, 12),
-		direction.West:  skin.Sub(28, 20, 4, 12),
+		direction.West:  skin.Sub(16, 20, 4, 12),
+		direction.East:  skin.Sub(28, 20, 4, 12),
 		direction.Up:    skin.Sub(20, 16, 8, 4),
 		direction.Down:  skin.Sub(28, 16, 8, 4),
 	})
-	bverts = appendBox(bverts, -4.5/16.0, -6.5/16.0, -2.5/16.0, 9/16.0, 13/16.0, 5/16.0, [6]*render.TextureInfo{
+	bverts = appendBox(bverts, -4.1/16.0, -6.1/16.0, -2.1/16.0, 8.2/16.0, 12.2/16.0, 4.2/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(20, 20+16, 8, 12),
 		direction.South: skin.Sub(32, 20+16, 8, 12),
-		direction.East:  skin.Sub(16, 20+16, 4, 12),
-		direction.West:  skin.Sub(28, 20+16, 4, 12),
+		direction.West:  skin.Sub(16, 20+16, 4, 12),
+		direction.East:  skin.Sub(28, 20+16, 4, 12),
 		direction.Up:    skin.Sub(20, 16+16, 8, 4),
 		direction.Down:  skin.Sub(28, 16+16, 8, 4),
 	})
 
+	var lverts [4][]*render.StaticVertex
+
+	for i, off := range [][4]int{
+		{0, 16, 0, 32},
+		{16, 48, 0, 48},
+		{32, 48, 48, 48},
+		{40, 16, 40, 32},
+	} {
+		ox, oy := off[0], off[1]
+		lverts[i] = appendBox(nil, -2/16.0, -12/16.0, -2/16.0, 4/16.0, 12/16.0, 4/16.0, [6]*render.TextureInfo{
+			direction.North: skin.Sub(ox+4, oy+4, 4, 12),
+			direction.South: skin.Sub(ox+12, oy+4, 4, 12),
+			direction.West:  skin.Sub(ox+0, oy+4, 4, 12),
+			direction.East:  skin.Sub(ox+8, oy+4, 4, 12),
+			direction.Up:    skin.Sub(ox+4, oy, 4, 4),
+			direction.Down:  skin.Sub(ox+8, oy, 4, 4),
+		})
+		ox, oy = off[2], off[3]
+		lverts[i] = appendBox(lverts[i], -2.1/16.0, -12.1/16.0, -2.1/16.0, 4.2/16.0, 12.2/16.0, 4.2/16.0, [6]*render.TextureInfo{
+			direction.North: skin.Sub(ox+4, oy+4, 4, 12),
+			direction.South: skin.Sub(ox+12, oy+4, 4, 12),
+			direction.West:  skin.Sub(ox+0, oy+4, 4, 12),
+			direction.East:  skin.Sub(ox+8, oy+4, 4, 12),
+			direction.Up:    skin.Sub(ox+4, oy, 4, 4),
+			direction.Down:  skin.Sub(ox+8, oy, 4, 4),
+		})
+	}
+
 	model := render.NewStaticModel([][]*render.StaticVertex{
-		playerModelHead: hverts,
-		playerModelBody: bverts,
+		playerModelHead:     hverts,
+		playerModelBody:     bverts,
+		playerModelLegLeft:  lverts[0],
+		playerModelLegRight: lverts[1],
+		playerModelArmLeft:  lverts[2],
+		playerModelArmRight: lverts[3],
 	})
 	p.SetModel(model)
 }
@@ -148,7 +194,35 @@ func esPlayerModelTick(p PlayerModelComponent, pos PositionComponent, r Rotation
 		Mul4(mgl32.Rotate3DY(math.Pi - float32(r.Yaw())).Mat4())
 
 	model := p.Model()
-	model.Matrix[playerModelHead] = offMat.Mul4(mgl32.Translate3D(0, -1.62+(4/16.0), 0)).
+	model.Matrix[playerModelHead] = offMat.Mul4(mgl32.Translate3D(0, -12/16.0-12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(float32(r.Pitch())).Mat4())
-	model.Matrix[playerModelBody] = offMat.Mul4(mgl32.Translate3D(0, -1.62+(10/16.0), 0))
+	model.Matrix[playerModelBody] = offMat.Mul4(mgl32.Translate3D(0, -12/16.0-6/16.0, 0))
+
+	time := p.Time()
+	dir := p.Dir()
+	if dir == 0 {
+		dir = 1
+	}
+	ang := ((time / 15) - 1) * (math.Pi / 4)
+
+	model.Matrix[playerModelLegLeft] = offMat.Mul4(mgl32.Translate3D(2/16.0, -12/16.0, 0)).
+		Mul4(mgl32.Rotate3DX(float32(ang)).Mat4())
+	model.Matrix[playerModelLegRight] = offMat.Mul4(mgl32.Translate3D(-2/16.0, -12/16.0, 0)).
+		Mul4(mgl32.Rotate3DX(-float32(ang)).Mat4())
+
+	model.Matrix[playerModelArmLeft] = offMat.Mul4(mgl32.Translate3D(6/16.0, -12/16.0-12/16.0, 0)).
+		Mul4(mgl32.Rotate3DX(-float32(ang * 0.75)).Mat4())
+	model.Matrix[playerModelArmRight] = offMat.Mul4(mgl32.Translate3D(-6/16.0, -12/16.0-12/16.0, 0)).
+		Mul4(mgl32.Rotate3DX(float32(ang * 0.75)).Mat4())
+
+	time += Client.delta * dir
+	if time > 30 {
+		time = 30
+		dir = -1
+	} else if time < 0 {
+		time = 0
+		dir = 1
+	}
+	p.SetDir(dir)
+	p.SetTime(time)
 }
