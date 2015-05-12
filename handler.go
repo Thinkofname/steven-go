@@ -181,6 +181,14 @@ func (handler) SpawnPlayer(s *protocol.SpawnPlayer) {
 			float64(s.Z)/32,
 		)
 	}
+	if r, ok := e.(RotationComponent); ok {
+		r.SetYaw((float64(s.Yaw) / 256) * math.Pi * 2)
+		r.SetPitch((float64(s.Pitch) / 256) * math.Pi * 2)
+	}
+	if r, ok := e.(TargetRotationComponent); ok {
+		r.SetTargetYaw((float64(s.Yaw) / 256) * math.Pi * 2)
+		r.SetTargetPitch((float64(s.Pitch) / 256) * math.Pi * 2)
+	}
 	e.(PlayerComponent).SetUUID(s.UUID)
 	Client.entities.add(int(s.EntityID), e)
 }
@@ -205,6 +213,14 @@ func (handler) SpawnMob(s *protocol.SpawnMob) {
 			float64(s.Z)/32,
 		)
 	}
+	if r, ok := e.(RotationComponent); ok {
+		r.SetYaw((float64(s.Yaw) / 256) * math.Pi * 2)
+		r.SetPitch((float64(s.Pitch) / 256) * math.Pi * 2)
+	}
+	if r, ok := e.(TargetRotationComponent); ok {
+		r.SetTargetYaw((float64(s.Yaw) / 256) * math.Pi * 2)
+		r.SetTargetPitch((float64(s.Pitch) / 256) * math.Pi * 2)
+	}
 	Client.entities.add(int(s.EntityID), e)
 }
 
@@ -227,6 +243,14 @@ func (handler) EntityTeleport(t *protocol.EntityTeleport) {
 			float64(t.Z)/32,
 		)
 	}
+	if r, ok := e.(RotationComponent); ok {
+		r.SetYaw((float64(t.Yaw) / 256) * math.Pi * 2)
+		r.SetPitch((float64(t.Pitch) / 256) * math.Pi * 2)
+	}
+	if r, ok := e.(TargetRotationComponent); ok {
+		r.SetTargetYaw((float64(t.Yaw) / 256) * math.Pi * 2)
+		r.SetTargetPitch((float64(t.Pitch) / 256) * math.Pi * 2)
+	}
 }
 
 func (handler) EntityMove(m *protocol.EntityMove) {
@@ -245,6 +269,27 @@ func (handler) EntityMoveLook(m *protocol.EntityLookAndMove) {
 	}
 	dx, dy, dz := float64(m.DeltaX)/32, float64(m.DeltaY)/32, float64(m.DeltaZ)/32
 	relMove(e, dx, dy, dz)
+	rotateEntity(e, (float64(m.Yaw)/256)*math.Pi*2, (float64(m.Pitch)/256)*math.Pi*2)
+}
+
+func (handler) EntityLook(l *protocol.EntityLook) {
+	e, ok := Client.entities.entities[int(l.EntityID)]
+	if !ok {
+		return
+	}
+	rotateEntity(e, (float64(l.Yaw)/256)*math.Pi*2, (float64(l.Pitch)/256)*math.Pi*2)
+}
+
+func rotateEntity(e Entity, y, p float64) {
+	if r, ok := e.(TargetRotationComponent); ok {
+		r.SetTargetYaw(y)
+		r.SetTargetPitch(p)
+		return
+	}
+	if r, ok := e.(RotationComponent); ok {
+		r.SetYaw(y)
+		r.SetPitch(p)
+	}
 }
 
 func relMove(e Entity, dx, dy, dz float64) {

@@ -19,6 +19,8 @@ import "github.com/thinkofdeath/steven/type/vmath"
 func newPlayer() Entity {
 	type player struct {
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -34,6 +36,8 @@ func newCreeper() Entity {
 	type creeper struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -51,6 +55,8 @@ func newSkeleton() Entity {
 	type skeleton struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -68,6 +74,8 @@ func newSpider() Entity {
 	type spider struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -85,6 +93,8 @@ func newZombie() Entity {
 	type zombie struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -102,6 +112,8 @@ func newSlime() Entity {
 	type slime struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -119,6 +131,8 @@ func newGhast() Entity {
 	type ghast struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -136,6 +150,8 @@ func newZombiePigman() Entity {
 	type zombiePigman struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -153,6 +169,8 @@ func newEnderman() Entity {
 	type enderman struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -170,6 +188,8 @@ func newCaveSpider() Entity {
 	type caveSpider struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -187,6 +207,8 @@ func newSilverfish() Entity {
 	type silverfish struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -204,6 +226,8 @@ func newBlaze() Entity {
 	type blaze struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -221,6 +245,8 @@ func newMagmaCube() Entity {
 	type magmaCube struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -238,6 +264,8 @@ func newEnderDragon() Entity {
 	type enderDragon struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -255,6 +283,8 @@ func newWither() Entity {
 	type wither struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -272,6 +302,8 @@ func newBat() Entity {
 	type bat struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -289,6 +321,8 @@ func newWitch() Entity {
 	type witch struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -306,6 +340,8 @@ func newEndermite() Entity {
 	type endermite struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -323,6 +359,8 @@ func newGuardian() Entity {
 	type guardian struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -340,6 +378,8 @@ func newPig() Entity {
 	type pig struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -357,6 +397,8 @@ func newSheep() Entity {
 	type sheep struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -374,6 +416,8 @@ func newCow() Entity {
 	type cow struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -391,6 +435,8 @@ func newChicken() Entity {
 	type chicken struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -408,6 +454,8 @@ func newSquid() Entity {
 	type squid struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -425,6 +473,8 @@ func newWolf() Entity {
 	type wolf struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -442,6 +492,8 @@ func newMooshroom() Entity {
 	type mooshroom struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -459,6 +511,8 @@ func newSnowman() Entity {
 	type snowman struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -476,6 +530,8 @@ func newOcelot() Entity {
 	type ocelot struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -493,6 +549,8 @@ func newIronGolem() Entity {
 	type ironGolem struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -510,6 +568,8 @@ func newHorse() Entity {
 	type horse struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -527,6 +587,8 @@ func newRabbit() Entity {
 	type rabbit struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 
@@ -544,6 +606,8 @@ func newVillager() Entity {
 	type villager struct {
 		networkComponent
 		positionComponent
+		rotationComponent
+		targetRotationComponent
 		targetPositionComponent
 		sizeComponent
 

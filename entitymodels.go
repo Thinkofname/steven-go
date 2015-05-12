@@ -15,6 +15,8 @@
 package steven
 
 import (
+	"math"
+
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/entitysys"
 	"github.com/thinkofdeath/steven/render"
@@ -91,7 +93,7 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 
 	head := render.NewStaticModel()
 	var hverts []*render.StaticVertex
-	hverts = appendBox(hverts, -4/16.0, -4/16.0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
+	hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(8, 8, 8, 8),
 		direction.South: skin.Sub(24, 8, 8, 8),
 		direction.East:  skin.Sub(0, 8, 8, 8),
@@ -99,7 +101,7 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 		direction.Up:    skin.Sub(8, 0, 8, 8),
 		direction.Down:  skin.Sub(16, 0, 8, 8),
 	})
-	hverts = appendBox(hverts, -4.5/16.0, -4.5/16.0, -4.5/16.0, 9/16.0, 9/16.0, 9/16.0, [6]*render.TextureInfo{
+	hverts = appendBox(hverts, -4.5/16.0, -.5/16.0, -4.5/16.0, 9/16.0, 9/16.0, 9/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(8+32, 8, 8, 8),
 		direction.South: skin.Sub(24+32, 8, 8, 8),
 		direction.East:  skin.Sub(0+32, 8, 8, 8),
@@ -137,12 +139,14 @@ func esPlayerModelRemove(p PlayerModelComponent) {
 	p.Body().Free()
 }
 
-func esPlayerModelTick(p PlayerModelComponent, pos PositionComponent) {
+func esPlayerModelTick(p PlayerModelComponent, pos PositionComponent, r RotationComponent) {
 	x, y, z := pos.Position()
-	offMat := mgl32.Translate3D(float32(x), -float32(y), float32(z))
+	offMat := mgl32.Translate3D(float32(x), -float32(y), float32(z)).
+		Mul4(mgl32.Rotate3DY(math.Pi - float32(r.Yaw())).Mat4())
 
 	head := p.Head()
-	head.Matrix = offMat.Mul4(mgl32.Translate3D(0, -1.62, 0))
+	head.Matrix = offMat.Mul4(mgl32.Translate3D(0, -1.62+(4/16.0), 0)).
+		Mul4(mgl32.Rotate3DX(float32(r.Pitch())).Mat4())
 	body := p.Body()
 	body.Matrix = offMat.Mul4(mgl32.Translate3D(0, -1.62+(10/16.0), 0))
 }

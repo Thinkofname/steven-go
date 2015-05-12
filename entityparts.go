@@ -15,11 +15,13 @@
 package steven
 
 import (
+	"math"
+
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/type/vmath"
 )
 
-// Networkable
+// Network
 
 type networkComponent struct {
 	networkID int
@@ -31,7 +33,7 @@ type NetworkComponent interface {
 	NetworkID() int
 }
 
-// Positionable
+// Position
 
 type positionComponent struct {
 	X, Y, Z float64
@@ -50,7 +52,7 @@ type PositionComponent interface {
 	SetPosition(x, y, z float64)
 }
 
-// Target Positionable
+// Target Position
 
 type targetPositionComponent struct {
 	X, Y, Z float64
@@ -69,7 +71,51 @@ type TargetPositionComponent interface {
 	SetTargetPosition(x, y, z float64)
 }
 
-// Sized
+// Rotation
+
+type rotationComponent struct {
+	yaw, pitch float64
+}
+
+func (r *rotationComponent) Yaw() float64 { return r.yaw }
+func (r *rotationComponent) SetYaw(y float64) {
+	r.yaw = math.Mod(math.Pi*2+y, math.Pi*2)
+}
+func (r *rotationComponent) Pitch() float64 { return r.pitch }
+func (r *rotationComponent) SetPitch(p float64) {
+	r.pitch = math.Mod(math.Pi*2+p, math.Pi*2)
+}
+
+type RotationComponent interface {
+	Yaw() float64
+	SetYaw(y float64)
+	Pitch() float64
+	SetPitch(p float64)
+}
+
+// Target Rotation
+
+type targetRotationComponent struct {
+	yaw, pitch float64
+}
+
+func (r *targetRotationComponent) TargetYaw() float64 { return r.yaw }
+func (r *targetRotationComponent) SetTargetYaw(y float64) {
+	r.yaw = math.Mod(math.Pi*2+y, math.Pi*2)
+}
+func (r *targetRotationComponent) TargetPitch() float64 { return r.pitch }
+func (r *targetRotationComponent) SetTargetPitch(p float64) {
+	r.pitch = math.Mod(math.Pi*2+p, math.Pi*2)
+}
+
+type TargetRotationComponent interface {
+	TargetYaw() float64
+	SetTargetYaw(y float64)
+	TargetPitch() float64
+	SetTargetPitch(p float64)
+}
+
+// Size
 
 type sizeComponent struct {
 	bounds vmath.AABB

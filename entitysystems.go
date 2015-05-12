@@ -15,12 +15,15 @@
 package steven
 
 import (
+	"math"
+
 	"github.com/thinkofdeath/steven/entitysys"
 	"github.com/thinkofdeath/steven/render"
 )
 
 func (ce *clientEntities) register() {
 	ce.container.AddSystem(entitysys.Tick, esMoveToTarget)
+	ce.container.AddSystem(entitysys.Tick, esRotateToTarget)
 	ce.container.AddSystem(entitysys.Tick, esDrawOutline)
 }
 
@@ -51,4 +54,24 @@ func esMoveToTarget(p PositionComponent, t TargetPositionComponent) {
 	py += dy * 0.4 * Client.delta
 	pz += dz * 0.4 * Client.delta
 	p.SetPosition(px, py, pz)
+}
+
+func esRotateToTarget(r RotationComponent, t TargetRotationComponent) {
+	py, pp := r.Yaw(), r.Pitch()
+	ty, tp := t.TargetYaw(), t.TargetPitch()
+
+	dy, dp := ty-py, tp-pp
+	if dy > math.Pi || dy < -math.Pi {
+		py += math.Copysign(math.Pi*2, dy)
+		dy = ty - py
+	}
+	if dp > math.Pi || dp < -math.Pi {
+		pp += math.Copysign(math.Pi*2, dp)
+		dp = tp - pp
+	}
+
+	py += dy * 0.4 * Client.delta
+	pp += dp * 0.4 * Client.delta
+	r.SetPitch(pp)
+	r.SetYaw(py)
 }
