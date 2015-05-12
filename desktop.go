@@ -41,7 +41,7 @@ func startWindow() {
 	render.MultiSample = Config.Render.Samples > 0
 
 	var err error
-	window, err = glfw.CreateWindow(800, 480, "Steven", nil, nil)
+	window, err = glfw.CreateWindow(854, 480, "Steven", nil, nil)
 	if err != nil {
 		panic(err)
 	}

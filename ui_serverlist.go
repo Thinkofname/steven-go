@@ -117,12 +117,9 @@ func (sl *serverList) onScroll(w *glfw.Window, xoff float64, yoff float64) {
 func (si *serverListItem) updatePosition() {
 	if si.offset < 0 {
 		si.Y = si.offset * 200
-		si.X = -math.Abs(si.offset) * 300
 	} else if si.offset >= 2 {
 		si.Y = si.offset * 100
-		si.X = -math.Abs(si.offset-2) * 300
 	} else {
-		si.X = 0
 		si.Y = si.offset * 100
 	}
 }
@@ -133,11 +130,10 @@ func (sl *serverList) redraw() {
 		render.FreeIcon(s.id)
 	}
 	sl.servers = sl.servers[:0]
-	sw, _ := window.GetFramebufferSize()
 	for i, s := range Config.Servers {
 		sc := scene.New(true)
 		container := (&ui.Container{
-			X: -float64(sw * 2), Y: float64(i) * 100, W: 700, H: 100,
+			X: 0, Y: float64(i) * 100, W: 700, H: 100,
 		}).Attach(ui.Center, ui.Middle)
 		r := make([]byte, 20)
 		rand.Read(r)

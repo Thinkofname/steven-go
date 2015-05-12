@@ -17,7 +17,7 @@
 package ui
 
 const (
-	scaledWidth, scaledHeight = 800, 480
+	scaledWidth, scaledHeight = 854, 480
 )
 
 var (

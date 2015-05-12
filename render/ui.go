@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	uiWidth, uiHeight = 800, 480
+	uiWidth, uiHeight = 854, 480
 )
 
 var (

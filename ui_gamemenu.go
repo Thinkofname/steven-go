@@ -35,7 +35,7 @@ func newGameMenu() *gameMenu {
 	}
 	Client.scene.Hide()
 
-	gm.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 800, 480, 0, 0, 1, 1, 0, 0, 0)
+	gm.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 854, 480, 0, 0, 1, 1, 0, 0, 0)
 	gm.background.A = 160
 	gm.scene.AddDrawable(gm.background.Attach(ui.Top, ui.Left))
 

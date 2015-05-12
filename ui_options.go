@@ -40,7 +40,7 @@ func newOptionMenu() *optionMenu {
 	}
 	Client.scene.Hide()
 
-	om.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 800, 480, 0, 0, 1, 1, 0, 0, 0)
+	om.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 854, 480, 0, 0, 1, 1, 0, 0, 0)
 	om.background.A = 160
 	om.scene.AddDrawable(om.background.Attach(ui.Top, ui.Left))
 
