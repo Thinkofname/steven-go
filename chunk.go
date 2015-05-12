@@ -86,6 +86,10 @@ func clearChunks() {
 		c.free()
 	}
 	chunkMap = map[chunkPosition]*chunk{}
+	for _, e := range Client.entities.entities {
+		Client.entities.container.RemoveEntity(e)
+	}
+	Client.entities.entities = map[int]Entity{}
 }
 
 type chunkPosition struct {
