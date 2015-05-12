@@ -132,6 +132,12 @@ func start() {
 func rotate(x, y float64) {
 	Client.Yaw -= x
 	Client.Pitch -= y
+	if Client.Pitch < (math.Pi/2)+0.01 {
+		Client.Pitch = (math.Pi / 2) + 0.01
+	}
+	if Client.Pitch > (math.Pi/2)*3-0.01 {
+		Client.Pitch = (math.Pi/2)*3 - 0.01
+	}
 }
 
 var maxBuilders = runtime.NumCPU() * 2
