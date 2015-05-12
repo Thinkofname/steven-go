@@ -26,7 +26,9 @@ import (
 func (ce *clientEntities) registerModels() {
 	ce.container.AddSystem(entitysys.Add, esPlayerModelAdd)
 	ce.container.AddSystem(entitysys.Tick, esPlayerModelTick)
-	ce.container.AddSystem(entitysys.Remove, esPlayerModelRemove)
+
+	// Generic removal
+	ce.container.AddSystem(entitysys.Remove, esModelRemove)
 }
 
 func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures [6]*render.TextureInfo) []*render.StaticVertex {
@@ -77,6 +79,11 @@ type PlayerModelComponent interface {
 	playerModel()
 }
 
+const (
+	playerModelHead = iota
+	playerModelBody
+)
+
 func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 
 	uuid := pl.UUID()
@@ -123,12 +130,15 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 	})
 
 	model := render.NewStaticModel([][]*render.StaticVertex{
-		hverts, bverts,
+		playerModelHead: hverts,
+		playerModelBody: bverts,
 	})
 	p.SetModel(model)
 }
 
-func esPlayerModelRemove(p PlayerModelComponent) {
+func esModelRemove(p interface {
+	Model() *render.StaticModel
+}) {
 	p.Model().Free()
 }
 
@@ -138,7 +148,7 @@ func esPlayerModelTick(p PlayerModelComponent, pos PositionComponent, r Rotation
 		Mul4(mgl32.Rotate3DY(math.Pi - float32(r.Yaw())).Mat4())
 
 	model := p.Model()
-	model.Matrix[0] = offMat.Mul4(mgl32.Translate3D(0, -1.62+(4/16.0), 0)).
+	model.Matrix[playerModelHead] = offMat.Mul4(mgl32.Translate3D(0, -1.62+(4/16.0), 0)).
 		Mul4(mgl32.Rotate3DX(float32(r.Pitch())).Mat4())
-	model.Matrix[1] = offMat.Mul4(mgl32.Translate3D(0, -1.62+(10/16.0), 0))
+	model.Matrix[playerModelBody] = offMat.Mul4(mgl32.Translate3D(0, -1.62+(10/16.0), 0))
 }
