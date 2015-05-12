@@ -54,7 +54,7 @@ type ConfigServer struct {
 
 func init() {
 	// Defaults
-	Config.Render.FOV = 90
+	Config.Render.FOV = 80
 	Config.Render.VSync = true
 	Config.Game.MouseSensitivity = 2000
 	Config.Game.UIScale = "auto"
