@@ -226,11 +226,10 @@ func esPlayerModelTick(p PlayerModelComponent,
 			update = false
 		}
 		dir = math.Copysign(1, 15-time)
-		d = 0.06
 	}
 
 	if update {
-		time += Client.delta * (d * 30) * dir
+		time += Client.delta * 1.5 * dir
 		if time > 30 {
 			time = 30
 			dir = -1
