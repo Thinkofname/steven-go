@@ -103,7 +103,7 @@ func setUIScale() {
 		ui.Scale = 1.0
 	case uiSmall:
 		ui.DrawMode = ui.Unscaled
-		ui.Scale = 0.3
+		ui.Scale = 0.4
 	case uiMedium:
 		ui.DrawMode = ui.Unscaled
 		ui.Scale = 0.6
