@@ -320,3 +320,45 @@ func TestRemove(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestRaw(t *testing.T) {
+	c := NewContainer()
+	tSys := func(n *nameable) {
+		n.SetName("remove_" + n.Name())
+	}
+	c.AddSystem(Remove, tSys)
+
+	type testEntity struct {
+		nameable
+	}
+	t1 := &testEntity{}
+	t1.name = "bob"
+	t2 := &testEntity{}
+	t2.name = "steven"
+
+	c.AddEntity(t1)
+	c.AddEntity(t2)
+
+	if t1.name != "bob" {
+		t.Log(t1.name)
+		t.FailNow()
+	}
+	if t2.name != "steven" {
+		t.Log(t2.name)
+		t.FailNow()
+	}
+
+	c.RemoveEntity(t1)
+
+	if t1.name != "remove_bob" {
+		t.Log(t1.name)
+		t.FailNow()
+	}
+
+	c.RemoveEntity(t2)
+
+	if t2.name != "remove_steven" {
+		t.Log(t2.name)
+		t.FailNow()
+	}
+}

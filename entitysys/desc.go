@@ -14,9 +14,7 @@
 
 package entitysys
 
-import (
-	"reflect"
-)
+import "reflect"
 
 // Matcher is used to select when an entity is used for a
 // system.
@@ -28,7 +26,13 @@ type typeMatcher struct {
 	Type reflect.Type
 }
 
-func (t typeMatcher) Match(e interface{}) bool { return reflect.TypeOf(e).Implements(t.Type) }
+func (t typeMatcher) Match(e interface{}) bool {
+	if t.Type.Kind() == reflect.Interface {
+		return reflect.TypeOf(e).Implements(t.Type)
+	}
+	_, ok := reflect.TypeOf(e).Elem().FieldByName(t.Type.Elem().Name())
+	return ok
+}
 
 // Type returns a Matcher that matches when the type of element
 // of the passed to this is implemented by the entity.

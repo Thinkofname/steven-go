@@ -16,9 +16,7 @@
 // for handling entities.
 package entitysys
 
-import (
-	"reflect"
-)
+import "reflect"
 
 // Stage is used to specify when a system is called.
 type Stage int
@@ -59,9 +57,7 @@ func (c *Container) AddEntity(entity interface{}) {
 			v:      re,
 			params: make([]reflect.Value, len(sys.params)),
 		}
-		for i := range sys.params {
-			se.params[i] = re
-		}
+		se.params = genParams(re, sys.params)
 
 		sys.entities = append(sys.entities, se)
 	}
@@ -69,10 +65,7 @@ func (c *Container) AddEntity(entity interface{}) {
 		if !sys.Matches(entity) {
 			continue
 		}
-		params := make([]reflect.Value, len(sys.params))
-		for i := range sys.params {
-			params[i] = re
-		}
+		params := genParams(re, sys.params)
 		sys.f.Call(params)
 	}
 }
@@ -97,12 +90,21 @@ func (c *Container) RemoveEntity(e interface{}) {
 		if !sys.Matches(e) {
 			continue
 		}
-		params := make([]reflect.Value, len(sys.params))
-		for i := range sys.params {
-			params[i] = re
-		}
+		params := genParams(re, sys.params)
 		sys.f.Call(params)
 	}
+}
+
+func genParams(re reflect.Value, sparams []reflect.Type) []reflect.Value {
+	params := make([]reflect.Value, len(sparams))
+	for i, p := range sparams {
+		if p.Kind() == reflect.Interface {
+			params[i] = re
+		} else {
+			params[i] = re.Elem().FieldByName(p.Elem().Name()).Addr()
+		}
+	}
+	return params
 }
 
 // AddSystem adds the system to the container, the passed desc
