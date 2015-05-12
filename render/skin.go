@@ -93,7 +93,6 @@ func obtainSkin(hash string, s *skin) {
 		fmt.Printf("Error decoding skin: %s\n", err)
 		return
 	}
-	pix := imgToBytes(img)
 	if !fromCache {
 		path := skinPath(hash)
 		os.MkdirAll(filepath.Dir(path), 0777)
@@ -107,6 +106,14 @@ func obtainSkin(hash string, s *skin) {
 			panic(err)
 		}
 	}
+	if img.Bounds().Dy() == 32 {
+		ni := image.NewNRGBA(image.Rect(0, 0, 64, 64))
+		draw.Draw(ni, img.Bounds(), img, image.ZP, draw.Over)
+		draw.Draw(ni, image.Rect(16, 48, 32, 64), img, image.Pt(0, 16), draw.Over)
+		draw.Draw(ni, image.Rect(32, 48, 48, 64), img, image.Pt(40, 16), draw.Over)
+		img = ni
+	}
+	pix := imgToBytes(img)
 	Sync(func() {
 		uploadTexture(s.info, pix)
 	})
