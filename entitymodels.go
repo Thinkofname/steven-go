@@ -65,8 +65,9 @@ func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures 
 type playerModelComponent struct {
 	model *render.StaticModel
 
-	dir  float64
-	time float64
+	dir      float64
+	time     float64
+	idleTime float64
 }
 
 func (p *playerModelComponent) SetModel(m *render.StaticModel) { p.model = m }
@@ -75,6 +76,8 @@ func (p *playerModelComponent) SetDir(d float64)               { p.dir = d }
 func (p *playerModelComponent) Dir() float64                   { return p.dir }
 func (p *playerModelComponent) SetTime(t float64)              { p.time = t }
 func (p *playerModelComponent) Time() float64                  { return p.time }
+func (p *playerModelComponent) SetIdleTime(t float64)          { p.idleTime = t }
+func (p *playerModelComponent) IdleTime() float64              { return p.idleTime }
 
 // Marker method
 func (*playerModelComponent) playerModel() {}
@@ -87,6 +90,8 @@ type PlayerModelComponent interface {
 	Dir() float64
 	SetTime(t float64)
 	Time() float64
+	SetIdleTime(t float64)
+	IdleTime() float64
 
 	playerModel()
 }
@@ -212,10 +217,18 @@ func esPlayerModelTick(p PlayerModelComponent,
 	model.Matrix[playerModelLegRight] = offMat.Mul4(mgl32.Translate3D(-2/16.0, -12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(-float32(ang)).Mat4())
 
+	iTime := p.IdleTime()
+	iTime += Client.delta * 0.02
+	p.SetIdleTime(iTime)
+
 	model.Matrix[playerModelArmLeft] = offMat.Mul4(mgl32.Translate3D(6/16.0, -12/16.0-12/16.0, 0)).
-		Mul4(mgl32.Rotate3DX(-float32(ang * 0.75)).Mat4())
+		Mul4(mgl32.Rotate3DX(-float32(ang * 0.75)).Mat4()).
+		Mul4(mgl32.Rotate3DZ(float32(math.Cos(iTime)*0.06) - 0.06).Mat4()).
+		Mul4(mgl32.Rotate3DX(float32(math.Sin(iTime) * 0.06)).Mat4())
 	model.Matrix[playerModelArmRight] = offMat.Mul4(mgl32.Translate3D(-6/16.0, -12/16.0-12/16.0, 0)).
-		Mul4(mgl32.Rotate3DX(float32(ang * 0.75)).Mat4())
+		Mul4(mgl32.Rotate3DX(float32(ang * 0.75)).Mat4()).
+		Mul4(mgl32.Rotate3DZ(-float32(math.Cos(iTime)*0.06) + 0.06).Mat4()).
+		Mul4(mgl32.Rotate3DX(-float32(math.Sin(iTime) * 0.06)).Mat4())
 
 	tx, _, tz := t.TargetPosition()
 	update := true
