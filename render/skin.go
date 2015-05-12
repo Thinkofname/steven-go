@@ -17,6 +17,7 @@ package render
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/png"
 	"io"
@@ -112,6 +113,24 @@ func obtainSkin(hash string, s *skin) {
 		draw.Draw(ni, image.Rect(16, 48, 32, 64), img, image.Pt(0, 16), draw.Over)
 		draw.Draw(ni, image.Rect(32, 48, 48, 64), img, image.Pt(40, 16), draw.Over)
 		img = ni
+	}
+	di := img.(draw.Image)
+	for _, off := range [][4]int{
+		// X, Y, W, H
+		{0, 0, 32, 16},
+		{16, 16, 24, 16},
+		{0, 16, 16, 16},
+		{16, 48, 16, 16},
+		{32, 48, 16, 16},
+		{40, 16, 16, 16},
+	} {
+		for x := off[0]; x < off[0]+off[2]; x++ {
+			for y := off[1]; y < off[1]+off[3]; y++ {
+				col := di.At(x, y)
+				rgba := color.RGBAModel.Convert(col).(color.RGBA)
+				di.Set(x, y, color.RGBA{R: rgba.R, B: rgba.B, G: rgba.G, A: 255})
+			}
+		}
 	}
 	pix := imgToBytes(img)
 	Sync(func() {
