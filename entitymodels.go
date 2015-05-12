@@ -70,31 +70,7 @@ type playerModelComponent struct {
 	idleTime float64
 }
 
-func (p *playerModelComponent) SetModel(m *render.StaticModel) { p.model = m }
-func (p *playerModelComponent) Model() *render.StaticModel     { return p.model }
-func (p *playerModelComponent) SetDir(d float64)               { p.dir = d }
-func (p *playerModelComponent) Dir() float64                   { return p.dir }
-func (p *playerModelComponent) SetTime(t float64)              { p.time = t }
-func (p *playerModelComponent) Time() float64                  { return p.time }
-func (p *playerModelComponent) SetIdleTime(t float64)          { p.idleTime = t }
-func (p *playerModelComponent) IdleTime() float64              { return p.idleTime }
-
-// Marker method
-func (*playerModelComponent) playerModel() {}
-
-type PlayerModelComponent interface {
-	SetModel(m *render.StaticModel)
-	Model() *render.StaticModel
-
-	SetDir(d float64)
-	Dir() float64
-	SetTime(t float64)
-	Time() float64
-	SetIdleTime(t float64)
-	IdleTime() float64
-
-	playerModel()
-}
+func (p *playerModelComponent) Model() *render.StaticModel { return p.model }
 
 const (
 	playerModelHead = iota
@@ -105,7 +81,7 @@ const (
 	playerModelArmRight
 )
 
-func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
+func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 
 	uuid := pl.UUID()
 	info := Client.playerList.info[uuid]
@@ -184,7 +160,7 @@ func esPlayerModelAdd(p PlayerModelComponent, pl PlayerComponent) {
 		playerModelArmLeft:  lverts[2],
 		playerModelArmRight: lverts[3],
 	})
-	p.SetModel(model)
+	p.model = model
 }
 
 func esModelRemove(p interface {
@@ -193,19 +169,19 @@ func esModelRemove(p interface {
 	p.Model().Free()
 }
 
-func esPlayerModelTick(p PlayerModelComponent,
+func esPlayerModelTick(p *playerModelComponent,
 	pos PositionComponent, t TargetPositionComponent, r RotationComponent) {
 	x, y, z := pos.Position()
 	offMat := mgl32.Translate3D(float32(x), -float32(y), float32(z)).
 		Mul4(mgl32.Rotate3DY(math.Pi - float32(r.Yaw())).Mat4())
 
-	model := p.Model()
+	model := p.model
 	model.Matrix[playerModelHead] = offMat.Mul4(mgl32.Translate3D(0, -12/16.0-12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(float32(r.Pitch())).Mat4())
 	model.Matrix[playerModelBody] = offMat.Mul4(mgl32.Translate3D(0, -12/16.0-6/16.0, 0))
 
-	time := p.Time()
-	dir := p.Dir()
+	time := p.time
+	dir := p.dir
 	if dir == 0 {
 		dir = 1
 		time = 15
@@ -217,9 +193,9 @@ func esPlayerModelTick(p PlayerModelComponent,
 	model.Matrix[playerModelLegRight] = offMat.Mul4(mgl32.Translate3D(-2/16.0, -12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(-float32(ang)).Mat4())
 
-	iTime := p.IdleTime()
+	iTime := p.idleTime
 	iTime += Client.delta * 0.02
-	p.SetIdleTime(iTime)
+	p.idleTime = iTime
 
 	model.Matrix[playerModelArmLeft] = offMat.Mul4(mgl32.Translate3D(6/16.0, -12/16.0-12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(-float32(ang * 0.75)).Mat4()).
@@ -251,6 +227,6 @@ func esPlayerModelTick(p PlayerModelComponent,
 			dir = 1
 		}
 	}
-	p.SetDir(dir)
-	p.SetTime(time)
+	p.dir = dir
+	p.time = time
 }
