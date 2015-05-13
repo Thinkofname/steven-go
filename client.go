@@ -295,7 +295,7 @@ func (c *ClientState) renderTick(delta float64) {
 	// instead of duplicating things in the client?
 	ox := math.Cos(c.Yaw-math.Pi/2) * 0.3
 	oz := -math.Sin(c.Yaw-math.Pi/2) * 0.3
-	c.entity.SetTargetPosition(c.X-ox, c.Y-0.1, c.Z-oz)
+	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
 	c.entity.SetYaw(-c.Yaw)
 	c.entity.SetTargetYaw(-c.Yaw)
 
