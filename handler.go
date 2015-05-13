@@ -374,6 +374,12 @@ func (handler) PlayerListInfo(p *protocol.PlayerInfo) {
 				i.skin = render.GetTexture("entity/steve")
 			}
 			playerList[pl.UUID] = i
+
+			// Special case for self
+			if !Client.entityAdded && i.uuid == Client.entity.UUID() {
+				Client.entities.container.AddEntity(Client.entity)
+				Client.entityAdded = true
+			}
 		case 1: // Update gamemode
 			playerList[pl.UUID].gameMode = gameMode(pl.GameMode)
 		case 2: // Update ping

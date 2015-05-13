@@ -15,6 +15,7 @@
 package steven
 
 import (
+	"encoding/hex"
 	"math"
 	"time"
 
@@ -44,6 +45,9 @@ func initClient() {
 		for _, e := range Client.entities.entities {
 			Client.entities.container.RemoveEntity(e)
 		}
+		if Client.entity != nil {
+			Client.entities.container.RemoveEntity(Client.entity)
+		}
 		Client.playerList.free()
 	}
 	Client = ClientState{
@@ -60,6 +64,15 @@ type ClientState struct {
 	valid bool
 
 	scene *scene.Type
+
+	entity interface {
+		PlayerComponent
+		PositionComponent
+		RotationComponent
+		TargetPositionComponent
+		TargetRotationComponent
+	}
+	entityAdded bool
 
 	X, Y, Z    float64
 	Yaw, Pitch float64
@@ -157,6 +170,27 @@ func (c *ClientState) init() {
 	c.initDebug()
 	c.playerList.init()
 	c.entities.init()
+
+	c.initEntity()
+}
+
+func (c *ClientState) initEntity() {
+	type clientEntity struct {
+		positionComponent
+		rotationComponent
+		targetRotationComponent
+		targetPositionComponent
+		sizeComponent
+
+		playerComponent
+		playerModelComponent
+	}
+	ce := &clientEntity{}
+	ub, _ := hex.DecodeString(profile.ID)
+	copy(ce.uuid[:], ub)
+	c.entity = ce
+	ce.hasHead = false
+	ce.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 1.8, 0.6)
 }
 
 func (c *ClientState) renderTick(delta float64) {
@@ -255,6 +289,15 @@ func (c *ClientState) renderTick(delta float64) {
 
 	// Debug displays
 	c.renderDebug()
+
+	// Update our entity
+	// TODO Should the entity be the main thing
+	// instead of duplicating things in the client?
+	ox := math.Cos(c.Yaw-math.Pi/2) * 0.3
+	oz := -math.Sin(c.Yaw-math.Pi/2) * 0.3
+	c.entity.SetTargetPosition(c.X-ox, c.Y-0.1, c.Z-oz)
+	c.entity.SetYaw(-c.Yaw)
+	c.entity.SetTargetYaw(-c.Yaw)
 
 	c.playerList.render(delta)
 	c.entities.tick()

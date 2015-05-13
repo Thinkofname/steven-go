@@ -28,6 +28,7 @@ func newPlayer() Entity {
 		playerModelComponent
 	}
 	p := &player{}
+	p.hasHead = true
 	p.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 1.8, 0.6)
 	return p
 }

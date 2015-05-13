@@ -64,8 +64,9 @@ func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures 
 // Player
 
 type playerModelComponent struct {
-	model *render.StaticModel
-	skin  string
+	model   *render.StaticModel
+	skin    string
+	hasHead bool
 
 	dir      float64
 	time     float64
@@ -95,22 +96,25 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		render.RefSkin(p.skin)
 	}
 
-	hverts := appendBox(nil, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
-		direction.North: skin.Sub(8, 8, 8, 8),
-		direction.South: skin.Sub(24, 8, 8, 8),
-		direction.West:  skin.Sub(0, 8, 8, 8),
-		direction.East:  skin.Sub(16, 8, 8, 8),
-		direction.Up:    skin.Sub(8, 0, 8, 8),
-		direction.Down:  skin.Sub(16, 0, 8, 8),
-	})
-	hverts = appendBox(hverts, -4.2/16.0, -.2/16.0, -4.2/16.0, 8.4/16.0, 8.4/16.0, 8.4/16.0, [6]*render.TextureInfo{
-		direction.North: skin.Sub(8+32, 8, 8, 8),
-		direction.South: skin.Sub(24+32, 8, 8, 8),
-		direction.West:  skin.Sub(0+32, 8, 8, 8),
-		direction.East:  skin.Sub(16+32, 8, 8, 8),
-		direction.Up:    skin.Sub(8+32, 0, 8, 8),
-		direction.Down:  skin.Sub(16+32, 0, 8, 8),
-	})
+	var hverts []*render.StaticVertex
+	if p.hasHead {
+		hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
+			direction.North: skin.Sub(8, 8, 8, 8),
+			direction.South: skin.Sub(24, 8, 8, 8),
+			direction.West:  skin.Sub(0, 8, 8, 8),
+			direction.East:  skin.Sub(16, 8, 8, 8),
+			direction.Up:    skin.Sub(8, 0, 8, 8),
+			direction.Down:  skin.Sub(16, 0, 8, 8),
+		})
+		hverts = appendBox(hverts, -4.2/16.0, -.2/16.0, -4.2/16.0, 8.4/16.0, 8.4/16.0, 8.4/16.0, [6]*render.TextureInfo{
+			direction.North: skin.Sub(8+32, 8, 8, 8),
+			direction.South: skin.Sub(24+32, 8, 8, 8),
+			direction.West:  skin.Sub(0+32, 8, 8, 8),
+			direction.East:  skin.Sub(16+32, 8, 8, 8),
+			direction.Up:    skin.Sub(8+32, 0, 8, 8),
+			direction.Down:  skin.Sub(16+32, 0, 8, 8),
+		})
+	}
 
 	bverts := appendBox(nil, -4/16.0, -6/16.0, -2/16.0, 8/16.0, 12/16.0, 4/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(20, 20, 8, 12),
@@ -181,6 +185,8 @@ func esModelRemove(p interface {
 	p.Model().Free()
 }
 
+var moveLimit = 1e-5
+
 func esPlayerModelTick(p *playerModelComponent,
 	pos PositionComponent, t TargetPositionComponent, r RotationComponent) {
 	x, y, z := pos.Position()
@@ -224,7 +230,7 @@ func esPlayerModelTick(p *playerModelComponent,
 	tx, _, tz := t.TargetPosition()
 	update := true
 	d := (tx-x)*(tx-x) + (tz-z)*(tz-z)
-	if d < 0.0001 {
+	if d <= moveLimit {
 		if math.Abs(time-15) < 0.1 {
 			time = 15
 			update = false
