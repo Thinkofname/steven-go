@@ -74,7 +74,11 @@ func (u *uiLogo) init(scene *scene.Type) {
 	titleBox := (&ui.Container{
 		Y: 8,
 	}).Attach(ui.Top, ui.Center)
-	for _, line := range strings.Split(stevenLogo, "\n") {
+	logo := stevenLogo
+	if r.Intn(10000) == 0 {
+		logo = phtevenLogo
+	}
+	for _, line := range strings.Split(logo, "\n") {
 		if line == "" {
 			continue
 		}
@@ -209,20 +213,39 @@ var stevenLogoLines = []string{
 }
 
 const stevenLogo = `
-   SSSSSSSSSSSSSSS          tttt                                                                                             
- SS:::::::::::::::S      ttt:::t                                                                                             
-S:::::SSSSSS::::::S      t:::::t                                                                                             
-S:::::S     SSSSSSS      t:::::t                                                                                             
-S:::::S            ttttttt:::::ttttttt        eeeeeeeeeeee    vvvvvvv           vvvvvvv    eeeeeeeeeeee    nnnn  nnnnnnnn    
-S:::::S            t:::::::::::::::::t      ee::::::::::::ee   v:::::v         v:::::v   ee::::::::::::ee  n:::nn::::::::nn  
- S::::SSSS         t:::::::::::::::::t     e::::::eeeee:::::ee  v:::::v       v:::::v   e::::::eeeee:::::een::::::::::::::nn 
-  SS::::::SSSSS    tttttt:::::::tttttt    e::::::e     e:::::e   v:::::v     v:::::v   e::::::e     e:::::enn:::::::::::::::n
-    SSS::::::::SS        t:::::t          e:::::::eeeee::::::e    v:::::v   v:::::v    e:::::::eeeee::::::e  n:::::nnnn:::::n
-       SSSSSS::::S       t:::::t          e:::::::::::::::::e      v:::::v v:::::v     e:::::::::::::::::e   n::::n    n::::n
-            S:::::S      t:::::t          e::::::eeeeeeeeeee        v:::::v:::::v      e::::::eeeeeeeeeee    n::::n    n::::n
-            S:::::S      t:::::t    tttttte:::::::e                  v:::::::::v       e:::::::e             n::::n    n::::n
-SSSSSSS     S:::::S      t::::::tttt:::::te::::::::e                  v:::::::v        e::::::::e            n::::n    n::::n
-S::::::SSSSSS:::::S      tt::::::::::::::t e::::::::eeeeeeee           v:::::v          e::::::::eeeeeeee    n::::n    n::::n
-S:::::::::::::::SS         tt:::::::::::tt  ee:::::::::::::e            v:::v            ee:::::::::::::e    n::::n    n::::n
- SSSSSSSSSSSSSSS             ttttttttttt      eeeeeeeeeeeeee             vvv               eeeeeeeeeeeeee    nnnnnn    nnnnnn                                         
+   SSSSSSSSSSSSSSS           tttt                                                                                             
+ SS:::::::::::::::S       ttt:::t                                                                                             
+S:::::SSSSSS::::::S       t:::::t                                                                                             
+S:::::S     SSSSSSS       t:::::t                                                                                             
+S:::::S             ttttttt:::::ttttttt         eeeeeeeeeeee    vvvvvvv           vvvvvvv    eeeeeeeeeeee     nnnn  nnnnnnnn    
+S:::::S             t:::::::::::::::::t       ee::::::::::::ee   v:::::v         v:::::v   ee::::::::::::ee   n:::nn::::::::nn  
+ S::::SSSS          t:::::::::::::::::t      e::::::eeeee:::::ee  v:::::v       v:::::v   e::::::eeeee:::::ee n::::::::::::::nn 
+  SS::::::SSSSS     tttttt:::::::tttttt     e::::::e     e:::::e   v:::::v     v:::::v   e::::::e     e:::::e nn:::::::::::::::n
+    SSS::::::::SS         t:::::t           e:::::::eeeee::::::e    v:::::v   v:::::v    e:::::::eeeee::::::e   n:::::nnnn:::::n
+       SSSSSS::::S        t:::::t           e:::::::::::::::::e      v:::::v v:::::v     e:::::::::::::::::e    n::::n    n::::n
+            S:::::S       t:::::t           e::::::eeeeeeeeeee        v:::::v:::::v      e::::::eeeeeeeeeee     n::::n    n::::n
+            S:::::S       t:::::t    tttttt e:::::::e                  v:::::::::v       e:::::::e              n::::n    n::::n
+SSSSSSS     S:::::S       t::::::tttt:::::t e::::::::e                  v:::::::v        e::::::::e             n::::n    n::::n
+S::::::SSSSSS:::::S       tt::::::::::::::t  e::::::::eeeeeeee           v:::::v          e::::::::eeeeeeee     n::::n    n::::n
+S:::::::::::::::SS          tt:::::::::::tt   ee:::::::::::::e            v:::v            ee:::::::::::::e     n::::n    n::::n
+ SSSSSSSSSSSSSSS              ttttttttttt       eeeeeeeeeeeeee             vvv               eeeeeeeeeeeeee     nnnnnn    nnnnnn                                         
+`
+
+const phtevenLogo = `
+PPPPPPPPPPPPPPP       hhhhhhh                       tttt
+P::::::::::::::PPP    h:::::h                    ttt:::t
+P:::::::::::::::::PP  h:::::h                    t:::::t
+ PP::::::PPPPPP:::::P h:::::h                    t:::::t
+   P:::::P     P::::P h:::::h               ttttttt:::::ttttttt         eeeeeeeeeeee    vvvvvvv           vvvvvvv    eeeeeeeeeeee     nnnn  nnnnnnnn
+   P:::::P     P::::P h:::::h               t:::::::::::::::::t       ee::::::::::::ee   v:::::v         v:::::v   ee::::::::::::ee   n:::nn::::::::nn
+   P:::::PPPPPP:::::P h:::::hhhhhhhhhhhh    t:::::::::::::::::t      e::::::eeeee:::::ee  v:::::v       v:::::v   e::::::eeeee:::::ee n::::::::::::::nn
+   P::::::::::::::PP  h:::::::::::::::::hh  tttttt:::::::tttttt     e::::::e     e:::::e   v:::::v     v:::::v   e::::::e     e:::::e nn:::::::::::::::n
+   P:::::::::::PPP    h::::::::::::::::::hh       t:::::t           e:::::::eeeee::::::e    v:::::v   v:::::v    e:::::::eeeee::::::e   n:::::nnnn:::::n
+   P:::::PPPPPP       h:::::::hhhhh:::::::h       t:::::t           e:::::::::::::::::e      v:::::v v:::::v     e:::::::::::::::::e    n::::n    n::::n
+   P:::::P            h:::::hh     hh:::::h       t:::::t           e::::::eeeeeeeeeee        v:::::v:::::v      e::::::eeeeeeeeeee     n::::n    n::::n
+   P:::::P            h:::::h       h:::::h       t:::::t    tttttt e:::::::e                  v:::::::::v       e:::::::e              n::::n    n::::n
+   P:::::P            h:::::h       h:::::h       t::::::tttt:::::t e::::::::e                  v:::::::v        e::::::::e             n::::n    n::::n
+  P:::::::P           h:::::h       h:::::h       tt::::::::::::::t  e::::::::eeeeeeee           v:::::v          e::::::::eeeeeeee     n::::n    n::::n
+  P:::::::P           h:::::h       h:::::h         tt:::::::::::tt   ee:::::::::::::e            v:::v            ee:::::::::::::e     n::::n    n::::n
+  PPPPPPPPP           hhhhhhh       hhhhhhh           ttttttttttt       eeeeeeeeeeeeee             vvv               eeeeeeeeeeeeee     nnnnnn    nnnnnn
 `
