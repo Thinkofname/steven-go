@@ -174,13 +174,13 @@ const (
 in vec3 aPosition;
 in vec4 aTextureInfo;
 in ivec3 aTextureOffset;
-in vec3 aColor;
+in vec4 aColor;
 
 uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
 uniform mat4 modelMatrix;
 
-out vec3 vColor;
+out vec4 vColor;
 out vec4 vTextureInfo;
 out vec2 vTextureOffset;
 out float vAtlas;
@@ -201,7 +201,7 @@ const float atlasSize = ` + atlasSizeStr + `;
 
 uniform sampler2DArray textures;
 
-in vec3 vColor;
+in vec4 vColor;
 in vec4 vTextureInfo;
 in vec2 vTextureOffset;
 in float vAtlas;
@@ -215,7 +215,7 @@ void main() {
 	tPos /= atlasSize;
 	vec4 col = texture(textures, vec3(tPos, vAtlas));
 	if (col.a == 0.0) discard;
-	col *= vec4(vColor, 1.0);
+	col *= vColor;
 	fragColor = col;
 }
 `

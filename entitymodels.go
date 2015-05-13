@@ -64,9 +64,10 @@ func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures 
 // Player
 
 type playerModelComponent struct {
-	model   *render.StaticModel
-	skin    string
-	hasHead bool
+	model      *render.StaticModel
+	skin       string
+	hasHead    bool
+	hasNameTag bool
 
 	dir      float64
 	time     float64
@@ -82,6 +83,7 @@ const (
 	playerModelLegRight
 	playerModelArmLeft
 	playerModelArmRight
+	playerModelNameTag
 )
 
 func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
@@ -161,6 +163,14 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		})
 	}
 
+	var nverts []*render.StaticVertex
+	if p.hasNameTag {
+		/*nverts = appendBox(nverts, -0.5, -0.5, -0.5, 1, 1, 1, [6]*render.TextureInfo{
+			direction.North: render.GetTexture("solid"),
+		})*/
+		nverts = createNameTag(info.name)
+	}
+
 	model := render.NewStaticModel([][]*render.StaticVertex{
 		playerModelHead:     hverts,
 		playerModelBody:     bverts,
@@ -168,9 +178,62 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		playerModelLegRight: lverts[1],
 		playerModelArmLeft:  lverts[2],
 		playerModelArmRight: lverts[3],
+		playerModelNameTag:  nverts,
 	})
 	p.model = model
 	model.Radius = 3
+}
+
+func createNameTag(name string) (verts []*render.StaticVertex) {
+	width := render.SizeOfString(name) + 4
+	tex := render.GetTexture("solid")
+	for _, v := range faceVertices[direction.North].verts {
+		vert := &render.StaticVertex{
+			X:        float32(v.X)*float32(width*0.01) - float32((width/2)*0.01),
+			Y:        float32(v.Y)*0.2 - 0.1,
+			TOffsetX: v.TOffsetX * 16 * int16(tex.Width),
+			TOffsetY: v.TOffsetY * 16 * int16(tex.Height),
+			R:        0,
+			G:        0,
+			B:        0,
+			A:        100,
+			TX:       uint16(tex.X),
+			TY:       uint16(tex.Y),
+			TW:       uint16(tex.Width),
+			TH:       uint16(tex.Height),
+			TAtlas:   int16(tex.Atlas),
+		}
+		verts = append(verts, vert)
+	}
+	offset := -(width/2)*0.01 + (2 * 0.01)
+	for _, r := range name {
+		tex := render.CharacterTexture(r)
+		if tex == nil {
+			continue
+		}
+		s := render.SizeOfCharacter(r)
+		for _, v := range faceVertices[direction.North].verts {
+			vert := &render.StaticVertex{
+				X:        float32(v.X)*float32(s*0.01) - float32(offset+s*0.01),
+				Y:        float32(v.Y)*0.16 - 0.08,
+				Z:        -0.01,
+				TOffsetX: v.TOffsetX * 16 * int16(tex.Width),
+				TOffsetY: v.TOffsetY * 16 * int16(tex.Height),
+				R:        255,
+				G:        255,
+				B:        255,
+				A:        255,
+				TX:       uint16(tex.X),
+				TY:       uint16(tex.Y),
+				TW:       uint16(tex.Width),
+				TH:       uint16(tex.Height),
+				TAtlas:   int16(tex.Atlas),
+			}
+			verts = append(verts, vert)
+		}
+		offset += (s + 2) * 0.01
+	}
+	return verts
 }
 
 func esPlayerModelRemove(p *playerModelComponent) {
@@ -196,6 +259,14 @@ func esPlayerModelTick(p *playerModelComponent,
 
 	offMat := mgl32.Translate3D(float32(x), -float32(y), float32(z)).
 		Mul4(mgl32.Rotate3DY(math.Pi - float32(r.Yaw())).Mat4())
+
+	// TODO This isn't the most optimal way of doing this
+	if p.hasNameTag {
+		val := math.Atan2(x-render.Camera.X, z-render.Camera.Z)
+		model.Matrix[playerModelNameTag] = mgl32.Translate3D(float32(x), -float32(y), float32(z)).
+			Mul4(mgl32.Translate3D(0, -12/16.0-12/16.0-0.6, 0)).
+			Mul4(mgl32.Rotate3DY(float32(val)).Mat4())
+	}
 
 	model.Matrix[playerModelHead] = offMat.Mul4(mgl32.Translate3D(0, -12/16.0-12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(float32(r.Pitch())).Mat4())
