@@ -177,6 +177,12 @@ handle:
 				txt.Color = chat.Red
 				disconnectReason.Value = txt
 			}
+
+			if Client.entity != nil && Client.entityAdded {
+				Client.entityAdded = false
+				Client.entities.container.RemoveEntity(Client.entity)
+			}
+
 			setScreen(newServerList())
 		default:
 			break handle
