@@ -45,7 +45,7 @@ func initClient() {
 		for _, e := range Client.entities.entities {
 			Client.entities.container.RemoveEntity(e)
 		}
-		if Client.entity != nil {
+		if Client.entity != nil && Client.entityAdded {
 			Client.entities.container.RemoveEntity(Client.entity)
 		}
 		Client.playerList.free()
@@ -60,20 +60,25 @@ func initClient() {
 	}
 }
 
+type cameraMode int
+
+const (
+	cameraNormal cameraMode = iota
+	cameraBehind
+	cameraFront
+)
+
 type ClientState struct {
 	valid bool
 
 	scene *scene.Type
 
-	entity interface {
-		PlayerComponent
-		PositionComponent
-		RotationComponent
-		TargetPositionComponent
-		TargetRotationComponent
-	}
+	cameraMode cameraMode
+
+	entity      *clientEntity
 	entityAdded bool
 
+	LX, LY, LZ float64
 	X, Y, Z    float64
 	Yaw, Pitch float64
 
@@ -171,26 +176,41 @@ func (c *ClientState) init() {
 	c.playerList.init()
 	c.entities.init()
 
-	c.initEntity()
+	c.initEntity(false)
 }
 
-func (c *ClientState) initEntity() {
-	type clientEntity struct {
-		positionComponent
-		rotationComponent
-		targetRotationComponent
-		targetPositionComponent
-		sizeComponent
+type clientEntity struct {
+	positionComponent
+	rotationComponent
+	targetRotationComponent
+	targetPositionComponent
+	sizeComponent
 
-		playerComponent
-		playerModelComponent
-	}
+	playerComponent
+	playerModelComponent
+}
+
+func (c *ClientState) initEntity(head bool) {
 	ce := &clientEntity{}
 	ub, _ := hex.DecodeString(profile.ID)
 	copy(ce.uuid[:], ub)
 	c.entity = ce
-	ce.hasHead = false
+	ce.hasHead = head
 	ce.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 1.8, 0.6)
+}
+
+func (c *ClientState) cycleCamera() {
+	oldMode := c.cameraMode
+	c.cameraMode = (c.cameraMode + 1) % 3
+	if oldMode == cameraNormal || c.cameraMode == cameraNormal {
+		// Reset the entity
+		oldEntity := c.entity
+		c.entities.container.RemoveEntity(oldEntity)
+		c.initEntity(c.cameraMode != cameraNormal)
+		c.entities.container.AddEntity(c.entity)
+		c.entity.SetPosition(oldEntity.Position())
+		c.entity.SetTargetPosition(oldEntity.TargetPosition())
+	}
 }
 
 func (c *ClientState) renderTick(delta float64) {
@@ -198,6 +218,8 @@ func (c *ClientState) renderTick(delta float64) {
 	c.hotbarUI.X = -184 + 24 + 40*float64(c.currentHotbarSlot)
 
 	forward, yaw := c.calculateMovement()
+
+	c.LX, c.LY, c.LZ = c.X, c.Y, c.Z
 
 	if c.GameMode.Fly() {
 		c.X += forward * math.Cos(yaw) * -math.Cos(c.Pitch) * delta * 0.2
@@ -227,20 +249,20 @@ func (c *ClientState) renderTick(delta float64) {
 		cx := c.X
 		cy := c.Y
 		cz := c.Z
-		c.Y = render.Camera.Y - playerHeight
-		c.Z = render.Camera.Z
+		c.Y = c.LY
+		c.Z = c.LZ
 
 		// We handle each axis separately to allow for a sliding
 		// effect when pushing up against walls.
 
 		bounds, xhit := c.checkCollisions(c.Bounds)
 		c.X = float64(bounds.Min[0] + 0.3)
-		c.copyToCamera()
+		c.LX = c.X
 
 		c.Z = cz
 		bounds, zhit := c.checkCollisions(c.Bounds)
 		c.Z = float64(bounds.Min[2] + 0.3)
-		c.copyToCamera()
+		c.LZ = c.Z
 
 		// Half block jumps
 		// Minecraft lets you 'jump' up 0.5 blocks
@@ -264,7 +286,6 @@ func (c *ClientState) renderTick(delta float64) {
 			}
 			c.X, c.Z = ox, oz
 		}
-		c.copyToCamera()
 
 		c.Y = cy
 		bounds, _ = c.checkCollisions(c.Bounds)
@@ -298,6 +319,8 @@ func (c *ClientState) renderTick(delta float64) {
 	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
 	c.entity.SetYaw(-c.Yaw)
 	c.entity.SetTargetYaw(-c.Yaw)
+	c.entity.SetPitch(-c.Pitch - math.Pi)
+	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
 
 	c.playerList.render(delta)
 	c.entities.tick()
@@ -543,9 +566,9 @@ func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
 	bounds.Shift(float32(c.X), float32(c.Y), float32(c.Z))
 
 	dir := mgl32.Vec3{
-		-float32(render.Camera.X - c.X),
-		-float32(render.Camera.Y - playerHeight - c.Y),
-		-float32(render.Camera.Z - c.Z),
+		-float32(c.LX - c.X),
+		-float32(c.LY - c.Y),
+		-float32(c.LZ - c.Z),
 	}
 
 	minX, minY, minZ := int(bounds.Min.X()-1), int(bounds.Min.Y()-1), int(bounds.Min.Z()-1)
@@ -578,6 +601,18 @@ func (c *ClientState) copyToCamera() {
 	render.Camera.Z = c.Z
 	render.Camera.Yaw = c.Yaw
 	render.Camera.Pitch = c.Pitch
+	switch c.cameraMode {
+	case cameraBehind:
+		render.Camera.X -= 4 * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+		render.Camera.Z += 4 * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+		render.Camera.Y += 4 * math.Sin(c.Pitch)
+	case cameraFront:
+		render.Camera.X += 4 * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+		render.Camera.Z -= 4 * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+		render.Camera.Y -= 4 * math.Sin(c.Pitch)
+		render.Camera.Yaw += math.Pi
+		render.Camera.Pitch = -render.Camera.Pitch
+	}
 }
 
 func (c *ClientState) tick() {

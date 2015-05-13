@@ -177,6 +177,10 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		if action == glfw.Release {
 			Client.toggleDebug()
 		}
+	case glfw.KeyF5:
+		if action == glfw.Release {
+			Client.cycleCamera()
+		}
 	case glfw.KeyTab:
 		if action == glfw.Press {
 			Client.playerList.set(true)
