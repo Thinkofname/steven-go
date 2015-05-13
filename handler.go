@@ -121,6 +121,7 @@ func (handler) Teleport(t *protocol.TeleportPlayer) {
 	}
 	Client.copyToCamera()
 	ready = true
+	Client.entity.SetPosition(Client.X, Client.Y, Client.Z)
 }
 
 func (handler) ChunkData(c *protocol.ChunkData) {
