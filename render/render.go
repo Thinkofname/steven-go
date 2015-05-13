@@ -120,14 +120,14 @@ sync:
 			(math.Pi/180)*float32(FOV),
 			float32(width)/float32(height),
 			0.1,
-			10000.0,
+			500.0,
 		)
 		gl.Viewport(0, 0, width, height)
 		frustum.SetPerspective(
 			(math.Pi/180)*float32(FOV),
 			float32(width)/float32(height),
 			0.1,
-			10000.0,
+			500.0,
 		)
 	}
 
@@ -154,6 +154,12 @@ sync:
 		mgl32.Vec3{0, -1, 0},
 	)
 	cameraMatrix = cameraMatrix.Mul4(mgl32.Scale3D(-1.0, 1.0, 1.0))
+
+	frustum.SetCamera(
+		cam,
+		cam.Add(mgl32.Vec3{-viewVector.X(), -viewVector.Y(), viewVector.Z()}),
+		mgl32.Vec3{0, -1, 0},
+	)
 
 	shaderChunk.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
 	shaderChunk.CameraMatrix.Matrix4(&cameraMatrix)
@@ -229,12 +235,6 @@ const (
 var rQueue renderQueue
 
 func renderBuffer(ch *ChunkBuffer, po position, fr direction.Type) {
-	cam := mgl32.Vec3{float32(-Camera.X), float32(-Camera.Y), float32(Camera.Z)}
-	frustum.SetCamera(
-		cam,
-		cam.Add(mgl32.Vec3{-viewVector.X(), -viewVector.Y(), viewVector.Z()}),
-		mgl32.Vec3{0, -1, 0},
-	)
 	rQueue.Append(renderRequest{ch, po, fr})
 itQueue:
 	for !rQueue.Empty() {

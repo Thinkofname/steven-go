@@ -166,6 +166,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		playerModelArmRight: lverts[3],
 	})
 	p.model = model
+	model.Radius = 3
 }
 
 func esPlayerModelRemove(p *playerModelComponent) {
@@ -183,10 +184,13 @@ func esModelRemove(p interface {
 func esPlayerModelTick(p *playerModelComponent,
 	pos PositionComponent, t TargetPositionComponent, r RotationComponent) {
 	x, y, z := pos.Position()
+	model := p.model
+
+	model.X, model.Y, model.Z = -float32(x), -float32(y), float32(z)
+
 	offMat := mgl32.Translate3D(float32(x), -float32(y), float32(z)).
 		Mul4(mgl32.Rotate3DY(math.Pi - float32(r.Yaw())).Mat4())
 
-	model := p.model
 	model.Matrix[playerModelHead] = offMat.Mul4(mgl32.Translate3D(0, -12/16.0-12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(float32(r.Pitch())).Mat4())
 	model.Matrix[playerModelBody] = offMat.Mul4(mgl32.Translate3D(0, -12/16.0-6/16.0, 0))

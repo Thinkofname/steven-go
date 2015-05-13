@@ -39,6 +39,10 @@ type StaticVertex struct {
 var staticFunc, staticTypes = builder.Struct(&StaticVertex{})
 
 type StaticModel struct {
+	// For culling only
+	X, Y, Z float32
+	Radius  float32
+	// Per a part matrix
 	Matrix     []mgl32.Mat4
 	array      gl.VertexArray
 	buffer     gl.Buffer
@@ -107,6 +111,8 @@ func (sm *StaticModel) data(verts []*StaticVertex) {
 }
 
 func (sm *StaticModel) Free() {
+	sm.array.Delete()
+	sm.buffer.Delete()
 	for i, s := range staticState.models {
 		if s == sm {
 			staticState.models = append(staticState.models[:i], staticState.models[i+1:]...)
@@ -138,6 +144,9 @@ func drawStatic() {
 	staticState.shader.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
 	staticState.shader.CameraMatrix.Matrix4(&cameraMatrix)
 	for _, mdl := range staticState.models {
+		if mdl.Radius != 0 && !frustum.IsSphereInside(mdl.X, mdl.Y, mdl.Z, mdl.Radius) {
+			continue
+		}
 		mdl.array.Bind()
 		for i := range mdl.Matrix {
 			staticState.shader.ModelMatrix.Matrix4(&mdl.Matrix[i])
