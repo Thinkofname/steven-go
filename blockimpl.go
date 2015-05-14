@@ -1677,3 +1677,41 @@ func (b *blockSkull) toData() int {
 	}
 	return -1
 }
+
+// Portal
+
+type blockPortal struct {
+	baseBlock
+	Axis blockAxis `state:"axis,1-2"`
+}
+
+func (b *blockPortal) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.collidable = false
+}
+
+func (b *blockPortal) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			vmath.NewAABB(6/16.0, 0, 0, 10/16.0, 1.0, 1.0),
+		}
+		if b.Axis == axisX {
+			b.bounds[0].RotateY(math.Pi/2, 0.5, 0.5, 0.5)
+		}
+	}
+	return b.bounds
+}
+
+func (b *blockPortal) ModelVariant() string {
+	return fmt.Sprintf("axis=%s", b.Axis)
+}
+
+func (b *blockPortal) toData() int {
+	switch b.Axis {
+	case axisX:
+		return 1
+	case axisZ:
+		return 2
+	}
+	return 0
+}

@@ -112,7 +112,7 @@ var Blocks = struct {
 	Netherrack                 *BlockSet
 	SoulSand                   *BlockSet
 	Glowstone                  *BlockSet
-	Portal                     *BlockSet
+	Portal                     *BlockSet `type:"portal"`
 	PumpkinLit                 *BlockSet
 	Cake                       *BlockSet
 	RepeaterUnpowered          *BlockSet
