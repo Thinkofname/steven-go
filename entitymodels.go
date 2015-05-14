@@ -165,9 +165,6 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 
 	var nverts []*render.StaticVertex
 	if p.hasNameTag {
-		/*nverts = appendBox(nverts, -0.5, -0.5, -0.5, 1, 1, 1, [6]*render.TextureInfo{
-			direction.North: render.GetTexture("solid"),
-		})*/
 		nverts = createNameTag(info.name)
 	}
 
