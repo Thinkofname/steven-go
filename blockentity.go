@@ -14,8 +14,14 @@
 
 package steven
 
-func (ce *clientEntities) registerBlockEntities() {
+import (
+	"github.com/thinkofdeath/steven/encoding/nbt"
+	"github.com/thinkofdeath/steven/entitysys"
+)
 
+func (ce *clientEntities) registerBlockEntities() {
+	ce.container.AddSystem(entitysys.Add, esSkullAdd)
+	ce.container.AddSystem(entitysys.Remove, esSkullRemove)
 }
 
 type BlockEntity interface {
@@ -37,4 +43,9 @@ func (bc *blockComponent) SetPosition(p Position) {
 type BlockComponent interface {
 	Position() Position
 	SetPosition(p Position)
+}
+
+type BlockNBTComponent interface {
+	Deserilize(tag *nbt.Compound)
+	CanHandleAction(action int) bool
 }

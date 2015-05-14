@@ -21,7 +21,22 @@ import (
 	"io"
 )
 
-// TODO(Think) Cleanup
+type TypeID int
+
+const (
+	TagEnd TypeID = iota
+	TagByte
+	TagShort
+	TagInt
+	TagLong
+	TagFloat
+	TagDouble
+	TagByteArray
+	TagString
+	TagList
+	TagCompound
+	TagIntArray
+)
 
 var (
 	ErrInvalidCompound = errors.New("invalid compound")
@@ -29,12 +44,12 @@ var (
 
 type Compound struct {
 	Name  string
-	items map[string]interface{}
+	Items map[string]interface{}
 }
 
 func NewCompound() *Compound {
 	return &Compound{
-		items: make(map[string]interface{}),
+		Items: make(map[string]interface{}),
 	}
 }
 
@@ -58,14 +73,14 @@ func (c *Compound) deserialize(r io.Reader) error {
 			return err
 		}
 		// End of compound
-		if id == 0 {
+		if TypeID(id) == TagEnd {
 			break
 		}
 		name, err := readString(r)
 		if err != nil {
 			return err
 		}
-		c.items[name], err = readType(r, int(id))
+		c.Items[name], err = readType(r, TypeID(id))
 		if err != nil {
 			return err
 		}
@@ -74,7 +89,7 @@ func (c *Compound) deserialize(r io.Reader) error {
 }
 
 type List struct {
-	Type     int
+	Type     TypeID
 	Elements []interface{}
 }
 
@@ -83,7 +98,7 @@ func (l *List) deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	l.Type = int(t)
+	l.Type = TypeID(t)
 	var le int32
 	err = binary.Read(r, binary.BigEndian, &le)
 	if err != nil {
@@ -99,31 +114,32 @@ func (l *List) deserialize(r io.Reader) error {
 	return nil
 }
 
-func readType(r io.Reader, id int) (interface{}, error) {
+func readType(r io.Reader, id TypeID) (interface{}, error) {
 	switch id {
-	case 1:
-		return readByte(r)
-	case 2:
+	case TagByte:
+		v, err := readByte(r)
+		return int8(v), err
+	case TagShort:
 		var v int16
 		err := binary.Read(r, binary.BigEndian, &v)
 		return v, err
-	case 3:
+	case TagInt:
 		var v int32
 		err := binary.Read(r, binary.BigEndian, &v)
 		return v, err
-	case 4:
+	case TagLong:
 		var v int64
 		err := binary.Read(r, binary.BigEndian, &v)
 		return v, err
-	case 5:
+	case TagFloat:
 		var v float32
 		err := binary.Read(r, binary.BigEndian, &v)
 		return v, err
-	case 6:
+	case TagDouble:
 		var v float64
 		err := binary.Read(r, binary.BigEndian, &v)
 		return v, err
-	case 7:
+	case TagByteArray:
 		var l int32
 		err := binary.Read(r, binary.BigEndian, &l)
 		if err != nil {
@@ -132,18 +148,17 @@ func readType(r io.Reader, id int) (interface{}, error) {
 		v := make([]byte, l)
 		_, err = io.ReadFull(r, v)
 		return v, err
-
-	case 8:
+	case TagString:
 		return readString(r)
-	case 9:
+	case TagList:
 		l := &List{}
 		err := l.deserialize(r)
 		return l, err
-	case 10:
+	case TagCompound:
 		c := NewCompound()
 		err := c.deserialize(r)
 		return c, err
-	case 11:
+	case TagIntArray:
 		var l int32
 		err := binary.Read(r, binary.BigEndian, &l)
 		if err != nil {

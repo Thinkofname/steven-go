@@ -28,6 +28,20 @@ var chunkMap world = map[chunkPosition]*chunk{}
 
 type world map[chunkPosition]*chunk
 
+func (w world) BlockEntity(x, y, z int) BlockEntity {
+	cx := x >> 4
+	cz := z >> 4
+	chunk := w[chunkPosition{cx, cz}]
+	if chunk == nil {
+		return nil
+	}
+	s := chunk.Sections[y>>4]
+	if s == nil {
+		return nil
+	}
+	return s.BlockEntities[Position{x, y, z}]
+}
+
 func (w world) Block(x, y, z int) Block {
 	cx := x >> 4
 	cz := z >> 4
@@ -421,6 +435,10 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 			if section == nil {
 				continue
 			}
+			for _, be := range section.BlockEntities {
+				Client.entities.container.AddEntity(be)
+			}
+
 			cx := c.X << 4
 			cy := section.Y << 4
 			cz := c.Z << 4
@@ -486,6 +504,13 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 					}
 				}
 			}
+		}
+
+		// Execute pending tasks
+		toLoad := loadingChunks[c.chunkPosition]
+		delete(loadingChunks, c.chunkPosition)
+		for _, f := range toLoad {
+			f()
 		}
 	}
 

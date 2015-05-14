@@ -124,6 +124,8 @@ func (handler) Teleport(t *protocol.TeleportPlayer) {
 	Client.entity.SetPosition(Client.X, Client.Y, Client.Z)
 }
 
+var loadingChunks = map[chunkPosition][]func(){}
+
 func (handler) ChunkData(c *protocol.ChunkData) {
 	if c.BitMask == 0 && c.New {
 		pos := chunkPosition{int(c.ChunkX), int(c.ChunkZ)}
@@ -134,10 +136,16 @@ func (handler) ChunkData(c *protocol.ChunkData) {
 		}
 		return
 	}
-	go loadChunk(int(c.ChunkX), int(c.ChunkZ), c.Data, c.BitMask, true, c.New)
+	pos := chunkPosition{int(c.ChunkX), int(c.ChunkZ)}
+	loadingChunks[pos] = nil
+	go loadChunk(pos.X, pos.Z, c.Data, c.BitMask, true, c.New)
 }
 
 func (handler) ChunkDataBulk(c *protocol.ChunkDataBulk) {
+	for _, meta := range c.Meta {
+		pos := chunkPosition{int(meta.ChunkX), int(meta.ChunkZ)}
+		loadingChunks[pos] = nil
+	}
 	go func() {
 		offset := 0
 		data := c.Data
@@ -147,14 +155,30 @@ func (handler) ChunkDataBulk(c *protocol.ChunkDataBulk) {
 	}()
 }
 
+func protocolPosToChunkPos(p protocol.Position) chunkPosition {
+	return chunkPosition{p.X() >> 4, p.Z() >> 4}
+}
+
 func (handler) SetBlock(b *protocol.BlockChange) {
+	cp := protocolPosToChunkPos(b.Location)
+	if f, ok := loadingChunks[cp]; ok {
+		loadingChunks[cp] = append(f, func() { defaultHandler.SetBlock(b) })
+		return
+	}
+
 	block := GetBlockByCombinedID(uint16(b.BlockID))
 	chunkMap.SetBlock(block, b.Location.X(), b.Location.Y(), b.Location.Z())
 	chunkMap.UpdateBlock(b.Location.X(), b.Location.Y(), b.Location.Z())
 }
 
 func (handler) SetBlockBatch(b *protocol.MultiBlockChange) {
-	chunk := chunkMap[chunkPosition{int(b.ChunkX), int(b.ChunkZ)}]
+	cp := chunkPosition{int(b.ChunkX), int(b.ChunkZ)}
+	if f, ok := loadingChunks[cp]; ok {
+		loadingChunks[cp] = append(f, func() { defaultHandler.SetBlockBatch(b) })
+		return
+	}
+
+	chunk := chunkMap[cp]
 	if chunk == nil {
 		return
 	}
@@ -164,6 +188,24 @@ func (handler) SetBlockBatch(b *protocol.MultiBlockChange) {
 		chunk.setBlock(block, x, y, z)
 		chunkMap.UpdateBlock((chunk.X<<4)+x, y, (chunk.Z<<4)+z)
 	}
+}
+
+func (handler) BlockEntity(p *protocol.UpdateBlockEntity) {
+	cp := protocolPosToChunkPos(p.Location)
+	if f, ok := loadingChunks[cp]; ok {
+		loadingChunks[cp] = append(f, func() { defaultHandler.BlockEntity(p) })
+		return
+	}
+
+	be := chunkMap.BlockEntity(p.Location.X(), p.Location.Y(), p.Location.Z())
+	if be == nil {
+		return
+	}
+	nbe, ok := be.(BlockNBTComponent)
+	if !ok || !nbe.CanHandleAction(int(p.Action)) {
+		return
+	}
+	nbe.Deserilize(p.NBT)
 }
 
 func (handler) SpawnPlayer(s *protocol.SpawnPlayer) {

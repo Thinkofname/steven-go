@@ -49,4 +49,5 @@ func init() {
 	registerBlockType("carpet", &blockCarpet{})
 	registerBlockType("torch", &blockTorch{})
 	registerBlockType("wallSign", &blockWallSign{})
+	registerBlockType("skull", &blockSkull{})
 }

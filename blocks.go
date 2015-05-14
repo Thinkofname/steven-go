@@ -166,7 +166,7 @@ var Blocks = struct {
 	Carrots                    *BlockSet
 	Potatoes                   *BlockSet
 	WoodenButton               *BlockSet
-	Skull                      *BlockSet
+	Skull                      *BlockSet `type:"skull"`
 	Anvil                      *BlockSet
 	TrappedChest               *BlockSet
 	LightWeightedPressurePlate *BlockSet

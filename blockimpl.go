@@ -1581,7 +1581,6 @@ func (b *blockTorch) toData() int {
 type blockWallSign struct {
 	baseBlock
 	Facing direction.Type `state:"facing,2-5"`
-	Model  string
 }
 
 func (b *blockWallSign) load(tag reflect.StructTag) {
@@ -1600,4 +1599,81 @@ func (b *blockWallSign) CreateBlockEntity() BlockEntity {
 
 func (b *blockWallSign) toData() int {
 	return int(b.Facing)
+}
+
+// Wall Sign
+
+type blockSkull struct {
+	baseBlock
+	Facing int `state:"facing,0-4"`
+}
+
+func (b *blockSkull) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.renderable = false
+}
+
+func (b *blockSkull) CreateBlockEntity() BlockEntity {
+	type skull struct {
+		blockComponent
+		skullComponent
+	}
+	w := &skull{}
+	w.Facing = b.facing()
+	return w
+}
+
+func (b *blockSkull) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			vmath.NewAABB(0.5-(4/16.0), 0, 0.5-(4/16.0), 0.5+(4/16.0), 8/16.0, 0.5+(4/16.0)),
+		}
+		f := b.facing()
+		if f != direction.Up {
+			ang := float32(0)
+			switch f {
+			case direction.South:
+				ang = math.Pi
+			case direction.East:
+				ang = math.Pi / 2
+			case direction.West:
+				ang = -math.Pi / 2
+			}
+			b.bounds[0].Shift(0, 4/16.0, 4/16.0)
+			b.bounds[0].RotateY(ang, 0.5, 0.5, 0.5)
+		}
+	}
+	return b.bounds
+}
+
+func (b *blockSkull) facing() direction.Type {
+	switch b.Facing {
+	case 0:
+		return direction.Up
+	case 1:
+		return direction.North
+	case 2:
+		return direction.South
+	case 3:
+		return direction.East
+	case 4:
+		return direction.West
+	}
+	return direction.Invalid
+}
+
+func (b *blockSkull) toData() int {
+	switch b.facing() {
+	case direction.Up:
+		return 1
+	case direction.North:
+		return 2
+	case direction.South:
+		return 3
+	case direction.East:
+		return 4
+	case direction.West:
+		return 5
+	}
+	return -1
 }
