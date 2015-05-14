@@ -380,18 +380,21 @@ func (c *ClientState) targetEntity() (e Entity) {
 	s := mgl32.Vec3{float32(render.Camera.X), float32(render.Camera.Y), float32(render.Camera.Z)}
 	d := c.viewVector()
 
-	bounds := vmath.NewAABB(-0.05, -0.05, -0.05, 0.1, 0.1, 0.1)
+	bounds := vmath.NewAABB(0, 0, 0, 1, 1, 1)
 	traceRay(
 		4,
 		s, d,
-		func(bv mgl32.Vec3) bool {
-			ents := chunkMap.EntitiesIn(bounds.Shift(bv.X(), bv.Y(), bv.Z()))
-			if len(ents) != 0 {
-				e = ents[0]
-				return false
+		func(bx, by, bz int) bool {
+			ents := chunkMap.EntitiesIn(bounds.Shift(float32(bx), float32(by), float32(bz)))
+			for _, ee := range ents {
+				ex, ey, ez := ee.(PositionComponent).Position()
+				bo := ee.(SizeComponent).Bounds().Shift(float32(ex), float32(ey), float32(ez))
+				if bo.IntersectsLine(s, d) {
+					e = ee
+					return false
+				}
 			}
 
-			bx, by, bz := int(math.Floor(float64(bv.X()))), int(math.Floor(float64(bv.Y()))), int(math.Floor(float64(bv.Z())))
 			b := chunkMap.Block(bx, by, bz)
 			if _, ok := b.(*blockLiquid); !b.Is(Blocks.Air) && !ok {
 				bb := b.CollisionBounds()
@@ -413,17 +416,20 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 	d := c.viewVector()
 
 	block = Blocks.Air.Base
-	bounds := vmath.NewAABB(-0.05, -0.05, -0.05, 0.1, 0.1, 0.1)
+	bounds := vmath.NewAABB(0, 0, 0, 1, 1, 1)
 	traceRay(
 		4,
 		s, d,
-		func(bv mgl32.Vec3) bool {
-			bounds := bounds.Shift(bv.X(), bv.Y(), bv.Z())
-			if len(chunkMap.EntitiesIn(bounds)) != 0 {
-				return false
+		func(bx, by, bz int) bool {
+			ents := chunkMap.EntitiesIn(bounds.Shift(float32(bx), float32(by), float32(bz)))
+			for _, ee := range ents {
+				ex, ey, ez := ee.(PositionComponent).Position()
+				bo := ee.(SizeComponent).Bounds().Shift(float32(ex), float32(ey), float32(ez))
+				if bo.IntersectsLine(s, d) {
+					return false
+				}
 			}
 
-			bx, by, bz := int(math.Floor(float64(bv.X()))), int(math.Floor(float64(bv.Y()))), int(math.Floor(float64(bv.Z())))
 			b := chunkMap.Block(bx, by, bz)
 			if _, ok := b.(*blockLiquid); !b.Is(Blocks.Air) && !ok {
 				bb := b.CollisionBounds()
@@ -442,7 +448,7 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 	return
 }
 
-func traceRay(max float32, s, d mgl32.Vec3, cb func(mgl32.Vec3) bool) {
+func traceRay(max float32, s, d mgl32.Vec3, cb func(x, y, z int) bool) {
 	type gen struct {
 		count   int
 		base, d float32
@@ -469,47 +475,39 @@ func traceRay(max float32, s, d mgl32.Vec3, cb func(mgl32.Vec3) bool) {
 	aGen := newGen(s.X(), d.X())
 	bGen := newGen(s.Y(), d.Y())
 	cGen := newGen(s.Z(), d.Z())
-	prevN := float32(0.0)
 	nextNA := next(aGen)
 	nextNB := next(bGen)
 	nextNC := next(cGen)
 
-	for {
-		nextN := float32(0.0)
-		if nextNA < nextNB {
-			if nextNA < nextNC {
-				nextN = nextNA
-				nextNA = next(aGen)
-			} else {
-				nextN = nextNC
-				nextNC = next(cGen)
-			}
-		} else {
-			if nextNB < nextNC {
-				nextN = nextNB
-				nextNB = next(bGen)
-			} else {
-				nextN = nextNC
-				nextNC = next(cGen)
-			}
-		}
-		if prevN == nextN {
-			continue
-		}
-		final := false
-		n := (prevN + nextN) / 2
-		if nextN > max {
-			final = true
-			n = max
-		}
-		bv := s.Add(d.Mul(n))
+	x, y, z := int(math.Floor(float64(s.X()))), int(math.Floor(float64(s.Y()))), int(math.Floor(float64(s.Z())))
 
-		if !cb(bv) {
+	for {
+		if !cb(x, y, z) {
 			return
 		}
-
-		prevN = nextN
-		if final {
+		nextN := float32(0.0)
+		if nextNA <= nextNB {
+			if nextNA <= nextNC {
+				nextN = nextNA
+				nextNA = next(aGen)
+				x += int(math.Copysign(1, float64(d.X())))
+			} else {
+				nextN = nextNC
+				nextNC = next(cGen)
+				z += int(math.Copysign(1, float64(d.Z())))
+			}
+		} else {
+			if nextNB <= nextNC {
+				nextN = nextNB
+				nextNB = next(bGen)
+				y += int(math.Copysign(1, float64(d.Y())))
+			} else {
+				nextN = nextNC
+				nextNC = next(cGen)
+				z += int(math.Copysign(1, float64(d.Z())))
+			}
+		}
+		if nextN > max {
 			break
 		}
 	}
