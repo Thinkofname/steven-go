@@ -311,17 +311,6 @@ func (c *ClientState) renderTick(delta float64) {
 	// Debug displays
 	c.renderDebug()
 
-	// Update our entity
-	// TODO Should the entity be the main thing
-	// instead of duplicating things in the client?
-	ox := math.Cos(c.Yaw-math.Pi/2) * 0.3
-	oz := -math.Sin(c.Yaw-math.Pi/2) * 0.3
-	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
-	c.entity.SetYaw(-c.Yaw)
-	c.entity.SetTargetYaw(-c.Yaw)
-	c.entity.SetPitch(-c.Pitch - math.Pi)
-	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
-
 	c.playerList.render(delta)
 	c.entities.tick()
 }
@@ -371,7 +360,7 @@ func (c *ClientState) UpdateHunger(hunger float64) {
 func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 	const max = 4.0
 	block = Blocks.Air.Base
-	s := mgl32.Vec3{float32(c.X), float32(c.Y + playerHeight), float32(c.Z)}
+	s := mgl32.Vec3{float32(render.Camera.X), float32(render.Camera.Y), float32(render.Camera.Z)}
 	d := c.viewVector()
 
 	type gen struct {
@@ -596,9 +585,22 @@ func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
 }
 
 func (c *ClientState) copyToCamera() {
-	render.Camera.X = c.X
-	render.Camera.Y = c.Y + playerHeight
-	render.Camera.Z = c.Z
+	ox := math.Cos(c.Yaw-math.Pi/2) * 0.25
+	oz := -math.Sin(c.Yaw-math.Pi/2) * 0.25
+	// Update our entity
+	// TODO Should the entity be the main thing
+	// instead of duplicating things in the client?
+	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
+	c.entity.SetYaw(-c.Yaw)
+	c.entity.SetTargetYaw(-c.Yaw)
+	c.entity.SetPitch(-c.Pitch - math.Pi)
+	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
+	x, y, z := c.entity.Position()
+	x += ox
+	z += oz
+	render.Camera.X = x
+	render.Camera.Y = y + playerHeight
+	render.Camera.Z = z
 	render.Camera.Yaw = c.Yaw
 	render.Camera.Pitch = c.Pitch
 	switch c.cameraMode {
