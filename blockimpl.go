@@ -955,17 +955,17 @@ func (b *blockStairs) CollisionBounds() []vmath.AABB {
 		}
 		for i := range b.bounds {
 			if b.Half == shTop {
-				b.bounds[i].RotateX(-math.Pi, 0.5, 0.5, 0.5)
-				b.bounds[i].RotateY(-math.Pi, 0.5, 0.5, 0.5)
+				b.bounds[i] = b.bounds[i].RotateX(-math.Pi, 0.5, 0.5, 0.5)
+				b.bounds[i] = b.bounds[i].RotateY(-math.Pi, 0.5, 0.5, 0.5)
 			}
 			switch b.Facing {
 			case direction.North:
 			case direction.South:
-				b.bounds[i].RotateY(-math.Pi, 0.5, 0.5, 0.5)
+				b.bounds[i] = b.bounds[i].RotateY(-math.Pi, 0.5, 0.5, 0.5)
 			case direction.East:
-				b.bounds[i].RotateY(-math.Pi*0.5, 0.5, 0.5, 0.5)
+				b.bounds[i] = b.bounds[i].RotateY(-math.Pi*0.5, 0.5, 0.5, 0.5)
 			case direction.West:
-				b.bounds[i].RotateY(-math.Pi*1.5, 0.5, 0.5, 0.5)
+				b.bounds[i] = b.bounds[i].RotateY(-math.Pi*1.5, 0.5, 0.5, 0.5)
 			}
 		}
 	}
@@ -1131,15 +1131,15 @@ func (b *blockPiston) CollisionBounds() []vmath.AABB {
 		switch b.Facing {
 		case direction.North:
 		case direction.South:
-			bo.RotateY(-math.Pi, 0.5, 0.5, 0.5)
+			bo = bo.RotateY(-math.Pi, 0.5, 0.5, 0.5)
 		case direction.West:
-			bo.RotateY(-math.Pi*1.5, 0.5, 0.5, 0.5)
+			bo = bo.RotateY(-math.Pi*1.5, 0.5, 0.5, 0.5)
 		case direction.East:
-			bo.RotateY(-math.Pi*0.5, 0.5, 0.5, 0.5)
+			bo = bo.RotateY(-math.Pi*0.5, 0.5, 0.5, 0.5)
 		case direction.Up:
-			bo.RotateX(-math.Pi*1.5, 0.5, 0.5, 0.5)
+			bo = bo.RotateX(-math.Pi*1.5, 0.5, 0.5, 0.5)
 		case direction.Down:
-			bo.RotateX(-math.Pi*0.5, 0.5, 0.5, 0.5)
+			bo = bo.RotateX(-math.Pi*0.5, 0.5, 0.5, 0.5)
 		}
 		b.bounds = []vmath.AABB{bo}
 	}
@@ -1217,15 +1217,15 @@ func (b *blockPistonHead) CollisionBounds() []vmath.AABB {
 			switch b.Facing {
 			case direction.North:
 			case direction.South:
-				b.bounds[i].RotateY(-math.Pi, 0.5, 0.5, 0.5)
+				b.bounds[i] = b.bounds[i].RotateY(-math.Pi, 0.5, 0.5, 0.5)
 			case direction.West:
-				b.bounds[i].RotateY(-math.Pi*1.5, 0.5, 0.5, 0.5)
+				b.bounds[i] = b.bounds[i].RotateY(-math.Pi*1.5, 0.5, 0.5, 0.5)
 			case direction.East:
-				b.bounds[i].RotateY(-math.Pi*0.5, 0.5, 0.5, 0.5)
+				b.bounds[i] = b.bounds[i].RotateY(-math.Pi*0.5, 0.5, 0.5, 0.5)
 			case direction.Up:
-				b.bounds[i].RotateX(-math.Pi*1.5, 0.5, 0.5, 0.5)
+				b.bounds[i] = b.bounds[i].RotateX(-math.Pi*1.5, 0.5, 0.5, 0.5)
 			case direction.Down:
-				b.bounds[i].RotateX(-math.Pi*0.5, 0.5, 0.5, 0.5)
+				b.bounds[i] = b.bounds[i].RotateX(-math.Pi*0.5, 0.5, 0.5, 0.5)
 			}
 		}
 	}
@@ -1370,7 +1370,7 @@ func (b *blockSlab) CollisionBounds() []vmath.AABB {
 			vmath.NewAABB(0, 0, 0, 1.0, 0.5, 1.0),
 		}
 		if b.Half == slabTop {
-			b.bounds[0].Shift(0, 0.5, 0.0)
+			b.bounds[0] = b.bounds[0].Shift(0, 0.5, 0.0)
 		}
 	}
 	return b.bounds
@@ -1639,8 +1639,8 @@ func (b *blockSkull) CollisionBounds() []vmath.AABB {
 			case direction.West:
 				ang = -math.Pi / 2
 			}
-			b.bounds[0].Shift(0, 4/16.0, 4/16.0)
-			b.bounds[0].RotateY(ang, 0.5, 0.5, 0.5)
+			b.bounds[0] = b.bounds[0].Shift(0, 4/16.0, 4/16.0)
+			b.bounds[0] = b.bounds[0].RotateY(ang, 0.5, 0.5, 0.5)
 		}
 	}
 	return b.bounds
@@ -1696,7 +1696,7 @@ func (b *blockPortal) CollisionBounds() []vmath.AABB {
 			vmath.NewAABB(6/16.0, 0, 0, 10/16.0, 1.0, 1.0),
 		}
 		if b.Axis == axisX {
-			b.bounds[0].RotateY(math.Pi/2, 0.5, 0.5, 0.5)
+			b.bounds[0] = b.bounds[0].RotateY(math.Pi/2, 0.5, 0.5, 0.5)
 		}
 	}
 	return b.bounds

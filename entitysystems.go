@@ -29,9 +29,8 @@ func (ce *clientEntities) register() {
 }
 
 func esDrawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
-	bounds := s.Bounds()
 	x, y, z := p.Position()
-	bounds.Shift(float32(x), float32(y), float32(z))
+	bounds := s.Bounds().Shift(float32(x), float32(y), float32(z))
 
 	r, g, b := d.DebugColor()
 	render.DrawBox(

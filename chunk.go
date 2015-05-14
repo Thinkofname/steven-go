@@ -115,10 +115,9 @@ func (w world) EntitiesIn(bounds vmath.AABB) (out []Entity) {
 				if !sok || !pok {
 					continue
 				}
-				sb := s.Bounds()
 				px, py, pz := p.Position()
-				sb.Shift(float32(px), float32(py), float32(pz))
-				if sb.Intersects(&bounds) {
+				sb := s.Bounds().Shift(float32(px), float32(py), float32(pz))
+				if sb.Intersects(bounds) {
 					out = append(out, e)
 				}
 			}

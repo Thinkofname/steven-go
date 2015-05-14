@@ -274,8 +274,7 @@ func (c *ClientState) renderTick(delta float64) {
 			ox, oz := c.X, c.Z
 			c.X, c.Z = cx, cz
 			for i := 1.0 / 16.0; i <= 0.5; i += 1.0 / 16.0 {
-				mini := c.Bounds
-				mini.Shift(0, float32(i), 0)
+				mini := c.Bounds.Shift(0, float32(i), 0)
 				_, hit := c.checkCollisions(mini)
 				if !hit {
 					cy += i
@@ -386,10 +385,7 @@ func (c *ClientState) targetEntity() (e Entity) {
 		4,
 		s, d,
 		func(bv mgl32.Vec3) bool {
-			bounds := bounds
-			bounds.Shift(bv.X(), bv.Y(), bv.Z())
-
-			ents := chunkMap.EntitiesIn(bounds)
+			ents := chunkMap.EntitiesIn(bounds.Shift(bv.X(), bv.Y(), bv.Z()))
 			if len(ents) != 0 {
 				e = ents[0]
 				return false
@@ -400,7 +396,7 @@ func (c *ClientState) targetEntity() (e Entity) {
 			if _, ok := b.(*blockLiquid); !b.Is(Blocks.Air) && !ok {
 				bb := b.CollisionBounds()
 				for _, bound := range bb {
-					bound.Shift(float32(bx), float32(by), float32(bz))
+					bound = bound.Shift(float32(bx), float32(by), float32(bz))
 					if bound.IntersectsLine(s, d) {
 						return false
 					}
@@ -422,8 +418,7 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 		4,
 		s, d,
 		func(bv mgl32.Vec3) bool {
-			bounds := bounds
-			bounds.Shift(bv.X(), bv.Y(), bv.Z())
+			bounds := bounds.Shift(bv.X(), bv.Y(), bv.Z())
 			if len(chunkMap.EntitiesIn(bounds)) != 0 {
 				return false
 			}
@@ -433,7 +428,7 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 			if _, ok := b.(*blockLiquid); !b.Is(Blocks.Air) && !ok {
 				bb := b.CollisionBounds()
 				for _, bound := range bb {
-					bound.Shift(float32(bx), float32(by), float32(bz))
+					bound = bound.Shift(float32(bx), float32(by), float32(bz))
 					if bound.IntersectsLine(s, d) {
 						x, y, z = bx, by, bz
 						block = b
@@ -532,7 +527,7 @@ func (c *ClientState) highlightTarget() {
 		return
 	}
 	for _, b := range b.CollisionBounds() {
-		b.Shift(float32(tx), float32(ty), float32(tz))
+		b = b.Shift(float32(tx), float32(ty), float32(tz))
 
 		points := [][2]float64{
 			{float64(b.Min.X()), float64(b.Min.Z())},
@@ -629,7 +624,7 @@ func (c *ClientState) viewVector() mgl32.Vec3 {
 }
 
 func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
-	bounds.Shift(float32(c.X), float32(c.Y), float32(c.Z))
+	bounds = bounds.Shift(float32(c.X), float32(c.Y), float32(c.Z))
 
 	dir := mgl32.Vec3{
 		-float32(c.LX - c.X),
@@ -648,9 +643,9 @@ func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
 
 				if b.Collidable() {
 					for _, bb := range b.CollisionBounds() {
-						bb.Shift(float32(x), float32(y), float32(z))
-						if bb.Intersects(&bounds) {
-							bounds.MoveOutOf(&bb, dir)
+						bb = bb.Shift(float32(x), float32(y), float32(z))
+						if bb.Intersects(bounds) {
+							bounds = bounds.MoveOutOf(bb, dir)
 							hit = true
 						}
 					}

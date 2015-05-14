@@ -32,20 +32,22 @@ func NewAABB(x1, y1, z1, x2, y2, z2 float32) AABB {
 	}
 }
 
-func (a *AABB) RotateX(an, ox, oy, oz float32) {
+func (a AABB) RotateX(an, ox, oy, oz float32) AABB {
 	mat := mgl32.Rotate3DX(an)
 	o := mgl32.Vec3{ox, oy, oz}
 	a.Max = mat.Mul3x1(a.Max.Sub(o)).Add(o)
 	a.Min = mat.Mul3x1(a.Min.Sub(o)).Add(o)
 	a.fixBounds()
+	return a
 }
 
-func (a *AABB) RotateY(an, ox, oy, oz float32) {
+func (a AABB) RotateY(an, ox, oy, oz float32) AABB {
 	mat := mgl32.Rotate3DY(an)
 	o := mgl32.Vec3{ox, oy, oz}
 	a.Max = mat.Mul3x1(a.Max.Sub(o)).Add(o)
 	a.Min = mat.Mul3x1(a.Min.Sub(o)).Add(o)
 	a.fixBounds()
+	return a
 }
 
 func (a *AABB) fixBounds() {
@@ -56,7 +58,7 @@ func (a *AABB) fixBounds() {
 	}
 }
 
-func (a *AABB) Intersects(o *AABB) bool {
+func (a AABB) Intersects(o AABB) bool {
 	return !(o.Min.X() >= a.Max.X() ||
 		o.Max.X() <= a.Min.X() ||
 		o.Min.Y() >= a.Max.Y() ||
@@ -65,7 +67,7 @@ func (a *AABB) Intersects(o *AABB) bool {
 		o.Max.Z() <= a.Min.Z())
 }
 
-func (a *AABB) IntersectsLine(origin, dir mgl32.Vec3) bool {
+func (a AABB) IntersectsLine(origin, dir mgl32.Vec3) bool {
 	const right, left, middle = 0, 1, 2
 	var (
 		quadrant       [3]int
@@ -116,16 +118,17 @@ func (a *AABB) IntersectsLine(origin, dir mgl32.Vec3) bool {
 	return true
 }
 
-func (a *AABB) Shift(x, y, z float32) {
+func (a AABB) Shift(x, y, z float32) AABB {
 	a.Min[0] += x
 	a.Max[0] += x
 	a.Min[1] += y
 	a.Max[1] += y
 	a.Min[2] += z
 	a.Max[2] += z
+	return a
 }
 
-func (a *AABB) MoveOutOf(o *AABB, dir mgl32.Vec3) {
+func (a AABB) MoveOutOf(o AABB, dir mgl32.Vec3) AABB {
 	if dir.X() != 0 {
 		if dir.X() > 0 {
 			ox := a.Max.X()
@@ -160,6 +163,7 @@ func (a *AABB) MoveOutOf(o *AABB, dir mgl32.Vec3) {
 			a.Max[2] += a.Min.Z() - oz
 		}
 	}
+	return a
 }
 
 func (a AABB) String() string {
