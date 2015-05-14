@@ -24,20 +24,23 @@ import (
 // Network
 
 type networkComponent struct {
-	networkID int
+	NetworkID int
+	entityID  int
 }
 
-func (n *networkComponent) NetworkID() int { return n.networkID }
+func (n *networkComponent) SetEntityID(id int) { n.entityID = id }
+func (n *networkComponent) EntityID() int      { return n.entityID }
 
 type NetworkComponent interface {
-	NetworkID() int
+	SetEntityID(id int)
+	EntityID() int
 }
 
 // Position
 
 type positionComponent struct {
-	X, Y, Z    float64
-	LX, LY, LZ float64
+	CX, CZ  int
+	X, Y, Z float64
 }
 
 func (p *positionComponent) Position() (x, y, z float64) {

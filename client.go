@@ -19,6 +19,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
@@ -184,7 +185,6 @@ type clientEntity struct {
 	rotationComponent
 	targetRotationComponent
 	targetPositionComponent
-	sizeComponent
 
 	playerComponent
 	playerModelComponent
@@ -196,7 +196,6 @@ func (c *ClientState) initEntity(head bool) {
 	copy(ce.uuid[:], ub)
 	c.entity = ce
 	ce.hasHead = head
-	ce.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 1.8, 0.6)
 }
 
 func (c *ClientState) cycleCamera() {
@@ -357,12 +356,98 @@ func (c *ClientState) UpdateHunger(hunger float64) {
 	}
 }
 
-func (c *ClientState) targetBlock() (x, y, z int, block Block) {
-	const max = 4.0
-	block = Blocks.Air.Base
+func (c *ClientState) MouseAction(button glfw.MouseButton) {
+	if button == glfw.MouseButtonLeft {
+		writeChan <- &protocol.ArmSwing{}
+		e := c.targetEntity()
+		if ne, ok := e.(NetworkComponent); ok {
+			writeChan <- &protocol.UseEntity{
+				TargetID: protocol.VarInt(ne.EntityID()),
+				Type:     1, // Attack
+			}
+		}
+	} else if button == glfw.MouseButtonRight {
+		e := c.targetEntity()
+		if ne, ok := e.(NetworkComponent); ok {
+			writeChan <- &protocol.UseEntity{
+				TargetID: protocol.VarInt(ne.EntityID()),
+				Type:     0, // Interact
+			}
+		}
+	}
+}
+
+func (c *ClientState) targetEntity() (e Entity) {
 	s := mgl32.Vec3{float32(render.Camera.X), float32(render.Camera.Y), float32(render.Camera.Z)}
 	d := c.viewVector()
 
+	bounds := vmath.NewAABB(-0.05, -0.05, -0.05, 0.1, 0.1, 0.1)
+	traceRay(
+		4,
+		s, d,
+		func(bv mgl32.Vec3) bool {
+			bounds := bounds
+			bounds.Shift(bv.X(), bv.Y(), bv.Z())
+
+			ents := chunkMap.EntitiesIn(bounds)
+			if len(ents) != 0 {
+				e = ents[0]
+				return false
+			}
+
+			bx, by, bz := int(math.Floor(float64(bv.X()))), int(math.Floor(float64(bv.Y()))), int(math.Floor(float64(bv.Z())))
+			b := chunkMap.Block(bx, by, bz)
+			if _, ok := b.(*blockLiquid); !b.Is(Blocks.Air) && !ok {
+				bb := b.CollisionBounds()
+				for _, bound := range bb {
+					bound.Shift(float32(bx), float32(by), float32(bz))
+					if bound.IntersectsLine(s, d) {
+						return false
+					}
+				}
+			}
+			return true
+		},
+	)
+	return
+}
+
+func (c *ClientState) targetBlock() (x, y, z int, block Block) {
+	s := mgl32.Vec3{float32(render.Camera.X), float32(render.Camera.Y), float32(render.Camera.Z)}
+	d := c.viewVector()
+
+	block = Blocks.Air.Base
+	bounds := vmath.NewAABB(-0.05, -0.05, -0.05, 0.1, 0.1, 0.1)
+	traceRay(
+		4,
+		s, d,
+		func(bv mgl32.Vec3) bool {
+			bounds := bounds
+			bounds.Shift(bv.X(), bv.Y(), bv.Z())
+			if len(chunkMap.EntitiesIn(bounds)) != 0 {
+				return false
+			}
+
+			bx, by, bz := int(math.Floor(float64(bv.X()))), int(math.Floor(float64(bv.Y()))), int(math.Floor(float64(bv.Z())))
+			b := chunkMap.Block(bx, by, bz)
+			if _, ok := b.(*blockLiquid); !b.Is(Blocks.Air) && !ok {
+				bb := b.CollisionBounds()
+				for _, bound := range bb {
+					bound.Shift(float32(bx), float32(by), float32(bz))
+					if bound.IntersectsLine(s, d) {
+						x, y, z = bx, by, bz
+						block = b
+						return false
+					}
+				}
+			}
+			return true
+		},
+	)
+	return
+}
+
+func traceRay(max float32, s, d mgl32.Vec3, cb func(mgl32.Vec3) bool) {
 	type gen struct {
 		count   int
 		base, d float32
@@ -393,6 +478,7 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 	nextNA := next(aGen)
 	nextNB := next(bGen)
 	nextNC := next(cGen)
+
 	for {
 		nextN := float32(0.0)
 		if nextNA < nextNB {
@@ -422,25 +508,16 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 			n = max
 		}
 		bv := s.Add(d.Mul(n))
-		bx, by, bz := int(math.Floor(float64(bv.X()))), int(math.Floor(float64(bv.Y()))), int(math.Floor(float64(bv.Z())))
-		b := chunkMap.Block(bx, by, bz)
-		if _, ok := b.(*blockLiquid); !b.Is(Blocks.Air) && !ok {
-			bb := b.CollisionBounds()
-			for _, bound := range bb {
-				bound.Shift(float32(bx), float32(by), float32(bz))
-				if bound.IntersectsLine(s, d) {
-					x, y, z = bx, by, bz
-					block = b
-					return
-				}
-			}
+
+		if !cb(bv) {
+			return
 		}
+
 		prevN = nextN
 		if final {
 			break
 		}
 	}
-	return
 }
 
 // draws a box around the target block using the collision

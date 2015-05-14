@@ -16,11 +16,13 @@ package steven
 
 import (
 	"encoding/binary"
+	"math"
 	"sort"
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/nibble"
+	"github.com/thinkofdeath/steven/type/vmath"
 	"github.com/thinkofdeath/steven/world/biome"
 )
 
@@ -95,6 +97,37 @@ func (w world) UpdateBlock(x, y, z int) {
 	}
 }
 
+func (w world) EntitiesIn(bounds vmath.AABB) (out []Entity) {
+	lcx := int(math.Floor(float64(bounds.Min.X()))) >> 4
+	lcz := int(math.Floor(float64(bounds.Min.Z()))) >> 4
+	hcx := int(math.Floor(float64(bounds.Max.X()))) >> 4
+	hcz := int(math.Floor(float64(bounds.Max.Z()))) >> 4
+
+	for x := lcx; x <= hcx; x++ {
+		for z := lcz; z <= hcz; z++ {
+			c := w[chunkPosition{x, z}]
+			if c == nil {
+				continue
+			}
+			for _, e := range c.Entities {
+				s, sok := e.(SizeComponent)
+				p, pok := e.(PositionComponent)
+				if !sok || !pok {
+					continue
+				}
+				sb := s.Bounds()
+				px, py, pz := p.Position()
+				sb.Shift(float32(px), float32(py), float32(pz))
+				if sb.Intersects(&bounds) {
+					out = append(out, e)
+				}
+			}
+		}
+	}
+
+	return
+}
+
 func clearChunks() {
 	for _, c := range chunkMap {
 		c.free()
@@ -113,8 +146,22 @@ type chunkPosition struct {
 type chunk struct {
 	chunkPosition
 
+	Entities []Entity
 	Sections [16]*chunkSection
 	Biomes   [16 * 16]byte
+}
+
+func (c *chunk) addEntity(e Entity) {
+	c.Entities = append(c.Entities, e)
+}
+
+func (c *chunk) removeEntity(e Entity) {
+	for i, o := range c.Entities {
+		if o == e {
+			c.Entities = append(c.Entities[:i], c.Entities[i+1:]...)
+			return
+		}
+	}
 }
 
 func (c *chunk) block(x, y, z int) Block {

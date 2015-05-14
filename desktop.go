@@ -120,6 +120,9 @@ func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, m
 		lockMouse = true
 		w.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
 	}
+	if !Client.chat.enteringText && lockMouse && action == glfw.Press {
+		Client.MouseAction(button)
+	}
 }
 
 type Key int

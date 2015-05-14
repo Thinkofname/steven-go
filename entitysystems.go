@@ -25,6 +25,7 @@ func (ce *clientEntities) register() {
 	ce.container.AddSystem(entitysys.Tick, esMoveToTarget)
 	ce.container.AddSystem(entitysys.Tick, esRotateToTarget)
 	ce.container.AddSystem(entitysys.Tick, esDrawOutline)
+	ce.container.AddSystem(entitysys.Tick, esMoveChunk)
 }
 
 func esDrawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
@@ -42,6 +43,21 @@ func esDrawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
 		float64(bounds.Max.Z()),
 		r, g, b, 255,
 	)
+}
+
+func esMoveChunk(e Entity, p *positionComponent) {
+	cx, cz := int(p.X)>>4, int(p.Z)>>4
+	if cx != p.CX || cz != p.CZ {
+		oc := chunkMap[chunkPosition{p.CX, p.CZ}]
+		if oc != nil {
+			oc.removeEntity(e)
+		}
+		c := chunkMap[chunkPosition{cx, cz}]
+		if c != nil {
+			c.addEntity(e)
+			p.CX, p.CZ = cx, cz
+		}
+	}
 }
 
 func esMoveToTarget(p PositionComponent, t TargetPositionComponent) {

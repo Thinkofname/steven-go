@@ -233,6 +233,7 @@ func (handler) SpawnPlayer(s *protocol.SpawnPlayer) {
 		r.SetTargetPitch((float64(s.Pitch) / 256) * math.Pi * 2)
 	}
 	e.(PlayerComponent).SetUUID(s.UUID)
+	e.(NetworkComponent).SetEntityID(int(s.EntityID))
 	Client.entities.add(int(s.EntityID), e)
 }
 
@@ -264,6 +265,9 @@ func (handler) SpawnMob(s *protocol.SpawnMob) {
 		r.SetTargetYaw((float64(s.Yaw) / 256) * math.Pi * 2)
 		r.SetTargetPitch((float64(s.Pitch) / 256) * math.Pi * 2)
 	}
+
+	e.(NetworkComponent).SetEntityID(int(s.EntityID))
+
 	Client.entities.add(int(s.EntityID), e)
 }
 
