@@ -587,15 +587,13 @@ func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
 func (c *ClientState) copyToCamera() {
 	ox := math.Cos(c.Yaw-math.Pi/2) * 0.25
 	oz := -math.Sin(c.Yaw-math.Pi/2) * 0.25
-	// Update our entity
-	// TODO Should the entity be the main thing
-	// instead of duplicating things in the client?
 	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
 	c.entity.SetYaw(-c.Yaw)
 	c.entity.SetTargetYaw(-c.Yaw)
 	c.entity.SetPitch(-c.Pitch - math.Pi)
 	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
 	x, y, z := c.entity.Position()
+
 	x += ox
 	z += oz
 	render.Camera.X = x
