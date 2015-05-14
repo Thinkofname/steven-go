@@ -128,6 +128,16 @@ func (a AABB) Shift(x, y, z float32) AABB {
 	return a
 }
 
+func (a AABB) Grow(x, y, z float32) AABB {
+	a.Min[0] -= x
+	a.Max[0] -= x
+	a.Min[1] -= y
+	a.Max[1] += y
+	a.Min[2] += z
+	a.Max[2] += z
+	return a
+}
+
 func (a AABB) MoveOutOf(o AABB, dir mgl32.Vec3) AABB {
 	if dir.X() != 0 {
 		if dir.X() > 0 {
