@@ -171,7 +171,7 @@ func (s *skullComponent) create() {
 		hverts,
 	})
 	model := s.model
-	model.Radius = 1
+	model.Radius = 2
 
 	x, y, z := s.position.X, s.position.Y, s.position.Z
 
