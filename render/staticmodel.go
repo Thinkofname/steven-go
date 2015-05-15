@@ -186,7 +186,7 @@ out vec2 vTextureOffset;
 out float vAtlas;
 out float vLogDepth;
 
-const float C = 0.1;
+const float C = 0.01;
 const float FC = 1.0/log(500.0*C + 1);
 
 void main() {

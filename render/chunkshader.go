@@ -48,7 +48,7 @@ out float vAtlas;
 out float vLighting;
 out float vLogDepth;
 
-const float C = 0.1;
+const float C = 0.01;
 const float FC = 1.0/log(500.0*C + 1);
 
 void main() {
