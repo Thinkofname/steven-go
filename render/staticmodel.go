@@ -184,10 +184,18 @@ out vec4 vColor;
 out vec4 vTextureInfo;
 out vec2 vTextureOffset;
 out float vAtlas;
+out float vLogDepth;
+
+const float C = 0.1;
+const float FC = 1.0/log(500.0*C + 1);
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
 	gl_Position = perspectiveMatrix * cameraMatrix * modelMatrix * vec4(pos, 1.0);
+
+	vLogDepth = log(gl_Position.w*C + 1)*FC;
+	gl_Position.z = (2*vLogDepth - 1)*gl_Position.w;
+
 	vColor = aColor;
 	vTextureInfo = aTextureInfo;
 	vTextureOffset = aTextureOffset.xy / 16.0;
@@ -205,10 +213,12 @@ in vec4 vColor;
 in vec4 vTextureInfo;
 in vec2 vTextureOffset;
 in float vAtlas;
+in float vLogDepth;
 
 out vec4 fragColor;
 
 void main() {
+	gl_FragDepth = vLogDepth;
 	vec2 tPos = vTextureOffset;
 	tPos = mod(tPos, vTextureInfo.zw);
 	tPos += vTextureInfo.xy;
