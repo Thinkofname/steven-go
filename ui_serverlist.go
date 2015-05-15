@@ -174,9 +174,7 @@ func (sl *serverList) redraw() {
 		motd.Parent = container
 		sc.AddDrawable(motd)
 		s := s
-		go func() {
-			sl.pingServer(s.Address, motd, icon, si.id, ping, players)
-		}()
+		go sl.pingServer(s.Address, motd, icon, si.id, ping, players)
 		container.ClickFunc = func() {
 			sl.connect(s.Address)
 		}
