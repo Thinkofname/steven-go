@@ -1715,3 +1715,30 @@ func (b *blockPortal) toData() int {
 	}
 	return 0
 }
+
+// Lilypad
+
+type blockLilypad struct {
+	baseBlock
+}
+
+func (b *blockLilypad) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+}
+
+func (b *blockLilypad) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			vmath.NewAABB(0, 0, 0, 1.0, 1/64.0, 1.0),
+		}
+	}
+	return b.bounds
+}
+
+func (b *blockLilypad) TintImage() *image.NRGBA {
+	return foliageBiomeColors
+}
+
+func (b *blockLilypad) toData() int {
+	return 0
+}

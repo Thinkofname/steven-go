@@ -133,7 +133,7 @@ var Blocks = struct {
 	BrickStairs                *BlockSet `type:"stairs"`
 	StoneBrickStairs           *BlockSet `type:"stairs"`
 	Mycelium                   *BlockSet
-	Waterlily                  *BlockSet
+	Waterlily                  *BlockSet `type:"lilypad"`
 	NetherBrick                *BlockSet
 	NetherBrickFence           *BlockSet `type:"fence" wood:"false"`
 	NetherBrickStairs          *BlockSet `type:"stairs"`
