@@ -377,7 +377,7 @@ type ChunkData struct {
 	ChunkX, ChunkZ int32
 	New            bool
 	BitMask        uint16
-	Data           []byte `length:"VarInt"`
+	Data           []byte `length:"VarInt" nolimit:"true"`
 }
 
 // MultiBlockChange is used to update a batch of blocks in a single packet.

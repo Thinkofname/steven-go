@@ -1605,9 +1605,6 @@ func (c *ChunkData) read(rr io.Reader) (err error) {
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
 	}
-	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
-	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
 	}
