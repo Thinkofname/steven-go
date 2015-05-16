@@ -44,6 +44,7 @@ type StaticModel struct {
 	Radius  float32
 	// Per a part matrix
 	Matrix     []mgl32.Mat4
+	Colors     [][4]float32
 	array      gl.VertexArray
 	buffer     gl.Buffer
 	bufferSize int
@@ -69,10 +70,12 @@ func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
 	staticState.shader.Color.Pointer(4, gl.UnsignedByte, true, 30, 26)
 
 	model.Matrix = make([]mgl32.Mat4, len(parts))
+	model.Colors = make([][4]float32, len(parts))
 	model.ranges = make([][2]int, len(parts))
 	var all []*StaticVertex
 	for i, p := range parts {
 		model.Matrix[i] = mgl32.Ident4()
+		model.Colors[i] = [4]float32{1.0, 1.0, 1.0, 1.0}
 		model.ranges[i] = [2]int{
 			(len(all) / 4) * 6,
 			(len(p) / 4) * 6,
@@ -150,6 +153,8 @@ func drawStatic() {
 		mdl.array.Bind()
 		for i := range mdl.Matrix {
 			staticState.shader.ModelMatrix.Matrix4(&mdl.Matrix[i])
+			c := mdl.Colors[i]
+			staticState.shader.ColorMul.Float4(c[0], c[1], c[2], c[3])
 			gl.DrawElements(gl.Triangles, mdl.ranges[i][1], staticState.indexType, mdl.ranges[i][0]*m)
 		}
 	}
@@ -166,6 +171,7 @@ type staticShader struct {
 	CameraMatrix      gl.Uniform   `gl:"cameraMatrix"`
 	ModelMatrix       gl.Uniform   `gl:"modelMatrix"`
 	Texture           gl.Uniform   `gl:"textures"`
+	ColorMul          gl.Uniform   `gl:"colorMul"`
 }
 
 const (
@@ -208,6 +214,7 @@ void main() {
 const float atlasSize = ` + atlasSizeStr + `;
 
 uniform sampler2DArray textures;
+uniform vec4 colorMul;
 
 in vec4 vColor;
 in vec4 vTextureInfo;
@@ -226,7 +233,7 @@ void main() {
 	vec4 col = texture(textures, vec3(tPos, vAtlas));
 	if (col.a <= 0.05) discard;
 	col *= vColor;
-	fragColor = col;
+	fragColor = col * colorMul;
 }
 `
 )

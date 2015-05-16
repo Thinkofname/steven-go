@@ -120,6 +120,11 @@ func (u Uniform) Float3(x, y, z float32) {
 	gl.Uniform3f(int32(u), x, y, z)
 }
 
+// Float3 sets the value of the uniform to the passed floats.
+func (u Uniform) Float4(x, y, z, w float32) {
+	gl.Uniform4f(int32(u), x, y, z, w)
+}
+
 // Attribute is a per-a-vertex value that can be passed into the
 // program.
 type Attribute int32
