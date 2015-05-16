@@ -93,6 +93,7 @@ type ClientState struct {
 	VSpeed                   float64
 	KeyState                 [5]bool
 	OnGround, didTouchGround bool
+	isLeftDown               bool
 
 	GameMode gameMode
 	HardCore bool
@@ -121,15 +122,22 @@ type ClientState struct {
 	foodUI            []*ui.Image
 	foodFillUI        []*ui.Image
 
-	chat          ChatUI
-	playerList    playerListUI
-	entities      clientEntities
-	blockBreakers map[int]BlockEntity
+	chat       ChatUI
+	playerList playerListUI
+	entities   clientEntities
+
+	currentBreakingBlock    Block
+	currentBreakingPos      Position
+	maxBreakTime, breakTime float64
+	swingTimer              float64
+	breakEntity             BlockEntity
+	blockBreakers           map[int]BlockEntity
 
 	delta float64
 }
 
 func (c *ClientState) init() {
+	c.currentBreakingBlock = Blocks.Air.Base
 	c.blockBreakers = map[int]BlockEntity{}
 	widgets := render.GetTexture("gui/widgets")
 	icons := render.GetTexture("gui/icons")
@@ -314,8 +322,91 @@ func (c *ClientState) renderTick(delta float64) {
 	// Debug displays
 	c.renderDebug()
 
+	c.armTick()
+
 	c.playerList.render(delta)
 	c.entities.tick()
+}
+
+func (c *ClientState) armTick() {
+	if c.isLeftDown {
+		c.swingTimer -= c.delta
+		if c.swingTimer < 0 {
+			c.swingTimer = 60
+			writeChan <- &protocol.ArmSwing{}
+			e := c.targetEntity()
+			if ne, ok := e.(NetworkComponent); ok {
+				writeChan <- &protocol.UseEntity{
+					TargetID: protocol.VarInt(ne.EntityID()),
+					Type:     1, // Attack
+				}
+				return
+			}
+		}
+	}
+	pos, b, face := c.targetBlock()
+	if c.isLeftDown {
+		if b != c.currentBreakingBlock || pos != c.currentBreakingPos {
+			c.currentBreakingBlock = Blocks.Air.Base
+			writeChan <- &protocol.PlayerDigging{
+				Status:   1, // Cancel
+				Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
+				Face:     directionToProtocol(face),
+			}
+			c.killBreakEntity()
+		}
+		if c.currentBreakingBlock.Is(Blocks.Air) {
+			if math.IsInf(b.Hardness(), 1) {
+				return
+			}
+			writeChan <- &protocol.PlayerDigging{
+				Status:   0, // Start
+				Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
+				Face:     directionToProtocol(face),
+			}
+			c.breakTime = b.Hardness() * 1.5 * 60.0
+			c.maxBreakTime = c.breakTime
+			c.currentBreakingBlock = b
+			c.currentBreakingPos = pos
+			c.breakEntity = newBlockBreakEntity()
+			c.breakEntity.SetPosition(pos)
+			c.breakEntity.(BlockBreakComponent).Update()
+		} else {
+			c.breakTime -= c.delta
+			if c.breakTime < 0 {
+				c.breakTime = 0
+				c.currentBreakingBlock = Blocks.Air.Base
+				writeChan <- &protocol.PlayerDigging{
+					Status:   2, // Finish
+					Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
+					Face:     directionToProtocol(face),
+				}
+				chunkMap.SetBlock(Blocks.Air.Base, pos.X, pos.Y, pos.Z)
+				c.killBreakEntity()
+			} else {
+				stage := int(9 - math.Min(9, 10*(c.breakTime/c.maxBreakTime)))
+				if stage != c.breakEntity.(BlockBreakComponent).Stage() {
+					c.breakEntity.(BlockBreakComponent).SetStage(stage)
+					c.breakEntity.(BlockBreakComponent).Update()
+				}
+			}
+		}
+	} else if !c.currentBreakingBlock.Is(Blocks.Air) {
+		c.currentBreakingBlock = Blocks.Air.Base
+		writeChan <- &protocol.PlayerDigging{
+			Status:   1, // Cancel
+			Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
+			Face:     directionToProtocol(face),
+		}
+		c.killBreakEntity()
+	}
+}
+
+func (c *ClientState) killBreakEntity() {
+	if c.breakEntity != nil {
+		c.entities.container.RemoveEntity(c.breakEntity)
+		c.breakEntity = nil
+	}
 }
 
 func (c *ClientState) UpdateHealth(health float64) {
@@ -360,33 +451,10 @@ func (c *ClientState) UpdateHunger(hunger float64) {
 	}
 }
 
-func (c *ClientState) MouseAction(button glfw.MouseButton) {
+func (c *ClientState) MouseAction(button glfw.MouseButton, down bool) {
 	if button == glfw.MouseButtonLeft {
-		writeChan <- &protocol.ArmSwing{}
-		e := c.targetEntity()
-		if ne, ok := e.(NetworkComponent); ok {
-			writeChan <- &protocol.UseEntity{
-				TargetID: protocol.VarInt(ne.EntityID()),
-				Type:     1, // Attack
-			}
-			return
-		}
-		pos, b, face := c.targetBlock()
-		if b.Is(Blocks.Air) {
-			return
-		}
-		writeChan <- &protocol.PlayerDigging{
-			Status:   0, // Start
-			Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
-			Face:     directionToProtocol(face),
-		}
-		// TODO This should actually be timed
-		writeChan <- &protocol.PlayerDigging{
-			Status:   2, // Finish
-			Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
-			Face:     directionToProtocol(face),
-		}
-	} else if button == glfw.MouseButtonRight {
+		c.isLeftDown = down
+	} else if button == glfw.MouseButtonRight && down {
 		e := c.targetEntity()
 		if ne, ok := e.(NetworkComponent); ok {
 			writeChan <- &protocol.UseEntity{

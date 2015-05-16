@@ -29,12 +29,12 @@ var Blocks = struct {
 	Cobblestone                *BlockSet
 	Planks                     *BlockSet `type:"planks"`
 	Sapling                    *BlockSet `type:"sapling"`
-	Bedrock                    *BlockSet
+	Bedrock                    *BlockSet `hardness:"Inf"`
 	FlowingWater               *BlockSet `type:"liquid"`
 	Water                      *BlockSet `type:"liquid"`
 	FlowingLava                *BlockSet `type:"liquid" lava:"true"`
 	Lava                       *BlockSet `type:"liquid" lava:"true"`
-	Sand                       *BlockSet
+	Sand                       *BlockSet `hardness:"0.5"`
 	Gravel                     *BlockSet
 	GoldOre                    *BlockSet
 	IronOre                    *BlockSet

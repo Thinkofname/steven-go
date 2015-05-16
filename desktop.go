@@ -128,8 +128,8 @@ func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, m
 		currentScreen.click(action == glfw.Press, xpos*(float64(fw)/float64(width)), ypos*(float64(fh)/float64(height)), fw, fh)
 		return
 	}
-	if !Client.chat.enteringText && lockMouse && action == glfw.Press && lockMouse {
-		Client.MouseAction(button)
+	if !Client.chat.enteringText && lockMouse && action != glfw.Repeat && lockMouse {
+		Client.MouseAction(button, action == glfw.Press)
 	}
 	if button == glfw.MouseButtonLeft && action == glfw.Press && !Client.chat.enteringText {
 		lockMouse = true

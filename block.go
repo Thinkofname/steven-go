@@ -49,6 +49,8 @@ type Block interface {
 	Collidable() bool
 	CollisionBounds() []vmath.AABB
 
+	Hardness() float64
+
 	Renderable() bool
 	ModelName() string
 	ModelVariant() string
@@ -85,6 +87,7 @@ type baseBlock struct {
 	collidable    bool
 	renderable    bool
 	bounds        []vmath.AABB
+	hardness      float64
 }
 
 // Is returns whether this block is a member of the passed Set
@@ -105,6 +108,11 @@ func (b *baseBlock) init(name string) {
 	b.cullAgainst = true
 	b.collidable = true
 	b.renderable = true
+	b.hardness = 1.0
+}
+
+func (b *baseBlock) Hardness() float64 {
+	return b.hardness
 }
 
 func (b *baseBlock) String() string {
