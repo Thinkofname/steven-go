@@ -673,13 +673,13 @@ func (c *ClientState) copyToCamera() {
 	render.Camera.Pitch = -c.entity.Pitch() + math.Pi
 	switch c.cameraMode {
 	case cameraBehind:
-		render.Camera.X -= 4 * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
-		render.Camera.Z += 4 * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
-		render.Camera.Y += 4 * math.Sin(c.Pitch)
+		render.Camera.X -= 4 * math.Cos(-c.entity.Yaw()-math.Pi/2) * -math.Cos(-c.entity.Pitch()+math.Pi)
+		render.Camera.Z += 4 * math.Sin(-c.entity.Yaw()-math.Pi/2) * -math.Cos(-c.entity.Pitch()+math.Pi)
+		render.Camera.Y += 4 * math.Sin(-c.entity.Pitch()+math.Pi)
 	case cameraFront:
-		render.Camera.X += 4 * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
-		render.Camera.Z -= 4 * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
-		render.Camera.Y -= 4 * math.Sin(c.Pitch)
+		render.Camera.X += 4 * math.Cos(-c.entity.Yaw()-math.Pi/2) * -math.Cos(-c.entity.Pitch()+math.Pi)
+		render.Camera.Z -= 4 * math.Sin(-c.entity.Yaw()-math.Pi/2) * -math.Cos(-c.entity.Pitch()+math.Pi)
+		render.Camera.Y -= 4 * math.Sin(-c.entity.Pitch()+math.Pi)
 		render.Camera.Yaw += math.Pi
 		render.Camera.Pitch = -render.Camera.Pitch
 	}
