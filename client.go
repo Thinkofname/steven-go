@@ -244,7 +244,16 @@ func (c *ClientState) renderTick(delta float64) {
 		}
 		c.X += forward * math.Cos(yaw) * delta * speed
 		c.Z -= forward * math.Sin(yaw) * delta * speed
-		if !c.OnGround {
+		if _, ok := chunkMap.Block(int(c.X), int(c.Y), int(c.Z)).(*blockLiquid); ok {
+			if c.Jumping {
+				c.VSpeed = 0.05
+			} else {
+				c.VSpeed -= 0.005 * delta
+				if c.VSpeed < -0.05 {
+					c.VSpeed = -0.05
+				}
+			}
+		} else if !c.OnGround {
 			c.VSpeed -= 0.01 * delta
 			if c.VSpeed < -0.3 {
 				c.VSpeed = -0.3
