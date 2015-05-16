@@ -186,6 +186,10 @@ func (c *chunk) setBlock(b Block, x, y, z int) {
 		sec.Buffer = render.AllocateChunkBuffer(c.X, s, c.Z)
 	}
 
+	if sec.block(x, y&0xF, z) == b {
+		return
+	}
+
 	pos := Position{X: x, Y: y, Z: z}
 	pos = pos.Shift(c.X<<4, 0, c.Z<<4)
 	if be, ok := sec.BlockEntities[pos]; ok {
