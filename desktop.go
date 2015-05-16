@@ -58,6 +58,7 @@ func startWindow() {
 	window.SetMouseButtonCallback(onMouseClick)
 	window.SetKeyCallback(onKey)
 	window.SetScrollCallback(onScroll)
+	window.SetFocusCallback(onFocus)
 
 	gl.Init()
 
@@ -89,6 +90,15 @@ func onScroll(w *glfw.Window, xoff float64, yoff float64) {
 }
 
 var lockMouse bool
+
+func onFocus(w *glfw.Window, focused bool) {
+	if !focused {
+		for i := range Client.KeyState {
+			Client.KeyState[i] = false
+		}
+		lockMouse = false
+	}
+}
 
 func onMouseMove(w *glfw.Window, xpos float64, ypos float64) {
 	width, height := w.GetSize()
