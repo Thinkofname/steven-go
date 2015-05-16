@@ -126,8 +126,8 @@ var debugStateColors = [...]chat.Color{
 }
 
 func (c *ClientState) displayTargetInfo() {
-	tx, ty, tz, b := c.targetBlock()
-	c.debug.target.Update(fmt.Sprintf("Target(%d,%d,%d)", tx, ty, tz))
+	t, b, face := c.targetBlock()
+	c.debug.target.Update(fmt.Sprintf("Target(%d,%d,%d)-%s", t.X, t.Y, t.Z, face))
 	c.debug.targetName.Update(fmt.Sprintf("%s:%s", b.Plugin(), b.Name()))
 
 	for i, s := range b.states() {

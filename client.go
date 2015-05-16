@@ -364,6 +364,22 @@ func (c *ClientState) MouseAction(button glfw.MouseButton) {
 				TargetID: protocol.VarInt(ne.EntityID()),
 				Type:     1, // Attack
 			}
+			return
+		}
+		pos, b, face := c.targetBlock()
+		if b.Is(Blocks.Air) {
+			return
+		}
+		writeChan <- &protocol.PlayerDigging{
+			Status:   0, // Start
+			Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
+			Face:     directionToProtocol(face),
+		}
+		// TODO This should actually be timed
+		writeChan <- &protocol.PlayerDigging{
+			Status:   2, // Finish
+			Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
+			Face:     directionToProtocol(face),
 		}
 	} else if button == glfw.MouseButtonRight {
 		e := c.targetEntity()
@@ -372,7 +388,27 @@ func (c *ClientState) MouseAction(button glfw.MouseButton) {
 				TargetID: protocol.VarInt(ne.EntityID()),
 				Type:     0, // Interact
 			}
+			return
 		}
+		pos, b, face := c.targetBlock()
+		if b.Is(Blocks.Air) {
+			return
+		}
+		writeChan <- &protocol.PlayerBlockPlacement{
+			Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
+			Face:     directionToProtocol(face),
+		}
+	}
+}
+
+func directionToProtocol(d direction.Type) byte {
+	switch d {
+	case direction.Up:
+		return 1
+	case direction.Down:
+		return 0
+	default:
+		return byte(d)
 	}
 }
 
@@ -389,7 +425,7 @@ func (c *ClientState) targetEntity() (e Entity) {
 			for _, ee := range ents {
 				ex, ey, ez := ee.(PositionComponent).Position()
 				bo := ee.(SizeComponent).Bounds().Shift(float32(ex), float32(ey), float32(ez))
-				if bo.IntersectsLine(s, d) {
+				if _, ok := bo.IntersectsLine(s, d); ok {
 					e = ee
 					return false
 				}
@@ -400,7 +436,7 @@ func (c *ClientState) targetEntity() (e Entity) {
 				bb := b.CollisionBounds()
 				for _, bound := range bb {
 					bound = bound.Shift(float32(bx), float32(by), float32(bz))
-					if bound.IntersectsLine(s, d) {
+					if _, ok := bound.IntersectsLine(s, d); ok {
 						return false
 					}
 				}
@@ -411,9 +447,10 @@ func (c *ClientState) targetEntity() (e Entity) {
 	return
 }
 
-func (c *ClientState) targetBlock() (x, y, z int, block Block) {
+func (c *ClientState) targetBlock() (pos Position, block Block, face direction.Type) {
 	s := mgl32.Vec3{float32(render.Camera.X), float32(render.Camera.Y), float32(render.Camera.Z)}
 	d := c.viewVector()
+	face = direction.Invalid
 
 	block = Blocks.Air.Base
 	bounds := vmath.NewAABB(0, 0, 0, 1, 1, 1)
@@ -425,7 +462,7 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 			for _, ee := range ents {
 				ex, ey, ez := ee.(PositionComponent).Position()
 				bo := ee.(SizeComponent).Bounds().Shift(float32(ex), float32(ey), float32(ez))
-				if bo.IntersectsLine(s, d) {
+				if _, ok := bo.IntersectsLine(s, d); ok {
 					return false
 				}
 			}
@@ -435,9 +472,10 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 				bb := b.CollisionBounds()
 				for _, bound := range bb {
 					bound = bound.Shift(float32(bx), float32(by), float32(bz))
-					if bound.IntersectsLine(s, d) {
-						x, y, z = bx, by, bz
+					if at, ok := bound.IntersectsLine(s, d); ok {
+						pos = Position{bx, by, bz}
 						block = b
+						face = findFace(bound, at)
 						return false
 					}
 				}
@@ -446,6 +484,24 @@ func (c *ClientState) targetBlock() (x, y, z int, block Block) {
 		},
 	)
 	return
+}
+
+func findFace(bound vmath.AABB, at mgl32.Vec3) direction.Type {
+	switch {
+	case bound.Min.X() == at.X():
+		return direction.West
+	case bound.Max.X() == at.X():
+		return direction.East
+	case bound.Min.Y() == at.Y():
+		return direction.Down
+	case bound.Max.Y() == at.Y():
+		return direction.Up
+	case bound.Min.Z() == at.Z():
+		return direction.North
+	case bound.Max.Z() == at.Z():
+		return direction.South
+	}
+	return direction.Up
 }
 
 func traceRay(max float32, s, d mgl32.Vec3, cb func(x, y, z int) bool) {
@@ -520,12 +576,12 @@ func (c *ClientState) highlightTarget() {
 		return
 	}
 	const lineSize = 1.0 / 128.0
-	tx, ty, tz, b := c.targetBlock()
+	t, b, _ := c.targetBlock()
 	if b.Is(Blocks.Air) {
 		return
 	}
 	for _, b := range b.CollisionBounds() {
-		b = b.Shift(float32(tx), float32(ty), float32(tz))
+		b = b.Shift(float32(t.X), float32(t.Y), float32(t.Z))
 
 		points := [][2]float64{
 			{float64(b.Min.X()), float64(b.Min.Z())},

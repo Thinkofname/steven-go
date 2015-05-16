@@ -67,7 +67,7 @@ func (a AABB) Intersects(o AABB) bool {
 		o.Max.Z() <= a.Min.Z())
 }
 
-func (a AABB) IntersectsLine(origin, dir mgl32.Vec3) bool {
+func (a AABB) IntersectsLine(origin, dir mgl32.Vec3) (mgl32.Vec3, bool) {
 	const right, left, middle = 0, 1, 2
 	var (
 		quadrant       [3]int
@@ -89,7 +89,7 @@ func (a AABB) IntersectsLine(origin, dir mgl32.Vec3) bool {
 		}
 	}
 	if inside {
-		return true
+		return origin, true
 	}
 
 	for i := range dir {
@@ -104,18 +104,21 @@ func (a AABB) IntersectsLine(origin, dir mgl32.Vec3) bool {
 		}
 	}
 	if maxT[whichPlane] < 0 {
-		return false
+		return origin, false
 	}
 
+	var coord mgl32.Vec3
 	for i := range origin {
 		if whichPlane != i {
-			coord := origin[i] + maxT[whichPlane]*dir[i]
-			if coord < a.Min[i] || coord > a.Max[i] {
-				return false
+			coord[i] = origin[i] + maxT[whichPlane]*dir[i]
+			if coord[i] < a.Min[i] || coord[i] > a.Max[i] {
+				return origin, false
 			}
+		} else {
+			coord[i] = candidatePlane[i]
 		}
 	}
-	return true
+	return coord, true
 }
 
 func (a AABB) Shift(x, y, z float32) AABB {
