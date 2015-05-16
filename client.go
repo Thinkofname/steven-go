@@ -308,8 +308,11 @@ func (c *ClientState) renderTick(delta float64) {
 		}
 
 		c.Y = cy
-		bounds, _ = c.checkCollisions(c.Bounds)
+		bounds, yhit := c.checkCollisions(c.Bounds)
 		c.Y = float64(bounds.Min.Y())
+		if yhit {
+			c.VSpeed = 0
+		}
 
 		c.checkGround()
 	}
