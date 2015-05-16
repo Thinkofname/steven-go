@@ -43,14 +43,28 @@ Builds for Linux (64bit only) and Windows(32bit and 64bit) can be found
 
 ## Running
 
+### Via the Offical Minecraft launcher
+
 ![Profile example](http://i.imgur.com/NBMGhPL.png)
 
 You need to create a new profile (or edit an existing one) on the Minecraft 
 launcher and modify the profile to look like the above but replace the path
 to steven with the location you built it at or downloaded it too and change the 
 `server` parameter to the target server. Currently only works in online mode
-(with no plans for offline mode currently).
+(with no plans for offline mode currently). If the `server` parameter isn't
+passed then a server list will be displayed.
 
-It is possible to run steven without the launcher, but you must obtain the access token,
-UUID (whithout dashes) and the username, and pass them as arguments to steven, as well as
-the server.
+### Standalone
+
+Just running steven via a double click (Windows) or `./steven` (everything else)
+will bring up a login screen followed by a server list which you can select a server
+from.
+
+Providing a username, uuid and access token via the command line as followed:
+  `--username <username> --uuid <uuid> --accessToken <access token>`
+will skip the login screen and jump straight to the server list. Providing a
+server address via `--server <server>:<port>` will skip the server list and 
+connect straight to the server. As it currently stands providing all the arguments
+allows for the client to parallelise connecting to the server and loading the 
+textures/models/other assets as a 'quick connect'.
+
