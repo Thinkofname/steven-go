@@ -658,19 +658,19 @@ func (c *ClientState) copyToCamera() {
 	ox := math.Cos(c.Yaw-math.Pi/2) * 0.25
 	oz := -math.Sin(c.Yaw-math.Pi/2) * 0.25
 	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
-	c.entity.SetYaw(-c.Yaw)
 	c.entity.SetTargetYaw(-c.Yaw)
-	c.entity.SetPitch(-c.Pitch - math.Pi)
 	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
 	x, y, z := c.entity.Position()
 
+	ox = math.Cos(-c.entity.Yaw()-math.Pi/2) * 0.25
+	oz = -math.Sin(-c.entity.Yaw()-math.Pi/2) * 0.25
 	x += ox
 	z += oz
 	render.Camera.X = x
 	render.Camera.Y = y + playerHeight
 	render.Camera.Z = z
-	render.Camera.Yaw = c.Yaw
-	render.Camera.Pitch = c.Pitch
+	render.Camera.Yaw = -c.entity.Yaw()
+	render.Camera.Pitch = -c.entity.Pitch() + math.Pi
 	switch c.cameraMode {
 	case cameraBehind:
 		render.Camera.X -= 4 * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
