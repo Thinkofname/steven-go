@@ -25,9 +25,11 @@ import (
 
 var window *glfw.Window
 
-func startWindow() {
+func init() {
 	runtime.LockOSThread()
+}
 
+func startWindow() {
 	if err := glfw.Init(); err != nil {
 		panic(err)
 	}

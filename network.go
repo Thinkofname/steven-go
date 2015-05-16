@@ -62,13 +62,16 @@ preLogin:
 		}
 	}
 
-	go writeHandler(conn)
-
+	first := true
 	for {
 		packet, err := conn.ReadPacket()
 		if err != nil {
 			closeWithError(err)
 			return
+		}
+		if first {
+			go writeHandler(conn)
+			first = false
 		}
 
 		// Handle keep alives async as there is no need to process them
