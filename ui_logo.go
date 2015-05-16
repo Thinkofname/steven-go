@@ -187,7 +187,7 @@ var stevenLogoLines = []string{
 	"General System Error: Please sacrifice a cow and two chickens to continue",
 	"Do you want to build a client?",
 	"sudo rm -rf --no-preserve-root /",
-	fmt.Sprintf("Splash generated at %s", time.Now().Unix()),
+	fmt.Sprintf("Splash generated at %d", time.Now().Unix()),
 	"Thinkofdeath.getClass().getField(\"sanity\").set(Thinkofdeath, null);",
 	"There is no God, only Zuul",
 	"Now with potatoes!",
