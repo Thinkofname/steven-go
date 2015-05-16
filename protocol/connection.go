@@ -21,6 +21,7 @@ import (
 	"compress/zlib"
 	"crypto/aes"
 	"crypto/cipher"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -154,10 +155,21 @@ func (c *Conn) WritePacket(packet Packet) error {
 func (c *Conn) ReadPacket() (Packet, error) {
 	// 15 second timeout
 	c.net.SetReadDeadline(time.Now().Add(15 * time.Second))
+	return c.readPacket()
+}
+
+var (
+	errNegativeLength = errors.New("invalid length: negative")
+)
+
+func (c *Conn) readPacket() (Packet, error) {
 	// Length prefix
 	size, err := ReadVarInt(c.r)
 	if err != nil {
 		return nil, err
+	}
+	if size < 0 {
+		return nil, errNegativeLength
 	}
 	buf := make([]byte, size)
 	if _, err := io.ReadFull(c.r, buf); err != nil {
@@ -208,7 +220,7 @@ func (c *Conn) ReadPacket() (Packet, error) {
 	}
 	// Direction is swapped as this is coming from the other way
 	packets := packetCreator[c.State][(c.direction+1)&1]
-	if id < 0 || int(id) > len(packets) || packets[id] == nil {
+	if id < 0 || int(id) >= len(packets) || packets[id] == nil {
 		return nil, fmt.Errorf("Unknown packet %s:%02X", c.State, id)
 	}
 	packet := packets[id]()

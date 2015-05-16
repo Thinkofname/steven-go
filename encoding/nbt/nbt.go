@@ -104,6 +104,9 @@ func (l *List) deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
+	if le < 0 {
+		return errors.New("negative length for list")
+	}
 	l.Elements = make([]interface{}, le)
 	for i := 0; i < int(le); i++ {
 		l.Elements[i], err = readType(r, l.Type)
@@ -145,6 +148,9 @@ func readType(r io.Reader, id TypeID) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
+		if l < 0 {
+			return nil, errors.New("negative length for byte array")
+		}
 		v := make([]byte, l)
 		_, err = io.ReadFull(r, v)
 		return v, err
@@ -163,6 +169,9 @@ func readType(r io.Reader, id TypeID) (interface{}, error) {
 		err := binary.Read(r, binary.BigEndian, &l)
 		if err != nil {
 			return nil, err
+		}
+		if l < 0 {
+			return nil, errors.New("negative length for int array")
 		}
 		v := make([]int32, l)
 		err = binary.Read(r, binary.BigEndian, v)
@@ -205,6 +214,9 @@ func readString(r io.Reader) (string, error) {
 	err := binary.Read(r, binary.BigEndian, &l)
 	if err != nil {
 		return "", nil
+	}
+	if l < 0 {
+		return "", errors.New("negative length for string")
 	}
 	buf := make([]byte, int(l))
 	_, err = io.ReadFull(r, buf)

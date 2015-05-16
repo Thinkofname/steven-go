@@ -17,6 +17,7 @@ package protocol
 import (
 	"errors"
 	"io"
+	"math"
 
 	"github.com/thinkofdeath/steven/encoding/nbt"
 )
@@ -142,6 +143,9 @@ func ReadString(r io.Reader) (string, error) {
 	l, err := ReadVarInt(r)
 	if err != nil {
 		return "", nil
+	}
+	if l < 0 || l > math.MaxInt16 {
+		return "", errors.New("string length out of bounds")
 	}
 	buf := make([]byte, int(l))
 	_, err = io.ReadFull(r, buf)

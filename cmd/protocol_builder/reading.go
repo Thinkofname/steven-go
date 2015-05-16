@@ -95,6 +95,19 @@ func (r *reading) readType(e ast.Expr, name string, tag reflect.StructTag) {
 			r.readNamed(lT, lenVar, "")
 		}
 
+		imports["fmt"] = struct{}{}
+		if tag.Get("nolimit") != "true" && lT != "byte" && lT != "uint8" && lT != "int8" {
+			imports["math"] = struct{}{}
+			fmt.Fprintf(&r.buf, `if %s > math.MaxInt16 { 
+			return fmt.Errorf("array larger than max value: %%d > %%d", %s, math.MaxUint16) 
+			}
+			 `, lenVar, lenVar)
+		}
+		fmt.Fprintf(&r.buf, `if %s < 0 { 
+			return fmt.Errorf("negative array size: %%d < 0", %s) 
+			}
+			 `, lenVar, lenVar)
+
 		// Allocate the slice
 
 		fmt.Fprintf(&r.buf, "%s = make([]%s, %s)\n", name, e.Elt, lenVar)

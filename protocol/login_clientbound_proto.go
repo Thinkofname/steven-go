@@ -5,7 +5,9 @@ package protocol
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
+	"math"
 )
 
 func (l *LoginDisconnect) id() int { return 0 }
@@ -58,6 +60,12 @@ func (e *EncryptionRequest) read(rr io.Reader) (err error) {
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
 	}
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
+	}
 	e.PublicKey = make([]byte, tmp0)
 	if _, err = rr.Read(e.PublicKey); err != nil {
 		return
@@ -65,6 +73,12 @@ func (e *EncryptionRequest) read(rr io.Reader) (err error) {
 	var tmp1 VarInt
 	if tmp1, err = ReadVarInt(rr); err != nil {
 		return
+	}
+	if tmp1 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp1, math.MaxUint16)
+	}
+	if tmp1 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp1)
 	}
 	e.VerifyToken = make([]byte, tmp1)
 	if _, err = rr.Read(e.VerifyToken); err != nil {

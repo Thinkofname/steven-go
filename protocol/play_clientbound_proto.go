@@ -5,6 +5,7 @@ package protocol
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
@@ -976,6 +977,12 @@ func (e *EntityDestroy) read(rr io.Reader) (err error) {
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
 	}
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
+	}
 	e.EntityIDs = make([]VarInt, tmp0)
 	for tmp1 := range e.EntityIDs {
 		if e.EntityIDs[tmp1], err = ReadVarInt(rr); err != nil {
@@ -1497,6 +1504,12 @@ func (e *EntityProperties) read(rr io.Reader) (err error) {
 		return
 	}
 	tmp0 = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
+	}
 	e.Properties = make([]EntityProperty, tmp0)
 	for tmp1 := range e.Properties {
 		if e.Properties[tmp1].Key, err = ReadString(rr); err != nil {
@@ -1511,6 +1524,12 @@ func (e *EntityProperties) read(rr io.Reader) (err error) {
 		var tmp3 VarInt
 		if tmp3, err = ReadVarInt(rr); err != nil {
 			return
+		}
+		if tmp3 > math.MaxInt16 {
+			return fmt.Errorf("array larger than max value: %d > %d", tmp3, math.MaxUint16)
+		}
+		if tmp3 < 0 {
+			return fmt.Errorf("negative array size: %d < 0", tmp3)
 		}
 		e.Properties[tmp1].Modifiers = make([]PropertyModifier, tmp3)
 		for tmp4 := range e.Properties[tmp1].Modifiers {
@@ -1586,6 +1605,12 @@ func (c *ChunkData) read(rr io.Reader) (err error) {
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
 	}
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
+	}
 	c.Data = make([]byte, tmp0)
 	if _, err = rr.Read(c.Data); err != nil {
 		return
@@ -1641,6 +1666,12 @@ func (m *MultiBlockChange) read(rr io.Reader) (err error) {
 	var tmp0 VarInt
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
+	}
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
 	}
 	m.Records = make([]BlockChangeRecord, tmp0)
 	for tmp1 := range m.Records {
@@ -1820,6 +1851,12 @@ func (c *ChunkDataBulk) read(rr io.Reader) (err error) {
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
 	}
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
+	}
 	c.Meta = make([]ChunkMeta, tmp0)
 	for tmp1 := range c.Meta {
 		if _, err = rr.Read(tmp[:4]); err != nil {
@@ -1954,6 +1991,12 @@ func (e *Explosion) read(rr io.Reader) (err error) {
 		return
 	}
 	tmp4 = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
+	if tmp4 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp4, math.MaxUint16)
+	}
+	if tmp4 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp4)
+	}
 	e.Records = make([]ExplosionRecord, tmp4)
 	for tmp5 := range e.Records {
 		if _, err = rr.Read(tmp[:1]); err != nil {
@@ -2253,6 +2296,12 @@ func (p *Particle) read(rr io.Reader) (err error) {
 	}
 	p.Count = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
 	tmp7 := particleDataLength(p)
+	if tmp7 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp7, math.MaxUint16)
+	}
+	if tmp7 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp7)
+	}
 	p.Data = make([]VarInt, tmp7)
 	for tmp8 := range p.Data {
 		if p.Data[tmp8], err = ReadVarInt(rr); err != nil {
@@ -2494,6 +2543,12 @@ func (w *WindowItems) read(rr io.Reader) (err error) {
 		return
 	}
 	tmp0 = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
+	}
 	w.Items = make([]ItemStack, tmp0)
 	for tmp1 := range w.Items {
 		if err = w.Items[tmp1].Deserialize(rr); err != nil {
@@ -2723,6 +2778,12 @@ func (m *Maps) read(rr io.Reader) (err error) {
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
 	}
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
+	}
 	m.Icons = make([]MapIcon, tmp0)
 	for tmp1 := range m.Icons {
 		if _, err = rr.Read(tmp[:1]); err != nil {
@@ -2758,6 +2819,12 @@ func (m *Maps) read(rr io.Reader) (err error) {
 		var tmp2 VarInt
 		if tmp2, err = ReadVarInt(rr); err != nil {
 			return
+		}
+		if tmp2 > math.MaxInt16 {
+			return fmt.Errorf("array larger than max value: %d > %d", tmp2, math.MaxUint16)
+		}
+		if tmp2 < 0 {
+			return fmt.Errorf("negative array size: %d < 0", tmp2)
 		}
 		m.Data = make([]byte, tmp2)
 		if _, err = rr.Read(m.Data); err != nil {
@@ -2851,6 +2918,12 @@ func (s *Statistics) read(rr io.Reader) (err error) {
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
 	}
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
+	}
 	s.Statistics = make([]Statistic, tmp0)
 	for tmp1 := range s.Statistics {
 		if s.Statistics[tmp1].Name, err = ReadString(rr); err != nil {
@@ -2935,6 +3008,12 @@ func (p *PlayerInfo) read(rr io.Reader) (err error) {
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
 	}
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
+	}
 	p.Players = make([]PlayerDetail, tmp0)
 	for tmp1 := range p.Players {
 		if err = p.Players[tmp1].UUID.Deserialize(rr); err != nil {
@@ -2947,6 +3026,12 @@ func (p *PlayerInfo) read(rr io.Reader) (err error) {
 			var tmp2 VarInt
 			if tmp2, err = ReadVarInt(rr); err != nil {
 				return
+			}
+			if tmp2 > math.MaxInt16 {
+				return fmt.Errorf("array larger than max value: %d > %d", tmp2, math.MaxUint16)
+			}
+			if tmp2 < 0 {
+				return fmt.Errorf("negative array size: %d < 0", tmp2)
 			}
 			p.Players[tmp1].Properties = make([]PlayerProperty, tmp2)
 			for tmp3 := range p.Players[tmp1].Properties {
@@ -3056,6 +3141,12 @@ func (t *TabCompleteReply) read(rr io.Reader) (err error) {
 	var tmp0 VarInt
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
+	}
+	if tmp0 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+	}
+	if tmp0 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp0)
 	}
 	t.Matches = make([]string, tmp0)
 	for tmp1 := range t.Matches {
@@ -3249,6 +3340,12 @@ func (t *Teams) read(rr io.Reader) (err error) {
 		var tmp0 VarInt
 		if tmp0, err = ReadVarInt(rr); err != nil {
 			return
+		}
+		if tmp0 > math.MaxInt16 {
+			return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		}
+		if tmp0 < 0 {
+			return fmt.Errorf("negative array size: %d < 0", tmp0)
 		}
 		t.Players = make([]string, tmp0)
 		for tmp1 := range t.Players {
