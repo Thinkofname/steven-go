@@ -128,12 +128,12 @@ func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, m
 		currentScreen.click(action == glfw.Press, xpos*(float64(fw)/float64(width)), ypos*(float64(fh)/float64(height)), fw, fh)
 		return
 	}
+	if !Client.chat.enteringText && lockMouse && action == glfw.Press && lockMouse {
+		Client.MouseAction(button)
+	}
 	if button == glfw.MouseButtonLeft && action == glfw.Press && !Client.chat.enteringText {
 		lockMouse = true
 		w.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
-	}
-	if !Client.chat.enteringText && lockMouse && action == glfw.Press {
-		Client.MouseAction(button)
 	}
 }
 
