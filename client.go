@@ -291,7 +291,6 @@ func (c *ClientState) renderTick(delta float64) {
 		// Currently we implement this as a teleport to the
 		// top of the block if we could move there
 		// but this isn't smooth.
-		// TODO(Think) Improve this
 		if (xhit || zhit) && c.OnGround {
 			ox, oz := c.X, c.Z
 			c.X, c.Z = cx, cz
@@ -326,7 +325,11 @@ func (c *ClientState) renderTick(delta float64) {
 		c.Yaw += math.Pi * 2
 	}
 
-	c.copyToCamera()
+	ox := math.Cos(c.Yaw-math.Pi/2) * 0.25
+	oz := -math.Sin(c.Yaw-math.Pi/2) * 0.25
+	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
+	c.entity.SetTargetYaw(-c.Yaw)
+	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
 
 	//  Highlights the target block
 	c.highlightTarget()
@@ -338,6 +341,7 @@ func (c *ClientState) renderTick(delta float64) {
 
 	c.playerList.render(delta)
 	c.entities.tick()
+	c.copyToCamera()
 }
 
 func (c *ClientState) armTick() {
@@ -796,15 +800,10 @@ func (c *ClientState) checkCollisions(bounds vmath.AABB) (vmath.AABB, bool) {
 }
 
 func (c *ClientState) copyToCamera() {
-	ox := math.Cos(c.Yaw-math.Pi/2) * 0.25
-	oz := -math.Sin(c.Yaw-math.Pi/2) * 0.25
-	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
-	c.entity.SetTargetYaw(-c.Yaw)
-	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
 	x, y, z := c.entity.Position()
 
-	ox = math.Cos(-c.entity.Yaw()-math.Pi/2) * 0.25
-	oz = -math.Sin(-c.entity.Yaw()-math.Pi/2) * 0.25
+	ox := math.Cos(-c.entity.Yaw()-math.Pi/2) * 0.25
+	oz := -math.Sin(-c.entity.Yaw()-math.Pi/2) * 0.25
 	x += ox
 	z += oz
 	render.Camera.X = x
