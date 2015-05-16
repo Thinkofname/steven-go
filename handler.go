@@ -208,6 +208,30 @@ func (handler) BlockEntity(p *protocol.UpdateBlockEntity) {
 	nbe.Deserilize(p.NBT)
 }
 
+func (handler) BlockBreakAnimation(p *protocol.BlockBreakAnimation) {
+	if p.Stage < 0 || p.Stage > 9 {
+		bb := Client.blockBreakers[int(p.EntityID)]
+		delete(Client.blockBreakers, int(p.EntityID))
+		if bb != nil {
+			Client.entities.container.RemoveEntity(bb)
+		}
+		return
+	}
+	pos := Position{p.Location.X(), p.Location.Y(), p.Location.Z()}
+	var b BlockEntity
+	if bb, ok := Client.blockBreakers[int(p.EntityID)]; ok {
+		b = bb
+	} else {
+		b = newBlockBreakEntity()
+		Client.blockBreakers[int(p.EntityID)] = b
+		b.(NetworkComponent).SetEntityID(int(p.EntityID))
+		Client.entities.container.AddEntity(b)
+	}
+	b.SetPosition(pos)
+	b.(BlockBreakComponent).SetStage(int(p.Stage))
+	b.(BlockBreakComponent).Update()
+}
+
 func (handler) SpawnPlayer(s *protocol.SpawnPlayer) {
 	e := newPlayer()
 	if p, ok := e.(PositionComponent); ok {

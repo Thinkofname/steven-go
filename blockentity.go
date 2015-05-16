@@ -15,8 +15,12 @@
 package steven
 
 import (
+	"fmt"
+
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/encoding/nbt"
 	"github.com/thinkofdeath/steven/entitysys"
+	"github.com/thinkofdeath/steven/render"
 )
 
 func (ce *clientEntities) registerBlockEntities() {
@@ -48,4 +52,57 @@ type BlockComponent interface {
 type BlockNBTComponent interface {
 	Deserilize(tag *nbt.Compound)
 	CanHandleAction(action int) bool
+}
+
+type blockBreakComponent struct {
+	blockComponent
+	stage int
+	model *render.StaticModel
+}
+
+func (b *blockBreakComponent) SetStage(stage int)         { b.stage = stage }
+func (b *blockBreakComponent) Stage() int                 { return b.stage }
+func (b *blockBreakComponent) Model() *render.StaticModel { return b.model }
+func (b *blockBreakComponent) Update() {
+	if b.model != nil {
+		b.model.Free()
+	}
+	bounds := chunkMap.Block(b.Location.X, b.Location.Y, b.Location.Z).CollisionBounds()
+	if bounds == nil {
+		return
+	}
+	tex := render.GetTexture(fmt.Sprintf("blocks/destroy_stage_%d", b.stage))
+
+	var verts []*render.StaticVertex
+	for _, bo := range bounds {
+		bo = bo.Grow(0.01, 0.01, 0.01)
+		verts = appendBox(verts,
+			bo.Min.X(), bo.Min.Y(), bo.Min.Z(),
+			bo.Max.X()-bo.Min.X(), bo.Max.Y()-bo.Min.Y(), bo.Max.Z()-bo.Min.Z(),
+			[6]*render.TextureInfo{
+				tex, tex, tex, tex, tex, tex,
+			})
+	}
+	b.model = render.NewStaticModel([][]*render.StaticVertex{verts})
+
+	b.model.Matrix[0] = mgl32.Translate3D(
+		float32(b.Location.X),
+		-float32(b.Location.Y),
+		float32(b.Location.Z),
+	)
+}
+
+type BlockBreakComponent interface {
+	SetStage(stage int)
+	Stage() int
+	Update()
+}
+
+func newBlockBreakEntity() BlockEntity {
+	type blockBreak struct {
+		networkComponent
+		blockBreakComponent
+	}
+	b := &blockBreak{}
+	return b
 }

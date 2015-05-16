@@ -133,10 +133,10 @@ func (a AABB) Shift(x, y, z float32) AABB {
 
 func (a AABB) Grow(x, y, z float32) AABB {
 	a.Min[0] -= x
-	a.Max[0] -= x
+	a.Max[0] += x
 	a.Min[1] -= y
 	a.Max[1] += y
-	a.Min[2] += z
+	a.Min[2] -= z
 	a.Max[2] += z
 	return a
 }

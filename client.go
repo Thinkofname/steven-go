@@ -46,6 +46,9 @@ func initClient() {
 		for _, e := range Client.entities.entities {
 			Client.entities.container.RemoveEntity(e)
 		}
+		for _, e := range Client.blockBreakers {
+			Client.entities.container.RemoveEntity(e)
+		}
 		if Client.entity != nil && Client.entityAdded {
 			Client.entities.container.RemoveEntity(Client.entity)
 		}
@@ -118,14 +121,16 @@ type ClientState struct {
 	foodUI            []*ui.Image
 	foodFillUI        []*ui.Image
 
-	chat       ChatUI
-	playerList playerListUI
-	entities   clientEntities
+	chat          ChatUI
+	playerList    playerListUI
+	entities      clientEntities
+	blockBreakers map[int]BlockEntity
 
 	delta float64
 }
 
 func (c *ClientState) init() {
+	c.blockBreakers = map[int]BlockEntity{}
 	widgets := render.GetTexture("gui/widgets")
 	icons := render.GetTexture("gui/icons")
 	// Crosshair

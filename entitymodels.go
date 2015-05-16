@@ -242,7 +242,9 @@ func esPlayerModelRemove(p *playerModelComponent) {
 func esModelRemove(p interface {
 	Model() *render.StaticModel
 }) {
-	p.Model().Free()
+	if p.Model() != nil {
+		p.Model().Free()
+	}
 }
 
 var moveLimit = 1e-5
