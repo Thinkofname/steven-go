@@ -195,7 +195,6 @@ func draw() {
 	diff := now.Sub(lastFrame)
 	lastFrame = now
 	delta := float64(diff.Nanoseconds()) / (float64(time.Second) / 60)
-	delta = math.Min(delta, 1.6)
 handle:
 	for {
 		select {
