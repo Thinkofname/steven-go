@@ -224,7 +224,7 @@ void main() {
 	tPos += vTextureInfo.xy;
 	tPos /= atlasSize;
 	vec4 col = texture(textures, vec3(tPos, vAtlas));
-	if (col.a == 0.0) discard;
+	if (col.a <= 0.05) discard;
 	col *= vColor;
 	fragColor = col;
 }
