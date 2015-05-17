@@ -360,7 +360,7 @@ func (c *ClientState) armTick() {
 			}
 		}
 	}
-	pos, b, face := c.targetBlock()
+	pos, b, face, _ := c.targetBlock()
 	if c.isLeftDown {
 		if b != c.currentBreakingBlock || pos != c.currentBreakingPos {
 			c.currentBreakingBlock = Blocks.Air.Base
@@ -479,13 +479,16 @@ func (c *ClientState) MouseAction(button glfw.MouseButton, down bool) {
 			}
 			return
 		}
-		pos, b, face := c.targetBlock()
+		pos, b, face, cur := c.targetBlock()
 		if b.Is(Blocks.Air) {
 			return
 		}
 		writeChan <- &protocol.PlayerBlockPlacement{
 			Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
 			Face:     directionToProtocol(face),
+			CursorX:  byte(cur.X() * 16),
+			CursorY:  byte(cur.Y() * 16),
+			CursorZ:  byte(cur.Z() * 16),
 		}
 	}
 }
@@ -536,7 +539,7 @@ func (c *ClientState) targetEntity() (e Entity) {
 	return
 }
 
-func (c *ClientState) targetBlock() (pos Position, block Block, face direction.Type) {
+func (c *ClientState) targetBlock() (pos Position, block Block, face direction.Type, cursor mgl32.Vec3) {
 	s := mgl32.Vec3{float32(render.Camera.X), float32(render.Camera.Y), float32(render.Camera.Z)}
 	d := c.viewVector()
 	face = direction.Invalid
@@ -565,6 +568,7 @@ func (c *ClientState) targetBlock() (pos Position, block Block, face direction.T
 						pos = Position{bx, by, bz}
 						block = b
 						face = findFace(bound, at)
+						cursor = at.Sub(mgl32.Vec3{float32(bx), float32(by), float32(bz)})
 						return false
 					}
 				}
@@ -665,7 +669,7 @@ func (c *ClientState) highlightTarget() {
 		return
 	}
 	const lineSize = 1.0 / 128.0
-	t, b, _ := c.targetBlock()
+	t, b, _, _ := c.targetBlock()
 	if b.Is(Blocks.Air) {
 		return
 	}
