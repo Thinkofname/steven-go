@@ -86,7 +86,7 @@ func onScroll(w *glfw.Window, xoff float64, yoff float64) {
 		Client.currentHotbarSlot = 8
 	}
 
-	writeChan <- &protocol.HeldItemChange{Slot: int16(Client.currentHotbarSlot)}
+	Client.network.Write(&protocol.HeldItemChange{Slot: int16(Client.currentHotbarSlot)})
 }
 
 var lockMouse bool

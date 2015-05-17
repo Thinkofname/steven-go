@@ -42,7 +42,7 @@ func newGameMenu() *gameMenu {
 	disconnect, txt := newButtonText("Disconnect", 0, 50, 400, 40)
 	gm.scene.AddDrawable(disconnect.Attach(ui.Center, ui.Middle))
 	gm.scene.AddDrawable(txt)
-	disconnect.ClickFunc = func() { closeWithError(errManualDisconnect) }
+	disconnect.ClickFunc = func() { Client.network.SignalClose(errManualDisconnect) }
 
 	rtg, txt := newButtonText("Return to game", 0, -50, 400, 40)
 	gm.scene.AddDrawable(rtg.Attach(ui.Center, ui.Middle))

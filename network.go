@@ -16,98 +16,120 @@ package steven
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 )
 
-var (
-	// TODO(Think) Tweek the values
-	writeChan = make(chan protocol.Packet, 200)
-	readChan  = make(chan protocol.Packet, 200)
-	errorChan = make(chan error, 1)
+type networkManager struct {
 	conn      *protocol.Conn
-	connGroup sync.WaitGroup
-)
+	writeChan chan protocol.Packet
+	readChan  chan protocol.Packet
+	errorChan chan error
+	closeChan chan struct{}
+}
 
-func startConnection(profile mojang.Profile, server string) {
-	defer connGroup.Done()
-	var err error
-	conn, err = protocol.Dial(server)
-	if err != nil {
-		closeWithError(err)
-		return
-	}
+func (n *networkManager) init() {
+	n.writeChan = make(chan protocol.Packet, 200)
+	n.readChan = make(chan protocol.Packet, 200)
+	n.errorChan = make(chan error, 1)
+	n.closeChan = make(chan struct{}, 1)
+}
 
-	err = conn.LoginToServer(profile)
-	if err != nil {
-		closeWithError(err)
-		return
-	}
-
-	defer fmt.Println("Read handler closed")
-preLogin:
-	for {
-		packet, err := conn.ReadPacket()
+func (n *networkManager) Connect(profile mojang.Profile, server string) {
+	go func() {
+		var err error
+		n.conn, err = protocol.Dial(server)
 		if err != nil {
-			closeWithError(err)
+			n.SignalClose(err)
 			return
 		}
-		switch packet := packet.(type) {
-		case *protocol.SetInitialCompression:
-			conn.SetCompression(int(packet.Threshold))
-		case *protocol.LoginSuccess:
-			conn.State = protocol.Play
-			break preLogin
-		default:
-			panic(fmt.Errorf("unhandled packet %T", packet))
-		}
-	}
 
-	first := true
-	for {
-		packet, err := conn.ReadPacket()
+		err = n.conn.LoginToServer(profile)
 		if err != nil {
-			closeWithError(err)
+			n.SignalClose(err)
 			return
 		}
-		if first {
-			connGroup.Add(1)
-			go writeHandler(conn)
-			first = false
+
+	preLogin:
+		for {
+			packet, err := n.conn.ReadPacket()
+			if err != nil {
+				n.SignalClose(err)
+				return
+			}
+			switch packet := packet.(type) {
+			case *protocol.SetInitialCompression:
+				n.conn.SetCompression(int(packet.Threshold))
+			case *protocol.LoginSuccess:
+				n.conn.State = protocol.Play
+				break preLogin
+			default:
+				n.SignalClose(fmt.Errorf("unhandled packet %T", packet))
+			}
 		}
 
-		// Handle keep alives async as there is no need to process them
-		switch packet := packet.(type) {
-		case *protocol.KeepAliveClientbound:
-			writeChan <- &protocol.KeepAliveServerbound{ID: packet.ID}
-		case *protocol.SetCompression:
-			conn.SetCompression(int(packet.Threshold))
-		default:
-			readChan <- packet
+		first := true
+		for {
+			packet, err := n.conn.ReadPacket()
+			if err != nil {
+				n.SignalClose(err)
+				return
+			}
+			if first {
+				go n.writeHandler()
+				first = false
+			}
+
+			// Handle keep alives async as there is no need to process them
+			switch packet := packet.(type) {
+			case *protocol.KeepAliveClientbound:
+				n.Write(&protocol.KeepAliveServerbound{ID: packet.ID})
+			case *protocol.SetCompression:
+				n.conn.SetCompression(int(packet.Threshold))
+			default:
+				n.readChan <- packet
+			}
+		}
+	}()
+}
+
+func (n *networkManager) writeHandler() {
+	for packet := range n.writeChan {
+		err := n.conn.WritePacket(packet)
+		if err != nil {
+			n.SignalClose(err)
+			return
 		}
 	}
 }
 
-// Closes the connection with the passed error value
-// if one isn't already queued.
-func closeWithError(err error) {
+func (n *networkManager) SignalClose(err error) {
 	// Try to save the error if one isn't already there
 	select {
-	case errorChan <- err:
+	case n.errorChan <- err:
 	default:
 	}
 }
 
-func writeHandler(conn *protocol.Conn) {
-	defer connGroup.Done()
-	defer fmt.Println("Write handler closed")
-	for packet := range writeChan {
-		err := conn.WritePacket(packet)
-		if err != nil {
-			closeWithError(err)
-			return
-		}
+func (n *networkManager) Error() <-chan error {
+	return n.errorChan
+}
+
+func (n *networkManager) Read() <-chan protocol.Packet {
+	return n.readChan
+}
+
+func (n *networkManager) Write(packet protocol.Packet) {
+	select {
+	case n.writeChan <- packet:
+	case <-n.closeChan:
+		n.closeChan <- struct{}{} // Keep the closed state
+		return
 	}
+}
+
+func (n *networkManager) Close() {
+	n.closeChan <- struct{}{}
+	n.conn.Close()
 }

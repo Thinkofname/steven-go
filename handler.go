@@ -85,7 +85,7 @@ func (handler) Respawn(r *protocol.Respawn) {
 func (handler) Disconnect(d *protocol.Disconnect) {
 	disconnectReason = d.Reason
 	fmt.Println("Disconnect: ", disconnectReason)
-	closeWithError(errManualDisconnect)
+	Client.network.SignalClose(errManualDisconnect)
 }
 
 func (handler) UpdateHealth(u *protocol.UpdateHealth) {
@@ -111,14 +111,14 @@ func (handler) Teleport(t *protocol.TeleportPlayer) {
 	Client.Yaw = calculateTeleport(teleportRelYaw, t.Flags, Client.Yaw, float64(-t.Yaw)*(math.Pi/180))
 	Client.Pitch = calculateTeleport(teleportRelPitch, t.Flags, Client.Pitch, -float64(t.Pitch)*(math.Pi/180)+math.Pi)
 	Client.checkGround()
-	writeChan <- &protocol.PlayerPositionLook{
+	Client.network.Write(&protocol.PlayerPositionLook{
 		X:        t.X,
 		Y:        t.Y,
 		Z:        t.Z,
 		Yaw:      t.Yaw,
 		Pitch:    t.Pitch,
 		OnGround: Client.OnGround,
-	}
+	})
 	Client.copyToCamera()
 	ready = true
 	Client.entity.SetPosition(Client.X, Client.Y, Client.Z)
@@ -407,30 +407,30 @@ func (handler) PlayerListInfo(p *protocol.PlayerInfo) {
 			for _, prop := range pl.Properties {
 				if prop.Name == "textures" {
 					if !prop.IsSigned {
-						closeWithError(errors.New("Missing signature from textures"))
+						Client.network.SignalClose(errors.New("Missing signature from textures"))
 						return
 					}
 					data, err := base64.StdEncoding.DecodeString(prop.Value)
 					if err != nil {
-						closeWithError(err)
+						Client.network.SignalClose(err)
 						continue
 					}
 
 					sig, err := base64.StdEncoding.DecodeString(prop.Signature)
 					if err != nil {
-						closeWithError(err)
+						Client.network.SignalClose(err)
 						continue
 					}
 
 					if err := verifySkinSignature([]byte(prop.Value), sig); err != nil {
-						closeWithError(err)
+						Client.network.SignalClose(err)
 						return
 					}
 
 					var blob skinBlob
 					err = json.Unmarshal(data, &blob)
 					if err != nil {
-						closeWithError(err)
+						Client.network.SignalClose(err)
 						continue
 					}
 					url := blob.Textures.Skin.Url

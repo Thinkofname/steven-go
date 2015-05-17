@@ -61,10 +61,10 @@ func (h handler) handlePluginMessage(channel string, r io.Reader, serverbound bo
 func sendPluginMessage(pm pluginMessage) {
 	var buf bytes.Buffer
 	pm.write(&buf)
-	writeChan <- &protocol.PluginMessageServerbound{
+	Client.network.Write(&protocol.PluginMessageServerbound{
 		Channel: pm.channel(),
 		Data:    buf.Bytes(),
-	}
+	})
 }
 
 //go:generate protocol_builder $GOFILE

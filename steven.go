@@ -22,7 +22,6 @@ import (
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/chat"
-	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/ui"
@@ -92,8 +91,7 @@ func Main(username, uuid, accessToken, s string) {
 func connect() {
 	connected = true
 	disconnectReason.Value = nil
-	connGroup.Add(1)
-	go startConnection(profile, server)
+	Client.network.Connect(profile, server)
 	server = ""
 }
 
@@ -156,20 +154,13 @@ func handleErrors() {
 handle:
 	for {
 		select {
-		case err := <-errorChan:
+		case err := <-Client.network.Error():
 			if !connected {
 				continue
 			}
 			connected = false
 
-			// Replace the writer ready for the next connection
-			close(writeChan)
-			writeChan = make(chan protocol.Packet, 200)
-
-			if conn != nil {
-				conn.Close()
-			}
-			connGroup.Wait()
+			Client.network.Close()
 			fmt.Printf("Disconnected: %s\n", err)
 			// Reset the ready state to stop packets from being
 			// sent.
@@ -200,7 +191,7 @@ func draw() {
 handle:
 	for {
 		select {
-		case packet := <-readChan:
+		case packet := <-Client.network.Read():
 			defaultHandler.Handle(packet)
 		case pos := <-completeBuilders:
 			freeBuilders++

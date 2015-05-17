@@ -155,7 +155,7 @@ func (c *ChatUI) Draw(r ui.Region, delta float64) {
 func (c *ChatUI) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	if (key == glfw.KeyEscape || key == glfw.KeyEnter) && action == glfw.Release {
 		if key == glfw.KeyEnter && len(c.inputLine) != 0 {
-			writeChan <- &protocol.ChatMessage{string(c.inputLine)}
+			Client.network.Write(&protocol.ChatMessage{string(c.inputLine)})
 		}
 		// Return control back to the default
 		c.enteringText = false
