@@ -401,6 +401,7 @@ func (c *ClientState) armTick() {
 					Face:     directionToProtocol(face),
 				})
 				chunkMap.SetBlock(Blocks.Air.Base, pos.X, pos.Y, pos.Z)
+				chunkMap.UpdateBlock(pos.X, pos.Y, pos.Z)
 				c.killBreakEntity()
 			} else {
 				stage := int(9 - math.Min(9, 10*(c.breakTime/c.maxBreakTime)))
