@@ -71,12 +71,12 @@ func Dial(address string) (*Conn, error) {
 			address = address + ":25565"
 		}
 	}
-	c, err := net.Dial("tcp", address)
+	parts := strings.SplitN(address, ":", 2)
+	port, err := strconv.Atoi(parts[1])
 	if err != nil {
 		return nil, err
 	}
-	parts := strings.SplitN(address, ":", 2)
-	port, err := strconv.Atoi(parts[1])
+	c, err := net.DialTimeout("tcp", address, 30*time.Second)
 	if err != nil {
 		return nil, err
 	}
