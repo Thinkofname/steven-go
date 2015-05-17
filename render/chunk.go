@@ -229,6 +229,10 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, indices int) 
 	if n || len(data) > cb.bufferTSize {
 		cb.bufferTSize = len(data)
 		cb.bufferT.Data(data, gl.StreamDraw)
+	} else {
+		target := cb.bufferT.Map(gl.WriteOnly, len(data))
+		copy(target, data)
+		cb.bufferT.Unmap()
 	}
 	shaderChunkT.Position.PointerInt(3, gl.Short, 28, 0)
 	shaderChunkT.TextureInfo.Pointer(4, gl.UnsignedShort, false, 28, 6)
