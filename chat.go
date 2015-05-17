@@ -32,6 +32,7 @@ const (
 type ChatUI struct {
 	Lines [chatHistoryLines]chat.AnyComponent
 
+	container       *ui.Container
 	parts           []*chatLine
 	input           *ui.Text
 	inputBackground *ui.Image
@@ -49,40 +50,26 @@ type chatLine struct {
 	background *ui.Image
 }
 
-func (c *ChatUI) ShouldDraw() bool {
-	return true
-}
-
-func (c *ChatUI) Offset() (float64, float64) {
-	return 0, 44
-}
-
-func (c *ChatUI) Size() (float64, float64) {
-	return 500, chatHistoryLines*18 + 2
-}
-
-func (c *ChatUI) Attachment() (vAttach, hAttach ui.AttachPoint) {
-	return ui.Bottom, ui.Left
-}
-
-func (c *ChatUI) AttachedTo() ui.Drawable {
-	return nil
-}
-
 func (c *ChatUI) init() {
+	c.container = &ui.Container{
+		X: 0,
+		Y: 44,
+		W: 500,
+		H: chatHistoryLines*18 + 2,
+	}
+	c.container.Attach(ui.Bottom, ui.Left)
 	c.input = ui.NewText("", 5, 1, 255, 255, 255).Attach(ui.Bottom, ui.Left)
 	c.input.Visible = false
-	c.input.Parent = c
+	c.input.Parent = c.container
 	c.inputBackground = ui.NewImage(render.GetTexture("solid"), 0, 0, 500, 20, 0, 0, 1, 1, 0, 0, 0).Attach(ui.Bottom, ui.Left)
 	c.inputBackground.A = 77
-	c.inputBackground.Parent = c
+	c.inputBackground.Parent = c.container
 	c.inputBackground.Visible = false
-	Client.scene.AddDrawable(c)
 	Client.scene.AddDrawable(c.inputBackground)
 	Client.scene.AddDrawable(c.input)
 }
 
-func (c *ChatUI) Draw(r ui.Region, delta float64) {
+func (c *ChatUI) Draw(delta float64) {
 	if c.wasEnteringText != c.enteringText {
 		if c.wasEnteringText {
 			c.input.Visible = false
@@ -226,13 +213,13 @@ func (c *ChatUI) Add(msg chat.AnyComponent) {
 	copy(c.Lines[0:chatHistoryLines-1], c.Lines[1:])
 	c.Lines[chatHistoryLines-1] = msg
 	f := ui.NewFormattedWidth(msg, 5, chatHistoryLines*18+1, 500-10).Attach(ui.Top, ui.Left)
-	f.Parent = c
+	f.Parent = c.container
 	line := &chatLine{
 		text:       f,
 		fade:       3.0,
 		background: ui.NewImage(render.GetTexture("solid"), 0, chatHistoryLines*18, 500, f.Height, 0, 0, 1, 1, 0, 0, 0),
 	}
-	line.background.Parent = c
+	line.background.Parent = c.container
 	line.background.A = 77
 	c.parts = append(c.parts, line)
 	Client.scene.AddDrawable(line.background)

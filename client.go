@@ -340,6 +340,7 @@ func (c *ClientState) renderTick(delta float64) {
 	c.renderDebug()
 
 	c.armTick()
+	c.chat.Draw(delta)
 
 	c.playerList.render(delta)
 	c.entities.tick()
