@@ -16,6 +16,7 @@ package steven
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/protocol/mojang"
@@ -27,9 +28,11 @@ var (
 	readChan  = make(chan protocol.Packet, 200)
 	errorChan = make(chan error, 1)
 	conn      *protocol.Conn
+	connGroup sync.WaitGroup
 )
 
 func startConnection(profile mojang.Profile, server string) {
+	defer connGroup.Done()
 	var err error
 	conn, err = protocol.Dial(server)
 	if err != nil {
@@ -70,6 +73,7 @@ preLogin:
 			return
 		}
 		if first {
+			connGroup.Add(1)
 			go writeHandler(conn)
 			first = false
 		}
@@ -97,6 +101,7 @@ func closeWithError(err error) {
 }
 
 func writeHandler(conn *protocol.Conn) {
+	defer connGroup.Done()
 	defer fmt.Println("Write handler closed")
 	for packet := range writeChan {
 		err := conn.WritePacket(packet)

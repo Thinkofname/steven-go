@@ -92,6 +92,7 @@ func Main(username, uuid, accessToken, s string) {
 func connect() {
 	connected = true
 	disconnectReason.Value = nil
+	connGroup.Add(1)
 	go startConnection(profile, server)
 	server = ""
 }
@@ -168,6 +169,7 @@ handle:
 			if conn != nil {
 				conn.Close()
 			}
+			connGroup.Wait()
 			fmt.Printf("Disconnected: %s\n", err)
 			// Reset the ready state to stop packets from being
 			// sent.
