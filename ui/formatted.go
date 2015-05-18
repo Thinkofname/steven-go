@@ -142,6 +142,17 @@ func (f *Formatted) Update(val chat.AnyComponent) {
 	f.Lines = state.lines + 1
 	f.dirty = true
 }
+func (f *Formatted) isDirty() bool {
+	if f.baseElement.isDirty() {
+		return true
+	}
+	for _, t := range f.Text {
+		if t.dirty {
+			return true
+		}
+	}
+	return false
+}
 
 func (f *Formatted) clearDirty() {
 	f.dirty = false
