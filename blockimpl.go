@@ -1589,6 +1589,27 @@ func (b *blockWallSign) load(tag reflect.StructTag) {
 	b.renderable = false
 }
 
+func (b *blockWallSign) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			vmath.NewAABB(-0.5, -4/16.0, -0.5/16.0, 0.5, 4/16.0, 0.5/16.0),
+		}
+		f := b.Facing
+		ang := float32(0)
+		switch f {
+		case direction.South:
+			ang = math.Pi
+		case direction.West:
+			ang = math.Pi / 2
+		case direction.East:
+			ang = -math.Pi / 2
+		}
+		b.bounds[0] = b.bounds[0].Shift(0.5, 0.5, 0.5-7.5/16.0)
+		b.bounds[0] = b.bounds[0].RotateY(ang+math.Pi, 0.5, 0.5, 0.5)
+	}
+	return b.bounds
+}
+
 func (b *blockWallSign) CreateBlockEntity() BlockEntity {
 	type wallSign struct {
 		blockComponent
@@ -1623,6 +1644,18 @@ func (b *blockFloorSign) load(tag reflect.StructTag) {
 	b.cullAgainst = false
 	b.collidable = false
 	b.renderable = false
+}
+
+func (b *blockFloorSign) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			vmath.NewAABB(-0.5, -4/16.0, -0.5/16.0, 0.5, 4/16.0, 0.5/16.0),
+			vmath.NewAABB(7.5/16.0, 0, 7.5/16.0, 8.5/16.0, 9/16.0, 8.5/16.0),
+		}
+		b.bounds[0] = b.bounds[0].Shift(0.5, 0.5+5/16.0, 0.5)
+		b.bounds[0] = b.bounds[0].RotateY((-float32(b.Rotation)/16)*math.Pi*2+math.Pi, 0.5, 0.5, 0.5)
+	}
+	return b.bounds
 }
 
 func (b *blockFloorSign) CreateBlockEntity() BlockEntity {
