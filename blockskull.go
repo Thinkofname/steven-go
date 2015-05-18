@@ -175,7 +175,7 @@ func (s *skullComponent) create() {
 
 	x, y, z := s.position.X, s.position.Y, s.position.Z
 
-	model.X, model.Y, model.Z = -float32(x)+0.5, -float32(y), float32(z)+0.5
+	model.X, model.Y, model.Z = -float32(x)-0.5, -float32(y), float32(z)+0.5
 
 	mat := mgl32.Translate3D(float32(x)+0.5, -float32(y), float32(z)+0.5)
 	if s.Facing == direction.Up {

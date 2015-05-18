@@ -52,7 +52,8 @@ func (t *Text) Attach(vAttach, hAttach AttachPoint) *Text {
 	return t
 }
 
-func (t *Text) X() float64 { return t.x }
+func (t *Text) Value() string { return t.value }
+func (t *Text) X() float64    { return t.x }
 func (t *Text) SetX(x float64) {
 	if t.x != x {
 		t.x = x

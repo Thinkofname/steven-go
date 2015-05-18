@@ -33,6 +33,16 @@ func (ce *clientEntities) registerModels() {
 }
 
 func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures [6]*render.TextureInfo) []*render.StaticVertex {
+	return appendBoxExtra(verts, x, y, z, w, h, d, textures, [6][2]float64{
+		{1.0, 1.0},
+		{1.0, 1.0},
+		{1.0, 1.0},
+		{1.0, 1.0},
+		{1.0, 1.0},
+		{1.0, 1.0},
+	})
+}
+func appendBoxExtra(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures [6]*render.TextureInfo, extra [6][2]float64) []*render.StaticVertex {
 	for i, face := range faceVertices {
 		tex := textures[i]
 		if tex == nil {
@@ -43,8 +53,8 @@ func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures 
 				X:        float32(v.X)*w + x,
 				Y:        float32(v.Y)*h + y,
 				Z:        float32(v.Z)*d + z,
-				TOffsetX: v.TOffsetX * 16 * int16(tex.Width),
-				TOffsetY: v.TOffsetY * 16 * int16(tex.Height),
+				TOffsetX: int16(float64(v.TOffsetX*16*int16(tex.Width)) * extra[i][0]),
+				TOffsetY: int16(float64(v.TOffsetY*16*int16(tex.Height)) * extra[i][1]),
 				R:        255,
 				G:        255,
 				B:        255,

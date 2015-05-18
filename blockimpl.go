@@ -1592,8 +1592,19 @@ func (b *blockWallSign) load(tag reflect.StructTag) {
 func (b *blockWallSign) CreateBlockEntity() BlockEntity {
 	type wallSign struct {
 		blockComponent
+		signComponent
 	}
 	w := &wallSign{}
+	w.oz = 7.5 / 16.0
+	switch b.Facing {
+	case direction.North:
+	case direction.South:
+		w.rotation = math.Pi
+	case direction.West:
+		w.rotation = math.Pi / 2
+	case direction.East:
+		w.rotation = -math.Pi / 2
+	}
 	return w
 }
 
@@ -1601,11 +1612,41 @@ func (b *blockWallSign) toData() int {
 	return int(b.Facing)
 }
 
-// Wall Sign
+// Floor Sign
+
+type blockFloorSign struct {
+	baseBlock
+	Rotation int `state:"rotation,0-15"`
+}
+
+func (b *blockFloorSign) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.collidable = false
+	b.renderable = false
+}
+
+func (b *blockFloorSign) CreateBlockEntity() BlockEntity {
+	type floorSign struct {
+		blockComponent
+		signComponent
+	}
+	w := &floorSign{}
+	w.rotation = (-float64(b.Rotation)/16)*math.Pi*2 + math.Pi
+	w.oy = 5 / 16.0
+	w.hasStand = true
+	return w
+}
+
+func (b *blockFloorSign) toData() int {
+	return b.Rotation
+}
+
+// Skull
 
 type blockSkull struct {
 	baseBlock
-	Facing int `state:"facing,0-4"`
+	Facing direction.Type `state:"facing,0-5"`
+	NoDrop bool           `state:"nodrop"`
 }
 
 func (b *blockSkull) load(tag reflect.StructTag) {
@@ -1619,7 +1660,7 @@ func (b *blockSkull) CreateBlockEntity() BlockEntity {
 		skullComponent
 	}
 	w := &skull{}
-	w.Facing = b.facing()
+	w.Facing = b.Facing
 	return w
 }
 
@@ -1628,7 +1669,7 @@ func (b *blockSkull) CollisionBounds() []vmath.AABB {
 		b.bounds = []vmath.AABB{
 			vmath.NewAABB(0.5-(4/16.0), 0, 0.5-(4/16.0), 0.5+(4/16.0), 8/16.0, 0.5+(4/16.0)),
 		}
-		f := b.facing()
+		f := b.Facing
 		if f != direction.Up {
 			ang := float32(0)
 			switch f {
@@ -1646,36 +1687,24 @@ func (b *blockSkull) CollisionBounds() []vmath.AABB {
 	return b.bounds
 }
 
-func (b *blockSkull) facing() direction.Type {
-	switch b.Facing {
-	case 0:
-		return direction.Up
-	case 1:
-		return direction.North
-	case 2:
-		return direction.South
-	case 3:
-		return direction.East
-	case 4:
-		return direction.West
-	}
-	return direction.Invalid
-}
-
 func (b *blockSkull) toData() int {
-	switch b.facing() {
+	data := 0
+	switch b.Facing {
 	case direction.Up:
-		return 1
+		data = 1
 	case direction.North:
-		return 2
+		data = 2
 	case direction.South:
-		return 3
+		data = 3
 	case direction.East:
-		return 4
+		data = 4
 	case direction.West:
-		return 5
+		data = 5
 	}
-	return -1
+	if b.NoDrop {
+		data |= 0x8
+	}
+	return data
 }
 
 // Portal

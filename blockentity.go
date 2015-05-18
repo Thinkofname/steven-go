@@ -26,6 +26,7 @@ import (
 func (ce *clientEntities) registerBlockEntities() {
 	ce.container.AddSystem(entitysys.Add, esSkullAdd)
 	ce.container.AddSystem(entitysys.Remove, esSkullRemove)
+	ce.container.AddSystem(entitysys.Add, esSignAdd)
 }
 
 type BlockEntity interface {

@@ -15,6 +15,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource/locale"
@@ -191,7 +193,7 @@ func (f *formatState) build(c chat.AnyComponent, color getColorFunc) {
 		}
 
 	default:
-		panic("unhandled component")
+		panic(fmt.Sprintf("unhandled component: %T", c))
 	}
 }
 

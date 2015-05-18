@@ -85,7 +85,7 @@ var Blocks = struct {
 	Farmland                   *BlockSet
 	Furnace                    *BlockSet
 	FurnaceLit                 *BlockSet
-	StandingSign               *BlockSet
+	StandingSign               *BlockSet `type:"floorSign"`
 	WoodenDoor                 *BlockSet `type:"door"`
 	Ladder                     *BlockSet
 	Rail                       *BlockSet `type:"rail"`

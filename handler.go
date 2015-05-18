@@ -24,6 +24,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
 )
@@ -206,6 +207,29 @@ func (handler) BlockEntity(p *protocol.UpdateBlockEntity) {
 		return
 	}
 	nbe.Deserilize(p.NBT)
+}
+
+func (handler) SignUpdate(p *protocol.UpdateSign) {
+	cp := protocolPosToChunkPos(p.Location)
+	if f, ok := loadingChunks[cp]; ok {
+		loadingChunks[cp] = append(f, func() { defaultHandler.SignUpdate(p) })
+		return
+	}
+
+	be := chunkMap.BlockEntity(p.Location.X(), p.Location.Y(), p.Location.Z())
+	if be == nil {
+		return
+	}
+	s, ok := be.(SignComponent)
+	if !ok {
+		return
+	}
+	s.Update([4]chat.AnyComponent{
+		p.Line1,
+		p.Line2,
+		p.Line3,
+		p.Line4,
+	})
 }
 
 func (handler) BlockBreakAnimation(p *protocol.BlockBreakAnimation) {
