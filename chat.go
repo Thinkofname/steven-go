@@ -116,7 +116,7 @@ func (c *ChatUI) Draw(delta float64) {
 			}
 			for _, t := range p.text.Text {
 				if c.enteringText {
-					t.SetA(1.0)
+					t.SetA(255)
 				} else {
 					t.SetA(int(255 * p.fade))
 				}
