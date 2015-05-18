@@ -49,15 +49,21 @@ func appendBoxExtra(verts []*render.StaticVertex, x, y, z, w, h, d float32, text
 			continue
 		}
 		for _, v := range face.verts {
+			var rr, gg, bb byte = 255, 255, 255
+			if direction.Type(i) == direction.West || direction.Type(i) == direction.East {
+				rr = byte(255 * 0.8)
+				gg = byte(255 * 0.8)
+				bb = byte(255 * 0.8)
+			}
 			vert := &render.StaticVertex{
 				X:        float32(v.X)*w + x,
 				Y:        float32(v.Y)*h + y,
 				Z:        float32(v.Z)*d + z,
 				TOffsetX: int16(float64(v.TOffsetX*16*int16(tex.Width)) * extra[i][0]),
 				TOffsetY: int16(float64(v.TOffsetY*16*int16(tex.Height)) * extra[i][1]),
-				R:        255,
-				G:        255,
-				B:        255,
+				R:        rr,
+				G:        gg,
+				B:        bb,
 				A:        255,
 				TX:       uint16(tex.X),
 				TY:       uint16(tex.Y),
