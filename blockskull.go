@@ -194,6 +194,7 @@ func (s *skullComponent) create() {
 		mat = mat.Mul4(mgl32.Translate3D(0, -4/16.0, 4/16.0))
 	}
 	model.Matrix[0] = mat
+	lightBlockModel(model, s.position)
 }
 func esSkullAdd(s *skullComponent, p BlockComponent) {
 	s.position = p.Position()

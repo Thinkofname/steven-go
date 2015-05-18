@@ -25,6 +25,7 @@ func (ce *clientEntities) register() {
 	ce.container.AddSystem(entitysys.Tick, esMoveToTarget)
 	ce.container.AddSystem(entitysys.Tick, esRotateToTarget)
 	ce.container.AddSystem(entitysys.Tick, esDrawOutline)
+	ce.container.AddSystem(entitysys.Tick, esLightModel)
 	ce.container.AddSystem(entitysys.Tick, esMoveChunk)
 }
 
@@ -42,6 +43,28 @@ func esDrawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
 		float64(bounds.Max.Z()),
 		r, g, b, 255,
 	)
+}
+
+func esLightModel(p PositionComponent, m interface {
+	Model() *render.StaticModel
+}) {
+	if m.Model() == nil {
+		return
+	}
+	x, y, z := p.Position()
+	bx, by, bz := int(x), int(y+0.5), int(z)
+	bl := float64(chunkMap.BlockLight(bx, by, bz)) / 16
+	sl := float64(chunkMap.SkyLight(bx, by, bz)) / 16
+	light := math.Max(bl, sl) + (1 / 16.0)
+	model := m.Model()
+	for i := range model.Colors {
+		model.Colors[i] = [4]float32{
+			float32(light),
+			float32(light),
+			float32(light),
+			1.0,
+		}
+	}
 }
 
 func esMoveChunk(e Entity, p *positionComponent) {

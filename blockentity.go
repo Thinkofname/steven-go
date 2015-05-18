@@ -16,6 +16,7 @@ package steven
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/encoding/nbt"
@@ -27,6 +28,21 @@ func (ce *clientEntities) registerBlockEntities() {
 	ce.container.AddSystem(entitysys.Add, esSkullAdd)
 	ce.container.AddSystem(entitysys.Remove, esSkullRemove)
 	ce.container.AddSystem(entitysys.Add, esSignAdd)
+}
+
+func lightBlockModel(model *render.StaticModel, bp Position) {
+	bx, by, bz := bp.X, bp.Y, bp.Z
+	bl := float64(chunkMap.BlockLight(bx, by, bz)) / 16
+	sl := float64(chunkMap.SkyLight(bx, by, bz)) / 16
+	light := math.Max(bl, sl) + (1 / 16.0)
+	for i := range model.Colors {
+		model.Colors[i] = [4]float32{
+			float32(light),
+			float32(light),
+			float32(light),
+			1.0,
+		}
+	}
 }
 
 type BlockEntity interface {

@@ -44,6 +44,32 @@ func (w world) BlockEntity(x, y, z int) BlockEntity {
 	return s.BlockEntities[Position{x, y, z}]
 }
 
+func (w world) BlockLight(x, y, z int) int {
+	cx := x >> 4
+	cz := z >> 4
+	chunk := w[chunkPosition{cx, cz}]
+	if chunk == nil {
+		return 0
+	}
+	if s := chunk.Sections[y>>4]; s != nil {
+		return int(s.blockLight(x&0xF, y&0xF, z&0xF))
+	}
+	return 0
+}
+
+func (w world) SkyLight(x, y, z int) int {
+	cx := x >> 4
+	cz := z >> 4
+	chunk := w[chunkPosition{cx, cz}]
+	if chunk == nil {
+		return 15
+	}
+	if s := chunk.Sections[y>>4]; s != nil {
+		return int(s.skyLight(x&0xF, y&0xF, z&0xF))
+	}
+	return 15
+}
+
 func (w world) Block(x, y, z int) Block {
 	cx := x >> 4
 	cz := z >> 4
