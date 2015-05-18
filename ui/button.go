@@ -85,6 +85,9 @@ func (b *Button) Click(r Region, x, y float64) {
 	}
 }
 func (b *Button) Hover(r Region, x, y float64, over bool) {
+	if b.hovered != over {
+		b.dirty = true
+	}
 	b.hovered = over
 	if b.HoverFunc != nil {
 		b.HoverFunc(over)
