@@ -59,7 +59,7 @@ func newLoginScreen() *loginScreen {
 	ls.user.back.Attach(ui.Middle, ui.Center)
 	ls.user.add(ls.scene)
 	label := ui.NewText("Username/Email:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
-	label.Parent = ls.user.back
+	label.AttachTo(ls.user.back)
 	ls.scene.AddDrawable(label)
 	ls.user.back.ClickFunc = func() {
 		if ls.focused != nil {
@@ -73,7 +73,7 @@ func newLoginScreen() *loginScreen {
 	ls.pass.back.Attach(ui.Middle, ui.Center)
 	ls.pass.add(ls.scene)
 	label = ui.NewText("Password:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
-	label.Parent = ls.pass.back
+	label.AttachTo(ls.pass.back)
 	ls.scene.AddDrawable(label)
 	ls.pass.back.ClickFunc = func() {
 		if ls.focused != nil {
@@ -114,7 +114,7 @@ func (ls *loginScreen) postLogin(p mojang.Profile, err error) {
 		} else {
 			ls.loginError.Update(err.Error())
 		}
-		ls.loginBtn.Disabled = false
+		ls.loginBtn.SetDisabled(false)
 		ls.loginTxt.Update("Login")
 		return
 	}
@@ -133,7 +133,7 @@ func (ls *loginScreen) postLogin(p mojang.Profile, err error) {
 
 func (ls *loginScreen) refresh() {
 	ls.loginError.Update("")
-	ls.loginBtn.Disabled = true
+	ls.loginBtn.SetDisabled(true)
 	ls.loginTxt.Update("Logging in...")
 	go func() {
 		p, err := mojang.Refresh(Config.Profile, Config.ClientToken)
@@ -143,7 +143,7 @@ func (ls *loginScreen) refresh() {
 
 func (ls *loginScreen) login() {
 	ls.loginError.Update("")
-	ls.loginBtn.Disabled = true
+	ls.loginBtn.SetDisabled(true)
 	ls.loginTxt.Update("Logging in...")
 	go func() {
 		p, err := mojang.Login(ls.user.input, ls.pass.input, Config.ClientToken)
@@ -152,7 +152,7 @@ func (ls *loginScreen) login() {
 }
 
 func (ls *loginScreen) tick(delta float64) {
-	if ls.loginBtn.Disabled {
+	if ls.loginBtn.Disabled() {
 		if ls.focused != nil {
 			ls.focused.Focused = false
 			ls.focused = nil

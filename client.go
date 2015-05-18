@@ -160,23 +160,23 @@ func (c *ClientState) init() {
 	for i := 0; i < 10; i++ {
 		l := ui.NewImage(icons, 16*float64(i), -16-8-10, 18, 18, 16.0/256.0, 0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
 			Attach(ui.Top, ui.Left)
-		l.Parent = hotbar
+		l.AttachTo(hotbar)
 		c.scene.AddDrawable(l)
 		c.lifeUI = append(c.lifeUI, l)
 		l = ui.NewImage(icons, 16*float64(i), -16-8-10, 18, 18, (16+9*4)/256.0, 0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
 			Attach(ui.Top, ui.Left)
-		l.Parent = hotbar
+		l.AttachTo(hotbar)
 		c.scene.AddDrawable(l)
 		c.lifeFillUI = append(c.lifeFillUI, l)
 
 		f := ui.NewImage(icons, 16*float64(i), -16-8-10, 18, 18, 16.0/256.0, 27.0/256.0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
 			Attach(ui.Top, ui.Right)
-		f.Parent = hotbar
+		f.AttachTo(hotbar)
 		c.scene.AddDrawable(f)
 		c.foodUI = append(c.foodUI, f)
 		f = ui.NewImage(icons, 16*float64(i), -16-8-10, 18, 18, (16+9*4)/256.0, 27.0/256.0, 9.0/256.0, 9.0/256.0, 255, 255, 255).
 			Attach(ui.Top, ui.Right)
-		f.Parent = hotbar
+		f.AttachTo(hotbar)
 		c.scene.AddDrawable(f)
 		c.foodFillUI = append(c.foodFillUI, f)
 	}
@@ -229,7 +229,7 @@ func (c *ClientState) cycleCamera() {
 
 func (c *ClientState) renderTick(delta float64) {
 	c.delta = delta
-	c.hotbarUI.X = -184 + 24 + 40*float64(c.currentHotbarSlot)
+	c.hotbarUI.SetX(-184 + 24 + 40*float64(c.currentHotbarSlot))
 
 	forward, yaw := c.calculateMovement()
 
@@ -436,15 +436,15 @@ func (c *ClientState) UpdateHealth(health float64) {
 	for i, img := range c.lifeFillUI {
 		i := float64(i)
 		if i+0.5 < hp {
-			img.Visible = true
-			img.TW = 9.0 / 256.0
-			img.W = 18
+			img.SetDraw(true)
+			img.SetTextureWidth(9.0 / 256.0)
+			img.SetWidth(18)
 		} else if i < hp {
-			img.Visible = true
-			img.TW = 4.5 / 256.0
-			img.W = 9
+			img.SetDraw(true)
+			img.SetTextureWidth(4.5 / 256.0)
+			img.SetWidth(9)
 		} else {
-			img.Visible = false
+			img.SetDraw(false)
 		}
 	}
 }
@@ -456,17 +456,17 @@ func (c *ClientState) UpdateHunger(hunger float64) {
 	for i, img := range c.foodFillUI {
 		i := float64(i)
 		if i+0.5 < hp {
-			img.Visible = true
-			img.TX = (16 + 9*4) / 256.0
-			img.TW = 9.0 / 256.0
-			img.W = 18
+			img.SetDraw(true)
+			img.SetTextureX((16 + 9*4) / 256.0)
+			img.SetTextureWidth(9.0 / 256.0)
+			img.SetWidth(18)
 		} else if i < hp {
-			img.Visible = true
-			img.TX = (16+9*4)/256.0 + (4.5 / 256.0)
-			img.TW = 4.5 / 256.0
-			img.W = 9
+			img.SetDraw(true)
+			img.SetTextureX((16+9*4)/256.0 + (4.5 / 256.0))
+			img.SetTextureWidth(4.5 / 256.0)
+			img.SetWidth(9)
 		} else {
-			img.Visible = false
+			img.SetDraw(false)
 		}
 	}
 }

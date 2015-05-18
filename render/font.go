@@ -44,25 +44,25 @@ type UIText struct {
 
 // DrawUIText draws a UIText element to the screen with
 // the passed text at the location. The text may be tinted too
-func DrawUIText(str string, x, y float64, rr, gg, bb int) UIText {
-	return DrawUITextScaled(str, x, y, 1.0, 1.0, rr, gg, bb)
+func NewUIText(str string, x, y float64, rr, gg, bb int) UIText {
+	return NewUITextScaled(str, x, y, 1.0, 1.0, rr, gg, bb)
 }
 
 // DrawUITextScaled draws a UIText element to the screen with
 // the passed text at the location. The text may be tinted and/or
 // scaled too
-func DrawUITextScaled(str string, x, y, sx, sy float64, rr, gg, bb int) UIText {
-	return drawUIText(str, x, y, sx, sy, 0, rr, gg, bb)
+func NewUITextScaled(str string, x, y, sx, sy float64, rr, gg, bb int) UIText {
+	return newUIText(str, x, y, sx, sy, 0, rr, gg, bb)
 }
 
 // DrawUITextRotated draws a UIText element to the screen with
 // the passed text at the location. The text may be tinted,
 // scaled and/or rotated too
-func DrawUITextRotated(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UIText {
-	return drawUIText(str, x, y, sx, sy, rotation, rr, gg, bb)
+func NewUITextRotated(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UIText {
+	return newUIText(str, x, y, sx, sy, rotation, rr, gg, bb)
 }
 
-func drawUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UIText {
+func newUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UIText {
 	t := UIText{}
 	offset := 0.0
 	for _, r := range str {
@@ -98,14 +98,14 @@ func drawUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UITe
 			dy = (16 * 0.5) + (tmpy*c + tmpx*s)
 		}
 
-		shadow := DrawUIElement(texture, x+dsx*sx, y+dsy*sy, w*sx, 16*sy, 0, 0, 1, 1)
+		shadow := NewUIElement(texture, x+dsx*sx, y+dsy*sy, w*sx, 16*sy, 0, 0, 1, 1)
 		// Tint the shadow to a darker shade of the original color
 		shadow.R = byte(float64(rr) * 0.25)
 		shadow.G = byte(float64(gg) * 0.25)
 		shadow.B = byte(float64(bb) * 0.25)
 		shadow.Rotation = rotation
 		t.elements = append(t.elements, shadow)
-		text := DrawUIElement(texture, x+dx*sx, y+dy*sy, w*sx, 16*sy, 0, 0, 1, 1)
+		text := NewUIElement(texture, x+dx*sx, y+dy*sy, w*sx, 16*sy, 0, 0, 1, 1)
 		text.R = byte(rr)
 		text.G = byte(gg)
 		text.B = byte(bb)
@@ -115,6 +115,14 @@ func drawUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UITe
 	}
 	t.Width = (offset - 2) * sx
 	return t
+}
+
+func (u UIText) Bytes() []byte {
+	data := make([]byte, 0, 22*6*len(u.elements))
+	for _, e := range u.elements {
+		data = append(data, e.Bytes()...)
+	}
+	return data
 }
 
 // CharacterTexture returns the TextureInfo for the passed rune
@@ -162,18 +170,16 @@ func SizeOfString(str string) float64 {
 	return size - 2
 }
 
-// Shift moves all the elements belonging to this UIText by the
-// passed amounts.
-func (u UIText) Shift(x, y float64) {
-	for _, e := range u.elements {
-		e.Shift(x, y)
-	}
-}
-
 // Alpha changes the alpha of all theelements belonging to this UIText
-func (u UIText) Alpha(a float64) {
+func (u UIText) Alpha(a int) {
+	if a > 255 {
+		a = 255
+	}
+	if a < 0 {
+		a = 0
+	}
 	for _, e := range u.elements {
-		e.Alpha(a)
+		e.A = byte(a)
 	}
 }
 

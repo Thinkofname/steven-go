@@ -52,10 +52,10 @@ type playerListUIEntry struct {
 }
 
 func (p playerListUIEntry) set(enabled bool) {
-	p.text.Visible = enabled
-	p.icon.Visible = enabled
-	p.iconHat.Visible = enabled
-	p.ping.Visible = enabled
+	p.text.SetDraw(enabled)
+	p.icon.SetDraw(enabled)
+	p.iconHat.SetDraw(enabled)
+	p.ping.SetDraw(enabled)
 }
 
 func (p *playerListUI) init() {
@@ -63,8 +63,8 @@ func (p *playerListUI) init() {
 	p.scene = scene.New(false)
 	for i := range p.background {
 		p.background[i] = ui.NewImage(render.GetTexture("solid"), 0, 16, playerListWidth+48, 16, 0, 0, 1, 1, 0, 0, 0)
-		p.background[i].A = 120
-		p.background[i].Visible = false
+		p.background[i].SetA(120)
+		p.background[i].SetDraw(false)
 		p.scene.AddDrawable(p.background[i].Attach(ui.Top, ui.Center))
 	}
 }
@@ -89,7 +89,7 @@ func (p *playerListUI) render(delta float64) {
 		return
 	}
 	for _, b := range p.background {
-		b.Visible = false
+		b.SetDraw(false)
 	}
 	for _, e := range p.entries {
 		e.set(false)
@@ -103,13 +103,13 @@ func (p *playerListUI) render(delta float64) {
 			entries := p.entries[lastEntry:offset]
 			lastEntry = offset
 			for _, e := range entries {
-				if e.icon.Visible {
-					e.icon.X = -playerListWidth/2 - 12
-					e.iconHat.X = -playerListWidth/2 - 12
-					e.ping.X = playerListWidth/2 + 12
+				if e.icon.ShouldDraw() {
+					e.icon.SetX(-playerListWidth/2 - 12)
+					e.iconHat.SetX(-playerListWidth/2 - 12)
+					e.ping.SetX(playerListWidth/2 + 12)
 				}
 			}
-			p.background[bTab].H = float64(count * 18)
+			p.background[bTab].SetHeight(float64(count * 18))
 			count = 0
 			bTab++
 			if bTab >= len(p.background) {
@@ -117,7 +117,7 @@ func (p *playerListUI) render(delta float64) {
 			}
 		}
 		background := p.background[bTab]
-		background.Visible = true
+		background.SetDraw(true)
 		if offset >= len(p.entries) {
 			text := ui.NewText("", 24, 0, 255, 255, 255).
 				Attach(ui.Top, ui.Left)
@@ -132,10 +132,10 @@ func (p *playerListUI) render(delta float64) {
 				Attach(ui.Top, ui.Center)
 			p.scene.AddDrawable(ping)
 
-			text.Parent = background
-			icon.Parent = background
-			iconHat.Parent = background
-			ping.Parent = background
+			text.AttachTo(background)
+			icon.AttachTo(background)
+			iconHat.AttachTo(background)
+			ping.AttachTo(background)
 
 			p.entries = append(p.entries, &playerListUIEntry{
 				text:    text,
@@ -147,14 +147,14 @@ func (p *playerListUI) render(delta float64) {
 		e := p.entries[offset]
 		e.set(true)
 		offset++
-		e.text.Y = 1 + 18*float64(count)
+		e.text.SetY(1 + 18*float64(count))
 		e.text.Update(pl.name)
-		e.icon.Y = 1 + 18*float64(count)
-		e.icon.Texture = pl.skin
-		e.iconHat.Y = 1 + 18*float64(count)
-		e.iconHat.Texture = pl.skin
+		e.icon.SetY(1 + 18*float64(count))
+		e.icon.SetTexture(pl.skin)
+		e.iconHat.SetY(1 + 18*float64(count))
+		e.iconHat.SetTexture(pl.skin)
 
-		e.ping.Y = 1 + 18*float64(count)
+		e.ping.SetY(1 + 18*float64(count))
 		y := 0.0
 		switch {
 		case pl.ping <= 75:
@@ -170,37 +170,37 @@ func (p *playerListUI) render(delta float64) {
 		default:
 			y = 56 / 256.0
 		}
-		e.ping.TY = y
+		e.ping.SetTextureY(y)
 		count++
 	}
 
 	if bTab < len(p.background) {
 		for _, e := range p.entries {
-			if e.icon.Visible {
-				e.icon.X = -playerListWidth/2 - 12
-				e.iconHat.X = -playerListWidth/2 - 12
-				e.ping.X = playerListWidth/2 + 12
+			if e.icon.ShouldDraw() {
+				e.icon.SetX(-playerListWidth/2 - 12)
+				e.iconHat.SetX(-playerListWidth/2 - 12)
+				e.ping.SetX(playerListWidth/2 + 12)
 			}
 		}
-		p.background[bTab].H = float64(count * 18)
+		p.background[bTab].SetHeight(float64(count * 18))
 	}
 
 	switch bTab {
 	case 0: // Single
-		p.background[0].X = 0
+		p.background[0].SetX(0)
 	case 1: // Double
-		p.background[0].X = -p.background[0].W / 2
-		p.background[1].X = p.background[1].W / 2
+		p.background[0].SetX(-p.background[0].Width() / 2)
+		p.background[1].SetX(p.background[1].Width() / 2)
 	case 2: // Triple
-		p.background[0].X = -(p.background[1].W / 2) - p.background[0].W/2
-		p.background[1].X = 0
-		p.background[2].X = (p.background[1].W / 2) + p.background[2].W/2
+		p.background[0].SetX(-(p.background[1].Width() / 2) - p.background[0].Width()/2)
+		p.background[1].SetX(0)
+		p.background[2].SetX((p.background[1].Width() / 2) + p.background[2].Width()/2)
 	default: // Quad
-		p.background[0].X = -p.background[0].W/2 - p.background[1].W
-		p.background[3].X = p.background[3].W/2 + p.background[2].W
+		p.background[0].SetX(-p.background[0].Width()/2 - p.background[1].Width())
+		p.background[3].SetX(p.background[3].Width()/2 + p.background[2].Width())
 
-		p.background[1].X = -p.background[1].W / 2
-		p.background[2].X = p.background[2].W / 2
+		p.background[1].SetX(-p.background[1].Width() / 2)
+		p.background[2].SetX(p.background[2].Width() / 2)
 	}
 }
 

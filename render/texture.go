@@ -31,7 +31,7 @@ import (
 
 var (
 	textures         []*atlas.Type
-	textureMap       = map[string]TextureInfo{}
+	textureMap       = map[string]*TextureInfo{}
 	textureLock      sync.RWMutex
 	animatedTextures []*animatedTexture
 )
@@ -69,7 +69,7 @@ func GetTexture(name string) *TextureInfo {
 	if !ok {
 		t = textureMap["blocks/stone"]
 	}
-	return &t
+	return t
 }
 
 type sortableTexture struct {
@@ -99,7 +99,7 @@ func LoadTextures() {
 
 	// Clear existing
 	textures = nil
-	textureMap = map[string]TextureInfo{}
+	textureMap = map[string]*TextureInfo{}
 
 	names := resource.Search("minecraft", "textures/", ".png")
 	tList := make(sortableTextures, 0, len(names))
@@ -129,7 +129,7 @@ func LoadTextures() {
 	}
 
 	pix := []byte{255, 255, 255, 255}
-	info := *addTexture(pix, 1, 1)
+	info := addTexture(pix, 1, 1)
 	textureMap["solid"] = info
 
 	textureLock.Unlock()
@@ -162,7 +162,7 @@ func loadTexFile(st sortableTexture) {
 	}
 	pix := imgToBytes(img)
 	name := file[len("textures/") : len(file)-4]
-	info := *addTexture(pix, width, height)
+	info := addTexture(pix, width, height)
 	textureMap[name] = info
 	if ani != nil {
 		ani.Info = info
@@ -228,7 +228,7 @@ func uploadTexture(info *TextureInfo, data []byte) {
 }
 
 type animatedTexture struct {
-	Info          TextureInfo
+	Info          *TextureInfo
 	Image         image.Image
 	Buffer        []byte
 	Interpolate   bool

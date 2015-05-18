@@ -41,7 +41,7 @@ func newOptionMenu() *optionMenu {
 	Client.scene.Hide()
 
 	om.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 854, 480, 0, 0, 1, 1, 0, 0, 0)
-	om.background.A = 160
+	om.background.SetA(160)
 	om.scene.AddDrawable(om.background.Attach(ui.Top, ui.Left))
 
 	done, txt := newButtonText("Done", 0, 50, 400, 40)
@@ -54,7 +54,7 @@ func newOptionMenu() *optionMenu {
 	samples.add(om.scene)
 	om.samples = samples
 	txt = ui.NewText("", 0, 0, 255, 255, 255).Attach(ui.Center, ui.Middle)
-	txt.Parent = samples.back
+	txt.AttachTo(samples.back)
 	om.scene.AddDrawable(txt)
 	samples.UpdateFunc = func() {
 		Config.Render.Samples = round(16 * samples.Value)
@@ -68,7 +68,7 @@ func newOptionMenu() *optionMenu {
 	fov.add(om.scene)
 	om.fov = fov
 	ftxt := ui.NewText("", 0, 0, 255, 255, 255).Attach(ui.Center, ui.Middle)
-	ftxt.Parent = fov.back
+	ftxt.AttachTo(fov.back)
 	om.scene.AddDrawable(ftxt)
 	fov.UpdateFunc = func() {
 		Config.Render.FOV = 60 + round(119*fov.Value)
@@ -99,7 +99,7 @@ func newOptionMenu() *optionMenu {
 	mouseS.add(om.scene)
 	om.mouseS = mouseS
 	mtxt := ui.NewText("", 0, 0, 255, 255, 255).Attach(ui.Center, ui.Middle)
-	mtxt.Parent = mouseS.back
+	mtxt.AttachTo(mouseS.back)
 	om.scene.AddDrawable(mtxt)
 	mouseS.UpdateFunc = func() {
 		Config.Game.MouseSensitivity = 500 + round(10000.0*mouseS.Value)
@@ -162,8 +162,8 @@ func (om *optionMenu) click(down bool, x, y float64, w, h int) {
 }
 func (om *optionMenu) tick(delta float64) {
 	width, height := window.GetFramebufferSize()
-	om.background.W = float64(width) / ui.Scale
-	om.background.H = float64(height) / ui.Scale
+	om.background.SetWidth(float64(width) / ui.Scale)
+	om.background.SetHeight(float64(height) / ui.Scale)
 }
 
 func (om *optionMenu) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {

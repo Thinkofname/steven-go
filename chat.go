@@ -51,20 +51,15 @@ type chatLine struct {
 }
 
 func (c *ChatUI) init() {
-	c.container = &ui.Container{
-		X: 0,
-		Y: 44,
-		W: 500,
-		H: chatHistoryLines*18 + 2,
-	}
+	c.container = ui.NewContainer(0, 44, 500, chatHistoryLines*18+2)
 	c.container.Attach(ui.Bottom, ui.Left)
 	c.input = ui.NewText("", 5, 1, 255, 255, 255).Attach(ui.Bottom, ui.Left)
-	c.input.Visible = false
-	c.input.Parent = c.container
+	c.input.SetDraw(false)
+	c.input.AttachTo(c.container)
 	c.inputBackground = ui.NewImage(render.GetTexture("solid"), 0, 0, 500, 20, 0, 0, 1, 1, 0, 0, 0).Attach(ui.Bottom, ui.Left)
-	c.inputBackground.A = 77
-	c.inputBackground.Parent = c.container
-	c.inputBackground.Visible = false
+	c.inputBackground.SetA(77)
+	c.inputBackground.AttachTo(c.container)
+	c.inputBackground.SetDraw(false)
 	Client.scene.AddDrawable(c.inputBackground)
 	Client.scene.AddDrawable(c.input)
 }
@@ -72,24 +67,24 @@ func (c *ChatUI) init() {
 func (c *ChatUI) Draw(delta float64) {
 	if c.wasEnteringText != c.enteringText {
 		if c.wasEnteringText {
-			c.input.Visible = false
-			c.inputBackground.Visible = false
+			c.input.SetDraw(false)
+			c.inputBackground.SetDraw(false)
 			c.input.Update(string(c.inputLine))
 			for _, p := range c.parts {
-				p.text.Y += 18
-				p.background.Y += 18
+				p.text.SetY(p.text.Y() + 18)
+				p.background.SetY(p.background.Y() + 18)
 			}
 		} else {
 			for _, p := range c.parts {
-				p.text.Y -= 18
-				p.background.Y -= 18
+				p.text.SetY(p.text.Y() - 18)
+				p.background.SetY(p.background.Y() - 18)
 			}
 		}
 		c.wasEnteringText = c.enteringText
 	}
 	if c.enteringText {
-		c.input.Visible = true
-		c.inputBackground.Visible = true
+		c.input.SetDraw(true)
+		c.inputBackground.SetDraw(true)
 		c.cursorTick += delta
 		// Add on our cursor
 		if int(c.cursorTick/30)%2 == 0 {
@@ -109,7 +104,7 @@ func (c *ChatUI) Draw(delta float64) {
 		limit = -18
 	}
 	for i, p := range parts {
-		if p.background.Y < limit {
+		if p.background.Y() < limit {
 			c.parts = c.parts[i+1-offset:]
 			offset = i + 1
 			p.text.Remove()
@@ -121,9 +116,9 @@ func (c *ChatUI) Draw(delta float64) {
 			}
 			for _, t := range p.text.Text {
 				if c.enteringText {
-					t.A = 1.0
+					t.SetA(1.0)
 				} else {
-					t.A = p.fade
+					t.SetA(int(255 * p.fade))
 				}
 			}
 			ba := 0.3
@@ -131,9 +126,9 @@ func (c *ChatUI) Draw(delta float64) {
 				ba -= (1.0 - p.fade) / 2.0
 				ba = math.Min(ba, 0.3)
 			}
-			p.background.A = int(255 * ba)
-			if p.background.A < 0 {
-				p.background.A = 0
+			p.background.SetA(int(255 * ba))
+			if p.background.A() < 0 {
+				p.background.SetA(0)
 			}
 		}
 	}
@@ -213,24 +208,24 @@ func (c *ChatUI) Add(msg chat.AnyComponent) {
 	copy(c.Lines[0:chatHistoryLines-1], c.Lines[1:])
 	c.Lines[chatHistoryLines-1] = msg
 	f := ui.NewFormattedWidth(msg, 5, chatHistoryLines*18+1, 500-10).Attach(ui.Top, ui.Left)
-	f.Parent = c.container
+	f.AttachTo(c.container)
 	line := &chatLine{
 		text:       f,
 		fade:       3.0,
 		background: ui.NewImage(render.GetTexture("solid"), 0, chatHistoryLines*18, 500, f.Height, 0, 0, 1, 1, 0, 0, 0),
 	}
-	line.background.Parent = c.container
-	line.background.A = 77
+	line.background.AttachTo(c.container)
+	line.background.SetA(77)
 	c.parts = append(c.parts, line)
 	Client.scene.AddDrawable(line.background)
 	Client.scene.AddDrawable(f)
 	ff := f
 	for _, f := range c.parts {
-		f.text.Y -= 18 * float64(ff.Lines)
-		f.background.Y -= 18 * float64(ff.Lines)
+		f.text.SetY(f.text.Y() - 18*float64(ff.Lines))
+		f.background.SetY(f.background.Y() - 18*float64(ff.Lines))
 	}
 	if c.enteringText {
-		ff.Y -= 18
-		line.background.Y -= 18
+		ff.SetY(ff.Y() - 18)
+		line.background.SetY(line.background.Y() - 18)
 	}
 }

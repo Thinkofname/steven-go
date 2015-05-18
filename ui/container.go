@@ -17,12 +17,50 @@ package ui
 // Container is a drawable that is used for aligning other drawables.
 // Should never be drawn.
 type Container struct {
-	Parent           Drawable
-	X, Y, W, H       float64
-	vAttach, hAttach AttachPoint
-	hovered          bool
-	HoverFunc        func(over bool)
-	ClickFunc        func()
+	baseElement
+	x, y, h, w float64
+	hovered    bool
+	HoverFunc  func(over bool)
+	ClickFunc  func()
+}
+
+func NewContainer(x, y, w, h float64) *Container {
+	return &Container{
+		x: x, y: y, w: w, h: h,
+		baseElement: baseElement{
+			visible: false,
+			isNew:   false,
+		},
+	}
+}
+
+func (c *Container) X() float64 { return c.x }
+func (c *Container) SetX(x float64) {
+	if c.x != x {
+		c.x = x
+		c.dirty = true
+	}
+}
+func (c *Container) Y() float64 { return c.y }
+func (c *Container) SetY(y float64) {
+	if c.y != y {
+		c.y = y
+		c.dirty = true
+	}
+}
+func (c *Container) Width() float64 { return c.w }
+func (c *Container) SetWidth(w float64) {
+	if c.w != w {
+		c.w = w
+		c.dirty = true
+	}
+}
+func (c *Container) Height() float64 { return c.h }
+func (c *Container) SetHeight(h float64) {
+	if c.h != h {
+		c.h = h
+		c.dirty = true
+	}
 }
 
 // Attach changes the location where this is attached to.
@@ -31,34 +69,19 @@ func (c *Container) Attach(vAttach, hAttach AttachPoint) *Container {
 	return c
 }
 
-// Attachment returns the sides where this element is attached too.
-func (c *Container) Attachment() (vAttach, hAttach AttachPoint) {
-	return c.vAttach, c.hAttach
-}
-
-// ShouldDraw returns whether this should be drawn at this time.
-func (c *Container) ShouldDraw() bool {
-	return false
-}
-
 // Draw draws this to the target region.
 func (c *Container) Draw(r Region, delta float64) {
-}
-
-// AttachedTo returns the Drawable this is attached to or nil.
-func (c *Container) AttachedTo() Drawable {
-	return c.Parent
 }
 
 // Offset returns the offset of this drawable from the attachment
 // point.
 func (c *Container) Offset() (float64, float64) {
-	return c.X, c.Y
+	return c.x, c.y
 }
 
 // Size returns the size of this drawable.
 func (c *Container) Size() (float64, float64) {
-	return c.W, c.H
+	return c.w, c.h
 }
 func (c *Container) Click(r Region, x, y float64) {
 	if c.ClickFunc != nil {

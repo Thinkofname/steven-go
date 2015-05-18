@@ -50,6 +50,9 @@ type Drawable interface {
 	ShouldDraw() bool
 	AttachedTo() Drawable
 	Attachment() (vAttach, hAttach AttachPoint)
+
+	isDirty() bool
+	clearDirty()
 }
 
 type Interactable interface {
@@ -71,6 +74,11 @@ func AddDrawableHook(d Drawable, hook func(d Drawable)) {
 
 var screen = Region{W: scaledWidth, H: scaledHeight}
 
+var (
+	lastWidth, lastHeight int
+	forceDirty            bool
+)
+
 // Draw draws all drawables in the draw list to the screen.
 func Draw(width, height int, delta float64) {
 	sw := scaledWidth / float64(width)
@@ -78,6 +86,7 @@ func Draw(width, height int, delta float64) {
 	if DrawMode == Unscaled {
 		sw, sh = Scale, Scale
 	}
+
 	for _, d := range drawables {
 		if !d.ShouldDraw() {
 			continue
@@ -86,6 +95,18 @@ func Draw(width, height int, delta float64) {
 		if r.intersects(screen) {
 			d.Draw(r, delta)
 		}
+	}
+
+	for _, d := range drawables {
+		// Handle parents that aren't drawing too
+		for r := d.Drawable; r != nil; r = r.AttachedTo() {
+			r.clearDirty()
+		}
+	}
+	forceDirty = false
+	if lastWidth != width || lastHeight != height {
+		forceDirty = true
+		lastWidth, lastHeight = width, height
 	}
 }
 
@@ -208,4 +229,51 @@ func Remove(d Drawable) {
 			return
 		}
 	}
+}
+
+type baseElement struct {
+	parent           Drawable
+	visible          bool
+	vAttach, hAttach AttachPoint
+
+	dirty bool
+	isNew bool
+	data  []byte
+}
+
+// Attachment returns the sides where this element is attached too.
+func (b *baseElement) Attachment() (vAttach, hAttach AttachPoint) {
+	return b.vAttach, b.hAttach
+}
+
+// ShouldDraw returns whether this should be drawn at this time.
+func (b *baseElement) ShouldDraw() bool {
+	return b.visible
+}
+
+func (b *baseElement) SetDraw(shouldDraw bool) {
+	if shouldDraw != b.visible {
+		b.visible = shouldDraw
+		b.dirty = true
+	}
+}
+
+// AttachedTo returns the Drawable this is attached to or nil.
+func (b *baseElement) AttachedTo() Drawable {
+	return b.parent
+}
+
+func (b *baseElement) AttachTo(d Drawable) {
+	if b.parent != d {
+		b.parent = d
+		b.dirty = true
+	}
+}
+
+func (b *baseElement) isDirty() bool {
+	return b.dirty || (b.parent != nil && b.parent.isDirty())
+}
+
+func (b *baseElement) clearDirty() {
+	b.dirty = false
 }

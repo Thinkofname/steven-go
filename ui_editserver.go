@@ -68,7 +68,7 @@ func newEditServer(index int) *editServer {
 	se.name.back.Attach(ui.Middle, ui.Center)
 	se.name.add(se.scene)
 	label := ui.NewText("Name:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
-	label.Parent = se.name.back
+	label.AttachTo(se.name.back)
 	se.scene.AddDrawable(label)
 	se.name.back.ClickFunc = func() {
 		if se.focused != nil {
@@ -82,7 +82,7 @@ func newEditServer(index int) *editServer {
 	se.address.back.Attach(ui.Middle, ui.Center)
 	se.address.add(se.scene)
 	label = ui.NewText("Address:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
-	label.Parent = se.address.back
+	label.AttachTo(se.address.back)
 	se.scene.AddDrawable(label)
 	se.address.back.ClickFunc = func() {
 		if se.focused != nil {

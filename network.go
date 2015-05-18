@@ -130,6 +130,9 @@ func (n *networkManager) Write(packet protocol.Packet) {
 }
 
 func (n *networkManager) Close() {
+	if n.conn == nil {
+		return
+	}
 	n.closeChan <- struct{}{}
 	n.conn.Close()
 }

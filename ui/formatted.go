@@ -22,14 +22,13 @@ import (
 
 // Formatted is a drawable that draws a string.
 type Formatted struct {
-	Parent           Drawable
-	X, Y             float64
-	Width, Height    float64
-	MaxWidth         float64
-	Visible          bool
-	ScaleX, ScaleY   float64
-	Lines            int
-	vAttach, hAttach AttachPoint
+	baseElement
+	x, y           float64
+	MaxWidth       float64
+	scaleX, scaleY float64
+
+	Width, Height float64
+	Lines         int
 
 	Text []*Text
 }
@@ -37,10 +36,13 @@ type Formatted struct {
 // NewFormatted creates a new Formatted drawable.
 func NewFormatted(val chat.AnyComponent, x, y float64) *Formatted {
 	f := &Formatted{
-		X: x, Y: y,
-		ScaleX: 1, ScaleY: 1,
-		Visible:  true,
+		x: x, y: y,
+		scaleX: 1, scaleY: 1,
 		MaxWidth: -1,
+		baseElement: baseElement{
+			visible: true,
+			isNew:   true,
+		},
 	}
 	f.Update(val)
 	return f
@@ -49,10 +51,13 @@ func NewFormatted(val chat.AnyComponent, x, y float64) *Formatted {
 // NewFormattedWidth creates a new Formatted drawable with a max width.
 func NewFormattedWidth(val chat.AnyComponent, x, y, width float64) *Formatted {
 	f := &Formatted{
-		X: x, Y: y,
-		ScaleX: 1, ScaleY: 1,
-		Visible:  true,
+		x: x, y: y,
+		scaleX: 1, scaleY: 1,
 		MaxWidth: width,
+		baseElement: baseElement{
+			visible: true,
+			isNew:   true,
+		},
 	}
 	f.Update(val)
 	return f
@@ -64,40 +69,60 @@ func (f *Formatted) Attach(vAttach, hAttach AttachPoint) *Formatted {
 	return f
 }
 
-// Attachment returns the sides where this element is attached too.
-func (f *Formatted) Attachment() (vAttach, hAttach AttachPoint) {
-	return f.vAttach, f.hAttach
+func (f *Formatted) X() float64 { return f.x }
+func (f *Formatted) SetX(x float64) {
+	if f.x != x {
+		f.x = x
+		f.dirty = true
+	}
 }
-
-// ShouldDraw returns whether this should be drawn at this time.
-func (f *Formatted) ShouldDraw() bool {
-	return f.Visible
+func (f *Formatted) Y() float64 { return f.y }
+func (f *Formatted) SetY(y float64) {
+	if f.y != y {
+		f.y = y
+		f.dirty = true
+	}
+}
+func (f *Formatted) ScaleX() float64 { return f.scaleX }
+func (f *Formatted) SetScaleX(s float64) {
+	if f.scaleX != s {
+		f.scaleX = s
+		f.dirty = true
+	}
+}
+func (f *Formatted) ScaleY() float64 { return f.scaleY }
+func (f *Formatted) SetScaleY(s float64) {
+	if f.scaleY != s {
+		f.scaleY = s
+		f.dirty = true
+	}
 }
 
 // Draw draws this to the target region.
 func (f *Formatted) Draw(r Region, delta float64) {
-	cw, ch := f.Size()
-	sx, sy := r.W/cw, r.H/ch
-	for _, t := range f.Text {
-		r := getDrawRegion(t, sx, sy)
-		t.Draw(r, delta)
+	if f.isNew || f.isDirty() || forceDirty {
+		cw, ch := f.Size()
+		sx, sy := r.W/cw, r.H/ch
+		f.data = f.data[:0]
+		for _, t := range f.Text {
+			r := getDrawRegion(t, sx, sy)
+			t.Draw(r, delta)
+			f.data = append(f.data, t.data...)
+		}
+		f.isNew = false
 	}
-}
-
-// AttachedTo returns the Drawable this is attached to or nil.
-func (f *Formatted) AttachedTo() Drawable {
-	return f.Parent
+	render.UIAddBytes(f.data)
 }
 
 // Offset returns the offset of this drawable from the attachment
 // point.
 func (f *Formatted) Offset() (float64, float64) {
-	return f.X, f.Y
+	return f.x, f.y
 }
 
 // Size returns the size of this drawable.
 func (f *Formatted) Size() (float64, float64) {
-	return (f.Width + 2) * f.ScaleX, f.Height * f.ScaleY
+	return (f.Width + 2) * f.scaleX, f.Height * f.scaleY
 }
 
 // Remove removes the Formatted element from the draw list.
@@ -115,6 +140,14 @@ func (f *Formatted) Update(val chat.AnyComponent) {
 	f.Height = float64(state.lines+1) * 18
 	f.Width = state.width
 	f.Lines = state.lines + 1
+	f.dirty = true
+}
+
+func (f *Formatted) clearDirty() {
+	f.dirty = false
+	for _, t := range f.Text {
+		t.clearDirty()
+	}
 }
 
 type formatState struct {
@@ -159,7 +192,7 @@ func (f *formatState) appendText(text string, color getColorFunc) {
 		if (f.f.MaxWidth > 0 && f.offset+width+s > f.f.MaxWidth) || r == '\n' {
 			rr, gg, bb := colorRGB(color())
 			txt := NewText(text[last:i], f.offset, float64(f.lines*18+1), rr, gg, bb)
-			txt.Parent = f.f
+			txt.AttachTo(f.f)
 			last = i
 			if r == '\n' {
 				last++
@@ -177,7 +210,7 @@ func (f *formatState) appendText(text string, color getColorFunc) {
 	if last != len(text) {
 		r, g, b := colorRGB(color())
 		txt := NewText(text[last:], f.offset, float64(f.lines*18+1), r, g, b)
-		txt.Parent = f.f
+		txt.AttachTo(f.f)
 		f.f.Text = append(f.f.Text, txt)
 		f.offset += txt.Width + 2
 		if f.offset > f.width {

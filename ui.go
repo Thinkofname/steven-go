@@ -37,12 +37,12 @@ func (b *baseUI) click(down bool, x, y float64, w, h int) {
 func newButtonText(str string, x, y, w, h float64) (*ui.Button, *ui.Text) {
 	btn := ui.NewButton(x, y, w, h)
 	text := ui.NewText(str, 0, 0, 255, 255, 255).Attach(ui.Middle, ui.Center)
-	text.Parent = btn
+	text.AttachTo(btn)
 	btn.HoverFunc = func(over bool) {
-		if over && !btn.Disabled {
-			text.B = 160
+		if over && !btn.Disabled() {
+			text.SetB(160)
 		} else {
-			text.B = 255
+			text.SetB(255)
 		}
 	}
 	return btn, text
@@ -60,9 +60,9 @@ type textBox struct {
 
 func newTextBox(x, y, w, h float64) *textBox {
 	btn := ui.NewButton(x, y, w, h)
-	btn.Disabled = true
+	btn.SetDisabled(true)
 	text := ui.NewText("", 5, 0, 255, 255, 255).Attach(ui.Middle, ui.Left)
-	text.Parent = btn
+	text.AttachTo(btn)
 	return &textBox{
 		back: btn,
 		text: text,
@@ -126,9 +126,9 @@ type slider struct {
 
 func newSlider(x, y, w, h float64) *slider {
 	btn := ui.NewButton(x, y, w, h)
-	btn.Disabled = true
+	btn.SetDisabled(true)
 	sl := ui.NewButton(0, 0, 20, h).Attach(ui.Left, ui.Top)
-	sl.Parent = btn
+	sl.AttachTo(btn)
 	return &slider{
 		back:   btn,
 		slider: sl,
@@ -137,7 +137,7 @@ func newSlider(x, y, w, h float64) *slider {
 
 func (sl *slider) update() {
 	ww, _ := sl.back.Size()
-	sl.slider.X = (sl.Value * (ww - 20))
+	sl.slider.SetX(sl.Value * (ww - 20))
 	if sl.UpdateFunc != nil {
 		sl.UpdateFunc()
 	}

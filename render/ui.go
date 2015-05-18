@@ -27,15 +27,13 @@ const (
 
 var (
 	uiState = struct {
-		program      gl.Program
-		shader       *uiShader
-		array        gl.VertexArray
-		buffer       gl.Buffer
-		count        int
-		data         []byte
-		prevSize     int
-		elements     []UIElement
-		elementCount int
+		program  gl.Program
+		shader   *uiShader
+		array    gl.VertexArray
+		buffer   gl.Buffer
+		count    int
+		data     []byte
+		prevSize int
 	}{
 		prevSize: -1,
 	}
@@ -61,14 +59,6 @@ func initUI() {
 }
 
 func drawUI() {
-	// Redraw everything
-	uiState.count = 0
-	uiState.data = uiState.data[:0]
-	for i := 0; i < uiState.elementCount; i++ {
-		uiState.elements[i].draw()
-	}
-	uiState.elementCount = 0
-
 	// Prevent clipping with the world
 	gl.Disable(gl.DepthTest)
 	gl.Enable(gl.Blend)
@@ -93,6 +83,8 @@ func drawUI() {
 	}
 	gl.Disable(gl.Blend)
 	gl.Enable(gl.DepthTest)
+	uiState.count = 0
+	uiState.data = uiState.data[:0]
 }
 
 // UIElement is a single element on the screen. It is a rectangle
@@ -106,66 +98,47 @@ type UIElement struct {
 	Rotation                   float64
 }
 
-// DrawUIElement draws a single ui element onto the screen.
-func DrawUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *UIElement {
-	if len(uiState.elements) == uiState.elementCount {
-		old := uiState.elements
-		uiState.elements = make([]UIElement, (len(old)+1)<<1)
-		copy(uiState.elements, old)
+func UIAddBytes(data []byte) {
+	uiState.data = append(uiState.data, data...)
+	uiState.count += len(data) / 22
+}
+
+func NewUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *UIElement {
+	return &UIElement{
+		X:        x / uiWidth,
+		Y:        y / uiHeight,
+		W:        width / uiWidth,
+		H:        height / uiHeight,
+		TX:       uint16(tex.X),
+		TY:       uint16(tex.Y),
+		TW:       uint16(tex.Width),
+		TH:       uint16(tex.Height),
+		TAtlas:   int16(tex.Atlas),
+		TOffsetX: int16(tx * float64(tex.Width) * 16),
+		TOffsetY: int16(ty * float64(tex.Height) * 16),
+		TSizeW:   int16(tw * float64(tex.Width) * 16),
+		TSizeH:   int16(th * float64(tex.Height) * 16),
+		R:        255,
+		G:        255,
+		B:        255,
+		A:        255,
+		Rotation: 0,
 	}
-	e := &uiState.elements[uiState.elementCount]
-	// (Re)set the information for the element
-	e.X = x / uiWidth
-	e.Y = y / uiHeight
-	e.W = width / uiWidth
-	e.H = height / uiHeight
-	e.TX = uint16(tex.X)
-	e.TY = uint16(tex.Y)
-	e.TW = uint16(tex.Width)
-	e.TH = uint16(tex.Height)
-	e.TAtlas = int16(tex.Atlas)
-	e.TOffsetX = int16(tx * float64(tex.Width) * 16)
-	e.TOffsetY = int16(ty * float64(tex.Height) * 16)
-	e.TSizeW = int16(tw * float64(tex.Width) * 16)
-	e.TSizeH = int16(th * float64(tex.Height) * 16)
-	e.R = 255
-	e.G = 255
-	e.B = 255
-	e.A = 255
-	e.Rotation = 0
-	uiState.elementCount++
-	return e
 }
 
-// Shift moves the element by the passed amounts.
-func (u *UIElement) Shift(x, y float64) {
-	u.X += x / uiWidth
-	u.Y += y / uiHeight
+func (u *UIElement) Bytes() []byte {
+	data := make([]byte, 0, 22*6)
+	data = u.appendVertex(data, u.X, u.Y, u.TOffsetX, u.TOffsetY)
+	data = u.appendVertex(data, u.X+u.W, u.Y, u.TOffsetX+u.TSizeW, u.TOffsetY)
+	data = u.appendVertex(data, u.X, u.Y+u.H, u.TOffsetX, u.TOffsetY+u.TSizeH)
+
+	data = u.appendVertex(data, u.X+u.W, u.Y+u.H, u.TOffsetX+u.TSizeW, u.TOffsetY+u.TSizeH)
+	data = u.appendVertex(data, u.X, u.Y+u.H, u.TOffsetX, u.TOffsetY+u.TSizeH)
+	data = u.appendVertex(data, u.X+u.W, u.Y, u.TOffsetX+u.TSizeW, u.TOffsetY)
+	return data
 }
 
-// Alpha changes the alpha of this element
-func (u *UIElement) Alpha(a float64) {
-	if a > 1.0 {
-		a = 1.0
-	}
-	if a < 0.0 {
-		a = 0.0
-	}
-	u.A = byte(255.0 * a)
-}
-
-func (u *UIElement) draw() {
-	u.appendVertex(u.X, u.Y, u.TOffsetX, u.TOffsetY)
-	u.appendVertex(u.X+u.W, u.Y, u.TOffsetX+u.TSizeW, u.TOffsetY)
-	u.appendVertex(u.X, u.Y+u.H, u.TOffsetX, u.TOffsetY+u.TSizeH)
-
-	u.appendVertex(u.X+u.W, u.Y+u.H, u.TOffsetX+u.TSizeW, u.TOffsetY+u.TSizeH)
-	u.appendVertex(u.X, u.Y+u.H, u.TOffsetX, u.TOffsetY+u.TSizeH)
-	u.appendVertex(u.X+u.W, u.Y, u.TOffsetX+u.TSizeW, u.TOffsetY)
-}
-
-func (u *UIElement) appendVertex(x, y float64, tx, ty int16) {
-	uiState.count++
+func (u *UIElement) appendVertex(data []byte, x, y float64, tx, ty int16) []byte {
 	dx, dy := float64(x), float64(y)
 	if u.Rotation != 0 {
 		c := math.Cos(u.Rotation)
@@ -175,19 +148,20 @@ func (u *UIElement) appendVertex(x, y float64, tx, ty int16) {
 		dx = (u.W / 2) + (tmpx*c - tmpy*s) + u.X
 		dy = (u.H / 2) + (tmpy*c + tmpx*s) + u.Y
 	}
-	uiState.data = appendShort(uiState.data, int16(math.Floor((dx*float64(lastWidth))+0.5)))
-	uiState.data = appendShort(uiState.data, int16(math.Floor((dy*float64(lastHeight))+0.5)))
-	uiState.data = appendUnsignedShort(uiState.data, u.TX)
-	uiState.data = appendUnsignedShort(uiState.data, u.TY)
-	uiState.data = appendUnsignedShort(uiState.data, u.TW)
-	uiState.data = appendUnsignedShort(uiState.data, u.TH)
-	uiState.data = appendShort(uiState.data, tx)
-	uiState.data = appendShort(uiState.data, ty)
-	uiState.data = appendShort(uiState.data, u.TAtlas)
-	uiState.data = appendUnsignedByte(uiState.data, u.R)
-	uiState.data = appendUnsignedByte(uiState.data, u.G)
-	uiState.data = appendUnsignedByte(uiState.data, u.B)
-	uiState.data = appendUnsignedByte(uiState.data, u.A)
+	data = appendShort(data, int16(math.Floor((dx*float64(lastWidth))+0.5)))
+	data = appendShort(data, int16(math.Floor((dy*float64(lastHeight))+0.5)))
+	data = appendUnsignedShort(data, u.TX)
+	data = appendUnsignedShort(data, u.TY)
+	data = appendUnsignedShort(data, u.TW)
+	data = appendUnsignedShort(data, u.TH)
+	data = appendShort(data, tx)
+	data = appendShort(data, ty)
+	data = appendShort(data, u.TAtlas)
+	data = appendUnsignedByte(data, u.R)
+	data = appendUnsignedByte(data, u.G)
+	data = appendUnsignedByte(data, u.B)
+	data = appendUnsignedByte(data, u.A)
+	return data
 }
 
 func appendUnsignedByte(data []byte, i byte) []byte {

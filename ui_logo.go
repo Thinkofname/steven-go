@@ -74,9 +74,7 @@ func (u *uiLogo) init(scene *scene.Type) {
 	u.scene = scene
 	row := 0
 	tex, tex2 := render.GetTexture(logoTexture), render.GetTexture(logoTargetTexture)
-	titleBox := (&ui.Container{
-		Y: 8,
-	}).Attach(ui.Top, ui.Center)
+	titleBox := ui.NewContainer(0, 8, 0, 0).Attach(ui.Top, ui.Center)
 	logoTimer = r.Float64() * 60 * 30
 	logoTransTimer = 120
 	for _, line := range strings.Split(stevenLogo, "\n") {
@@ -98,8 +96,8 @@ func (u *uiLogo) init(scene *scene.Type) {
 				float64(x%16)/16.0, float64(y%16)/16.0, 4/16.0, 8/16.0,
 				0, 0, 0,
 			)
-			shadow.A = 100
-			shadow.Parent = titleBox
+			shadow.SetA(100)
+			shadow.AttachTo(titleBox)
 			u.scene.AddDrawable(shadow)
 
 			img := ui.NewImage(
@@ -108,7 +106,7 @@ func (u *uiLogo) init(scene *scene.Type) {
 				float64(x%16)/16.0, float64(y%16)/16.0, 4/16.0, 8/16.0,
 				rr, gg, bb,
 			)
-			img.Parent = titleBox
+			img.AttachTo(titleBox)
 			u.scene.AddDrawable(img)
 			logoLayers[0] = append(logoLayers[0], img)
 
@@ -118,21 +116,21 @@ func (u *uiLogo) init(scene *scene.Type) {
 				float64(x%16)/16.0, float64(y%16)/16.0, 4/16.0, 8/16.0,
 				rr, gg, bb,
 			)
-			img.Parent = titleBox
-			img.A = 0
+			img.AttachTo(titleBox)
+			img.SetA(0)
 			u.scene.AddDrawable(img)
 			logoLayers[1] = append(logoLayers[1], img)
-			if titleBox.W < float64(x+4) {
-				titleBox.W = float64(x + 4)
+			if titleBox.Width() < float64(x+4) {
+				titleBox.SetWidth(float64(x + 4))
 			}
 		}
 		row++
 	}
-	titleBox.H = float64(row) * 8.0
+	titleBox.SetHeight(float64(row) * 8.0)
 
 	txt := ui.NewText(logoText, 0, -8, 255, 255, 0).Attach(ui.Bottom, ui.Right)
-	txt.Parent = titleBox
-	txt.Rotation = -math.Pi / 8
+	txt.AttachTo(titleBox)
+	txt.SetRotation(-math.Pi / 8)
 	u.scene.AddDrawable(txt)
 	u.text = txt
 	width, _ := txt.Size()
@@ -140,8 +138,8 @@ func (u *uiLogo) init(scene *scene.Type) {
 	if u.textBaseScale > 1 {
 		u.textBaseScale = 1
 	}
-	txt.X = (-txt.Width / 2) * u.textBaseScale
-	u.origX = txt.X
+	txt.SetX((-txt.Width / 2) * u.textBaseScale)
+	u.origX = txt.X()
 }
 
 func (u *uiLogo) tick(delta float64) {
@@ -159,19 +157,19 @@ func (u *uiLogo) tick(delta float64) {
 		if u.textBaseScale > 1 {
 			u.textBaseScale = 1
 		}
-		u.text.X = (-u.text.Width / 2) * u.textBaseScale
-		u.origX = u.text.X
+		u.text.SetX((-u.text.Width / 2) * u.textBaseScale)
+		u.origX = u.text.X()
 	} else {
 		logoTransTimer -= delta
 	}
 
 	tex, tex2 := render.GetTexture(logoTexture), render.GetTexture(logoTargetTexture)
 	for i := range logoLayers[0] {
-		logoLayers[0][i].Texture = tex
-		logoLayers[1][i].Texture = tex2
+		logoLayers[0][i].SetTexture(tex)
+		logoLayers[1][i].SetTexture(tex2)
 
-		logoLayers[0][i].A = int(255 * (logoTransTimer / 120))
-		logoLayers[1][i].A = int(255 * (1 - (logoTransTimer / 120)))
+		logoLayers[0][i].SetA(int(255 * (logoTransTimer / 120)))
+		logoLayers[1][i].SetA(int(255 * (1 - (logoTransTimer / 120))))
 	}
 
 	logoTextTimer += delta
@@ -183,10 +181,9 @@ func (u *uiLogo) tick(delta float64) {
 		off = 2.0 - off
 	}
 	off = (math.Cos(off*math.Pi) + 1) / 2
-	u.text.ScaleX = (0.7 + (off / 3)) * u.textBaseScale
-	u.text.ScaleY = (0.7 + (off / 3)) * u.textBaseScale
-	u.text.X = u.origX
-	u.text.X *= u.text.ScaleX * u.textBaseScale
+	u.text.SetScaleX((0.7 + (off / 3)) * u.textBaseScale)
+	u.text.SetScaleY((0.7 + (off / 3)) * u.textBaseScale)
+	u.text.SetX(u.origX * u.text.ScaleX() * u.textBaseScale)
 }
 
 var stevenLogoLines = []string{

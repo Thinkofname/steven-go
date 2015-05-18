@@ -53,15 +53,15 @@ func (c *ClientState) initDebug() {
 func (c *ClientState) toggleDebug() {
 	c.debug.enabled = !c.debug.enabled
 	e := c.debug.enabled
-	c.debug.position.Visible = e
-	c.debug.facing.Visible = e
-	c.debug.fps.Visible = e
-	c.debug.memory.Visible = e
-	c.debug.target.Visible = e
-	c.debug.targetName.Visible = e
+	c.debug.position.SetDraw(e)
+	c.debug.facing.SetDraw(e)
+	c.debug.fps.SetDraw(e)
+	c.debug.memory.SetDraw(e)
+	c.debug.target.SetDraw(e)
+	c.debug.targetName.SetDraw(e)
 	for _, t := range c.debug.targetInfo {
-		t[0].Visible = e
-		t[1].Visible = e
+		t[0].SetDraw(e)
+		t[1].SetDraw(e)
 	}
 }
 
@@ -157,17 +157,19 @@ func (c *ClientState) displayTargetInfo() {
 			}
 		}
 		v := c.debug.targetInfo[i][0]
-		v.Visible = true
-		v.R, v.G, v.B = r, g, b
+		v.SetDraw(true)
+		v.SetR(r)
+		v.SetG(g)
+		v.SetB(b)
 		v.Update(text)
 		k := c.debug.targetInfo[i][1]
-		k.Visible = true
-		k.X = 7 + v.Width
+		k.SetDraw(true)
+		k.SetX(7 + v.Width)
 		k.Update(fmt.Sprintf("%s=", s.Key))
 	}
 	for i := len(b.states()); i < len(c.debug.targetInfo); i++ {
 		info := &c.debug.targetInfo[i]
-		info[0].Visible = false
-		info[1].Visible = false
+		info[0].SetDraw(false)
+		info[1].SetDraw(false)
 	}
 }

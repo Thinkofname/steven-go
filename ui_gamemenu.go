@@ -36,7 +36,7 @@ func newGameMenu() *gameMenu {
 	Client.scene.Hide()
 
 	gm.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 854, 480, 0, 0, 1, 1, 0, 0, 0)
-	gm.background.A = 160
+	gm.background.SetA(160)
 	gm.scene.AddDrawable(gm.background.Attach(ui.Top, ui.Left))
 
 	disconnect, txt := newButtonText("Disconnect", 0, 50, 400, 40)
@@ -66,8 +66,8 @@ func (gm *gameMenu) init() {
 
 func (gm *gameMenu) tick(delta float64) {
 	width, height := window.GetFramebufferSize()
-	gm.background.W = float64(width) / ui.Scale
-	gm.background.H = float64(height) / ui.Scale
+	gm.background.SetWidth(float64(width) / ui.Scale)
+	gm.background.SetHeight(float64(height) / ui.Scale)
 }
 
 func (m *gameMenu) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {

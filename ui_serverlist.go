@@ -88,7 +88,7 @@ func newServerList() *serverList {
 		disMsg := ui.NewText("Disconnected", 0, 32, 255, 0, 0).Attach(ui.Top, ui.Center)
 		dis := ui.NewFormattedWidth(disconnectReason, 0, 48, 600)
 		disB := ui.NewImage(render.GetTexture("solid"), 0, 30, math.Max(dis.Width, disMsg.Width)+4, dis.Height+4+16, 0, 0, 1, 1, 0, 0, 0)
-		disB.A = 100
+		disB.SetA(100)
 		sl.scene.AddDrawable(disB.Attach(ui.Top, ui.Center))
 		sl.scene.AddDrawable(dis.Attach(ui.Top, ui.Center))
 		sl.scene.AddDrawable(disMsg)
@@ -132,9 +132,8 @@ func (sl *serverList) redraw() {
 	sl.servers = sl.servers[:0]
 	for i, s := range Config.Servers {
 		sc := scene.New(true)
-		container := (&ui.Container{
-			X: 0, Y: float64(i) * 100, W: 700, H: 100,
-		}).Attach(ui.Center, ui.Middle)
+		container := ui.NewContainer(0, float64(i)*100, 700, 100).
+			Attach(ui.Center, ui.Middle)
 		r := make([]byte, 20)
 		rand.Read(r)
 		si := &serverListItem{
@@ -147,31 +146,31 @@ func (sl *serverList) redraw() {
 		sl.servers = append(sl.servers, si)
 
 		bck := ui.NewImage(render.GetTexture("solid"), 0, 0, 700, 100, 0, 0, 1, 1, 0, 0, 0).Attach(ui.Top, ui.Left)
-		bck.A = 100
-		bck.Parent = container
+		bck.SetA(100)
+		bck.AttachTo(container)
 		sc.AddDrawable(bck)
 		txt := ui.NewText(s.Name, 90+10, 5, 255, 255, 255).Attach(ui.Top, ui.Left)
-		txt.Parent = container
+		txt.AttachTo(container)
 		sc.AddDrawable(txt)
 
 		icon := ui.NewImage(render.GetTexture("misc/unknown_server"), 5, 5, 90, 90, 0, 0, 1, 1, 255, 255, 255).
 			Attach(ui.Top, ui.Left)
-		icon.Parent = container
+		icon.AttachTo(container)
 		sc.AddDrawable(icon)
 
 		ping := ui.NewImage(render.GetTexture("gui/icons"), 5, 5, 20, 16, 0, 56/256.0, 10/256.0, 8/256.0, 255, 255, 255).
 			Attach(ui.Top, ui.Right)
-		ping.Parent = container
+		ping.AttachTo(container)
 		sc.AddDrawable(ping)
 
 		players := ui.NewText("???", 30, 5, 255, 255, 255).
 			Attach(ui.Top, ui.Right)
-		players.Parent = container
+		players.AttachTo(container)
 		sc.AddDrawable(players)
 
 		msg := &chat.TextComponent{Text: "Connecting..."}
 		motd := ui.NewFormattedWidth(chat.AnyComponent{msg}, 90+10, 5+18, 700-(90+10+5)).Attach(ui.Top, ui.Left)
-		motd.Parent = container
+		motd.AttachTo(container)
 		sc.AddDrawable(motd)
 		s := s
 		go sl.pingServer(s.Address, motd, icon, si.id, ping, players)
@@ -180,9 +179,9 @@ func (sl *serverList) redraw() {
 		}
 		container.HoverFunc = func(over bool) {
 			if over {
-				bck.A = 200
+				bck.SetA(200)
 			} else {
-				bck.A = 100
+				bck.SetA(100)
 			}
 		}
 
@@ -190,7 +189,7 @@ func (sl *serverList) redraw() {
 
 		index := i
 		del, txt := newButtonText("X", 0, 0, 25, 25)
-		del.Parent = container
+		del.AttachTo(container)
 		sc.AddDrawable(del.Attach(ui.Bottom, ui.Right))
 		sc.AddDrawable(txt)
 		del.ClickFunc = func() {
@@ -199,7 +198,7 @@ func (sl *serverList) redraw() {
 			sl.redraw()
 		}
 		edit, txt := newButtonText("E", 25, 0, 25, 25)
-		edit.Parent = container
+		edit.AttachTo(container)
 		sc.AddDrawable(edit.Attach(ui.Bottom, ui.Right))
 		sc.AddDrawable(txt)
 		edit.ClickFunc = func() {
@@ -244,7 +243,7 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 		default:
 			y = 56 / 256.0
 		}
-		ping.TY = y
+		ping.SetTextureY(y)
 
 		players.Update(fmt.Sprintf("%d/%d", resp.Players.Online, resp.Players.Max))
 
@@ -265,9 +264,8 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 				return
 			}
 			render.AddIcon(id, img)
-			icon.Texture = render.Icon(id)
+			icon.SetTexture(render.Icon(id))
 		}
-
 	}
 }
 
@@ -282,17 +280,17 @@ func (sl *serverList) connect(s string) {
 func (sl *serverList) tick(delta float64) {
 	sl.logo.tick(delta)
 	for _, s := range sl.servers {
-		dx := s.X - s.container.X
-		dy := s.Y - s.container.Y
+		dx := s.X - s.container.X()
+		dy := s.Y - s.container.Y()
 		if dx*dx > 1 {
-			s.container.X += delta * dx * 0.1
+			s.container.SetX(s.container.X() + delta*dx*0.1)
 		} else {
-			s.container.X = s.X
+			s.container.SetX(s.X)
 		}
 		if dy*dy > 1 {
-			s.container.Y += delta * dy * 0.1
+			s.container.SetY(s.container.Y() + delta*dy*0.1)
 		} else {
-			s.container.Y = s.Y
+			s.container.SetY(s.Y)
 		}
 	}
 }

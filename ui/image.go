@@ -18,23 +18,24 @@ import "github.com/thinkofdeath/steven/render"
 
 // Image is a drawable that draws a texture.
 type Image struct {
-	Parent           Drawable
-	Texture          *render.TextureInfo
-	X, Y, W, H       float64
-	TX, TY, TW, TH   float64
-	R, G, B, A       int
-	Visible          bool
-	vAttach, hAttach AttachPoint
+	baseElement
+	texture        *render.TextureInfo
+	x, y, w, h     float64
+	tx, ty, tw, th float64
+	r, g, b, a     int
 }
 
 // NewImage creates a new image drawable.
 func NewImage(texture *render.TextureInfo, x, y, w, h, tx, ty, tw, th float64, r, g, b int) *Image {
 	return &Image{
-		Texture: texture,
-		R:       r, G: g, B: b, A: 255,
-		X: x, Y: y, W: w, H: h,
-		TX: tx, TY: ty, TW: tw, TH: th,
-		Visible: true,
+		texture: texture,
+		r:       r, g: g, b: b, a: 255,
+		x: x, y: y, w: w, h: h,
+		tx: tx, ty: ty, tw: tw, th: th,
+		baseElement: baseElement{
+			visible: true,
+			isNew:   true,
+		},
 	}
 }
 
@@ -44,39 +45,121 @@ func (i *Image) Attach(vAttach, hAttach AttachPoint) *Image {
 	return i
 }
 
-// Attachment returns the sides where this element is attached too.
-func (i *Image) Attachment() (vAttach, hAttach AttachPoint) {
-	return i.vAttach, i.hAttach
+func (i *Image) Texture() *render.TextureInfo { return i.texture }
+func (i *Image) SetTexture(t *render.TextureInfo) {
+	if i.texture != t {
+		i.texture = t
+		i.dirty = true
+	}
 }
-
-// ShouldDraw returns whether this should be drawn at this time.
-func (i *Image) ShouldDraw() bool {
-	return i.Visible
+func (i *Image) X() float64 { return i.x }
+func (i *Image) SetX(x float64) {
+	if i.x != x {
+		i.x = x
+		i.dirty = true
+	}
+}
+func (i *Image) Y() float64 { return i.y }
+func (i *Image) SetY(y float64) {
+	if i.y != y {
+		i.y = y
+		i.dirty = true
+	}
+}
+func (i *Image) Width() float64 { return i.w }
+func (i *Image) SetWidth(w float64) {
+	if i.w != w {
+		i.w = w
+		i.dirty = true
+	}
+}
+func (i *Image) Height() float64 { return i.h }
+func (i *Image) SetHeight(h float64) {
+	if i.h != h {
+		i.h = h
+		i.dirty = true
+	}
+}
+func (i *Image) TextureX() float64 { return i.tx }
+func (i *Image) SetTextureX(x float64) {
+	if i.tx != x {
+		i.tx = x
+		i.dirty = true
+	}
+}
+func (i *Image) TextureY() float64 { return i.ty }
+func (i *Image) SetTextureY(y float64) {
+	if i.ty != y {
+		i.ty = y
+		i.dirty = true
+	}
+}
+func (i *Image) TextureWidth() float64 { return i.tw }
+func (i *Image) SetTextureWidth(w float64) {
+	if i.tw != w {
+		i.tw = w
+		i.dirty = true
+	}
+}
+func (i *Image) TextureHeight() float64 { return i.th }
+func (i *Image) SetTextureHeight(h float64) {
+	if i.th != h {
+		i.th = h
+		i.dirty = true
+	}
+}
+func (i *Image) R() int { return i.r }
+func (i *Image) SetR(r int) {
+	if i.r != r {
+		i.r = r
+		i.dirty = true
+	}
+}
+func (i *Image) G() int { return i.g }
+func (i *Image) SetG(g int) {
+	if i.g != g {
+		i.g = g
+		i.dirty = true
+	}
+}
+func (i *Image) B() int { return i.b }
+func (i *Image) SetB(b int) {
+	if i.b != b {
+		i.b = b
+		i.dirty = true
+	}
+}
+func (i *Image) A() int { return i.a }
+func (i *Image) SetA(a int) {
+	if i.a != a {
+		i.a = a
+		i.dirty = true
+	}
 }
 
 // Draw draws this to the target region.
 func (i *Image) Draw(r Region, delta float64) {
-	e := render.DrawUIElement(i.Texture, r.X, r.Y, r.W, r.H, i.TX, i.TY, i.TW, i.TH)
-	e.R = byte(i.R)
-	e.G = byte(i.G)
-	e.B = byte(i.B)
-	e.A = byte(i.A)
-}
-
-// AttachedTo returns the Drawable this is attached to or nil.
-func (i *Image) AttachedTo() Drawable {
-	return i.Parent
+	if i.isNew || i.isDirty() || forceDirty {
+		i.isNew = false
+		e := render.NewUIElement(i.texture, r.X, r.Y, r.W, r.H, i.tx, i.ty, i.tw, i.th)
+		e.R = byte(i.r)
+		e.G = byte(i.g)
+		e.B = byte(i.b)
+		e.A = byte(i.a)
+		i.data = e.Bytes()
+	}
+	render.UIAddBytes(i.data)
 }
 
 // Offset returns the offset of this drawable from the attachment
 // point.
 func (i *Image) Offset() (float64, float64) {
-	return i.X, i.Y
+	return i.x, i.y
 }
 
 // Size returns the size of this drawable.
 func (i *Image) Size() (float64, float64) {
-	return i.W, i.H
+	return i.w, i.h
 }
 
 // Remove removes the image element from the draw list.
