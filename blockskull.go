@@ -110,6 +110,9 @@ func (s *skullComponent) Deserilize(tag *nbt.Compound) {
 		return
 	}
 	url := blob.Textures.Skin.Url
+	// We can only handle textures from textures.minecraft.net currently,
+	// luckily these are the only ones we really see in practice and
+	// mojang seemed to have blocked other urls
 	if strings.HasPrefix(url, "http://textures.minecraft.net/texture/") {
 		s.free()
 		s.Owner = url[len("http://textures.minecraft.net/texture/"):]
@@ -150,6 +153,7 @@ func (s *skullComponent) create() {
 	}
 
 	var hverts []*render.StaticVertex
+	// Base layer
 	hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(8, 8, 8, 8),
 		direction.South: skin.Sub(24, 8, 8, 8),
@@ -158,6 +162,7 @@ func (s *skullComponent) create() {
 		direction.Up:    skin.Sub(8, 0, 8, 8),
 		direction.Down:  skin.Sub(16, 0, 8, 8),
 	})
+	// Hat layer
 	hverts = appendBox(hverts, -4.2/16.0, -.2/16.0, -4.2/16.0, 8.4/16.0, 8.4/16.0, 8.4/16.0, [6]*render.TextureInfo{
 		direction.North: skin.Sub(8+32, 8, 8, 8),
 		direction.South: skin.Sub(24+32, 8, 8, 8),

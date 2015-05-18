@@ -57,11 +57,15 @@ func (s *signComponent) create() {
 	const yS = (6.0 / 16.0) / 4.0
 	const xS = yS / 16.0
 
-	var text []*render.StaticVertex
+	var verts []*render.StaticVertex
 	for i, line := range s.lines {
 		if line.Value == nil {
 			continue
 		}
+		// Hijack ui.Formatted's component parsing to split
+		// up components into ui.Text elements.
+		// TODO(Think) Move this into some common place for
+		// easier reuse in other places?
 		wrap := &chat.TextComponent{}
 		wrap.Color = chat.Black
 		wrap.Extra = []chat.AnyComponent{line}
@@ -98,14 +102,15 @@ func (s *signComponent) create() {
 						TH:       uint16(tex.Height),
 						TAtlas:   int16(tex.Atlas),
 					}
-					text = append(text, vert)
+					verts = append(verts, vert)
 				}
 				offset += (s + 2) * xS
 			}
 		}
 	}
 	wood := render.GetTexture("blocks/planks_oak")
-	text = appendBoxExtra(text, -0.5, -4/16.0, -0.5/16.0, 1.0, 8/16.0, 1/16.0, [6]*render.TextureInfo{
+	// The backboard
+	verts = appendBoxExtra(verts, -0.5, -4/16.0, -0.5/16.0, 1.0, 8/16.0, 1/16.0, [6]*render.TextureInfo{
 		direction.Up:    wood.Sub(0, 0, 16, 2),
 		direction.Down:  wood.Sub(0, 0, 16, 2),
 		direction.East:  wood.Sub(0, 0, 2, 12),
@@ -121,8 +126,9 @@ func (s *signComponent) create() {
 		direction.South: {1.5, 1.0},
 	})
 	if s.hasStand {
+		// Stand
 		log := render.GetTexture("blocks/log_oak")
-		text = appendBox(text, -0.5/16.0, -0.25-9/16.0, -0.5/16.0, 1/16.0, 9/16.0, 1/16.0, [6]*render.TextureInfo{
+		verts = appendBox(verts, -0.5/16.0, -0.25-9/16.0, -0.5/16.0, 1/16.0, 9/16.0, 1/16.0, [6]*render.TextureInfo{
 			direction.Up:    log.Sub(0, 0, 2, 2),
 			direction.Down:  log.Sub(0, 0, 2, 2),
 			direction.East:  log.Sub(0, 0, 2, 12),
@@ -132,7 +138,7 @@ func (s *signComponent) create() {
 		})
 	}
 	s.model = render.NewStaticModel([][]*render.StaticVertex{
-		text,
+		verts,
 	})
 	s.model.Radius = 2
 	x, y, z := s.position.X, s.position.Y, s.position.Z

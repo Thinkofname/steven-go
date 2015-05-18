@@ -30,6 +30,7 @@ func (ce *clientEntities) registerBlockEntities() {
 	ce.container.AddSystem(entitysys.Add, esSignAdd)
 }
 
+// updates the Colors of the model to fake lighting
 func lightBlockModel(model *render.StaticModel, bp Position) {
 	bx, by, bz := bp.X, bp.Y, bp.Z
 	bl := float64(chunkMap.BlockLight(bx, by, bz)) / 16
@@ -45,6 +46,8 @@ func lightBlockModel(model *render.StaticModel, bp Position) {
 	}
 }
 
+// BlockEntity is the interface for which all block entities
+// must implement
 type BlockEntity interface {
 	BlockComponent
 }
@@ -61,11 +64,15 @@ func (bc *blockComponent) SetPosition(p Position) {
 	bc.Location = p
 }
 
+// BlockComponent is a component that defines the location
+// of an entity when attached to a block.
 type BlockComponent interface {
 	Position() Position
 	SetPosition(p Position)
 }
 
+// BlockNBTComponent is implemented by block entities that
+// load information from nbt.
 type BlockNBTComponent interface {
 	Deserilize(tag *nbt.Compound)
 	CanHandleAction(action int) bool
@@ -85,13 +92,11 @@ func (b *blockBreakComponent) Update() {
 		b.model.Free()
 	}
 	bounds := chunkMap.Block(b.Location.X, b.Location.Y, b.Location.Z).CollisionBounds()
-	if bounds == nil {
-		return
-	}
 	tex := render.GetTexture(fmt.Sprintf("blocks/destroy_stage_%d", b.stage))
 
 	var verts []*render.StaticVertex
 	for _, bo := range bounds {
+		// Slightly bigger than the block to prevent clipping
 		bo = bo.Grow(0.01, 0.01, 0.01)
 		verts = appendBox(verts,
 			bo.Min.X(), bo.Min.Y(), bo.Min.Z(),
@@ -109,6 +114,8 @@ func (b *blockBreakComponent) Update() {
 	)
 }
 
+// BlockBreakComponent is implemented by the block break animation
+// entity
 type BlockBreakComponent interface {
 	SetStage(stage int)
 	Stage() int

@@ -45,6 +45,7 @@ func esDrawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
 	)
 }
 
+// updates the Colors of the model to fake lighting
 func esLightModel(p PositionComponent, m interface {
 	Model() *render.StaticModel
 }) {
@@ -67,6 +68,8 @@ func esLightModel(p PositionComponent, m interface {
 	}
 }
 
+// Moves the entity from the previous chunk to its
+// new chunk. Allows for optimized lookups
 func esMoveChunk(e Entity, p *positionComponent) {
 	cx, cz := int(p.X)>>4, int(p.Z)>>4
 	if cx != p.CX || cz != p.CZ {
@@ -82,6 +85,8 @@ func esMoveChunk(e Entity, p *positionComponent) {
 	}
 }
 
+// Smoothly moves the entity from its current position to the target
+// location
 func esMoveToTarget(p PositionComponent, t TargetPositionComponent) {
 	px, py, pz := p.Position()
 	tx, ty, tz := t.TargetPosition()
@@ -94,11 +99,17 @@ func esMoveToTarget(p PositionComponent, t TargetPositionComponent) {
 	p.SetPosition(px, py, pz)
 }
 
+// Smoothly rotates the entity from its current rotation to the target
+// rotation
 func esRotateToTarget(r RotationComponent, t TargetRotationComponent) {
 	py, pp := r.Yaw(), r.Pitch()
 	ty, tp := t.TargetYaw(), t.TargetPitch()
 
 	dy, dp := ty-py, tp-pp
+	// Make sure we go for the shortest route.
+	// e.g. (in degrees) 1 to 359 is quicker
+	// to decrease to wrap around than it is
+	// to increase all the way around
 	if dy > math.Pi || dy < -math.Pi {
 		py += math.Copysign(math.Pi*2, dy)
 		dy = ty - py
