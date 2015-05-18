@@ -24,6 +24,7 @@ import (
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/resource"
 	"github.com/thinkofdeath/steven/ui"
 )
 
@@ -33,7 +34,13 @@ var (
 	loadChan      = make(chan struct{})
 	currentScreen screen
 	connected     bool
+
+	stevenBuildVersion string = "dev"
 )
+
+func stevenVersion() string {
+	return fmt.Sprintf("%s-%s", resource.ResourcesVersion, stevenBuildVersion)
+}
 
 type screen interface {
 	init()

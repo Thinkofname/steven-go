@@ -20,7 +20,6 @@ import (
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/protocol/mojang"
-	"github.com/thinkofdeath/steven/resource"
 	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/ui/scene"
 )
@@ -91,7 +90,7 @@ func newLoginScreen() *loginScreen {
 	ls.loginBtn.ClickFunc = ls.login
 
 	ls.scene.AddDrawable(
-		ui.NewText("Steven - "+resource.ResourcesVersion, 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
+		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
 	)
 	ls.scene.AddDrawable(
 		ui.NewText("Not affiliated with Mojang/Minecraft", 5, 5, 255, 200, 200).Attach(ui.Bottom, ui.Right),

@@ -17,7 +17,6 @@ package steven
 import (
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/resource"
 	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/ui/scene"
 )
@@ -55,7 +54,7 @@ func newGameMenu() *gameMenu {
 	option.ClickFunc = func() { setScreen(newOptionMenu()) }
 
 	gm.scene.AddDrawable(
-		ui.NewText("Steven - "+resource.ResourcesVersion, 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
+		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
 	)
 	return gm
 }
