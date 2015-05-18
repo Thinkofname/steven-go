@@ -62,6 +62,7 @@ func (s *signComponent) create() {
 		if line.Value == nil {
 			continue
 		}
+		chat.ConvertLegacy(line)
 		// Hijack ui.Formatted's component parsing to split
 		// up components into ui.Text elements.
 		// TODO(Think) Move this into some common place for
