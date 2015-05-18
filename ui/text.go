@@ -89,6 +89,12 @@ func (t *Text) SetB(b int) {
 }
 func (t *Text) A() int { return t.a }
 func (t *Text) SetA(a int) {
+	if a > 255 {
+		a = 255
+	}
+	if a < 0 {
+		a = 0
+	}
 	if t.a != a {
 		t.a = a
 		t.dirty = true

@@ -172,12 +172,6 @@ func SizeOfString(str string) float64 {
 
 // Alpha changes the alpha of all theelements belonging to this UIText
 func (u UIText) Alpha(a int) {
-	if a > 255 {
-		a = 255
-	}
-	if a < 0 {
-		a = 0
-	}
 	for _, e := range u.elements {
 		e.A = byte(a)
 	}
