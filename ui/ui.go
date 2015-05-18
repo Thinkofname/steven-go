@@ -52,6 +52,7 @@ type Drawable interface {
 	Attachment() (vAttach, hAttach AttachPoint)
 
 	isDirty() bool
+	flagDirty()
 	clearDirty()
 }
 
@@ -62,6 +63,7 @@ type Interactable interface {
 
 // AddDrawable adds the drawable to the draw list.
 func AddDrawable(d Drawable) {
+	d.flagDirty()
 	drawables = append(drawables, drawRef{Drawable: d})
 }
 
@@ -69,6 +71,7 @@ func AddDrawable(d Drawable) {
 // The passed function will be called when the drawable
 // is removed.
 func AddDrawableHook(d Drawable, hook func(d Drawable)) {
+	d.flagDirty()
 	drawables = append(drawables, drawRef{Drawable: d, removeHook: hook})
 }
 
@@ -272,6 +275,10 @@ func (b *baseElement) AttachTo(d Drawable) {
 
 func (b *baseElement) isDirty() bool {
 	return b.dirty || (b.parent != nil && b.parent.isDirty())
+}
+
+func (b *baseElement) flagDirty() {
+	b.dirty = true
 }
 
 func (b *baseElement) clearDirty() {
