@@ -54,6 +54,9 @@ func (s *signComponent) free() {
 }
 
 func (s *signComponent) create() {
+	const yS = (6.0 / 16.0) / 4.0
+	const xS = yS / 16.0
+
 	var text []*render.StaticVertex
 	for i, line := range s.lines {
 		if line.Value == nil {
@@ -73,9 +76,10 @@ func (s *signComponent) create() {
 					continue
 				}
 				s := render.SizeOfCharacter(r)
-
-				const yS = (6.0 / 16.0) / 4.0
-				const xS = yS / 16.0
+				if r == ' ' {
+					offset += (s + 2) * xS
+					continue
+				}
 
 				for _, v := range faceVertices[direction.North].verts {
 					vert := &render.StaticVertex{
