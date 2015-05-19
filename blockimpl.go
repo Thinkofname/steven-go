@@ -1750,6 +1750,7 @@ type blockPortal struct {
 func (b *blockPortal) load(tag reflect.StructTag) {
 	b.cullAgainst = false
 	b.collidable = false
+	b.translucent = true
 }
 
 func (b *blockPortal) CollisionBounds() []vmath.AABB {
