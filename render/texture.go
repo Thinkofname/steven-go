@@ -67,7 +67,7 @@ func GetTexture(name string) *TextureInfo {
 	defer textureLock.RUnlock()
 	t, ok := textureMap[name]
 	if !ok {
-		t = textureMap["blocks/stone"]
+		t = textureMap["missing_texture"]
 	}
 	return t
 }
@@ -131,6 +131,15 @@ func LoadTextures() {
 	pix := []byte{255, 255, 255, 255}
 	info := addTexture(pix, 1, 1)
 	textureMap["solid"] = info
+
+	pix = []byte{
+		0, 0, 0, 255,
+		255, 0, 255, 255,
+		255, 0, 255, 255,
+		0, 0, 0, 255,
+	}
+	info = addTexture(pix, 2, 2)
+	textureMap["missing_texture"] = info
 
 	textureLock.Unlock()
 
