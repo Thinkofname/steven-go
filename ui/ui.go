@@ -29,6 +29,10 @@ var (
 	drawables []drawRef
 )
 
+func ForceDraw() {
+	lastWidth = -1
+}
+
 type drawRef struct {
 	Drawable
 	removeHook func(d Drawable)

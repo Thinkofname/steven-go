@@ -122,6 +122,7 @@ func setUIScale() {
 		ui.DrawMode = ui.Unscaled
 		ui.Scale = 1.0
 	}
+	ui.ForceDraw()
 }
 
 func start() {
