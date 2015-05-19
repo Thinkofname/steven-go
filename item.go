@@ -41,7 +41,10 @@ func ItemStackFromProtocol(p protocol.ItemStack) *ItemStack {
 }
 
 type ItemType interface {
+	Name() string
 	NameLocaleKey() string
+
+	Stackable() bool
 
 	ParseDamage(d int16)
 	ParseTag(tag *nbt.Compound)
@@ -54,7 +57,9 @@ func ItemById(id int) (ty ItemType) {
 	if id < 256 {
 		ty = ItemOfBlock(blockSetsByID[id].Base)
 	} else {
-		ty = nil // TODO
+		if f, ok := itemsByID[id]; ok {
+			ty = f()
+		}
 	}
 	if ty == nil {
 		ty = ItemOfBlock(Blocks.Stone.Base)
@@ -82,21 +87,27 @@ func (d *displayTag) ParseTag(tag *nbt.Compound) {
 		d.lore[i], _ = lore[i].(string)
 	}
 }
-func (d *displayTag) Name() string   { return d.name }
-func (d *displayTag) Lore() []string { return d.lore }
+func (d *displayTag) DisplayName() string { return d.name }
+func (d *displayTag) Lore() []string      { return d.lore }
 
 type DisplayTag interface {
-	Name() string
+	DisplayName() string
 	Lore() []string
 }
 
 type blockItem struct {
+	itemNamed
 	block Block
 	displayTag
 }
 
 func ItemOfBlock(b Block) ItemType {
-	return &blockItem{block: b}
+	return &blockItem{
+		block: b,
+		itemNamed: itemNamed{
+			name: b.Name(),
+		},
+	}
 }
 
 func (b *blockItem) NameLocaleKey() string {
@@ -112,4 +123,39 @@ func (b *blockItem) ParseDamage(d int16) {
 }
 func (b *blockItem) ParseTag(tag *nbt.Compound) {
 	b.displayTag.ParseTag(tag)
+}
+
+func (b *blockItem) Stackable() bool {
+	return true
+}
+
+type itemSimpleLocale struct {
+	locale string
+}
+
+func (i *itemSimpleLocale) NameLocaleKey() string {
+	return i.locale
+}
+
+type itemDamagable struct {
+	damage, maxDamage int16
+}
+
+func (i *itemDamagable) ParseDamage(d int16) {
+	i.damage = d
+}
+func (i *itemDamagable) Damage() int16    { return i.damage }
+func (i *itemDamagable) MaxDamage() int16 { return i.maxDamage }
+
+type ItemDamagable interface {
+	Damage() int16
+	MaxDamage() int16
+}
+
+type itemNamed struct {
+	name string
+}
+
+func (i *itemNamed) Name() string {
+	return i.name
 }

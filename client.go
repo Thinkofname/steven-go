@@ -373,8 +373,8 @@ func (c *ClientState) tickItemName() {
 		item := c.playerInventory.Items[invPlayerHotbarOffset+c.currentHotbarSlot]
 		if item != nil {
 			var name chat.AnyComponent
-			if di, ok := item.Type.(DisplayTag); ok && di.Name() != "" {
-				name = chat.AnyComponent{Value: &chat.TextComponent{Text: di.Name()}}
+			if di, ok := item.Type.(DisplayTag); ok && di.DisplayName() != "" {
+				name = chat.AnyComponent{Value: &chat.TextComponent{Text: di.DisplayName()}}
 				chat.ConvertLegacy(name)
 			} else {
 				name = chat.AnyComponent{Value: &chat.TranslateComponent{Translate: item.Type.NameLocaleKey()}}

@@ -15,6 +15,8 @@
 package steven
 
 import (
+	"fmt"
+
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/ui/scene"
@@ -78,8 +80,54 @@ func (playerInventory) Draw(s *scene.Type, inv *Inventory) {
 		if inv.Items[i] == nil {
 			continue
 		}
-		img := ui.NewImage(render.GetTexture("missing_texture"), 6+40*float64(i-36), 6, 32, 32, 0, 0, 1, 1, 255, 255, 255)
-		img.AttachTo(Client.hotbar)
-		hs.AddDrawable(img.Attach(ui.Top, ui.Left))
+		item := inv.Items[i]
+		mdl := getModel(item.Type.Name())
+
+		container := ui.NewContainer(6+40*float64(i-36), 6, 32, 32).
+			Attach(ui.Top, ui.Left)
+		container.AttachTo(Client.hotbar)
+		if mdl == nil || mdl.builtIn == builtInGenerated {
+			var tex *render.TextureInfo
+			if mdl == nil {
+				tex = render.GetTexture("missing_texture")
+			} else {
+				tex = mdl.lookupTexture("#layer0")
+			}
+
+			img := ui.NewImage(tex, 0, 0, 32, 32, 0, 0, 1, 1, 255, 255, 255)
+			img.AttachTo(container)
+			hs.AddDrawable(img.Attach(ui.Top, ui.Left))
+		}
+		if dam, ok := item.Type.(ItemDamagable); ok {
+			val := 1.0 - (float64(dam.Damage()) / float64(dam.MaxDamage()))
+			bar := ui.NewImage(render.GetTexture("solid"), 0, 0, 32*val, 2, 0, 0, 1, 1,
+				int(255*(1.0-val)), int(255*val), 0,
+			)
+			bar.AttachTo(container)
+			hs.AddDrawable(bar.Attach(ui.Bottom, ui.Left))
+		}
+		if item.Type.Stackable() {
+			txt := ui.NewText(fmt.Sprint(item.Count), -2, -2, 255, 255, 255).
+				Attach(ui.Bottom, ui.Right)
+			txt.AttachTo(container)
+			hs.AddDrawable(txt)
+		}
 	}
+}
+
+var modelCache = map[string]*model{}
+
+func getModel(name string) *model {
+	if mdl, ok := modelCache[name]; ok {
+		return mdl
+	}
+	js := &jsModel{}
+	err := loadJSON("minecraft", "models/item/"+name+".json", js)
+	if err != nil {
+		modelCache[name] = nil
+		return nil
+	}
+	mdl := parseModel("minecraft", js)
+	modelCache[name] = mdl
+	return mdl
 }

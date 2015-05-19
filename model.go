@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math"
+	"strings"
 
 	realjson "encoding/json"
 
@@ -100,17 +101,29 @@ func (bv blockVariants) selectModel(index int) *processedModel {
 	return bv[uint(index)%uint(len(bv))]
 }
 
-type blockModel struct {
+type builtInType int
+
+const (
+	builtInFalse = iota
+	builtInGenerated
+	builtInEntity
+	builtInCompass
+	builtInClock
+)
+
+type model struct {
 	textureVars      map[string]string
-	elements         []*blockElement
+	elements         []*modelElement
 	ambientOcclusion bool
 	aoSet            bool
 
 	uvLock bool
 	y, x   float64
+
+	builtIn builtInType
 }
 
-func parseBlockStateVariant(plugin string, js realjson.RawMessage) *blockModel {
+func parseBlockStateVariant(plugin string, js realjson.RawMessage) *model {
 	type jsType struct {
 		Model  string
 		X, Y   float64
@@ -122,12 +135,12 @@ func parseBlockStateVariant(plugin string, js realjson.RawMessage) *blockModel {
 		fmt.Println(err)
 		return nil
 	}
-	var bdata jsBlockModel
+	var bdata jsModel
 	err = loadJSON(plugin, "models/block/"+data.Model+".json", &bdata)
 	if err != nil {
 		return nil
 	}
-	bm := parseBlockModel(plugin, &bdata)
+	bm := parseModel(plugin, &bdata)
 
 	bm.y = data.Y
 	bm.x = data.X
@@ -135,26 +148,38 @@ func parseBlockStateVariant(plugin string, js realjson.RawMessage) *blockModel {
 	return bm
 }
 
-type jsBlockModel struct {
+type jsModel struct {
 	Parent           string
 	Textures         map[string]string
 	AmbientOcclusion *bool
 	Elements         []*jsBlockElement
 }
 
-func parseBlockModel(plugin string, data *jsBlockModel) *blockModel {
-	var bm *blockModel
-	if data.Parent != "" {
-		var pdata jsBlockModel
+func parseModel(plugin string, data *jsModel) *model {
+	var bm *model
+	if data.Parent != "" && !strings.HasPrefix(data.Parent, "builtin/") {
+		var pdata jsModel
 		err := loadJSON(plugin, "models/"+data.Parent+".json", &pdata)
 		if err != nil {
 			fmt.Printf("Error loading model %s: %s\n", data.Parent, err)
 			return nil
 		}
-		bm = parseBlockModel(plugin, &pdata)
+		bm = parseModel(plugin, &pdata)
 	} else {
-		bm = &blockModel{
+		bm = &model{
 			textureVars: map[string]string{},
+		}
+		if strings.HasPrefix(data.Parent, "builtin/") {
+			switch data.Parent {
+			case "builtin/generated":
+				bm.builtIn = builtInGenerated
+			case "builtin/entity":
+				bm.builtIn = builtInEntity
+			case "builtin/compass":
+				bm.builtIn = builtInCompass
+			case "builtin/clock":
+				bm.builtIn = builtInClock
+			}
 		}
 	}
 
@@ -178,7 +203,7 @@ func parseBlockModel(plugin string, data *jsBlockModel) *blockModel {
 	return bm
 }
 
-type blockElement struct {
+type modelElement struct {
 	from, to [3]float64
 	shade    bool
 	rotation *blockRotation
@@ -214,8 +239,8 @@ type jsBlockElement struct {
 	}
 }
 
-func parseBlockElement(data *jsBlockElement) *blockElement {
-	be := &blockElement{}
+func parseBlockElement(data *jsBlockElement) *modelElement {
+	be := &modelElement{}
 	be.from, be.to = data.From, data.To
 
 	be.shade = data.Shade == nil || *data.Shade
@@ -289,7 +314,7 @@ func (bf *blockFace) init(data *jsBlockFace) {
 	}
 }
 
-func (bm *blockModel) lookupTexture(name string) *render.TextureInfo {
+func (bm *model) lookupTexture(name string) *render.TextureInfo {
 	if len(name) > 0 && name[0] == '#' {
 		return bm.lookupTexture(bm.textureVars[name[1:]])
 	}

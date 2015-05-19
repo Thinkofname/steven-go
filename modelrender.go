@@ -66,7 +66,7 @@ func rotateDirection(val direction.Type, offset int, rots []direction.Type, inva
 	return rots[(pos+offset)%len(rots)]
 }
 
-func precomputeModel(bm *blockModel) *processedModel {
+func precomputeModel(bm *model) *processedModel {
 	p := &processedModel{}
 	p.ambientOcclusion = bm.ambientOcclusion
 	for ei := range bm.elements {
