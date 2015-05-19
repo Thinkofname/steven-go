@@ -56,6 +56,10 @@ func setScreen(s screen) {
 	}
 	currentScreen = s
 	if s != nil {
+		Client.scene.Hide()
+		if Client.hotbarScene != nil {
+			Client.hotbarScene.Hide()
+		}
 		lockMouse = false
 		window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
 		for i := range Client.KeyState {
@@ -64,6 +68,7 @@ func setScreen(s screen) {
 		s.init()
 	} else {
 		Client.scene.Show()
+		Client.hotbarScene.Show()
 	}
 }
 

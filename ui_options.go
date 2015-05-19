@@ -37,7 +37,6 @@ func newOptionMenu() *optionMenu {
 	om := &optionMenu{
 		scene: scene.New(true),
 	}
-	Client.scene.Hide()
 
 	om.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 854, 480, 0, 0, 1, 1, 0, 0, 0)
 	om.background.SetA(160)

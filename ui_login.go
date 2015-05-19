@@ -51,7 +51,6 @@ func newLoginScreen() *loginScreen {
 
 	window.SetKeyCallback(ls.handleKey)
 	window.SetCharCallback(ls.handleChar)
-	Client.scene.Hide()
 	ls.logo.init(ls.scene)
 
 	ls.user = newTextBox(0, -20, 400, 40)

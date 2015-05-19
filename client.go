@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/type/direction"
@@ -53,6 +54,9 @@ func initClient() {
 			Client.entities.container.RemoveEntity(Client.entity)
 		}
 		Client.playerList.free()
+
+		Client.playerInventory.Close()
+		Client.hotbarScene.Hide()
 	}
 	Client = ClientState{
 		Bounds: vmath.AABB{
@@ -115,17 +119,24 @@ type ClientState struct {
 		frames    int
 		lastCount time.Time
 	}
-	hotbarUI          *ui.Image
-	currentHotbarSlot int
-	lifeUI            []*ui.Image
-	lifeFillUI        []*ui.Image
-	foodUI            []*ui.Image
-	foodFillUI        []*ui.Image
+	hotbar                            *ui.Image
+	hotbarUI                          *ui.Image
+	currentHotbarSlot, lastHotbarSlot int
+	lifeUI                            []*ui.Image
+	lifeFillUI                        []*ui.Image
+	foodUI                            []*ui.Image
+	foodFillUI                        []*ui.Image
+
+	itemNameUI    *ui.Formatted
+	itemNameTimer float64
 
 	network    networkManager
 	chat       ChatUI
 	playerList playerListUI
 	entities   clientEntities
+
+	playerInventory *Inventory
+	hotbarScene     *scene.Type
 
 	currentBreakingBlock    Block
 	currentBreakingPos      Position
@@ -138,6 +149,8 @@ type ClientState struct {
 }
 
 func (c *ClientState) init() {
+	c.playerInventory = NewInventory(InvPlayer, 45)
+	c.hotbarScene = scene.New(true)
 	c.network.init()
 	c.currentBreakingBlock = Blocks.Air.Base
 	c.blockBreakers = map[int]BlockEntity{}
@@ -152,6 +165,7 @@ func (c *ClientState) init() {
 	hotbar := ui.NewImage(widgets, 0, 0, 182*2, 22*2, 0, 0, 182.0/256.0, 22.0/256.0, 255, 255, 255).
 		Attach(ui.Bottom, ui.Center)
 	c.scene.AddDrawable(hotbar)
+	c.hotbar = hotbar
 	c.hotbarUI = ui.NewImage(widgets, -22*2+4, -2, 24*2, 24*2, 0, 22.0/256.0, 24.0/256.0, 24.0/256.0, 255, 255, 255).
 		Attach(ui.Bottom, ui.Center)
 	c.scene.AddDrawable(c.hotbarUI)
@@ -186,6 +200,10 @@ func (c *ClientState) init() {
 		ui.NewImage(icons, 0, 22*2+4, 182*2, 10, 0, 64.0/256.0, 182.0/256.0, 5.0/256.0, 255, 255, 255).
 			Attach(ui.Bottom, ui.Center),
 	)
+
+	c.itemNameUI = ui.NewFormatted(chat.AnyComponent{Value: &chat.TextComponent{}}, 0, -16-8-10-16)
+	c.itemNameUI.AttachTo(c.hotbar)
+	c.scene.AddDrawable(c.itemNameUI.Attach(ui.Top, ui.Middle))
 
 	c.chat.init()
 	c.initDebug()
@@ -230,6 +248,7 @@ func (c *ClientState) cycleCamera() {
 func (c *ClientState) renderTick(delta float64) {
 	c.delta = delta
 	c.hotbarUI.SetX(-184 + 24 + 40*float64(c.currentHotbarSlot))
+	c.tickItemName()
 
 	forward, yaw := c.calculateMovement()
 
@@ -346,6 +365,40 @@ func (c *ClientState) renderTick(delta float64) {
 	c.playerList.render(delta)
 	c.entities.tick()
 	c.copyToCamera()
+}
+
+func (c *ClientState) tickItemName() {
+	if c.lastHotbarSlot != c.currentHotbarSlot {
+		c.lastHotbarSlot = c.currentHotbarSlot
+		item := c.playerInventory.Items[invPlayerHotbarOffset+c.currentHotbarSlot]
+		if item != nil {
+			var iName string
+			if di, ok := item.Type.(DisplayTag); ok && di.Name() != "" {
+				iName = di.Name()
+			} else {
+				iName = "missing" // TODO
+			}
+			name := chat.AnyComponent{Value: &chat.TextComponent{Text: iName}}
+			chat.ConvertLegacy(name)
+			c.itemNameUI.Update(name)
+			c.itemNameTimer = 120
+		} else {
+			c.itemNameUI.Update(chat.AnyComponent{Value: &chat.TextComponent{}})
+			c.itemNameTimer = 0
+		}
+	}
+
+	c.itemNameTimer -= Client.delta
+	if c.itemNameTimer < 0 {
+		c.itemNameTimer = 0
+	}
+	a := c.itemNameTimer / 30
+	if a > 1 {
+		a = 1
+	}
+	for _, txt := range c.itemNameUI.Text {
+		txt.SetA(int(a * 255))
+	}
 }
 
 func (c *ClientState) armTick() {

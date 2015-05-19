@@ -491,6 +491,39 @@ func (handler) PlayerListInfo(p *protocol.PlayerInfo) {
 	}
 }
 
+func (handler) WindowItems(p *protocol.WindowItems) {
+	var inv *Inventory
+	if p.ID == 0 {
+		inv = Client.playerInventory
+	}
+	if inv == nil {
+		return
+	}
+	for i, item := range p.Items {
+		if i >= len(inv.Items) {
+			break
+		}
+		it := ItemStackFromProtocol(item)
+		inv.Items[i] = it
+	}
+	inv.Update()
+}
+
+func (handler) WindowItem(p *protocol.WindowSetSlot) {
+	var inv *Inventory
+	if p.ID == 0 {
+		inv = Client.playerInventory
+	}
+	if inv == nil {
+		return
+	}
+	if p.Slot >= int16(len(inv.Items)) {
+		return
+	}
+	inv.Items[p.Slot] = ItemStackFromProtocol(p.ItemStack)
+	inv.Update()
+}
+
 func (h handler) PluginMessage(p *protocol.PluginMessageClientbound) {
 	h.handlePluginMessage(p.Channel, bytes.NewReader(p.Data), false)
 }

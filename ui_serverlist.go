@@ -58,7 +58,6 @@ func newServerList() *serverList {
 	sl := &serverList{
 		scene: scene.New(true),
 	}
-	Client.scene.Hide()
 	sl.logo.init(sl.scene)
 	window.SetScrollCallback(sl.onScroll)
 

@@ -38,6 +38,7 @@ var (
 type Block interface {
 	// Is returns whether this block is a member of the passed Set
 	Is(s *BlockSet) bool
+	BlockSet() *BlockSet
 
 	Plugin() string
 	Name() string
@@ -93,6 +94,10 @@ type baseBlock struct {
 // Is returns whether this block is a member of the passed Set
 func (b *baseBlock) Is(s *BlockSet) bool {
 	return b.Parent == s
+}
+
+func (b *baseBlock) BlockSet() *BlockSet {
+	return b.Parent
 }
 
 func (b *baseBlock) init(name string) {

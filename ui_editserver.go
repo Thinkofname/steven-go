@@ -39,7 +39,6 @@ func newEditServer(index int) *editServer {
 	}
 	window.SetKeyCallback(se.handleKey)
 	window.SetCharCallback(se.handleChar)
-	Client.scene.Hide()
 	se.logo.init(se.scene)
 
 	se.scene.AddDrawable(
