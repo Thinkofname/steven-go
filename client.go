@@ -245,7 +245,7 @@ func (c *ClientState) renderTick(delta float64) {
 			speed = 5.612 / 60.0
 		}
 		if _, ok := chunkMap.Block(int(c.X), int(c.Y), int(c.Z)).(*blockLiquid); ok {
-			speed = 1.97 / 60.0
+			speed = 2.20 / 60.0
 			if c.Jumping {
 				c.VSpeed = 0.05
 			} else {
