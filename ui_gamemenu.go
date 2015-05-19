@@ -68,7 +68,7 @@ func (gm *gameMenu) tick(delta float64) {
 	gm.background.SetHeight(float64(height) / ui.Scale)
 }
 
-func (m *gameMenu) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+func (gm *gameMenu) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	if key == glfw.KeyEscape && action == glfw.Release {
 		setScreen(nil)
 	}

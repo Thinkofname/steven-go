@@ -500,6 +500,9 @@ func (c *ClientState) UpdateHealth(health float64) {
 			img.SetDraw(false)
 		}
 	}
+	if health == 0.0 {
+		setScreen(newRespawnScreen())
+	}
 }
 
 func (c *ClientState) UpdateHunger(hunger float64) {
@@ -910,14 +913,16 @@ func (c *ClientState) tick() {
 		onGround = true
 	}
 
-	c.network.Write(&protocol.PlayerPositionLook{
-		X:        c.X,
-		Y:        c.Y,
-		Z:        c.Z,
-		Yaw:      float32(-c.Yaw * (180 / math.Pi)),
-		Pitch:    float32((-c.Pitch - math.Pi) * (180 / math.Pi)),
-		OnGround: onGround,
-	})
+	if c.Health > 0 {
+		c.network.Write(&protocol.PlayerPositionLook{
+			X:        c.X,
+			Y:        c.Y,
+			Z:        c.Z,
+			Yaw:      float32(-c.Yaw * (180 / math.Pi)),
+			Pitch:    float32((-c.Pitch - math.Pi) * (180 / math.Pi)),
+			OnGround: onGround,
+		})
+	}
 }
 
 type gameMode int
