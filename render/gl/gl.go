@@ -195,6 +195,12 @@ func DepthMask(f bool) {
 	gl.DepthMask(f)
 }
 
+// DepthFunc sets the function used to decide whether to cull a pixel
+// when depth testing
+func DepthFunc(f Func) {
+	gl.DepthFunc(uint32(f))
+}
+
 // ColorMask sets whether each color channel be the written too.
 func ColorMask(r, g, b, a bool) {
 	gl.ColorMask(r, g, b, a)
