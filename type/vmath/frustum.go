@@ -36,13 +36,21 @@ func (f *fPlane) setPoints(v1, v2, v3 mgl32.Vec3) {
 	aux2 := v3.Sub(v2)
 
 	f.N = aux2.Cross(aux1)
-	f.N = f.N.Normalize()
+	f.N = safeNormalize(f.N)
 	f.P = v2
 	f.D = -(f.N.Dot(f.P))
 }
 
 func NewFrustum() *Frustum {
 	return &Frustum{}
+}
+
+func safeNormalize(v mgl32.Vec3) mgl32.Vec3 {
+	v = v.Normalize()
+	if math.IsInf(float64(v[0]), 0) || math.IsNaN(float64(v[0])) {
+		return mgl32.Vec3{}
+	}
+	return v
 }
 
 func (f *Frustum) SetPerspective(fovy, aspect, near, far float32) {
@@ -60,10 +68,10 @@ func (f *Frustum) SetPerspective(fovy, aspect, near, far float32) {
 
 func (f *Frustum) SetCamera(p, l, u mgl32.Vec3) {
 	Z := p.Sub(l)
-	Z = Z.Normalize()
+	Z = safeNormalize(Z)
 
 	X := u.Cross(Z)
-	X = X.Normalize()
+	X = safeNormalize(X)
 
 	Y := Z.Cross(X)
 
@@ -88,7 +96,7 @@ func (f *Frustum) SetCamera(p, l, u mgl32.Vec3) {
 		nearP
 		farP
 	)
-	f.planes[top].setPoints(ntl, ntl, ftl)
+	f.planes[top].setPoints(ntr, ntl, ftl)
 	f.planes[bottom].setPoints(nbl, nbr, fbr)
 	f.planes[left].setPoints(ntl, nbl, fbl)
 	f.planes[right].setPoints(nbr, ntr, fbr)
@@ -101,6 +109,21 @@ func (f *Frustum) IsSphereInside(x, y, z, radius float32) bool {
 	for i := range f.planes {
 		dist := f.planes[i].D + f.planes[i].N.Dot(p)
 		if dist < -radius {
+			return false
+		}
+	}
+	return true
+}
+
+func (f *Frustum) IsAABBInside(aabb AABB) bool {
+	for i := range f.planes {
+		v := aabb.Min
+		for j := 0; j < 3; j++ {
+			if f.planes[i].N[j] >= 0 {
+				v[j] = aabb.Max[j]
+			}
+		}
+		if f.planes[i].N.Dot(v)+f.planes[i].D < 0 {
 			return false
 		}
 	}

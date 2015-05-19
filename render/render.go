@@ -235,14 +235,22 @@ const (
 var rQueue renderQueue
 
 func renderBuffer(ch *ChunkBuffer, po position, fr direction.Type) {
+	if ch == nil {
+		return
+	}
 	rQueue.Append(renderRequest{ch, po, fr})
 itQueue:
 	for !rQueue.Empty() {
 		req := rQueue.Take()
-		if req.chunk == nil || req.chunk.renderedOn == frameID {
+		if req.chunk.renderedOn == frameID {
 			continue itQueue
 		}
-		if !frustum.IsSphereInside(-float32((req.pos.X<<4)+8), -float32((req.pos.Y<<4)+8), float32((req.pos.Z<<4)+8), 16) {
+		aabb := vmath.NewAABB(
+			-float32((req.pos.X<<4)+16), -float32((req.pos.Y<<4)+16), float32((req.pos.Z<<4)),
+			-float32((req.pos.X<<4)), -float32((req.pos.Y<<4)), float32((req.pos.Z<<4)+16),
+		).Grow(1, 1, 1)
+		if !frustum.IsAABBInside(aabb) {
+			req.chunk.renderedOn = frameID
 			continue itQueue
 		}
 		req.chunk.renderedOn = frameID
