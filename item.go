@@ -41,6 +41,8 @@ func ItemStackFromProtocol(p protocol.ItemStack) *ItemStack {
 }
 
 type ItemType interface {
+	NameLocaleKey() string
+
 	ParseDamage(d int16)
 	ParseTag(tag *nbt.Compound)
 }
@@ -95,6 +97,10 @@ type blockItem struct {
 
 func ItemOfBlock(b Block) ItemType {
 	return &blockItem{block: b}
+}
+
+func (b *blockItem) NameLocaleKey() string {
+	return b.block.NameLocaleKey()
 }
 
 func (b *blockItem) ParseDamage(d int16) {

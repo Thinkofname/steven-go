@@ -67,6 +67,27 @@ func (b *blockStone) ModelName() string {
 	return b.Variant.String()
 }
 
+func (b *blockStone) NameLocaleKey() string {
+	switch b.Variant {
+	case stoneNormal:
+		return "tile.stone.stone.name"
+	case stoneGranite:
+		return "tile.stone.granite.name"
+	case stoneSmoothGranite:
+		return "tile.stone.graniteSmooth.name"
+	case stoneDiorite:
+		return "tile.stone.diorite.name"
+	case stoneSmoothDiorite:
+		return "tile.stone.dioriteSmooth.name"
+	case stoneAndesite:
+		return "tile.stone.andesite.name"
+	case stoneSmoothAndesite:
+		return "tile.stone.andesiteSmooth.name"
+
+	}
+	return "unknown"
+}
+
 func (b *blockStone) toData() int {
 	data := int(b.Variant)
 	return data

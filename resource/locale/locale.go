@@ -71,7 +71,10 @@ func LoadLocale(name string) {
 func GetRaw(key string) string {
 	lock.RLock()
 	defer lock.RUnlock()
-	return values[key]
+	if val, ok := values[key]; ok {
+		return val
+	}
+	return "!" + key + "!"
 }
 
 // Get returns a list of parts for the given key. It will be either

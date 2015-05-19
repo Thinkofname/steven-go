@@ -64,6 +64,7 @@ type Block interface {
 	LightReduction() int
 	LightEmitted() int
 	String() string
+	NameLocaleKey() string
 
 	CreateBlockEntity() BlockEntity
 
@@ -114,6 +115,10 @@ func (b *baseBlock) init(name string) {
 	b.collidable = true
 	b.renderable = true
 	b.hardness = 1.0
+}
+
+func (b *baseBlock) NameLocaleKey() string {
+	return fmt.Sprintf("tile.%s.name", b.name)
 }
 
 func (b *baseBlock) Hardness() float64 {

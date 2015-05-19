@@ -372,14 +372,13 @@ func (c *ClientState) tickItemName() {
 		c.lastHotbarSlot = c.currentHotbarSlot
 		item := c.playerInventory.Items[invPlayerHotbarOffset+c.currentHotbarSlot]
 		if item != nil {
-			var iName string
+			var name chat.AnyComponent
 			if di, ok := item.Type.(DisplayTag); ok && di.Name() != "" {
-				iName = di.Name()
+				name = chat.AnyComponent{Value: &chat.TextComponent{Text: di.Name()}}
+				chat.ConvertLegacy(name)
 			} else {
-				iName = "missing" // TODO
+				name = chat.AnyComponent{Value: &chat.TranslateComponent{Translate: item.Type.NameLocaleKey()}}
 			}
-			name := chat.AnyComponent{Value: &chat.TextComponent{Text: iName}}
-			chat.ConvertLegacy(name)
 			c.itemNameUI.Update(name)
 			c.itemNameTimer = 120
 		} else {
