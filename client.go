@@ -244,9 +244,8 @@ func (c *ClientState) renderTick(delta float64) {
 		if c.KeyState[KeySprint] {
 			speed = 5.612 / 60.0
 		}
-		c.X += forward * math.Cos(yaw) * delta * speed
-		c.Z -= forward * math.Sin(yaw) * delta * speed
 		if _, ok := chunkMap.Block(int(c.X), int(c.Y), int(c.Z)).(*blockLiquid); ok {
+			speed = 1.97 / 60.0
 			if c.Jumping {
 				c.VSpeed = 0.05
 			} else {
@@ -265,6 +264,8 @@ func (c *ClientState) renderTick(delta float64) {
 		} else {
 			c.VSpeed = 0
 		}
+		c.X += forward * math.Cos(yaw) * delta * speed
+		c.Z -= forward * math.Sin(yaw) * delta * speed
 		c.Y += c.VSpeed * delta
 	}
 
