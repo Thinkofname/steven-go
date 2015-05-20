@@ -189,8 +189,10 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		if action == glfw.Release {
 			if Client.scene.IsVisible() {
 				Client.scene.Hide()
+				Client.hotbarScene.Hide()
 			} else {
 				Client.scene.Show()
+				Client.hotbarScene.Show()
 			}
 		}
 	case glfw.KeyF3:
