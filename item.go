@@ -117,7 +117,7 @@ func (b *blockItem) NameLocaleKey() string {
 func (b *blockItem) ParseDamage(d int16) {
 	d &= 0xF
 	nb := GetBlockByCombinedID(uint16(b.block.BlockSet().ID<<4) | uint16(d))
-	if nb != nil {
+	if nb.Is(b.block.BlockSet()) {
 		b.block = nb
 	}
 }
