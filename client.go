@@ -34,14 +34,14 @@ const (
 	playerHeight = 1.62
 )
 
-var Client ClientState
+var Client *ClientState
 
 func init() {
 	initClient()
 }
 
 func initClient() {
-	if Client.valid {
+	if Client != nil {
 		Client.scene.Hide()
 		// Cleanup
 		for _, e := range Client.entities.entities {
@@ -58,14 +58,7 @@ func initClient() {
 		Client.playerInventory.Close()
 		Client.hotbarScene.Hide()
 	}
-	Client = ClientState{
-		Bounds: vmath.AABB{
-			Min: mgl32.Vec3{-0.3, 0, -0.3},
-			Max: mgl32.Vec3{0.3, 1.8, 0.3},
-		},
-		valid: true,
-		scene: scene.New(true),
-	}
+	newClient()
 }
 
 type cameraMode int
@@ -148,7 +141,16 @@ type ClientState struct {
 	delta float64
 }
 
-func (c *ClientState) init() {
+func newClient() {
+	c := &ClientState{
+		Bounds: vmath.AABB{
+			Min: mgl32.Vec3{-0.3, 0, -0.3},
+			Max: mgl32.Vec3{0.3, 1.8, 0.3},
+		},
+		valid: true,
+		scene: scene.New(true),
+	}
+	Client = c
 	c.playerInventory = NewInventory(InvPlayer, 45)
 	c.hotbarScene = scene.New(true)
 	c.network.init()

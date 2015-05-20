@@ -270,7 +270,6 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 func (sl *serverList) connect(s string) {
 	server = s
 	initClient()
-	Client.init()
 	connect()
 	setScreen(nil)
 }

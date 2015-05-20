@@ -128,7 +128,6 @@ func setUIScale() {
 func start() {
 	<-loadChan
 	if Client.valid {
-		Client.init()
 	} else {
 		fakeGen()
 		if !profile.IsComplete() {

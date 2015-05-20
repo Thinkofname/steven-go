@@ -123,7 +123,6 @@ func (ls *loginScreen) postLogin(p mojang.Profile, err error) {
 		setScreen(newServerList())
 	} else {
 		initClient()
-		Client.init()
 		connect()
 		setScreen(nil)
 	}
