@@ -52,10 +52,10 @@ func initUI() {
 	uiState.shader.TextureInfo.Enable()
 	uiState.shader.TextureOffset.Enable()
 	uiState.shader.Color.Enable()
-	uiState.shader.Position.PointerInt(2, gl.Short, 22, 0)
-	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 22, 4)
-	uiState.shader.TextureOffset.PointerInt(3, gl.Short, 22, 12)
-	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 22, 18)
+	uiState.shader.Position.PointerInt(3, gl.Short, 24, 0)
+	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 24, 6)
+	uiState.shader.TextureOffset.PointerInt(3, gl.Short, 24, 14)
+	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 24, 20)
 }
 
 func drawUI() {
@@ -91,6 +91,7 @@ func drawUI() {
 // with a texture and a tint.
 type UIElement struct {
 	X, Y, W, H                 float64
+	Layer                      int
 	TX, TY, TW, TH             uint16
 	TOffsetX, TOffsetY, TAtlas int16
 	TSizeW, TSizeH             int16
@@ -100,7 +101,7 @@ type UIElement struct {
 
 func UIAddBytes(data []byte) {
 	uiState.data = append(uiState.data, data...)
-	uiState.count += len(data) / 22
+	uiState.count += len(data) / 24
 }
 
 func NewUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *UIElement {
@@ -127,7 +128,7 @@ func NewUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th 
 }
 
 func (u *UIElement) Bytes() []byte {
-	data := make([]byte, 0, 22*6)
+	data := make([]byte, 0, 24*6)
 	data = u.appendVertex(data, u.X, u.Y, u.TOffsetX, u.TOffsetY)
 	data = u.appendVertex(data, u.X+u.W, u.Y, u.TOffsetX+u.TSizeW, u.TOffsetY)
 	data = u.appendVertex(data, u.X, u.Y+u.H, u.TOffsetX, u.TOffsetY+u.TSizeH)
@@ -150,6 +151,7 @@ func (u *UIElement) appendVertex(data []byte, x, y float64, tx, ty int16) []byte
 	}
 	data = appendShort(data, int16(math.Floor((dx*float64(lastWidth))+0.5)))
 	data = appendShort(data, int16(math.Floor((dy*float64(lastHeight))+0.5)))
+	data = appendShort(data, int16(u.Layer))
 	data = appendUnsignedShort(data, u.TX)
 	data = appendUnsignedShort(data, u.TY)
 	data = appendUnsignedShort(data, u.TW)

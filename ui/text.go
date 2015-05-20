@@ -149,6 +149,9 @@ func (t *Text) Draw(r Region, delta float64) {
 			text = render.NewUITextRotated(t.value, r.X+w-(r.W/2), r.Y+h-(r.H/2), sx*t.scaleX, sy*t.scaleY, t.rotation, t.r, t.g, t.b)
 		}
 		text.Alpha(t.a)
+		for _, txt := range text.Elements {
+			txt.Layer = t.layer
+		}
 		t.data = text.Bytes()
 	}
 	render.UIAddBytes(t.data)

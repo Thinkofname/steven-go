@@ -242,6 +242,7 @@ type baseElement struct {
 	parent           Drawable
 	visible          bool
 	vAttach, hAttach AttachPoint
+	layer            int
 
 	dirty bool
 	isNew bool
@@ -273,6 +274,17 @@ func (b *baseElement) AttachedTo() Drawable {
 func (b *baseElement) AttachTo(d Drawable) {
 	if b.parent != d {
 		b.parent = d
+		b.dirty = true
+	}
+}
+
+func (b *baseElement) Layer() int {
+	return b.layer
+}
+
+func (b *baseElement) SetLayer(l int) {
+	if b.layer != l {
+		b.layer = l
 		b.dirty = true
 	}
 }

@@ -38,7 +38,7 @@ type fontInfo struct {
 // UIText is a collection of UI elements that make up a
 // string of characters.
 type UIText struct {
-	elements []*UIElement
+	Elements []*UIElement
 	Width    float64
 }
 
@@ -104,13 +104,13 @@ func newUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UITex
 		shadow.G = byte(float64(gg) * 0.25)
 		shadow.B = byte(float64(bb) * 0.25)
 		shadow.Rotation = rotation
-		t.elements = append(t.elements, shadow)
+		t.Elements = append(t.Elements, shadow)
 		text := NewUIElement(texture, x+dx*sx, y+dy*sy, w*sx, 16*sy, 0, 0, 1, 1)
 		text.R = byte(rr)
 		text.G = byte(gg)
 		text.B = byte(bb)
 		text.Rotation = rotation
-		t.elements = append(t.elements, text)
+		t.Elements = append(t.Elements, text)
 		offset += w + 2
 	}
 	t.Width = (offset - 2) * sx
@@ -118,8 +118,8 @@ func newUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UITex
 }
 
 func (u UIText) Bytes() []byte {
-	data := make([]byte, 0, 22*6*len(u.elements))
-	for _, e := range u.elements {
+	data := make([]byte, 0, 24*6*len(u.Elements))
+	for _, e := range u.Elements {
 		data = append(data, e.Bytes()...)
 	}
 	return data
@@ -172,7 +172,7 @@ func SizeOfString(str string) float64 {
 
 // Alpha changes the alpha of all theelements belonging to this UIText
 func (u UIText) Alpha(a int) {
-	for _, e := range u.elements {
+	for _, e := range u.Elements {
 		e.A = byte(a)
 	}
 }

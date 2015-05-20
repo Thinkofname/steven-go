@@ -28,7 +28,7 @@ type uiShader struct {
 const (
 	vertexUI = `
 #version 150
-in ivec2 aPosition;
+in ivec3 aPosition;
 in vec4 aTextureInfo;
 in ivec3 aTextureOffset;
 in vec4 aColor;
@@ -41,8 +41,8 @@ out float vAtlas;
 uniform vec2 screenSize;
 
 void main() {
-	vec2 pos = aPosition / screenSize;
-	gl_Position = vec4((pos.x-0.5)*2.0, -(pos.y-0.5)*2.0, 0.0, 1.0);
+	vec2 pos = aPosition.xy / screenSize;
+	gl_Position = vec4((pos.x-0.5)*2.0, -(pos.y-0.5)*2.0, aPosition.z / 0x7FFF, 1.0);
 	vColor = aColor;
 	vTextureInfo = aTextureInfo;
 	vTextureOffset = aTextureOffset.xy / 16.0;

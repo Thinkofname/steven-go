@@ -94,6 +94,12 @@ func (b *Button) Hover(r Region, x, y float64, over bool) {
 	}
 }
 
+func (b *Button) newUIElement(tex *render.TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *render.UIElement {
+	u := render.NewUIElement(tex, x, y, width, height, tx, ty, tw, th)
+	u.Layer = b.layer
+	return u
+}
+
 // Draw draws this to the target region.
 func (b *Button) Draw(r Region, delta float64) {
 	if b.isNew || b.isDirty() || forceDirty {
@@ -111,20 +117,20 @@ func (b *Button) Draw(r Region, delta float64) {
 
 		cw, ch := b.Size()
 		sx, sy := r.W/cw, r.H/ch
-		b.data = append(b.data, render.NewUIElement(b.currentTex, r.X, r.Y, 4*sx, 4*sy, 0, 0, 2/200.0, 2/20.0).Bytes()...)
-		b.data = append(b.data, render.NewUIElement(b.currentTex, r.X+r.W-4*sx, r.Y, 4*sx, 4*sy, 198/200.0, 0, 2/200.0, 2/20.0).Bytes()...)
-		b.data = append(b.data, render.NewUIElement(b.currentTex, r.X, r.Y+r.H-6*sy, 4*sx, 6*sy, 0, 17/20.0, 2/200.0, 3/20.0).Bytes()...)
-		b.data = append(b.data, render.NewUIElement(b.currentTex, r.X+r.W-4*sx, r.Y+r.H-6*sy, 4*sx, 6*sy, 198/200.0, 17/20.0, 2/200.0, 3/20.0).Bytes()...)
+		b.data = append(b.data, b.newUIElement(b.currentTex, r.X, r.Y, 4*sx, 4*sy, 0, 0, 2/200.0, 2/20.0).Bytes()...)
+		b.data = append(b.data, b.newUIElement(b.currentTex, r.X+r.W-4*sx, r.Y, 4*sx, 4*sy, 198/200.0, 0, 2/200.0, 2/20.0).Bytes()...)
+		b.data = append(b.data, b.newUIElement(b.currentTex, r.X, r.Y+r.H-6*sy, 4*sx, 6*sy, 0, 17/20.0, 2/200.0, 3/20.0).Bytes()...)
+		b.data = append(b.data, b.newUIElement(b.currentTex, r.X+r.W-4*sx, r.Y+r.H-6*sy, 4*sx, 6*sy, 198/200.0, 17/20.0, 2/200.0, 3/20.0).Bytes()...)
 
 		w := (r.W/sx)/2 - 4
-		b.data = append(b.data, render.NewUIElement(b.currentTex.Sub(2, 0, 196, 2), r.X+4*sx, r.Y, r.W-8*sx, 4*sy, 0, 0, w/196.0, 1.0).Bytes()...)
-		b.data = append(b.data, render.NewUIElement(b.currentTex.Sub(2, 17, 196, 3), r.X+4*sx, r.Y+r.H-6*sy, r.W-8*sx, 6*sy, 0, 0, w/196.0, 1.0).Bytes()...)
+		b.data = append(b.data, b.newUIElement(b.currentTex.Sub(2, 0, 196, 2), r.X+4*sx, r.Y, r.W-8*sx, 4*sy, 0, 0, w/196.0, 1.0).Bytes()...)
+		b.data = append(b.data, b.newUIElement(b.currentTex.Sub(2, 17, 196, 3), r.X+4*sx, r.Y+r.H-6*sy, r.W-8*sx, 6*sy, 0, 0, w/196.0, 1.0).Bytes()...)
 
 		h := (r.H/sy)/2 - 5
-		b.data = append(b.data, render.NewUIElement(b.currentTex.Sub(0, 2, 2, 15), r.X, r.Y+4*sy, 4*sx, r.H-10*sy, 0.0, 0.0, 1.0, h/16.0).Bytes()...)
-		b.data = append(b.data, render.NewUIElement(b.currentTex.Sub(198, 2, 2, 15), r.X+r.W-4*sx, r.Y+4*sy, 4*sx, r.H-10*sy, 0.0, 0.0, 1.0, h/16.0).Bytes()...)
+		b.data = append(b.data, b.newUIElement(b.currentTex.Sub(0, 2, 2, 15), r.X, r.Y+4*sy, 4*sx, r.H-10*sy, 0.0, 0.0, 1.0, h/16.0).Bytes()...)
+		b.data = append(b.data, b.newUIElement(b.currentTex.Sub(198, 2, 2, 15), r.X+r.W-4*sx, r.Y+4*sy, 4*sx, r.H-10*sy, 0.0, 0.0, 1.0, h/16.0).Bytes()...)
 
-		b.data = append(b.data, render.NewUIElement(b.currentTex.Sub(2, 2, 196, 15), r.X+4*sx, r.Y+4*sy, r.W-8*sx, r.H-10*sy, 0.0, 0.0, w/196.0, h/16.0).Bytes()...)
+		b.data = append(b.data, b.newUIElement(b.currentTex.Sub(2, 2, 196, 15), r.X+4*sx, r.Y+4*sy, r.W-8*sx, r.H-10*sy, 0.0, 0.0, w/196.0, h/16.0).Bytes()...)
 	}
 	render.UIAddBytes(b.data)
 }
