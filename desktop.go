@@ -148,6 +148,15 @@ const (
 	KeyJump
 )
 
+var keyStateMap = map[glfw.Key]Key{
+	glfw.KeyW:           KeyForward,
+	glfw.KeyS:           KeyBackwards,
+	glfw.KeyA:           KeyLeft,
+	glfw.KeyD:           KeyRight,
+	glfw.KeyLeftControl: KeySprint,
+	glfw.KeySpace:       KeyJump,
+}
+
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	if currentScreen != nil {
 		return
@@ -156,34 +165,14 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		Client.chat.handleKey(w, key, scancode, action, mods)
 		return
 	}
+
+	if k, ok := keyStateMap[key]; action != glfw.Repeat && ok {
+		Client.KeyState[k] = action == glfw.Press
+	}
 	switch key {
 	case glfw.KeyEscape:
 		if action == glfw.Release {
 			setScreen(newGameMenu())
-		}
-	case glfw.KeyW:
-		if action != glfw.Repeat {
-			Client.KeyState[KeyForward] = action == glfw.Press
-		}
-	case glfw.KeyS:
-		if action != glfw.Repeat {
-			Client.KeyState[KeyBackwards] = action == glfw.Press
-		}
-	case glfw.KeyA:
-		if action != glfw.Repeat {
-			Client.KeyState[KeyLeft] = action == glfw.Press
-		}
-	case glfw.KeyD:
-		if action != glfw.Repeat {
-			Client.KeyState[KeyRight] = action == glfw.Press
-		}
-	case glfw.KeyLeftControl:
-		if action != glfw.Repeat {
-			Client.KeyState[KeySprint] = action == glfw.Press
-		}
-	case glfw.KeySpace:
-		if action != glfw.Repeat {
-			Client.KeyState[KeyJump] = action == glfw.Press
 		}
 	case glfw.KeyF1:
 		if action == glfw.Release {
