@@ -86,9 +86,8 @@ type ClientState struct {
 	Health float64
 	Hunger float64
 
-	Jumping                  bool
 	VSpeed                   float64
-	KeyState                 [5]bool
+	KeyState                 [6]bool
 	OnGround, didTouchGround bool
 	isLeftDown               bool
 
@@ -267,7 +266,7 @@ func (c *ClientState) renderTick(delta float64) {
 		}
 		if _, ok := chunkMap.Block(int(c.X), int(c.Y), int(c.Z)).(*blockLiquid); ok {
 			speed = 2.20 / 60.0
-			if c.Jumping {
+			if c.KeyState[KeyJump] {
 				c.VSpeed = 0.05
 			} else {
 				c.VSpeed -= 0.005 * delta
@@ -280,7 +279,7 @@ func (c *ClientState) renderTick(delta float64) {
 			if c.VSpeed < -0.3 {
 				c.VSpeed = -0.3
 			}
-		} else if c.Jumping {
+		} else if c.KeyState[KeyJump] {
 			c.VSpeed = 0.15
 		} else {
 			c.VSpeed = 0

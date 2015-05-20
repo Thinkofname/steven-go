@@ -145,6 +145,7 @@ const (
 	KeyLeft
 	KeyRight
 	KeySprint
+	KeyJump
 )
 
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
@@ -180,6 +181,10 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		if action != glfw.Repeat {
 			Client.KeyState[KeySprint] = action == glfw.Press
 		}
+	case glfw.KeySpace:
+		if action != glfw.Repeat {
+			Client.KeyState[KeyJump] = action == glfw.Press
+		}
 	case glfw.KeyF1:
 		if action == glfw.Release {
 			if Client.scene.IsVisible() {
@@ -214,9 +219,5 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		lockMouse = false
 		w.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
 		w.SetCharCallback(Client.chat.handleChar)
-	case glfw.KeySpace:
-		if action != glfw.Repeat {
-			Client.Jumping = action == glfw.Press
-		}
 	}
 }
