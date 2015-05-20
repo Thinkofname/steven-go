@@ -27,13 +27,16 @@ const (
 
 var (
 	uiState = struct {
-		program  gl.Program
-		shader   *uiShader
-		array    gl.VertexArray
-		buffer   gl.Buffer
-		count    int
-		data     []byte
-		prevSize int
+		program     gl.Program
+		shader      *uiShader
+		array       gl.VertexArray
+		buffer      gl.Buffer
+		indexBuffer gl.Buffer
+		indexType   gl.Type
+		maxIndex    int
+		count       int
+		data        []byte
+		prevSize    int
 	}{
 		prevSize: -1,
 	}
@@ -56,16 +59,28 @@ func initUI() {
 	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 24, 6)
 	uiState.shader.TextureOffset.PointerInt(3, gl.Short, 24, 14)
 	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 24, 20)
+
+	uiState.indexBuffer = gl.CreateBuffer()
+	uiState.indexBuffer.Bind(gl.ElementArrayBuffer)
 }
 
 func drawUI() {
 	// Prevent clipping with the world
-	gl.Disable(gl.DepthTest)
+	gl.Clear(gl.DepthBufferBit)
+	gl.DepthFunc(gl.LessOrEqual)
 	gl.Enable(gl.Blend)
 
 	uiState.program.Use()
 	uiState.shader.Texture.Int(0)
 	if uiState.count > 0 {
+		if uiState.maxIndex < uiState.count {
+			var data []byte
+			data, uiState.indexType = genElementBuffer(uiState.count)
+			uiState.indexBuffer.Bind(gl.ElementArrayBuffer)
+			uiState.indexBuffer.Data(data, gl.DynamicDraw)
+			uiState.maxIndex = uiState.count
+		}
+
 		uiState.array.Bind()
 
 		uiState.shader.ScreenSize.Float2(float32(lastWidth), float32(lastHeight))
@@ -79,10 +94,10 @@ func drawUI() {
 			copy(target, uiState.data)
 			uiState.buffer.Unmap()
 		}
-		gl.DrawArrays(gl.Triangles, 0, uiState.count)
+		gl.DrawElements(gl.Triangles, uiState.count, uiState.indexType, 0)
 	}
 	gl.Disable(gl.Blend)
-	gl.Enable(gl.DepthTest)
+	gl.DepthFunc(gl.Less)
 	uiState.count = 0
 	uiState.data = uiState.data[:0]
 }
@@ -101,7 +116,7 @@ type UIElement struct {
 
 func UIAddBytes(data []byte) {
 	uiState.data = append(uiState.data, data...)
-	uiState.count += len(data) / 24
+	uiState.count += (len(data) / (24 * 4)) * 6
 }
 
 func NewUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *UIElement {
@@ -128,14 +143,11 @@ func NewUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th 
 }
 
 func (u *UIElement) Bytes() []byte {
-	data := make([]byte, 0, 24*6)
+	data := make([]byte, 0, 24*4)
 	data = u.appendVertex(data, u.X, u.Y, u.TOffsetX, u.TOffsetY)
 	data = u.appendVertex(data, u.X+u.W, u.Y, u.TOffsetX+u.TSizeW, u.TOffsetY)
 	data = u.appendVertex(data, u.X, u.Y+u.H, u.TOffsetX, u.TOffsetY+u.TSizeH)
-
 	data = u.appendVertex(data, u.X+u.W, u.Y+u.H, u.TOffsetX+u.TSizeW, u.TOffsetY+u.TSizeH)
-	data = u.appendVertex(data, u.X, u.Y+u.H, u.TOffsetX, u.TOffsetY+u.TSizeH)
-	data = u.appendVertex(data, u.X+u.W, u.Y, u.TOffsetX+u.TSizeW, u.TOffsetY)
 	return data
 }
 
@@ -151,7 +163,7 @@ func (u *UIElement) appendVertex(data []byte, x, y float64, tx, ty int16) []byte
 	}
 	data = appendShort(data, int16(math.Floor((dx*float64(lastWidth))+0.5)))
 	data = appendShort(data, int16(math.Floor((dy*float64(lastHeight))+0.5)))
-	data = appendShort(data, int16(u.Layer))
+	data = appendShort(data, int16(u.Layer*256))
 	data = appendUnsignedShort(data, u.TX)
 	data = appendUnsignedShort(data, u.TY)
 	data = appendUnsignedShort(data, u.TW)

@@ -105,7 +105,7 @@ func ItemOfBlock(b Block) ItemType {
 	return &blockItem{
 		block: b,
 		itemNamed: itemNamed{
-			name: b.Name(),
+			name: b.ModelName(),
 		},
 	}
 }
@@ -119,6 +119,7 @@ func (b *blockItem) ParseDamage(d int16) {
 	nb := GetBlockByCombinedID(uint16(b.block.BlockSet().ID<<4) | uint16(d))
 	if nb.Is(b.block.BlockSet()) {
 		b.block = nb
+		b.itemNamed.name = nb.ModelName()
 	}
 }
 func (b *blockItem) ParseTag(tag *nbt.Compound) {
