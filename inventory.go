@@ -103,7 +103,11 @@ func createItemIcon(item *ItemStack, scene *scene.Type, x, y float64) *ui.Contai
 		img.AttachTo(container)
 		scene.AddDrawable(img.Attach(ui.Top, ui.Left))
 	} else if mdl.builtIn == builtInFalse {
-		u := modelToUI(mdl)
+		var blk Block
+		if bt, ok := item.Type.(*blockItem); ok {
+			blk = bt.block
+		}
+		u := modelToUI(mdl, blk)
 		u.AttachTo(container)
 		scene.AddDrawable(u.Attach(ui.Top, ui.Left))
 	}

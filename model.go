@@ -120,7 +120,15 @@ type model struct {
 	uvLock bool
 	y, x   float64
 
+	// Item specific features
+	display map[string]modelDisplay
 	builtIn builtInType
+}
+
+type modelDisplay struct {
+	Rotation    *[3]float64
+	Translation *[3]float64
+	Scale       *[3]float64
 }
 
 func parseBlockStateVariant(plugin string, js realjson.RawMessage) *model {
@@ -153,6 +161,7 @@ type jsModel struct {
 	Textures         map[string]string
 	AmbientOcclusion *bool
 	Elements         []*jsBlockElement
+	Display          map[string]modelDisplay
 }
 
 func parseModel(plugin string, data *jsModel) *model {
@@ -168,6 +177,7 @@ func parseModel(plugin string, data *jsModel) *model {
 	} else {
 		bm = &model{
 			textureVars: map[string]string{},
+			display:     map[string]modelDisplay{},
 		}
 		if strings.HasPrefix(data.Parent, "builtin/") {
 			switch data.Parent {
@@ -198,6 +208,12 @@ func parseModel(plugin string, data *jsModel) *model {
 		bm.aoSet = true
 	} else if !bm.aoSet {
 		bm.ambientOcclusion = true
+	}
+
+	if data.Display != nil {
+		for k, v := range data.Display {
+			bm.display[k] = v
+		}
 	}
 
 	return bm
