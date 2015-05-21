@@ -69,7 +69,6 @@ func CreateBuffer() Buffer {
 }
 
 var (
-	currentBuffer       Buffer
 	currentBufferTarget BufferTarget
 )
 
@@ -77,20 +76,13 @@ var (
 // This will allow it to be the source of operations that act on a buffer
 // (Data, Map etc). If the buffer is already bound then this does nothing.
 func (b Buffer) Bind(target BufferTarget) {
-	if currentBuffer == b && currentBufferTarget == target {
-		return
-	}
 	gl.BindBuffer(uint32(target), b.internal)
-	currentBuffer = b
 	currentBufferTarget = target
 }
 
 // Data uploads the passed data to the gpu to be placed in this buffer.
 // The usage specifies how the program plans to use this buffer.
 func (b Buffer) Data(data []byte, usage BufferUsage) {
-	if currentBuffer != b {
-		panic("buffer not bound")
-	}
 	var ptr unsafe.Pointer
 	if len(data) != 0 {
 		ptr = gl.Ptr(data)
@@ -120,9 +112,6 @@ func (b Buffer) Unmap() {
 // return false after this call.
 func (b *Buffer) Delete() {
 	gl.DeleteBuffers(1, &b.internal)
-	if currentBuffer == *b {
-		currentBuffer = Buffer{}
-	}
 	b.internal = 0
 }
 
