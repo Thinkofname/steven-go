@@ -73,6 +73,7 @@ func drawUI() {
 	uiState.program.Use()
 	uiState.shader.Texture.Int(0)
 	if uiState.count > 0 {
+		uiState.array.Bind()
 		if uiState.maxIndex < uiState.count {
 			var data []byte
 			data, uiState.indexType = genElementBuffer(uiState.count)
@@ -80,8 +81,6 @@ func drawUI() {
 			uiState.indexBuffer.Data(data, gl.DynamicDraw)
 			uiState.maxIndex = uiState.count
 		}
-
-		uiState.array.Bind()
 
 		uiState.shader.ScreenSize.Float2(float32(lastWidth), float32(lastHeight))
 

@@ -89,6 +89,7 @@ func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
 }
 
 func (sm *StaticModel) data(verts []*StaticVertex) {
+	sm.array.Bind()
 	sm.count = (len(verts) / 4) * 6
 	if staticState.maxIndex < sm.count {
 		var data []byte
