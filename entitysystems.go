@@ -53,7 +53,7 @@ func esLightModel(p PositionComponent, m interface {
 		return
 	}
 	x, y, z := p.Position()
-	bx, by, bz := int(x), int(y+0.5), int(z)
+	bx, by, bz := int(math.Floor(x)), int(math.Floor(y)), int(math.Floor(z))
 	bl := float64(chunkMap.BlockLight(bx, by, bz)) / 16
 	sl := float64(chunkMap.SkyLight(bx, by, bz)) / 16
 	light := math.Max(bl, sl) + (1 / 16.0)

@@ -259,12 +259,12 @@ func (c *ClientState) renderTick(delta float64) {
 		c.X += forward * math.Cos(yaw) * -math.Cos(c.Pitch) * delta * 0.2
 		c.Z -= forward * math.Sin(yaw) * -math.Cos(c.Pitch) * delta * 0.2
 		c.Y -= forward * math.Sin(c.Pitch) * delta * 0.2
-	} else if chunkMap[chunkPosition{int(c.X) >> 4, int(c.Z) >> 4}] != nil {
+	} else if chunkMap[chunkPosition{int(math.Floor(c.X)) >> 4, int(math.Floor(c.Z)) >> 4}] != nil {
 		speed := 4.317 / 60.0
 		if c.KeyState[KeySprint] {
 			speed = 5.612 / 60.0
 		}
-		if _, ok := chunkMap.Block(int(c.X), int(c.Y), int(c.Z)).(*blockLiquid); ok {
+		if _, ok := chunkMap.Block(int(math.Floor(c.X)), int(math.Floor(c.Y)), int(math.Floor(c.Z))).(*blockLiquid); ok {
 			speed = 2.20 / 60.0
 			if c.KeyState[KeyJump] {
 				c.VSpeed = 0.05
