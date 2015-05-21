@@ -41,7 +41,7 @@ func modelToUI(mdl *model) *ui.Model {
 			tex := mdl.lookupTexture(f.texture)
 			for _, v := range face.verts {
 				var rr, gg, bb byte = 255, 255, 255
-				if direction.Type(fi) == direction.West || direction.Type(fi) == direction.East {
+				if direction.Type(fi) == direction.North || direction.Type(fi) == direction.South {
 					rr = byte(255 * 0.8)
 					gg = byte(255 * 0.8)
 					bb = byte(255 * 0.8)
