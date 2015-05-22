@@ -27,6 +27,10 @@ func AddPack(path string) {
 	if err := resource.LoadZip(path); err != nil {
 		panic(err)
 	}
+	reloadResources()
+}
+
+func reloadResources() {
 	fmt.Println("Bringing everything to a stop")
 	for freeBuilders < maxBuilders {
 		select {
@@ -39,10 +43,6 @@ func AddPack(path string) {
 			}
 		}
 	}
-	reloadResources()
-}
-
-func reloadResources() {
 	modelCache = map[string]*model{}
 	fmt.Println("Reloading textures")
 	render.LoadTextures()
