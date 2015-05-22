@@ -75,39 +75,10 @@ func (m *Model) Draw(r Region, delta float64) {
 		m.isNew = false
 		data := m.data[:0]
 
-		vecs := make([]mgl32.Vec3, len(m.verts))
-		var min, max mgl32.Vec3
-		for i := range min {
-			min[i] = float32(math.Inf(1))
-			max[i] = float32(math.Inf(-1))
-		}
-		for i, v := range m.verts {
+		for _, v := range m.verts {
 			vec := mgl32.Vec3{v.X - 0.5, v.Y - 0.5, v.Z - 0.5}
 			vec = m.mat.Mul4x1(vec.Vec4(1)).Vec3().
 				Add(mgl32.Vec3{0.5, 0.5, 0.5})
-			vecs[i] = vec
-			for j := range vec {
-				if vec[j] < min[j] {
-					min[j] = vec[j]
-				}
-				if vec[j] > max[j] {
-					max[j] = vec[j]
-				}
-			}
-		}
-		var d float32 = 0
-		for j := range min {
-			dm := max[j] - min[j]
-			if dm > d {
-				d = dm
-			}
-		}
-		for i, v := range m.verts {
-			vec := vecs[i]
-			for j := range vec {
-				dm := (max[j] - min[j]) / d
-				vec[j] = ((vec[j] - min[j]) / d) + (1.0-dm)*0.5
-			}
 			vX, vY, vZ := vec[0], 1.0-vec[1], vec[2]
 
 			dx := r.X + r.W*float64(vX)

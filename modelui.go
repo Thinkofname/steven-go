@@ -25,7 +25,8 @@ import (
 
 func modelToUI(mdl *model, block Block) *ui.Model {
 	mat := mgl32.Rotate3DX(math.Pi / 6).Mat4().
-		Mul4(mgl32.Rotate3DY(math.Pi/4 + math.Pi).Mat4())
+		Mul4(mgl32.Rotate3DY(math.Pi/4 + math.Pi).Mat4()).
+		Mul4(mgl32.Scale3D(0.65, 0.65, 0.65))
 
 	if gui, ok := mdl.display["gui"]; ok {
 		if gui.Scale != nil {
@@ -37,9 +38,9 @@ func modelToUI(mdl *model, block Block) *ui.Model {
 		}
 		if gui.Translation != nil {
 			mat = mat.Mul4(mgl32.Translate3D(
-				float32(gui.Translation[0]),
-				float32(gui.Translation[1]),
-				float32(gui.Translation[2]),
+				float32(gui.Translation[0]/16),
+				float32(gui.Translation[1]/16),
+				float32(gui.Translation[2]/16),
 			))
 		}
 		if gui.Rotation != nil {
