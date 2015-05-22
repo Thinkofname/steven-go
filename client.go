@@ -36,10 +36,6 @@ const (
 
 var Client *ClientState
 
-func init() {
-	initClient()
-}
-
 func initClient() {
 	if Client != nil {
 		Client.scene.Hide()
@@ -70,8 +66,6 @@ const (
 )
 
 type ClientState struct {
-	valid bool
-
 	scene *scene.Type
 
 	cameraMode cameraMode
@@ -146,7 +140,6 @@ func newClient() {
 			Min: mgl32.Vec3{-0.3, 0, -0.3},
 			Max: mgl32.Vec3{0.3, 1.8, 0.3},
 		},
-		valid: true,
 		scene: scene.New(true),
 	}
 	Client = c

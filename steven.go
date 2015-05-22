@@ -79,9 +79,9 @@ func Main(username, uuid, accessToken, s string) {
 	server = s
 
 	// Done on its own goroutine so the connection
-	// + window opening, can't be done in parallel
+	// + window opening, can be done in parallel
+	render.LoadTextures()
 	go func() {
-		render.LoadTextures()
 		initBlocks()
 		loadChan <- struct{}{}
 	}()
@@ -89,8 +89,6 @@ func Main(username, uuid, accessToken, s string) {
 	if profile.IsComplete() && server != "" {
 		// Start connecting whilst starting the renderer
 		connect()
-	} else {
-		Client.valid = false
 	}
 
 	setUIScale()
@@ -99,6 +97,7 @@ func Main(username, uuid, accessToken, s string) {
 }
 
 func connect() {
+	initClient()
 	connected = true
 	disconnectReason.Value = nil
 	Client.network.Connect(profile, server)
@@ -125,8 +124,8 @@ func setUIScale() {
 
 func start() {
 	<-loadChan
-	if Client.valid {
-	} else {
+	if Client == nil {
+		initClient()
 		fakeGen()
 		if !profile.IsComplete() {
 			setScreen(newLoginScreen())
@@ -225,7 +224,7 @@ handle:
 		currentScreen.tick(delta)
 	}
 
-	if ready && Client.valid {
+	if ready && Client != nil {
 		Client.renderTick(delta)
 		select {
 		case <-ticker.C:
