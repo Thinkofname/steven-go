@@ -44,8 +44,8 @@ func modelToUI(mdl *model, block Block) *ui.Model {
 			))
 		}
 		if gui.Rotation != nil {
-			mat = mat.Mul4(mgl32.Rotate3DX(float32(gui.Rotation[0]/180) * math.Pi).Mat4())
 			mat = mat.Mul4(mgl32.Rotate3DY(float32(gui.Rotation[1]/180) * math.Pi).Mat4())
+			mat = mat.Mul4(mgl32.Rotate3DX(float32(gui.Rotation[0]/180) * math.Pi).Mat4())
 			mat = mat.Mul4(mgl32.Rotate3DZ(float32(gui.Rotation[2]/180) * math.Pi).Mat4())
 		}
 	}
