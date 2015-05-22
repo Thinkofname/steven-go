@@ -60,29 +60,37 @@ func (ti *textureInfo) Rect() atlas.Rect { return ti.rect }
 // Sub returns a subsection of this texture.
 func (ti *textureInfo) Sub(x, y, w, h int) TextureInfo {
 	return &subTextureInfo{
-		ox: x, oy: y, w: w, h: h,
+		ox:     float64(x) / float64(ti.rect.Width),
+		oy:     float64(y) / float64(ti.rect.Height),
+		w:      float64(w) / float64(ti.rect.Width),
+		h:      float64(h) / float64(ti.rect.Height),
 		parent: ti,
 	}
 }
 
 type subTextureInfo struct {
-	ox, oy, w, h int
+	ox, oy, w, h float64
 	parent       TextureInfo
 }
 
 func (s *subTextureInfo) Atlas() int { return s.parent.Atlas() }
 func (s *subTextureInfo) Rect() atlas.Rect {
 	rect := s.parent.Rect()
-	rect.X += s.ox
-	rect.Y += s.oy
-	rect.Width, rect.Height = s.w, s.h
+	rect.X += int(s.ox * float64(rect.Width))
+	rect.Y += int(s.oy * float64(rect.Height))
+	rect.Width = int(s.w * float64(rect.Width))
+	rect.Height = int(s.h * float64(rect.Height))
 	return rect
 }
 
 // Sub returns a subsection of this texture.
 func (s *subTextureInfo) Sub(x, y, w, h int) TextureInfo {
+	rect := s.Rect()
 	return &subTextureInfo{
-		ox: x, oy: y, w: w, h: h,
+		ox:     float64(x) / float64(rect.Width),
+		oy:     float64(y) / float64(rect.Height),
+		w:      float64(w) / float64(rect.Width),
+		h:      float64(h) / float64(rect.Height),
 		parent: s,
 	}
 }
@@ -130,10 +138,6 @@ func LoadTextures() {
 		glTexture.Image3D(0, AtlasSize, AtlasSize, textureCount, gl.RGBA, gl.UnsignedByte, data)
 	}
 	freeSkinTextures = nil
-	for i := range isFontLoaded {
-		isFontLoaded[i] = false
-		fontPages[i] = nil
-	}
 	animatedTextures = nil
 	textures = nil
 	pix := []byte{
@@ -202,6 +206,14 @@ func LoadTextures() {
 
 	loadFontInfo()
 	loadFontPage(0)
+
+	for i := range isFontLoaded {
+		if i == 0 || !isFontLoaded[i] {
+			continue
+		}
+		isFontLoaded[i] = false
+		loadFontPage(i)
+	}
 }
 
 func loadTexFile(st sortableTexture) {
