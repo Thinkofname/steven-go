@@ -210,5 +210,6 @@ func WriteNBT(w io.Writer, n *nbt.Compound) error {
 	if n == nil {
 		return WriteByte(w, 0)
 	}
+	WriteByte(w, byte(nbt.TagCompound))
 	return n.Serialize(w)
 }

@@ -54,7 +54,89 @@ func NewCompound() *Compound {
 }
 
 func (c *Compound) Serialize(w io.Writer) error {
-	panic("TODO NBT Serialize")
+	err := writeString(w, c.Name)
+	if err != nil {
+		return err
+	}
+	return c.serialize(w)
+}
+
+func (c *Compound) serialize(w io.Writer) error {
+	for k, v := range c.Items {
+		if err := writeByte(w, byte(getTypeID(v))); err != nil {
+			return err
+		}
+		if err := writeString(w, k); err != nil {
+			return err
+		}
+		if err := writeType(w, v); err != nil {
+			return err
+		}
+	}
+	return writeByte(w, byte(TagEnd))
+}
+
+func writeType(w io.Writer, v interface{}) error {
+	switch v := v.(type) {
+	case int8:
+		return writeByte(w, byte(v))
+	case int16:
+		return binary.Write(w, binary.BigEndian, v)
+	case int32:
+		return binary.Write(w, binary.BigEndian, v)
+	case int64:
+		return binary.Write(w, binary.BigEndian, v)
+	case float32:
+		return binary.Write(w, binary.BigEndian, v)
+	case float64:
+		return binary.Write(w, binary.BigEndian, v)
+	case []byte:
+		if err := binary.Write(w, binary.BigEndian, int32(len(v))); err != nil {
+			return err
+		}
+		_, err := w.Write(v)
+		return err
+	case string:
+		return writeString(w, v)
+	case *List:
+		return v.serialize(w)
+	case *Compound:
+		return v.serialize(w)
+	case []int:
+		if err := binary.Write(w, binary.BigEndian, int32(len(v))); err != nil {
+			return err
+		}
+		return binary.Write(w, binary.BigEndian, v)
+	}
+	panic("unhandled type")
+}
+
+func getTypeID(i interface{}) TypeID {
+	switch i.(type) {
+	case int8:
+		return TagByte
+	case int16:
+		return TagShort
+	case int32:
+		return TagInt
+	case int64:
+		return TagLong
+	case float32:
+		return TagFloat
+	case float64:
+		return TagDouble
+	case []byte:
+		return TagByteArray
+	case string:
+		return TagString
+	case *List:
+		return TagList
+	case *Compound:
+		return TagCompound
+	case []int:
+		return TagIntArray
+	}
+	panic(fmt.Sprintf("invalid type %T", i))
 }
 
 func (c *Compound) Deserialize(r io.Reader) error {
@@ -91,6 +173,21 @@ func (c *Compound) deserialize(r io.Reader) error {
 type List struct {
 	Type     TypeID
 	Elements []interface{}
+}
+
+func (l *List) serialize(w io.Writer) error {
+	if err := writeByte(w, byte(l.Type)); err != nil {
+		return err
+	}
+	if err := binary.Write(w, binary.BigEndian, int32(len(l.Elements))); err != nil {
+		return err
+	}
+	for _, e := range l.Elements {
+		if err := writeType(w, e); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (l *List) deserialize(r io.Reader) error {
