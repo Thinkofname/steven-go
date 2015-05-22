@@ -540,6 +540,12 @@ func (c *ClientState) MouseAction(button glfw.MouseButton, down bool) {
 			})
 			return
 		}
+		if c.playerInventory.Items[c.currentHotbarSlot+invPlayerHotbarOffset] != nil {
+			c.network.Write(&protocol.PlayerBlockPlacement{
+				Face: 0xFF,
+			})
+		}
+
 		pos, b, face, cur := c.targetBlock()
 		if b.Is(Blocks.Air) {
 			return
