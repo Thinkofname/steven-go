@@ -198,7 +198,17 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		} else if action == glfw.Release {
 			Client.playerList.set(false)
 		}
-	case glfw.KeyT, glfw.KeySlash:
+	case glfw.KeyT:
+		state := w.GetKey(glfw.KeyF3)
+		if action == glfw.Release && state == glfw.Press {
+			reloadResources()
+			return
+		}
+		fallthrough
+	case glfw.KeySlash:
+		if action != glfw.Release {
+			return
+		}
 		for i := range Client.KeyState {
 			Client.KeyState[i] = false
 		}
