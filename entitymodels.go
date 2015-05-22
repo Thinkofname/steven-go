@@ -32,7 +32,7 @@ func (ce *clientEntities) registerModels() {
 	ce.container.AddSystem(entitysys.Remove, esModelRemove)
 }
 
-func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures [6]*render.TextureInfo) []*render.StaticVertex {
+func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures [6]render.TextureInfo) []*render.StaticVertex {
 	return appendBoxExtra(verts, x, y, z, w, h, d, textures, [6][2]float64{
 		{1.0, 1.0},
 		{1.0, 1.0},
@@ -42,7 +42,7 @@ func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures 
 		{1.0, 1.0},
 	})
 }
-func appendBoxExtra(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures [6]*render.TextureInfo, extra [6][2]float64) []*render.StaticVertex {
+func appendBoxExtra(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures [6]render.TextureInfo, extra [6][2]float64) []*render.StaticVertex {
 	for i, face := range faceVertices {
 		tex := textures[i]
 		if tex == nil {
@@ -59,17 +59,13 @@ func appendBoxExtra(verts []*render.StaticVertex, x, y, z, w, h, d float32, text
 				X:        float32(v.X)*w + x,
 				Y:        float32(v.Y)*h + y,
 				Z:        float32(v.Z)*d + z,
-				TOffsetX: int16(float64(v.TOffsetX*16*int16(tex.Width)) * extra[i][0]),
-				TOffsetY: int16(float64(v.TOffsetY*16*int16(tex.Height)) * extra[i][1]),
+				Texture:  tex,
+				TextureX: float64(v.TOffsetX) * extra[i][0],
+				TextureY: float64(v.TOffsetY) * extra[i][1],
 				R:        rr,
 				G:        gg,
 				B:        bb,
 				A:        255,
-				TX:       uint16(tex.X),
-				TY:       uint16(tex.Y),
-				TW:       uint16(tex.Width),
-				TH:       uint16(tex.Height),
-				TAtlas:   int16(tex.Atlas),
 			}
 			verts = append(verts, vert)
 		}
@@ -116,7 +112,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 
 	var hverts []*render.StaticVertex
 	if p.hasHead {
-		hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
+		hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]render.TextureInfo{
 			direction.North: skin.Sub(8, 8, 8, 8),
 			direction.South: skin.Sub(24, 8, 8, 8),
 			direction.West:  skin.Sub(0, 8, 8, 8),
@@ -124,7 +120,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 			direction.Up:    skin.Sub(8, 0, 8, 8),
 			direction.Down:  skin.Sub(16, 0, 8, 8),
 		})
-		hverts = appendBox(hverts, -4.2/16.0, -.2/16.0, -4.2/16.0, 8.4/16.0, 8.4/16.0, 8.4/16.0, [6]*render.TextureInfo{
+		hverts = appendBox(hverts, -4.2/16.0, -.2/16.0, -4.2/16.0, 8.4/16.0, 8.4/16.0, 8.4/16.0, [6]render.TextureInfo{
 			direction.North: skin.Sub(8+32, 8, 8, 8),
 			direction.South: skin.Sub(24+32, 8, 8, 8),
 			direction.West:  skin.Sub(0+32, 8, 8, 8),
@@ -134,7 +130,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		})
 	}
 
-	bverts := appendBox(nil, -4/16.0, -6/16.0, -2/16.0, 8/16.0, 12/16.0, 4/16.0, [6]*render.TextureInfo{
+	bverts := appendBox(nil, -4/16.0, -6/16.0, -2/16.0, 8/16.0, 12/16.0, 4/16.0, [6]render.TextureInfo{
 		direction.North: skin.Sub(20, 20, 8, 12),
 		direction.South: skin.Sub(32, 20, 8, 12),
 		direction.West:  skin.Sub(16, 20, 4, 12),
@@ -142,7 +138,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		direction.Up:    skin.Sub(20, 16, 8, 4),
 		direction.Down:  skin.Sub(28, 16, 8, 4),
 	})
-	bverts = appendBox(bverts, -4.2/16.0, -6.2/16.0, -2.2/16.0, 8.4/16.0, 12.4/16.0, 4.4/16.0, [6]*render.TextureInfo{
+	bverts = appendBox(bverts, -4.2/16.0, -6.2/16.0, -2.2/16.0, 8.4/16.0, 12.4/16.0, 4.4/16.0, [6]render.TextureInfo{
 		direction.North: skin.Sub(20, 20+16, 8, 12),
 		direction.South: skin.Sub(32, 20+16, 8, 12),
 		direction.West:  skin.Sub(16, 20+16, 4, 12),
@@ -160,7 +156,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		{40, 16, 40, 32},
 	} {
 		ox, oy := off[0], off[1]
-		lverts[i] = appendBox(nil, -2/16.0, -12/16.0, -2/16.0, 4/16.0, 12/16.0, 4/16.0, [6]*render.TextureInfo{
+		lverts[i] = appendBox(nil, -2/16.0, -12/16.0, -2/16.0, 4/16.0, 12/16.0, 4/16.0, [6]render.TextureInfo{
 			direction.North: skin.Sub(ox+4, oy+4, 4, 12),
 			direction.South: skin.Sub(ox+12, oy+4, 4, 12),
 			direction.West:  skin.Sub(ox+0, oy+4, 4, 12),
@@ -169,7 +165,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 			direction.Down:  skin.Sub(ox+8, oy, 4, 4),
 		})
 		ox, oy = off[2], off[3]
-		lverts[i] = appendBox(lverts[i], -2.2/16.0, -12.2/16.0, -2.2/16.0, 4.4/16.0, 12.4/16.0, 4.4/16.0, [6]*render.TextureInfo{
+		lverts[i] = appendBox(lverts[i], -2.2/16.0, -12.2/16.0, -2.2/16.0, 4.4/16.0, 12.4/16.0, 4.4/16.0, [6]render.TextureInfo{
 			direction.North: skin.Sub(ox+4, oy+4, 4, 12),
 			direction.South: skin.Sub(ox+12, oy+4, 4, 12),
 			direction.West:  skin.Sub(ox+0, oy+4, 4, 12),
@@ -204,17 +200,13 @@ func createNameTag(name string) (verts []*render.StaticVertex) {
 		vert := &render.StaticVertex{
 			X:        float32(v.X)*float32(width*0.01) - float32((width/2)*0.01),
 			Y:        float32(v.Y)*0.2 - 0.1,
-			TOffsetX: v.TOffsetX * 16 * int16(tex.Width),
-			TOffsetY: v.TOffsetY * 16 * int16(tex.Height),
+			Texture:  tex,
+			TextureX: float64(v.TOffsetX),
+			TextureY: float64(v.TOffsetY),
 			R:        0,
 			G:        0,
 			B:        0,
 			A:        100,
-			TX:       uint16(tex.X),
-			TY:       uint16(tex.Y),
-			TW:       uint16(tex.Width),
-			TH:       uint16(tex.Height),
-			TAtlas:   int16(tex.Atlas),
 		}
 		verts = append(verts, vert)
 	}
@@ -230,17 +222,13 @@ func createNameTag(name string) (verts []*render.StaticVertex) {
 				X:        float32(v.X)*float32(s*0.01) - float32(offset+s*0.01),
 				Y:        float32(v.Y)*0.16 - 0.08,
 				Z:        -0.01,
-				TOffsetX: v.TOffsetX * 16 * int16(tex.Width),
-				TOffsetY: v.TOffsetY * 16 * int16(tex.Height),
+				Texture:  tex,
+				TextureX: float64(v.TOffsetX),
+				TextureY: float64(v.TOffsetY),
 				R:        255,
 				G:        255,
 				B:        255,
 				A:        255,
-				TX:       uint16(tex.X),
-				TY:       uint16(tex.Y),
-				TW:       uint16(tex.Width),
-				TH:       uint16(tex.Height),
-				TAtlas:   int16(tex.Atlas),
 			}
 			verts = append(verts, vert)
 		}

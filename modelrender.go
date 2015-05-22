@@ -97,13 +97,14 @@ func precomputeModel(bm *model) *processedModel {
 
 			vert := faceVertices[i]
 			tex := bm.lookupTexture(face.texture)
+			rect := tex.Rect()
 
-			ux1 := int16(face.uv[0] * float64(tex.Width))
-			ux2 := int16(face.uv[2] * float64(tex.Width))
-			uy1 := int16(face.uv[1] * float64(tex.Height))
-			uy2 := int16(face.uv[3] * float64(tex.Height))
+			ux1 := int16(face.uv[0] * float64(rect.Width))
+			ux2 := int16(face.uv[2] * float64(rect.Width))
+			uy1 := int16(face.uv[1] * float64(rect.Height))
+			uy2 := int16(face.uv[3] * float64(rect.Height))
 
-			tw, th := int16(tex.Width), int16(tex.Height)
+			tw, th := int16(rect.Width), int16(rect.Height)
 			if face.rotation > 0 {
 				x := ux1
 				y := uy1
@@ -132,11 +133,11 @@ func precomputeModel(bm *model) *processedModel {
 			var maxX, maxY, maxZ int16 = math.MinInt16, math.MinInt16, math.MinInt16
 
 			for v := range vert.verts {
-				vert.verts[v].TX = uint16(tex.X)
-				vert.verts[v].TY = uint16(tex.Y)
-				vert.verts[v].TW = uint16(tex.Width)
-				vert.verts[v].TH = uint16(tex.Height)
-				vert.verts[v].TAtlas = int16(tex.Atlas)
+				vert.verts[v].TX = uint16(rect.X)
+				vert.verts[v].TY = uint16(rect.Y)
+				vert.verts[v].TW = uint16(rect.Width)
+				vert.verts[v].TH = uint16(rect.Height)
+				vert.verts[v].TAtlas = int16(tex.Atlas())
 
 				if vert.verts[v].X == 0 {
 					vert.verts[v].X = int16(el.from[0] * 16)

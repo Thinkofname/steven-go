@@ -330,7 +330,7 @@ func (bf *blockFace) init(data *jsBlockFace) {
 	}
 }
 
-func (bm *model) lookupTexture(name string) *render.TextureInfo {
+func (bm *model) lookupTexture(name string) render.TextureInfo {
 	if len(name) > 0 && name[0] == '#' {
 		return bm.lookupTexture(bm.textureVars[name[1:]])
 	}

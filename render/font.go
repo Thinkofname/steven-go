@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	fontPages               [0x100]*TextureInfo
+	fontPages               [0x100]*textureInfo
 	isFontLoaded            [0x100]bool
 	fontCharacterInfo       [0x10000]fontInfo
 	aPageWidth, aPageHeight float64
@@ -127,7 +127,7 @@ func (u UIText) Bytes() []byte {
 
 // CharacterTexture returns the TextureInfo for the passed rune
 // or nil if one doesn't exist.
-func CharacterTexture(r rune) *TextureInfo {
+func CharacterTexture(r rune) TextureInfo {
 	page := int(r >> 8)
 	// Lazy loading to save memory
 	if !isFontLoaded[page] {

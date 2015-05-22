@@ -31,7 +31,8 @@ import (
 
 var (
 	textures         []*atlas.Type
-	textureMap       = map[string]*TextureInfo{}
+	textureCount     int
+	textureMap       = map[string]*textureInfo{}
 	textureLock      sync.RWMutex
 	animatedTextures []*animatedTexture
 )
@@ -42,27 +43,53 @@ const (
 )
 
 // TextureInfo returns information about a texture in an atlas
-type TextureInfo struct {
-	Atlas int
-	*atlas.Rect
+type TextureInfo interface {
+	Atlas() int
+	Rect() atlas.Rect
+	Sub(x, y, w, h int) TextureInfo
+}
+
+type textureInfo struct {
+	atlas int
+	rect  atlas.Rect
+}
+
+func (ti *textureInfo) Atlas() int       { return ti.atlas }
+func (ti *textureInfo) Rect() atlas.Rect { return ti.rect }
+
+// Sub returns a subsection of this texture.
+func (ti *textureInfo) Sub(x, y, w, h int) TextureInfo {
+	return &subTextureInfo{
+		ox: x, oy: y, w: w, h: h,
+		parent: ti,
+	}
+}
+
+type subTextureInfo struct {
+	ox, oy, w, h int
+	parent       TextureInfo
+}
+
+func (s *subTextureInfo) Atlas() int { return s.parent.Atlas() }
+func (s *subTextureInfo) Rect() atlas.Rect {
+	rect := s.parent.Rect()
+	rect.X += s.ox
+	rect.Y += s.oy
+	rect.Width, rect.Height = s.w, s.h
+	return rect
 }
 
 // Sub returns a subsection of this texture.
-func (ti *TextureInfo) Sub(x, y, w, h int) *TextureInfo {
-	return &TextureInfo{
-		Atlas: ti.Atlas,
-		Rect: &atlas.Rect{
-			X:      ti.X + x,
-			Y:      ti.Y + y,
-			Width:  w,
-			Height: h,
-		},
+func (s *subTextureInfo) Sub(x, y, w, h int) TextureInfo {
+	return &subTextureInfo{
+		ox: x, oy: y, w: w, h: h,
+		parent: s,
 	}
 }
 
 // GetTexture returns the related TextureInfo for the requested texture.
 // If the texture isn't found a placeholder is returned instead.
-func GetTexture(name string) *TextureInfo {
+func GetTexture(name string) TextureInfo {
 	textureLock.RLock()
 	defer textureLock.RUnlock()
 	t, ok := textureMap[name]
@@ -97,9 +124,36 @@ func (s sortableTextures) Less(a, b int) bool {
 func LoadTextures() {
 	textureLock.Lock()
 
-	// Clear existing
+	if texturesCreated {
+		glTexture.Bind(gl.Texture2DArray)
+		data := make([]byte, AtlasSize*AtlasSize*textureCount*4)
+		glTexture.Image3D(0, AtlasSize, AtlasSize, textureCount, gl.RGBA, gl.UnsignedByte, data)
+	}
+	freeSkinTextures = nil
+	for i := range isFontLoaded {
+		isFontLoaded[i] = false
+		fontPages[i] = nil
+	}
+	animatedTextures = nil
 	textures = nil
-	textureMap = map[string]*TextureInfo{}
+	pix := []byte{
+		0, 0, 0, 255,
+		255, 0, 255, 255,
+		255, 0, 255, 255,
+		0, 0, 0, 255,
+	}
+	info := addTexture(pix, 2, 2)
+	if t, ok := textureMap["missing_texture"]; ok {
+		t.atlas = info.atlas
+		t.rect = info.rect
+	} else {
+		textureMap["missing_texture"] = info
+	}
+
+	for _, t := range textureMap {
+		t.atlas = info.atlas
+		t.rect = info.rect
+	}
 
 	names := resource.Search("minecraft", "textures/", ".png")
 	tList := make(sortableTextures, 0, len(names))
@@ -128,18 +182,21 @@ func LoadTextures() {
 		loadTexFile(st)
 	}
 
-	pix := []byte{255, 255, 255, 255}
-	info := addTexture(pix, 1, 1)
-	textureMap["solid"] = info
-
-	pix = []byte{
-		0, 0, 0, 255,
-		255, 0, 255, 255,
-		255, 0, 255, 255,
-		0, 0, 0, 255,
+	pix = []byte{255, 255, 255, 255}
+	info = addTexture(pix, 1, 1)
+	if t, ok := textureMap["solid"]; ok {
+		t.atlas = info.atlas
+		t.rect = info.rect
+	} else {
+		textureMap["solid"] = info
 	}
-	info = addTexture(pix, 2, 2)
-	textureMap["missing_texture"] = info
+
+	for _, skin := range skins {
+		info := getSkinInfo()
+		uploadTexture(info, skin.data)
+		skin.info.rect = info.rect
+		skin.info.atlas = info.atlas
+	}
 
 	textureLock.Unlock()
 
@@ -172,7 +229,12 @@ func loadTexFile(st sortableTexture) {
 	pix := imgToBytes(img)
 	name := file[len("textures/") : len(file)-4]
 	info := addTexture(pix, width, height)
-	textureMap[name] = info
+	if t, ok := textureMap[name]; ok {
+		t.atlas = info.atlas
+		t.rect = info.rect
+	} else {
+		textureMap[name] = info
+	}
 	if ani != nil {
 		ani.Info = info
 	}
@@ -191,14 +253,14 @@ func imgToBytes(img image.Image) []byte {
 	}
 }
 
-func addTexture(pix []byte, width, height int) *TextureInfo {
+func addTexture(pix []byte, width, height int) *textureInfo {
 	for i, a := range textures {
 		if a == nil {
 			continue
 		}
 		rect, err := a.Add(pix, width, height)
 		if err == nil {
-			info := &TextureInfo{Atlas: i, Rect: rect}
+			info := &textureInfo{atlas: i, rect: *rect}
 			if texturesCreated {
 				uploadTexture(info, pix)
 			}
@@ -212,32 +274,39 @@ func addTexture(pix []byte, width, height int) *TextureInfo {
 		a = atlas.New(AtlasSize, AtlasSize, 4)
 	}
 	textures = append(textures, a)
+	reupload := false
+	if len(textures) > textureCount {
+		textureCount = len(textures)
+		reupload = true
+	}
 	rect, err := a.Add(pix, width, height)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to place %d,%d: %s", width, height, err))
 	}
 
-	info := &TextureInfo{Atlas: len(textures) - 1, Rect: rect}
+	info := &textureInfo{atlas: len(textures) - 1, rect: *rect}
 	if texturesCreated {
-		glTexture.Bind(gl.Texture2DArray)
-		data := make([]byte, AtlasSize*AtlasSize*len(textures)*4)
-		glTexture.Get(0, gl.RGBA, gl.UnsignedByte, data)
-		textureDepth = len(textures)
-		glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, data)
+		if reupload {
+			glTexture.Bind(gl.Texture2DArray)
+			data := make([]byte, AtlasSize*AtlasSize*textureCount*4)
+			glTexture.Get(0, gl.RGBA, gl.UnsignedByte, data)
+			glTexture.Image3D(0, AtlasSize, AtlasSize, textureCount, gl.RGBA, gl.UnsignedByte, data)
+			textureDepth = textureCount
+		}
 		uploadTexture(info, pix)
 	}
 
 	return info
 }
 
-func uploadTexture(info *TextureInfo, data []byte) {
+func uploadTexture(info *textureInfo, data []byte) {
 	glTexture.Bind(gl.Texture2DArray)
-	r := info.Rect
-	glTexture.SubImage3D(0, r.X, r.Y, info.Atlas, r.Width, r.Height, 1, gl.RGBA, gl.UnsignedByte, data)
+	r := info.rect
+	glTexture.SubImage3D(0, r.X, r.Y, info.atlas, r.Width, r.Height, 1, gl.RGBA, gl.UnsignedByte, data)
 }
 
 type animatedTexture struct {
-	Info          *TextureInfo
+	Info          *textureInfo
 	Image         image.Image
 	Buffer        []byte
 	Interpolate   bool
@@ -259,11 +328,11 @@ func tickAnimatedTextures(delta float64) {
 			ani.CurrentFrame++
 			ani.CurrentFrame %= len(ani.Frames)
 			ani.RemainingTime += float64(ani.Frames[ani.CurrentFrame].Time)
-			r := ani.Info.Rect
+			r := ani.Info.rect
 			glTexture.Bind(gl.Texture2DArray)
 			offset := r.Width * r.Width * ani.Frames[ani.CurrentFrame].Index * 4
 			offset2 := offset + r.Height*r.Width*4
-			glTexture.SubImage3D(0, r.X, r.Y, ani.Info.Atlas, r.Width, r.Height, 1, gl.RGBA, gl.UnsignedByte, ani.Buffer[offset:offset2])
+			glTexture.SubImage3D(0, r.X, r.Y, ani.Info.atlas, r.Width, r.Height, 1, gl.RGBA, gl.UnsignedByte, ani.Buffer[offset:offset2])
 		}
 	}
 }

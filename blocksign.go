@@ -91,17 +91,13 @@ func (s *signComponent) create() {
 						X:        float32(v.X)*float32(s*xS) - float32(offset+s*xS) + float32(f.Width*xS*0.5),
 						Y:        float32(v.Y)*yS - yS*float32(i-1),
 						Z:        -.6 / 16.0,
-						TOffsetX: v.TOffsetX * 16 * int16(tex.Width),
-						TOffsetY: v.TOffsetY * 16 * int16(tex.Height),
+						Texture:  tex,
+						TextureX: float64(v.TOffsetX),
+						TextureY: float64(v.TOffsetY),
 						R:        byte(txt.R()),
 						G:        byte(txt.G()),
 						B:        byte(txt.B()),
 						A:        255,
-						TX:       uint16(tex.X),
-						TY:       uint16(tex.Y),
-						TW:       uint16(tex.Width),
-						TH:       uint16(tex.Height),
-						TAtlas:   int16(tex.Atlas),
 					}
 					verts = append(verts, vert)
 				}
@@ -111,7 +107,7 @@ func (s *signComponent) create() {
 	}
 	wood := render.GetTexture("blocks/planks_oak")
 	// The backboard
-	verts = appendBoxExtra(verts, -0.5, -4/16.0, -0.5/16.0, 1.0, 8/16.0, 1/16.0, [6]*render.TextureInfo{
+	verts = appendBoxExtra(verts, -0.5, -4/16.0, -0.5/16.0, 1.0, 8/16.0, 1/16.0, [6]render.TextureInfo{
 		direction.Up:    wood.Sub(0, 0, 16, 2),
 		direction.Down:  wood.Sub(0, 0, 16, 2),
 		direction.East:  wood.Sub(0, 0, 2, 12),
@@ -129,7 +125,7 @@ func (s *signComponent) create() {
 	if s.hasStand {
 		// Stand
 		log := render.GetTexture("blocks/log_oak")
-		verts = appendBox(verts, -0.5/16.0, -0.25-9/16.0, -0.5/16.0, 1/16.0, 9/16.0, 1/16.0, [6]*render.TextureInfo{
+		verts = appendBox(verts, -0.5/16.0, -0.25-9/16.0, -0.5/16.0, 1/16.0, 9/16.0, 1/16.0, [6]render.TextureInfo{
 			direction.Up:    log.Sub(0, 0, 2, 2),
 			direction.Down:  log.Sub(0, 0, 2, 2),
 			direction.East:  log.Sub(0, 0, 2, 12),

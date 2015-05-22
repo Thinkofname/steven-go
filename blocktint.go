@@ -29,6 +29,10 @@ var (
 )
 
 func init() {
+	loadBiomes()
+}
+
+func loadBiomes() {
 	grassBiomeColors = loadBiomeColors("grass")
 	foliageBiomeColors = loadBiomeColors("foliage")
 }

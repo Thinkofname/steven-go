@@ -30,11 +30,12 @@ import (
 
 var (
 	skins            = map[string]*skin{}
-	freeSkinTextures []*TextureInfo
+	freeSkinTextures []*textureInfo
 )
 
 type skin struct {
-	info     *TextureInfo
+	info     *textureInfo
+	data     []byte
 	refCount int
 }
 
@@ -134,6 +135,7 @@ func obtainSkin(hash string, s *skin) {
 	}
 	pix := imgToBytes(img)
 	Sync(func() {
+		s.data = pix
 		uploadTexture(s.info, pix)
 	})
 }
@@ -142,7 +144,7 @@ func skinPath(hash string) string {
 	return filepath.Join(skinCache, hash[:2], hash+".png")
 }
 
-func Skin(hash string) *TextureInfo {
+func Skin(hash string) TextureInfo {
 	s := skins[hash]
 	if s != nil {
 		return s.info
@@ -162,11 +164,11 @@ func FreeSkin(hash string) {
 	}
 }
 
-func getSkinInfo() *TextureInfo {
+func getSkinInfo() *textureInfo {
 	if len(freeSkinTextures) == 0 {
 		return addTexture(skinBuffer, 64, 64)
 	}
-	var info *TextureInfo
+	var info *textureInfo
 	l := len(freeSkinTextures)
 	info, freeSkinTextures = freeSkinTextures[l-1], freeSkinTextures[:l-1]
 	return info
@@ -179,7 +181,7 @@ func FreeIcon(id string) {
 	FreeSkin(id)
 }
 
-func Icon(id string) *TextureInfo {
+func Icon(id string) TextureInfo {
 	return Skin(id)
 }
 
@@ -190,10 +192,12 @@ func AddIcon(id string, pix image.Image) {
 		return
 	}
 	info := getSkinInfo()
-	uploadTexture(info, imgToBytes(pix))
+	data := imgToBytes(pix)
+	uploadTexture(info, data)
 	s = &skin{
 		info:     info,
 		refCount: 1,
+		data:     data,
 	}
 	skins[id] = s
 }

@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 const (
@@ -31,6 +32,7 @@ const (
 )
 
 var (
+	lock           sync.RWMutex
 	packs          []*pack
 	errMissingFile = errors.New("file not found")
 )
@@ -46,6 +48,8 @@ type opener func() (io.ReadCloser, error)
 // of the standard 'file not found' but only if another file couldn't be
 // found to be used in its place.
 func Open(plugin, name string) (io.ReadCloser, error) {
+	lock.RLock()
+	defer lock.RUnlock()
 	var lastErr error
 	for i := len(packs) - 1; i >= 0; i-- {
 		pck := packs[i]
@@ -67,6 +71,8 @@ func Open(plugin, name string) (io.ReadCloser, error) {
 // Search searches for files that belong to the passed plugin and exist
 // the passed path with the passed extension. This searches all open packs.
 func Search(plugin, path, ext string) []string {
+	lock.RLock()
+	defer lock.RUnlock()
 	found := map[string]bool{}
 	var lst []string
 	search := fmt.Sprintf("assets/%s/%s", plugin, path)
@@ -83,7 +89,7 @@ func Search(plugin, path, ext string) []string {
 }
 
 // TODO(Think) Ideally this package has a way to start the download instead of
-// being an init thing. Also should have a way to get process information.
+// being an init thing. Also should have a way to get progress information.
 
 func init() {
 	defLocation := fmt.Sprintf("./resources-%s", ResourcesVersion)
@@ -94,10 +100,10 @@ func init() {
 	if err := fromDir(defLocation); err != nil {
 		panic(err)
 	}
-
-	loadZip("./pack.zip")
 }
 func fromDir(d string) error {
+	lock.Lock()
+	defer lock.Unlock()
 	p := &pack{
 		files: map[string]opener{},
 	}
@@ -124,7 +130,7 @@ func fromDir(d string) error {
 	return nil
 }
 
-func loadZip(name string) error {
+func LoadZip(name string) error {
 	f, err := os.Open(name)
 	if err != nil {
 		return err
@@ -133,6 +139,8 @@ func loadZip(name string) error {
 }
 
 func fromFile(f *os.File) error {
+	lock.Lock()
+	defer lock.Unlock()
 	s, err := f.Stat()
 	if err != nil {
 		return err

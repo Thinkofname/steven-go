@@ -30,13 +30,19 @@ var staticState = struct {
 }{}
 
 type StaticVertex struct {
+	X, Y, Z            float32
+	Texture            TextureInfo
+	TextureX, TextureY float64
+	R, G, B, A         byte
+}
+type staticVertexInternal struct {
 	X, Y, Z                    float32
 	TX, TY, TW, TH             uint16
 	TOffsetX, TOffsetY, TAtlas int16
 	R, G, B, A                 byte
 }
 
-var staticFunc, staticTypes = builder.Struct(&StaticVertex{})
+var staticFunc, staticTypes = builder.Struct(&staticVertexInternal{})
 
 type StaticModel struct {
 	// For culling only
@@ -50,6 +56,8 @@ type StaticModel struct {
 	bufferSize int
 	count      int
 	ranges     [][2]int
+
+	all []*StaticVertex
 }
 
 func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
@@ -82,13 +90,15 @@ func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
 		}
 		all = append(all, p...)
 	}
-	model.data(all)
+	model.all = all
+	model.data()
 
 	staticState.models = append(staticState.models, model)
 	return model
 }
 
-func (sm *StaticModel) data(verts []*StaticVertex) {
+func (sm *StaticModel) data() {
+	verts := sm.all
 	sm.array.Bind()
 	sm.count = (len(verts) / 4) * 6
 	if staticState.maxIndex < sm.count {
@@ -99,8 +109,24 @@ func (sm *StaticModel) data(verts []*StaticVertex) {
 		staticState.maxIndex = sm.count
 	}
 	buf := builder.New(staticTypes...)
+	in := staticVertexInternal{}
 	for _, v := range verts {
-		staticFunc(buf, v)
+		in.X = v.X
+		in.Y = v.Y
+		in.Z = v.Z
+		rect := v.Texture.Rect()
+		in.TX = uint16(rect.X)
+		in.TY = uint16(rect.Y)
+		in.TW = uint16(rect.Width)
+		in.TH = uint16(rect.Height)
+		in.TOffsetX = int16(16 * float64(rect.Width) * v.TextureX)
+		in.TOffsetY = int16(16 * float64(rect.Height) * v.TextureY)
+		in.TAtlas = int16(v.Texture.Atlas())
+		in.R = v.R
+		in.G = v.G
+		in.B = v.B
+		in.A = v.A
+		staticFunc(buf, &in)
 	}
 	sm.buffer.Bind(gl.ArrayBuffer)
 	data := buf.Data()
@@ -122,6 +148,12 @@ func (sm *StaticModel) Free() {
 			staticState.models = append(staticState.models[:i], staticState.models[i+1:]...)
 			return
 		}
+	}
+}
+
+func RefreshStaticModels() {
+	for _, mdl := range staticState.models {
+		mdl.data()
 	}
 }
 

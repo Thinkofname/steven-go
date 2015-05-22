@@ -57,7 +57,7 @@ func (l *blockLiquid) toData() int {
 }
 
 func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder.Buffer, indices *int) {
-	var tex *render.TextureInfo
+	var tex render.TextureInfo
 	var b1, b2 *BlockSet
 	if l.Lava {
 		b1 = Blocks.Lava
@@ -96,16 +96,17 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder
 			*indices += len(vert.indices)
 
 			// TODO: Needs fixing (maybe?)
+			rect := tex.Rect()
 			ux1 := int16(0)
-			ux2 := int16(16 * tex.Width)
+			ux2 := int16(16 * rect.Width)
 			uy1 := int16(0)
-			uy2 := int16(16 * tex.Height)
+			uy2 := int16(16 * rect.Height)
 			for _, vert := range vert.verts {
-				vert.TX = uint16(tex.X)
-				vert.TY = uint16(tex.Y)
-				vert.TW = uint16(tex.Width)
-				vert.TH = uint16(tex.Height)
-				vert.TAtlas = int16(tex.Atlas)
+				vert.TX = uint16(rect.X)
+				vert.TY = uint16(rect.Y)
+				vert.TW = uint16(rect.Width)
+				vert.TH = uint16(rect.Height)
+				vert.TAtlas = int16(tex.Atlas())
 				vert.R = cr
 				vert.G = cg
 				vert.B = cb

@@ -101,7 +101,7 @@ func (b *blockBreakComponent) Update() {
 		verts = appendBox(verts,
 			bo.Min.X(), bo.Min.Y(), bo.Min.Z(),
 			bo.Max.X()-bo.Min.X(), bo.Max.Y()-bo.Min.Y(), bo.Max.Z()-bo.Min.Z(),
-			[6]*render.TextureInfo{
+			[6]render.TextureInfo{
 				tex, tex, tex, tex, tex, tex,
 			})
 	}

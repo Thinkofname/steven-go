@@ -41,7 +41,7 @@ type skullComponent struct {
 	Rotation  int
 	Facing    direction.Type
 	Owner     string
-	OwnerSkin *render.TextureInfo
+	OwnerSkin render.TextureInfo
 	model     *render.StaticModel
 	position  Position
 }
@@ -134,7 +134,7 @@ func (s *skullComponent) free() {
 }
 
 func (s *skullComponent) create() {
-	var skin *render.TextureInfo
+	var skin render.TextureInfo
 	if s.SkullType == skullPlayer && s.OwnerSkin != nil {
 		skin = s.OwnerSkin
 	} else {
@@ -154,7 +154,7 @@ func (s *skullComponent) create() {
 
 	var hverts []*render.StaticVertex
 	// Base layer
-	hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]*render.TextureInfo{
+	hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]render.TextureInfo{
 		direction.North: skin.Sub(8, 8, 8, 8),
 		direction.South: skin.Sub(24, 8, 8, 8),
 		direction.West:  skin.Sub(0, 8, 8, 8),
@@ -163,7 +163,7 @@ func (s *skullComponent) create() {
 		direction.Down:  skin.Sub(16, 0, 8, 8),
 	})
 	// Hat layer
-	hverts = appendBox(hverts, -4.2/16.0, -.2/16.0, -4.2/16.0, 8.4/16.0, 8.4/16.0, 8.4/16.0, [6]*render.TextureInfo{
+	hverts = appendBox(hverts, -4.2/16.0, -.2/16.0, -4.2/16.0, 8.4/16.0, 8.4/16.0, 8.4/16.0, [6]render.TextureInfo{
 		direction.North: skin.Sub(8+32, 8, 8, 8),
 		direction.South: skin.Sub(24+32, 8, 8, 8),
 		direction.West:  skin.Sub(0+32, 8, 8, 8),

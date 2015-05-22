@@ -19,14 +19,14 @@ import "github.com/thinkofdeath/steven/render"
 // Image is a drawable that draws a texture.
 type Image struct {
 	baseElement
-	texture        *render.TextureInfo
+	texture        render.TextureInfo
 	x, y, w, h     float64
 	tx, ty, tw, th float64
 	r, g, b, a     int
 }
 
 // NewImage creates a new image drawable.
-func NewImage(texture *render.TextureInfo, x, y, w, h, tx, ty, tw, th float64, r, g, b int) *Image {
+func NewImage(texture render.TextureInfo, x, y, w, h, tx, ty, tw, th float64, r, g, b int) *Image {
 	return &Image{
 		texture: texture,
 		r:       r, g: g, b: b, a: 255,
@@ -45,8 +45,8 @@ func (i *Image) Attach(vAttach, hAttach AttachPoint) *Image {
 	return i
 }
 
-func (i *Image) Texture() *render.TextureInfo { return i.texture }
-func (i *Image) SetTexture(t *render.TextureInfo) {
+func (i *Image) Texture() render.TextureInfo { return i.texture }
+func (i *Image) SetTexture(t render.TextureInfo) {
 	if i.texture != t {
 		i.texture = t
 		i.dirty = true

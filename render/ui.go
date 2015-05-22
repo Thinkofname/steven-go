@@ -118,21 +118,22 @@ func UIAddBytes(data []byte) {
 	uiState.count += (len(data) / (24 * 4)) * 6
 }
 
-func NewUIElement(tex *TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *UIElement {
+func NewUIElement(tex TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *UIElement {
+	rect := tex.Rect()
 	return &UIElement{
 		X:        x / uiWidth,
 		Y:        y / uiHeight,
 		W:        width / uiWidth,
 		H:        height / uiHeight,
-		TX:       uint16(tex.X),
-		TY:       uint16(tex.Y),
-		TW:       uint16(tex.Width),
-		TH:       uint16(tex.Height),
-		TAtlas:   int16(tex.Atlas),
-		TOffsetX: int16(tx * float64(tex.Width) * 16),
-		TOffsetY: int16(ty * float64(tex.Height) * 16),
-		TSizeW:   int16(tw * float64(tex.Width) * 16),
-		TSizeH:   int16(th * float64(tex.Height) * 16),
+		TX:       uint16(rect.X),
+		TY:       uint16(rect.Y),
+		TW:       uint16(rect.Width),
+		TH:       uint16(rect.Height),
+		TAtlas:   int16(tex.Atlas()),
+		TOffsetX: int16(tx * float64(rect.Width) * 16),
+		TOffsetY: int16(ty * float64(rect.Height) * 16),
+		TSizeW:   int16(tw * float64(rect.Width) * 16),
+		TSizeH:   int16(th * float64(rect.Height) * 16),
 		R:        255,
 		G:        255,
 		B:        255,

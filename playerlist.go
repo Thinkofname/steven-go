@@ -33,7 +33,7 @@ type playerInfo struct {
 	gameMode    gameMode
 	ping        int
 
-	skin     *render.TextureInfo
+	skin     render.TextureInfo
 	skinHash string
 }
 

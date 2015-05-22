@@ -455,3 +455,37 @@ func initBlocks() {
 		}
 	}
 }
+
+func reinitBlocks() {
+	blockStateModels = map[pluginKey]*blockStateModel{}
+	missingModel := findStateModel("minecraft", "clay")
+	// Flatten the ids
+	for _, bs := range blockSetsByID {
+		if bs == nil {
+			continue
+		}
+		for _, b := range bs.Blocks {
+			br := reflect.ValueOf(b).Elem()
+			// Liquids have custom rendering
+			if _, ok := b.(*blockLiquid); ok || !b.Renderable() {
+				continue
+			}
+
+			if model := findStateModel(b.Plugin(), b.ModelName()); model != nil {
+				if variants := model.variant(b.ModelVariant()); variants != nil {
+					br.FieldByName("BlockVariants").Set(
+						reflect.ValueOf(variants),
+					)
+					continue
+				}
+				fmt.Printf("Missing block variant (%s) for %s\n", b.ModelVariant(), b)
+			} else {
+				fmt.Printf("Missing block model for %s\n", b)
+			}
+			br.FieldByName("BlockVariants").Set(
+				reflect.ValueOf(missingModel.variant("normal")),
+			)
+
+		}
+	}
+}

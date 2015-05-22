@@ -92,7 +92,7 @@ func createItemIcon(item *ItemStack, scene *scene.Type, x, y float64) *ui.Contai
 
 	container := ui.NewContainer(x, y, 32, 32)
 	if mdl == nil || mdl.builtIn == builtInGenerated {
-		var tex *render.TextureInfo
+		var tex render.TextureInfo
 		if mdl == nil {
 			tex = render.GetTexture("missing_texture")
 		} else {

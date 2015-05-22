@@ -21,7 +21,7 @@ type Button struct {
 	baseElement
 	x, y, w, h float64
 	disabled   bool
-	currentTex *render.TextureInfo
+	currentTex render.TextureInfo
 	hovered    bool
 	HoverFunc  func(over bool)
 	ClickFunc  func()
@@ -94,7 +94,7 @@ func (b *Button) Hover(r Region, x, y float64, over bool) {
 	}
 }
 
-func (b *Button) newUIElement(tex *render.TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *render.UIElement {
+func (b *Button) newUIElement(tex render.TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *render.UIElement {
 	u := render.NewUIElement(tex, x, y, width, height, tx, ty, tw, th)
 	u.Layer = b.layer
 	return u
