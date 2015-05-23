@@ -305,7 +305,7 @@ func esPlayerModelTick(p *playerModelComponent,
 	update := true
 	d := (tx-x)*(tx-x) + (tz-z)*(tz-z)
 	if d <= moveLimit {
-		if math.Abs(time-15) < 0.1 {
+		if math.Abs(time-15) <= 1.5*Client.delta {
 			time = 15
 			update = false
 		}
