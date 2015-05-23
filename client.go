@@ -398,7 +398,7 @@ func (c *ClientState) armTick() {
 	if c.isLeftDown {
 		c.swingTimer -= c.delta
 		if c.swingTimer < 0 {
-			c.swingTimer = 60
+			c.swingTimer = 15
 			c.network.Write(&protocol.ArmSwing{})
 			e := c.targetEntity()
 			if ne, ok := e.(NetworkComponent); ok {
