@@ -172,6 +172,7 @@ func fromInternal() {
 		files: map[string]opener{},
 	}
 	for _, name := range internal.AssetNames() {
+		name := name
 		p.files[name] = func() (io.ReadCloser, error) {
 			data, err := internal.Asset(name)
 			return dummyCloser{bytes.NewReader(data)}, err
