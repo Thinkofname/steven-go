@@ -96,7 +96,8 @@ func onFocus(w *glfw.Window, focused bool) {
 		for i := range Client.KeyState {
 			Client.KeyState[i] = false
 		}
-		lockMouse = false
+	} else if lockMouse {
+		w.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
 	}
 }
 
