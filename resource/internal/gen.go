@@ -14,5 +14,5 @@
 
 package internal
 
-//go:generate go-bindata -pkg internal -o assets.go -prefix files files/...
+//go:generate go-bindata -pkg internal -nomemcopy -o assets.go -prefix files files/...
 //go:generate gofmt -w -s assets.go
