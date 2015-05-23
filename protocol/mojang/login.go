@@ -21,8 +21,11 @@ import (
 	"net/http"
 )
 
-const loginURL = "https://authserver.mojang.com/authenticate"
-const refreshURL = "https://authserver.mojang.com/refresh"
+const (
+	loginURL    = "https://authserver.mojang.com/authenticate"
+	refreshURL  = "https://authserver.mojang.com/refresh"
+	validateURL = "https://authserver.mojang.com/validate"
+)
 
 type loginRequest struct {
 	Agent struct {
@@ -99,8 +102,17 @@ func Refresh(profile Profile, token string) (Profile, error) {
 	if err != nil {
 		return Profile{}, err
 	}
+	// Try to reuse old token
 	r := bytes.NewReader(b)
-	resp, err := http.Post(refreshURL, "application/json", r)
+	resp, err := http.Post(validateURL, "application/json", r)
+	if err == nil {
+		resp.Body.Close()
+		return profile, nil
+	}
+	r = bytes.NewReader(b)
+
+	// Try and get a updated one
+	resp, err = http.Post(refreshURL, "application/json", r)
 	if err != nil {
 		return Profile{}, err
 	}
