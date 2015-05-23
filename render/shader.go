@@ -15,6 +15,7 @@
 package render
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/thinkofdeath/steven/render/gl"
@@ -31,6 +32,11 @@ func CreateProgram(vertex, fragment string) gl.Program {
 
 	if v.Parameter(gl.CompileStatus) == 0 {
 		panic(v.InfoLog())
+	} else {
+		log := v.InfoLog()
+		if len(log) > 0 {
+			fmt.Println(log)
+		}
 	}
 
 	f := gl.CreateShader(gl.FragmentShader)
@@ -39,6 +45,11 @@ func CreateProgram(vertex, fragment string) gl.Program {
 
 	if f.Parameter(gl.CompileStatus) == 0 {
 		panic(f.InfoLog())
+	} else {
+		log := f.InfoLog()
+		if len(log) > 0 {
+			fmt.Println(log)
+		}
 	}
 
 	program.AttachShader(v)

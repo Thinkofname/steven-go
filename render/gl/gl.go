@@ -175,6 +175,10 @@ func DrawElements(ty DrawType, count int, dty Type, offset int) {
 	gl.DrawElements(uint32(ty), int32(count), uint32(dty), uintptr(offset))
 }
 
+func MultiDrawElements(ty DrawType, count []int32, dty Type, offset []uintptr) {
+	gl.MultiDrawElements(uint32(ty), (*int32)(gl.Ptr(count)), uint32(dty), (*uintptr)(gl.Ptr(offset)), int32(len(count)))
+}
+
 // CheckError panics if there has been an error reported to the
 // context. This is normally not a cheap call so shouldn't be
 // used in production.

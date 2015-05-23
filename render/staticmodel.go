@@ -34,12 +34,14 @@ type StaticVertex struct {
 	Texture            TextureInfo
 	TextureX, TextureY float64
 	R, G, B, A         byte
+	id                 byte
 }
 type staticVertexInternal struct {
 	X, Y, Z                    float32
 	TX, TY, TW, TH             uint16
 	TOffsetX, TOffsetY, TAtlas int16
 	R, G, B, A                 byte
+	ID                         byte
 }
 
 var staticFunc, staticTypes = builder.Struct(&staticVertexInternal{})
@@ -55,7 +57,9 @@ type StaticModel struct {
 	buffer     gl.Buffer
 	bufferSize int
 	count      int
-	ranges     [][2]int
+
+	counts  []int32
+	offsets []uintptr
 
 	all []*StaticVertex
 }
@@ -72,21 +76,25 @@ func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
 	staticState.shader.TextureInfo.Enable()
 	staticState.shader.TextureOffset.Enable()
 	staticState.shader.Color.Enable()
-	staticState.shader.Position.Pointer(3, gl.Float, false, 30, 0)
-	staticState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 30, 12)
-	staticState.shader.TextureOffset.PointerInt(3, gl.Short, 30, 20)
-	staticState.shader.Color.Pointer(4, gl.UnsignedByte, true, 30, 26)
+	staticState.shader.ID.Enable()
+	staticState.shader.Position.Pointer(3, gl.Float, false, 31, 0)
+	staticState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 31, 12)
+	staticState.shader.TextureOffset.PointerInt(3, gl.Short, 31, 20)
+	staticState.shader.Color.Pointer(4, gl.UnsignedByte, true, 31, 26)
+	staticState.shader.ID.PointerInt(1, gl.UnsignedByte, 31, 30)
 
 	model.Matrix = make([]mgl32.Mat4, len(parts))
 	model.Colors = make([][4]float32, len(parts))
-	model.ranges = make([][2]int, len(parts))
+	model.counts = make([]int32, len(parts))
+	model.offsets = make([]uintptr, len(parts))
 	var all []*StaticVertex
 	for i, p := range parts {
 		model.Matrix[i] = mgl32.Ident4()
 		model.Colors[i] = [4]float32{1.0, 1.0, 1.0, 1.0}
-		model.ranges[i] = [2]int{
-			(len(all) / 4) * 6,
-			(len(p) / 4) * 6,
+		model.counts[i] = int32((len(p) / 4) * 6)
+		model.offsets[i] = uintptr((len(all) / 4) * 6)
+		for _, pp := range p {
+			pp.id = byte(i)
 		}
 		all = append(all, p...)
 	}
@@ -126,6 +134,7 @@ func (sm *StaticModel) data() {
 		in.G = v.G
 		in.B = v.B
 		in.A = v.A
+		in.ID = v.id
 		staticFunc(buf, &in)
 	}
 	sm.buffer.Bind(gl.ArrayBuffer)
@@ -179,16 +188,26 @@ func drawStatic() {
 	staticState.shader.Texture.Int(0)
 	staticState.shader.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
 	staticState.shader.CameraMatrix.Matrix4(&cameraMatrix)
+
+	offsetBuf := make([]uintptr, 10)
+
 	for _, mdl := range staticState.models {
 		if mdl.Radius != 0 && !frustum.IsSphereInside(mdl.X, mdl.Y, mdl.Z, mdl.Radius) {
 			continue
 		}
 		mdl.array.Bind()
-		for i := range mdl.Matrix {
-			staticState.shader.ModelMatrix.Matrix4(&mdl.Matrix[i])
-			c := mdl.Colors[i]
-			staticState.shader.ColorMul.Float4(c[0], c[1], c[2], c[3])
-			gl.DrawElements(gl.Triangles, mdl.ranges[i][1], staticState.indexType, mdl.ranges[i][0]*m)
+		if len(mdl.counts) > 1 {
+			copy(offsetBuf, mdl.offsets)
+			for i := range mdl.offsets {
+				offsetBuf[i] *= uintptr(m)
+			}
+			staticState.shader.ModelMatrix.Matrix4Multi(mdl.Matrix)
+			staticState.shader.ColorMul.FloatMutliRaw(mdl.Colors, len(mdl.Colors))
+			gl.MultiDrawElements(gl.Triangles, mdl.counts, staticState.indexType, offsetBuf[:len(mdl.offsets)])
+		} else {
+			staticState.shader.ModelMatrix.Matrix4Multi(mdl.Matrix)
+			staticState.shader.ColorMul.FloatMutliRaw(mdl.Colors, len(mdl.Colors))
+			gl.DrawElements(gl.Triangles, int(mdl.counts[0]), staticState.indexType, int(mdl.offsets[0])*m)
 		}
 	}
 
@@ -200,11 +219,12 @@ type staticShader struct {
 	TextureInfo       gl.Attribute `gl:"aTextureInfo"`
 	TextureOffset     gl.Attribute `gl:"aTextureOffset"`
 	Color             gl.Attribute `gl:"aColor"`
+	ID                gl.Attribute `gl:"id"`
 	PerspectiveMatrix gl.Uniform   `gl:"perspectiveMatrix"`
 	CameraMatrix      gl.Uniform   `gl:"cameraMatrix"`
-	ModelMatrix       gl.Uniform   `gl:"modelMatrix"`
+	ModelMatrix       gl.Uniform   `gl:"modelMatrix[]"`
 	Texture           gl.Uniform   `gl:"textures"`
-	ColorMul          gl.Uniform   `gl:"colorMul"`
+	ColorMul          gl.Uniform   `gl:"colorMul[]"`
 }
 
 const (
@@ -214,23 +234,25 @@ in vec3 aPosition;
 in vec4 aTextureInfo;
 in ivec3 aTextureOffset;
 in vec4 aColor;
+in int id;
 
 uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
-uniform mat4 modelMatrix;
+uniform mat4 modelMatrix[10];
 
 out vec4 vColor;
 out vec4 vTextureInfo;
 out vec2 vTextureOffset;
 out float vAtlas;
 out float vLogDepth;
+out float vID;
 
 const float C = 0.01;
 const float FC = 1.0/log(500.0*C + 1);
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
-	gl_Position = perspectiveMatrix * cameraMatrix * modelMatrix * vec4(pos, 1.0);
+	gl_Position = perspectiveMatrix * cameraMatrix * modelMatrix[id] * vec4(pos, 1.0);
 
 	vLogDepth = log(gl_Position.w*C + 1)*FC;
 	gl_Position.z = (2*vLogDepth - 1)*gl_Position.w;
@@ -239,6 +261,7 @@ void main() {
 	vTextureInfo = aTextureInfo;
 	vTextureOffset = aTextureOffset.xy / 16.0;
 	vAtlas = aTextureOffset.z;
+	vID = float(id);
 }
 `
 	staticFragment = `
@@ -247,13 +270,14 @@ void main() {
 const float atlasSize = ` + atlasSizeStr + `;
 
 uniform sampler2DArray textures;
-uniform vec4 colorMul;
+uniform vec4 colorMul[10];
 
 in vec4 vColor;
 in vec4 vTextureInfo;
 in vec2 vTextureOffset;
 in float vAtlas;
 in float vLogDepth;
+in float vID;
 
 out vec4 fragColor;
 
@@ -266,7 +290,7 @@ void main() {
 	vec4 col = texture(textures, vec3(tPos, vAtlas));
 	if (col.a <= 0.05) discard;
 	col *= vColor;
-	fragColor = col * colorMul;
+	fragColor = col * colorMul[int(vID)];
 }
 `
 )

@@ -90,6 +90,11 @@ func (u Uniform) Matrix4(matrix *mgl32.Mat4) {
 	gl.UniformMatrix4fv(int32(u), 1, false, (*float32)(unsafe.Pointer(matrix)))
 }
 
+// Matrix4 sets the value of the uniform to the passed matrix.
+func (u Uniform) Matrix4Multi(matrix []mgl32.Mat4) {
+	gl.UniformMatrix4fv(int32(u), int32(len(matrix)), false, (*float32)(gl.Ptr(matrix)))
+}
+
 // Int sets the value of the uniform to the passed integer.
 func (u Uniform) Int(val int) {
 	gl.Uniform1i(int32(u), int32(val))
@@ -123,6 +128,14 @@ func (u Uniform) Float3(x, y, z float32) {
 // Float3 sets the value of the uniform to the passed floats.
 func (u Uniform) Float4(x, y, z, w float32) {
 	gl.Uniform4f(int32(u), x, y, z, w)
+}
+
+func (u Uniform) FloatMutli(a []float32) {
+	gl.Uniform4fv(int32(u), int32(len(a)), (*float32)(gl.Ptr(a)))
+}
+
+func (u Uniform) FloatMutliRaw(a interface{}, l int) {
+	gl.Uniform4fv(int32(u), int32(l), (*float32)(gl.Ptr(a)))
 }
 
 // Attribute is a per-a-vertex value that can be passed into the
