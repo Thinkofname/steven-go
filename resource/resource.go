@@ -41,6 +41,8 @@ var (
 )
 
 type pack struct {
+	name string
+
 	files map[string]opener
 }
 
@@ -144,6 +146,7 @@ func fromInternal() {
 	lock.Lock()
 	defer lock.Unlock()
 	p := &pack{
+		name:  "internal",
 		files: map[string]opener{},
 	}
 	for _, name := range internal.AssetNames() {
@@ -159,6 +162,7 @@ func fromDir(d string) error {
 	lock.Lock()
 	defer lock.Unlock()
 	p := &pack{
+		name:  d,
 		files: map[string]opener{},
 	}
 
@@ -204,6 +208,7 @@ func fromFile(f *os.File) error {
 		return err
 	}
 	p := &pack{
+		name:  s.Name(),
 		files: map[string]opener{},
 	}
 	for _, f := range z.File {
