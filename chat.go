@@ -41,7 +41,6 @@ type ChatUI struct {
 	wasEnteringText bool
 	inputLine       []rune
 	cursorTick      float64
-	first           bool
 }
 
 type chatLine struct {
@@ -155,10 +154,6 @@ func (c *ChatUI) handleKey(w *glfw.Window, key glfw.Key, scancode int, action gl
 }
 
 func (c *ChatUI) handleChar(w *glfw.Window, char rune) {
-	if c.first {
-		c.first = false
-		return
-	}
 	if len(c.inputLine) < 100 {
 		c.inputLine = append(c.inputLine, char)
 	}

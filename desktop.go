@@ -214,7 +214,6 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 			Client.KeyState[i] = false
 		}
 		Client.chat.enteringText = true
-		Client.chat.first = true
 		if key == glfw.KeySlash {
 			Client.chat.inputLine = append(Client.chat.inputLine, '/')
 		}
