@@ -24,6 +24,12 @@ type reusableTexture struct {
 }
 
 func getFreeTexture(w, h int) *reusableTexture {
+	for i, f := range freeTextures {
+		if f.H == h && f.W == w {
+			freeTextures = append(freeTextures[:i], freeTextures[i+1:]...)
+			return f
+		}
+	}
 	return &reusableTexture{
 		info: addTexture(make([]byte, w*h*4), w, h),
 		W:    w, H: h,

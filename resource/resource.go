@@ -120,6 +120,28 @@ func Search(plugin, path, ext string) []string {
 	return lst
 }
 
+func IsActive(name string) bool {
+	lock.RLock()
+	defer lock.RUnlock()
+	for _, pck := range packs {
+		if pck.name == name {
+			return true
+		}
+	}
+	return false
+}
+
+func RemovePack(name string) {
+	lock.RLock()
+	defer lock.RUnlock()
+	for i, pck := range packs {
+		if pck.name == name {
+			packs = append(packs[:i], packs[i+1:]...)
+			return
+		}
+	}
+}
+
 // TODO(Think) Ideally this package has a way to start the download instead of
 // being an init thing. Also should have a way to get progress information.
 
@@ -146,7 +168,7 @@ func fromInternal() {
 	lock.Lock()
 	defer lock.Unlock()
 	p := &pack{
-		name:  "internal",
+		name:  "$internal",
 		files: map[string]opener{},
 	}
 	for _, name := range internal.AssetNames() {
@@ -193,10 +215,10 @@ func LoadZip(name string) error {
 	if err != nil {
 		return err
 	}
-	return fromFile(f)
+	return fromFile(f, name)
 }
 
-func fromFile(f *os.File) error {
+func fromFile(f *os.File, name string) error {
 	lock.Lock()
 	defer lock.Unlock()
 	s, err := f.Stat()
@@ -208,7 +230,7 @@ func fromFile(f *os.File) error {
 		return err
 	}
 	p := &pack{
-		name:  s.Name(),
+		name:  name,
 		files: map[string]opener{},
 	}
 	for _, f := range z.File {

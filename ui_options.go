@@ -50,6 +50,11 @@ func newOptionMenu(ret func() screen) *optionMenu {
 	om.scene.AddDrawable(txt)
 	done.ClickFunc = func() { saveConfig(); setScreen(om.ret()) }
 
+	rp, txt := newButtonText("Resource packs", -160, 150, 300, 40)
+	om.scene.AddDrawable(rp.Attach(ui.Bottom, ui.Middle))
+	om.scene.AddDrawable(txt)
+	rp.ClickFunc = func() { saveConfig(); setScreen(newResourceList(om.ret)) }
+
 	samples := newSlider(-160, -100, 300, 40)
 	samples.back.Attach(ui.Center, ui.Middle)
 	samples.add(om.scene)

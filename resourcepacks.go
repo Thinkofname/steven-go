@@ -30,6 +30,12 @@ func AddPack(path string) {
 	reloadResources()
 }
 
+func RemovePack(path string) {
+	fmt.Println("Removing pack " + path)
+	resource.RemovePack(path)
+	reloadResources()
+}
+
 func reloadResources() {
 	fmt.Println("Bringing everything to a stop")
 	for freeBuilders < maxBuilders {

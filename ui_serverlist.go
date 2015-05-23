@@ -59,7 +59,6 @@ func newServerList() screen {
 		scene: scene.New(true),
 	}
 	sl.logo.init(sl.scene)
-	window.SetScrollCallback(sl.onScroll)
 
 	sl.scene.AddDrawable(
 		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
@@ -102,6 +101,10 @@ func newServerList() screen {
 	}
 
 	return sl
+}
+
+func (sl *serverList) init() {
+	window.SetScrollCallback(sl.onScroll)
 }
 
 func (sl *serverList) onScroll(w *glfw.Window, xoff float64, yoff float64) {
