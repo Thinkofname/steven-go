@@ -15,6 +15,7 @@
 package steven
 
 import (
+	"bufio"
 	"fmt"
 	"math"
 	"math/rand"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/thinkofdeath/steven/native"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/resource"
 	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/ui/scene"
 )
@@ -64,13 +66,16 @@ var (
 	r                         = rand.New(rand.NewSource(time.Now().UnixNano()))
 	logoTexture               = logoTextures[r.Intn(len(logoTextures))]
 	logoTargetTexture         = logoTextures[r.Intn(len(logoTextures))]
-	logoText                  = stevenLogoLines[r.Intn(len(stevenLogoLines))]
+	logoText                  string
 	logoTextTimer             float64
 	logoLayers                [2][]*ui.Image
 	logoTimer, logoTransTimer float64
 )
 
 func (u *uiLogo) init(scene *scene.Type) {
+	if logoText == "" {
+		nextLogoText()
+	}
 	u.scene = scene
 	row := 0
 	tex, tex2 := render.GetTexture(logoTexture), render.GetTexture(logoTargetTexture)
@@ -150,7 +155,7 @@ func (u *uiLogo) tick(delta float64) {
 		logoTimer = r.Float64() * 60 * 30
 		logoTexture = logoTargetTexture
 		logoTargetTexture = logoTextures[r.Intn(len(logoTextures))]
-		logoText = stevenLogoLines[r.Intn(len(stevenLogoLines))]
+		nextLogoText()
 		u.text.Update(logoText)
 		width, _ := u.text.Size()
 		u.textBaseScale = 300 / width
@@ -186,70 +191,40 @@ func (u *uiLogo) tick(delta float64) {
 	u.text.SetX(u.origX * u.text.ScaleX() * u.textBaseScale)
 }
 
+func nextLogoText() {
+	lines := make([]string, len(stevenLogoLines))
+	copy(lines, stevenLogoLines)
+
+	rs, _ := resource.OpenAll("minecraft", "texts/splashes.txt")
+	for _, r := range rs {
+		func() {
+			defer r.Close()
+			s := bufio.NewScanner(r)
+			for s.Scan() {
+				line := s.Text()
+				if line != "" && !strings.ContainsRune(line, '§') {
+					switch line {
+					case "Now Java 6!":
+						line = "Now Go!"
+					case "OpenGL 2.1 (if supported)!":
+						line = "OpenGL 3.2!"
+					}
+					fmt.Println("Added ", line)
+					lines = append(lines, line)
+				}
+			}
+		}()
+	}
+
+	logoText = lines[r.Intn(len(lines))]
+}
+
 var stevenLogoLines = []string{
-	"I blame Xor",
-	"Its not a bug its a feature!",
-	"Don't go to #think, tis a silly place",
-	"Tested! (In production)",
-	"Not in scala!",
-	"Its steven not phteven!",
-	"Now webscale!",
-	"Meow",
-	"I bet one of cindy's cats broke it!",
-	"=^.^=",
-	"ಠ_ಠ",
-	"Commit reverted in 5..4..3...",
-	"Latest is greatest!",
-	"[This space is intentionally left blank]",
-	"ThinkBot: .... *Thinkofdeath damn it",
-	"Now with more bugs!",
-	"I blame Mojang",
-	"The logo is totally not ascii art rendered as textures",
-	"Look, it works on my machine.",
-	"Open Source! https://github.com/thinkofdeath/steven",
-	"Built with Go!",
 	"Your machine uses " + native.Order.String() + " byte order!",
 	fmt.Sprintf("You have %d CPUs!", runtime.NumCPU()),
 	fmt.Sprintf("Compiled for %s with a %s CPU!", runtime.GOOS, runtime.GOARCH),
 	"Compiled with " + runtime.Version() + "!",
-	"try { } catch (Exception e) { }",
-	"panic(recover())",
-	"// Abandon hope all ye who enter here",
-	"Its like I'm racing vanilla to see who can have the most bugs",
-	"Using ascii art for the logo seemed like a bad idea at first",
-	"... and still does.",
-	"Help! I'm trapped in the splash text!",
-	"Linux support!",
-	"Windows support!",
-	"Mac support! (in theory)",
-	"Could have used vanilla's splash text!",
-	"Come chat on IRC!",
-	"Knowing Murphy's Law doesn't help",
-	"Minecraft Multi-processing: breaking three things at once",
-	"Silly Mortal...",
-	"Software isn't released. It's allowed to escape.",
-	"General System Error: Please sacrifice a cow and two chickens to continue",
-	"Do you want to build a client?",
-	"sudo rm -rf --no-preserve-root /",
 	fmt.Sprintf("Splash generated at %d", time.Now().Unix()),
-	"Thinkofdeath.getClass().getField(\"sanity\").set(Thinkofdeath, null);",
-	"There is no God, only Zuul",
-	"Now with potatoes!",
-	"ask :: String -> Int; ask x = 42",
-	"And then you cleanse them in a ball of atomic fire!",
-	"I'm a little matrix, square and stout,",
-	"this is my transpose, this is my count.",
-	"<?php if(\"6 geese\" + \"4 chickens\" == \"10 birds\") echo(\"lolphp\");",
-	"All hail the Cat Godess!",
-	"var f = function() { return f; };",
-	"unsafe.allocateObject(Unsafe.class);",
-	":(){ :|:& };:",
-	"You must pay to view this content.",
-	"No touchy the topic",
-	"Ceci n'est pas un splash.",
-	"Xor is not actually a cat.",
-	"The MD5 of md_5 is e14cfacdd442a953343ebd8529138680",
-	"Gas powered stick! It never runs out of gas!",
 }
 
 const stevenLogo = `

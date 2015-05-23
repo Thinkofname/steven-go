@@ -16,6 +16,7 @@ package resource
 
 import (
 	"archive/zip"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -24,6 +25,8 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/thinkofdeath/steven/resource/internal"
 )
 
 const (
@@ -68,6 +71,33 @@ func Open(plugin, name string) (io.ReadCloser, error) {
 	return nil, lastErr
 }
 
+// OpenAll searches through all open resource packs for the requested file.
+// If a file exists but fails to open that error will be returned instead
+// of the standard 'file not found' but only if another file couldn't be
+// found to be used in its place. Unlike Open this will return all matching
+// files
+func OpenAll(plugin, name string) ([]io.ReadCloser, error) {
+	lock.RLock()
+	defer lock.RUnlock()
+	var lastErr error
+	var out []io.ReadCloser
+	for i := len(packs) - 1; i >= 0; i-- {
+		pck := packs[i]
+		if f, ok := pck.files[fmt.Sprintf("assets/%s/%s", plugin, name)]; ok {
+			r, err := f()
+			if err != nil {
+				lastErr = err
+				continue
+			}
+			out = append(out, r)
+		}
+	}
+	if lastErr == nil && len(out) == 0 {
+		return nil, errMissingFile
+	}
+	return out, lastErr
+}
+
 // Search searches for files that belong to the passed plugin and exist
 // the passed path with the passed extension. This searches all open packs.
 func Search(plugin, path, ext string) []string {
@@ -100,7 +130,31 @@ func init() {
 	if err := fromDir(defLocation); err != nil {
 		panic(err)
 	}
+
+	fromInternal()
 }
+
+type dummyCloser struct {
+	*bytes.Reader
+}
+
+func (dummyCloser) Close() error { return nil }
+
+func fromInternal() {
+	lock.Lock()
+	defer lock.Unlock()
+	p := &pack{
+		files: map[string]opener{},
+	}
+	for _, name := range internal.AssetNames() {
+		p.files[name] = func() (io.ReadCloser, error) {
+			data, err := internal.Asset(name)
+			return dummyCloser{bytes.NewReader(data)}, err
+		}
+	}
+	packs = append(packs, p)
+}
+
 func fromDir(d string) error {
 	lock.Lock()
 	defer lock.Unlock()
