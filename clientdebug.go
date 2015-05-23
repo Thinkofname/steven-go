@@ -29,21 +29,24 @@ func (c *ClientState) initDebug() {
 	c.debug.position = ui.NewText("X:0 Y:0 Z:0", 5, 5, 255, 255, 255).
 		Attach(ui.Top, ui.Left)
 	c.scene.AddDrawable(c.debug.position)
-	c.debug.facing = ui.NewText("Facing: invalid", 5, 23, 255, 255, 255).
+	c.debug.facing = ui.NewText("Facing: invalid", 5, 5+18, 255, 255, 255).
 		Attach(ui.Top, ui.Left)
 	c.scene.AddDrawable(c.debug.facing)
+	c.debug.rotation = ui.NewText("Yaw: 0 Pitch: 0", 5, 5+18*2, 255, 255, 255).
+		Attach(ui.Top, ui.Left)
+	c.scene.AddDrawable(c.debug.rotation)
 
 	c.debug.fps = ui.NewText("FPS: 0", 5, 5, 255, 255, 255).
 		Attach(ui.Top, ui.Right)
 	c.scene.AddDrawable(c.debug.fps)
-	c.debug.memory = ui.NewText("0/0", 5, 23, 255, 255, 255).
+	c.debug.memory = ui.NewText("0/0", 5, 5+18, 255, 255, 255).
 		Attach(ui.Top, ui.Right)
 	c.scene.AddDrawable(c.debug.memory)
 
-	c.debug.target = ui.NewText("", 5, 41, 255, 255, 255).
+	c.debug.target = ui.NewText("", 5, 5+18*2, 255, 255, 255).
 		Attach(ui.Top, ui.Right)
 	c.scene.AddDrawable(c.debug.target)
-	c.debug.targetName = ui.NewText("", 5, 59, 255, 255, 255).
+	c.debug.targetName = ui.NewText("", 5, 5+18*3, 255, 255, 255).
 		Attach(ui.Top, ui.Right)
 	c.scene.AddDrawable(c.debug.targetName)
 	c.debug.enabled = true
@@ -55,6 +58,7 @@ func (c *ClientState) toggleDebug() {
 	e := c.debug.enabled
 	c.debug.position.SetDraw(e)
 	c.debug.facing.SetDraw(e)
+	c.debug.rotation.SetDraw(e)
 	c.debug.fps.SetDraw(e)
 	c.debug.memory.SetDraw(e)
 	c.debug.target.SetDraw(e)
@@ -71,7 +75,8 @@ func (c *ClientState) renderDebug() {
 	}
 	c.debug.position.Update(fmt.Sprintf("X: %.2f, Y: %.2f, Z: %.2f", c.X, c.Y, c.Z))
 	c.debug.facing.Update(fmt.Sprintf("Facing: %s", c.facingDirection()))
-
+	c.debug.rotation.Update(fmt.Sprintf("Yaw: %.2f Pitch: %.2f", c.Yaw, c.Pitch))
+	
 	c.displayTargetInfo()
 
 	runtime.ReadMemStats(&memoryStats)
