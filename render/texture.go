@@ -173,7 +173,7 @@ func LoadTextures() {
 		data := make([]byte, AtlasSize*AtlasSize*textureCount*4)
 		glTexture.Image3D(0, AtlasSize, AtlasSize, textureCount, gl.RGBA, gl.UnsignedByte, data)
 	}
-	freeSkinTextures = nil
+	freeTextures = nil
 	animatedTextures = nil
 	textures = nil
 	pix := []byte{
@@ -232,10 +232,13 @@ func LoadTextures() {
 	}
 
 	for _, skin := range skins {
-		info := getSkinInfo()
-		uploadTexture(info, skin.data)
-		skin.info.rect = info.rect
-		skin.info.atlas = info.atlas
+		info := getFreeTexture(skin.info.W, skin.info.H)
+		uploadTexture(info.info, skin.data)
+		i := skin.info.info
+		skin.info = info
+		i.rect = info.info.rect
+		i.atlas = info.info.atlas
+		skin.info.info = i
 	}
 
 	textureLock.Unlock()

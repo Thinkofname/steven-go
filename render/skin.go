@@ -29,12 +29,11 @@ import (
 )
 
 var (
-	skins            = map[string]*skin{}
-	freeSkinTextures []*textureInfo
+	skins = map[string]*skin{}
 )
 
 type skin struct {
-	info     *textureInfo
+	info     *reusableTexture
 	data     []byte
 	refCount int
 }
@@ -64,8 +63,8 @@ func RefSkin(hash string) {
 		s.refCount++
 		return
 	}
-	info := getSkinInfo()
-	uploadTexture(info, skinBuffer)
+	info := getFreeTexture(64, 64)
+	uploadTexture(info.info, skinBuffer)
 	s = &skin{
 		info:     info,
 		refCount: 1,
@@ -136,7 +135,7 @@ func obtainSkin(hash string, s *skin) {
 	pix := imgToBytes(img)
 	Sync(func() {
 		s.data = pix
-		uploadTexture(s.info, pix)
+		uploadTexture(s.info.info, pix)
 	})
 }
 
@@ -147,7 +146,7 @@ func skinPath(hash string) string {
 func Skin(hash string) TextureInfo {
 	s := skins[hash]
 	if s != nil {
-		return s.info
+		return s.info.info
 	}
 	return nil
 }
@@ -159,19 +158,9 @@ func FreeSkin(hash string) {
 	}
 	s.refCount--
 	if s.refCount <= 0 {
-		freeSkinTextures = append(freeSkinTextures, s.info)
+		freeTexture(s.info)
 		delete(skins, hash)
 	}
-}
-
-func getSkinInfo() *textureInfo {
-	if len(freeSkinTextures) == 0 {
-		return addTexture(skinBuffer, 64, 64)
-	}
-	var info *textureInfo
-	l := len(freeSkinTextures)
-	info, freeSkinTextures = freeSkinTextures[l-1], freeSkinTextures[:l-1]
-	return info
 }
 
 // So I reuse the skins for icons
@@ -191,9 +180,9 @@ func AddIcon(id string, pix image.Image) {
 		s.refCount++
 		return
 	}
-	info := getSkinInfo()
+	info := getFreeTexture(pix.Bounds().Dx(), pix.Bounds().Dy())
 	data := imgToBytes(pix)
-	uploadTexture(info, data)
+	uploadTexture(info.info, data)
 	s = &skin{
 		info:     info,
 		refCount: 1,
