@@ -37,6 +37,7 @@ type ConfigData struct {
 	Game struct {
 		MouseSensitivity int
 		UIScale          string
+		ResourcePacks    []string
 	}
 }
 

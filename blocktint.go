@@ -28,10 +28,6 @@ var (
 	foliageBiomeColors *image.NRGBA
 )
 
-func init() {
-	loadBiomes()
-}
-
 func loadBiomes() {
 	grassBiomeColors = loadBiomeColors("grass")
 	foliageBiomeColors = loadBiomeColors("foliage")

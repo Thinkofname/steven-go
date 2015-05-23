@@ -78,6 +78,11 @@ func Main(username, uuid, accessToken, s string) {
 	}
 	server = s
 
+	for _, pck := range Config.Game.ResourcePacks {
+		resource.LoadZip(pck)
+	}
+	loadBiomes()
+
 	// Done on its own goroutine so the connection
 	// + window opening, can be done in parallel
 	render.LoadTextures()

@@ -25,14 +25,24 @@ import (
 func AddPack(path string) {
 	fmt.Println("Adding pack " + path)
 	if err := resource.LoadZip(path); err != nil {
-		panic(err)
+		fmt.Println("Failed to load pack", path)
+		return
 	}
+	Config.Game.ResourcePacks = append(Config.Game.ResourcePacks, path)
+	saveConfig()
 	reloadResources()
 }
 
 func RemovePack(path string) {
 	fmt.Println("Removing pack " + path)
 	resource.RemovePack(path)
+	for i, pck := range Config.Game.ResourcePacks {
+		if pck == path {
+			Config.Game.ResourcePacks = append(Config.Game.ResourcePacks[:i], Config.Game.ResourcePacks[i+1:]...)
+			break
+		}
+	}
+	saveConfig()
 	reloadResources()
 }
 
