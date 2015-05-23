@@ -140,15 +140,15 @@ func (s *skullComponent) create() {
 	} else {
 		switch s.SkullType {
 		case skullPlayer:
-			skin = render.GetTexture("entity/steve")
+			skin = render.RelativeTexture(render.GetTexture("entity/steve"), 64, 64)
 		case skullZombie:
-			skin = render.GetTexture("entity/zombie/zombie")
+			skin = render.RelativeTexture(render.GetTexture("entity/zombie/zombie"), 64, 64)
 		case skullSkeleton:
-			skin = render.GetTexture("entity/skeleton/skeleton")
+			skin = render.RelativeTexture(render.GetTexture("entity/skeleton/skeleton"), 64, 32)
 		case skullWitherSkeleton:
-			skin = render.GetTexture("entity/skeleton/wither_skeleton")
+			skin = render.RelativeTexture(render.GetTexture("entity/skeleton/wither_skeleton"), 64, 32)
 		case skullCreeper:
-			skin = render.GetTexture("entity/creeper/creeper")
+			skin = render.RelativeTexture(render.GetTexture("entity/creeper/creeper"), 64, 32)
 		}
 	}
 

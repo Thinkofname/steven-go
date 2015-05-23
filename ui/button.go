@@ -105,13 +105,15 @@ func (b *Button) Draw(r Region, delta float64) {
 	if b.isNew || b.isDirty() || forceDirty {
 		b.isNew = false
 		if b.disabled {
-			b.currentTex = render.GetTexture("gui/widgets").Sub(0, 46, 200, 20)
+			b.currentTex = render.RelativeTexture(render.GetTexture("gui/widgets"), 256, 256).
+				Sub(0, 46, 200, 20)
 		} else {
 			off := 66
 			if b.hovered {
 				off += 20
 			}
-			b.currentTex = render.GetTexture("gui/widgets").Sub(0, off, 200, 20)
+			b.currentTex = render.RelativeTexture(render.GetTexture("gui/widgets"), 256, 256).
+				Sub(0, off, 200, 20)
 		}
 		b.data = b.data[:0]
 

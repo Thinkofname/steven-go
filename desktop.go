@@ -171,6 +171,10 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		Client.KeyState[k] = action == glfw.Press
 	}
 	switch key {
+	case glfw.KeyP:
+		if action == glfw.Release {
+			AddPack("dark.zip")
+		}
 	case glfw.KeyEscape:
 		if action == glfw.Release {
 			setScreen(newGameMenu())

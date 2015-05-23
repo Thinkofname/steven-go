@@ -95,6 +95,42 @@ func (s *subTextureInfo) Sub(x, y, w, h int) TextureInfo {
 	}
 }
 
+func RelativeTexture(ti TextureInfo, w, h int) TextureInfo {
+	return &relativeTexture{
+		w: 1, h: 1,
+		fakeW: float64(w), fakeH: float64(h),
+		parent: ti,
+	}
+}
+
+type relativeTexture struct {
+	ox, oy, w, h float64
+	fakeW, fakeH float64
+	parent       TextureInfo
+}
+
+func (r *relativeTexture) Atlas() int { return r.parent.Atlas() }
+func (r *relativeTexture) Rect() atlas.Rect {
+	rect := r.parent.Rect()
+	rect.X += int(r.ox * float64(rect.Width))
+	rect.Y += int(r.oy * float64(rect.Height))
+	rect.Width = int(r.w * float64(rect.Width))
+	rect.Height = int(r.h * float64(rect.Height))
+	return rect
+}
+
+func (r *relativeTexture) Sub(x, y, w, h int) TextureInfo {
+	return &relativeTexture{
+		ox:     float64(x) / float64(r.fakeW),
+		oy:     float64(y) / float64(r.fakeH),
+		w:      float64(w) / float64(r.fakeW),
+		h:      float64(h) / float64(r.fakeH),
+		fakeW:  float64(w),
+		fakeH:  float64(h),
+		parent: r,
+	}
+}
+
 // GetTexture returns the related TextureInfo for the requested texture.
 // If the texture isn't found a placeholder is returned instead.
 func GetTexture(name string) TextureInfo {

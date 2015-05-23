@@ -468,6 +468,7 @@ func (handler) PlayerListInfo(p *protocol.PlayerInfo) {
 			if i.skin == nil {
 				i.skin = render.GetTexture("entity/steve")
 			}
+			i.skin = render.RelativeTexture(i.skin, 64, 64)
 			playerList[pl.UUID] = i
 
 			// Special case for self
