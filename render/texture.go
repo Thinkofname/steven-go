@@ -208,7 +208,7 @@ func LoadTextures() {
 		defer r.Close()
 		img, err := png.Decode(r)
 		if err != nil {
-			panic(err)
+			panic(fmt.Sprintf("(%s): %s", file, err))
 		}
 		width, height := img.Bounds().Dx(), img.Bounds().Dy()
 		tList = append(tList, sortableTexture{
