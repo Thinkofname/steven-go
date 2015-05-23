@@ -28,7 +28,7 @@ type gameMenu struct {
 	background *ui.Image
 }
 
-func newGameMenu() *gameMenu {
+func newGameMenu() screen {
 	gm := &gameMenu{
 		scene: scene.New(true),
 	}
@@ -50,7 +50,7 @@ func newGameMenu() *gameMenu {
 	option, txt := newButtonText("Options", 0, 0, 400, 40)
 	gm.scene.AddDrawable(option.Attach(ui.Center, ui.Middle))
 	gm.scene.AddDrawable(txt)
-	option.ClickFunc = func() { setScreen(newOptionMenu()) }
+	option.ClickFunc = func() { setScreen(newOptionMenu(newGameMenu)) }
 
 	gm.scene.AddDrawable(
 		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),

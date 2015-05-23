@@ -54,7 +54,7 @@ type serverListItem struct {
 	id        string
 }
 
-func newServerList() *serverList {
+func newServerList() screen {
 	sl := &serverList{
 		scene: scene.New(true),
 	}
@@ -80,6 +80,15 @@ func newServerList() *serverList {
 	sl.scene.AddDrawable(txt)
 	add.ClickFunc = func() {
 		setScreen(newEditServer(-1))
+	}
+
+	options := ui.NewButton(5, 25, 40, 40)
+	sl.scene.AddDrawable(options.Attach(ui.Bottom, ui.Right))
+	cog := ui.NewImage(render.GetTexture("steven/gui/cog"), 0, 0, 40, 40, 0, 0, 1, 1, 255, 255, 255)
+	cog.AttachTo(options)
+	sl.scene.AddDrawable(cog.Attach(ui.Center, ui.Middle))
+	options.ClickFunc = func() {
+		setScreen(newOptionMenu(newServerList))
 	}
 
 	if disconnectReason.Value != nil {

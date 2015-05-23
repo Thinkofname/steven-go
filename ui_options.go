@@ -31,11 +31,14 @@ type optionMenu struct {
 	samples    *slider
 	fov        *slider
 	mouseS     *slider
+
+	ret func() screen
 }
 
-func newOptionMenu() *optionMenu {
+func newOptionMenu(ret func() screen) *optionMenu {
 	om := &optionMenu{
 		scene: scene.New(true),
+		ret:   ret,
 	}
 
 	om.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 854, 480, 0, 0, 1, 1, 0, 0, 0)
@@ -45,7 +48,7 @@ func newOptionMenu() *optionMenu {
 	done, txt := newButtonText("Done", 0, 50, 400, 40)
 	om.scene.AddDrawable(done.Attach(ui.Bottom, ui.Middle))
 	om.scene.AddDrawable(txt)
-	done.ClickFunc = func() { saveConfig(); setScreen(newGameMenu()) }
+	done.ClickFunc = func() { saveConfig(); setScreen(om.ret()) }
 
 	samples := newSlider(-160, -100, 300, 40)
 	samples.back.Attach(ui.Center, ui.Middle)
@@ -167,7 +170,7 @@ func (om *optionMenu) tick(delta float64) {
 func (om *optionMenu) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	if key == glfw.KeyEscape && action == glfw.Release {
 		saveConfig()
-		setScreen(newGameMenu())
+		setScreen(om.ret())
 	}
 }
 
