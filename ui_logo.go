@@ -209,7 +209,6 @@ func nextLogoText() {
 					case "OpenGL 2.1 (if supported)!":
 						line = "OpenGL 3.2!"
 					}
-					fmt.Println("Added ", line)
 					lines = append(lines, line)
 				}
 			}
