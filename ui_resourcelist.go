@@ -84,6 +84,7 @@ func newResourceList(ret func() screen) screen {
 
 func (rl *resourceList) init() {
 	window.SetScrollCallback(rl.onScroll)
+	window.SetKeyCallback(rl.handleKey)
 }
 
 func (rl *resourceList) onScroll(w *glfw.Window, xoff float64, yoff float64) {
@@ -250,6 +251,12 @@ func getPackInfo(name string) (desc string, icon image.Image, ok bool) {
 	return
 }
 
+func (rl *resourceList) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	if key == glfw.KeyEscape && action == glfw.Release {
+		setScreen(newOptionMenu(rl.ret))
+	}
+}
+
 func (rl *resourceList) tick(delta float64) {
 	rl.logo.tick(delta)
 	for _, s := range rl.packs {
@@ -270,6 +277,7 @@ func (rl *resourceList) tick(delta float64) {
 
 func (rl *resourceList) remove() {
 	window.SetScrollCallback(onScroll)
+	window.SetKeyCallback(onKey)
 	rl.scene.Hide()
 	for _, s := range rl.packs {
 		s.Hide()
