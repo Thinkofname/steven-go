@@ -16,7 +16,6 @@ package render
 
 import (
 	"math"
-	"sort"
 	"strings"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -195,8 +194,9 @@ sync:
 
 			chunk.arrayT.Bind()
 			chunk.bufferTI.Bind(gl.ElementArrayBuffer)
+			insertSort(chunk.transInfo)
+
 			offset := 0
-			sort.Sort(chunk.transInfo)
 			data := chunk.bufferTI.Map(gl.WriteOnly, len(chunk.transData))
 			m := 2
 			if chunk.bufferTIType == gl.UnsignedInt {
@@ -210,6 +210,7 @@ sync:
 		}
 	}
 	gl.Disable(gl.Blend)
+
 	if MultiSample {
 		gl.Disable(gl.Multisample)
 	}
