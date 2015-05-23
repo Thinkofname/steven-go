@@ -254,7 +254,7 @@ func esModelRemove(p interface {
 var moveLimit = 1e-5
 
 func esPlayerModelTick(p *playerModelComponent,
-	pos PositionComponent, t TargetPositionComponent, r RotationComponent) {
+	pos PositionComponent, t *targetPositionComponent, r RotationComponent) {
 	x, y, z := pos.Position()
 	model := p.model
 
@@ -301,15 +301,19 @@ func esPlayerModelTick(p *playerModelComponent,
 		Mul4(mgl32.Rotate3DZ(-float32(math.Cos(iTime)*0.06) + 0.06).Mat4()).
 		Mul4(mgl32.Rotate3DX(-float32(math.Sin(iTime) * 0.06)).Mat4())
 
-	tx, _, tz := t.TargetPosition()
 	update := true
-	d := (tx-x)*(tx-x) + (tz-z)*(tz-z)
-	if d <= moveLimit {
-		if math.Abs(time-15) <= 1.5*Client.delta {
-			time = 15
-			update = false
+	if t.X == t.sX && t.Y == t.sY && t.Z == t.sZ {
+		if t.stillTime > 5.0 {
+			if math.Abs(time-15) <= 1.5*Client.delta {
+				time = 15
+				update = false
+			}
+			dir = math.Copysign(1, 15-time)
+		} else {
+			t.stillTime += Client.delta
 		}
-		dir = math.Copysign(1, 15-time)
+	} else {
+		t.stillTime = 0
 	}
 
 	if update {

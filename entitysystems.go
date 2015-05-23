@@ -91,7 +91,7 @@ func esMoveToTarget(p PositionComponent, t *targetPositionComponent) {
 	px, py, pz := p.Position()
 	tx, ty, tz := t.TargetPosition()
 
-	if t.pX != tx || t.pY != ty || t.pZ != tz {
+	if t.pX != tx || t.pY != ty || t.pZ != tz || t.time >= 4 {
 		t.sX, t.sY, t.sZ = px, py, pz
 		t.time = 0
 		t.pX = tx
@@ -102,11 +102,11 @@ func esMoveToTarget(p PositionComponent, t *targetPositionComponent) {
 
 	dx, dy, dz := tx-sx, ty-sy, tz-sz
 
-	t.time = math.Min(3.0, t.time+Client.delta)
+	t.time = math.Min(4.0, t.time+Client.delta)
 
-	px = sx + dx*(1/3.0)*t.time
-	py = sy + dy*(1/3.0)*t.time
-	pz = sz + dz*(1/3.0)*t.time
+	px = sx + dx*(1/4.0)*t.time
+	py = sy + dy*(1/4.0)*t.time
+	pz = sz + dz*(1/4.0)*t.time
 	p.SetPosition(px, py, pz)
 }
 
@@ -116,7 +116,7 @@ func esRotateToTarget(r RotationComponent, t *targetRotationComponent) {
 	py, pp := r.Yaw(), r.Pitch()
 	ty, tp := t.TargetYaw(), t.TargetPitch()
 
-	if t.pPitch != tp || t.pYaw != ty {
+	if t.pPitch != tp || t.pYaw != ty || t.time >= 4 {
 		t.sYaw, t.sPitch = py, pp
 		t.time = 0
 		t.pPitch = tp
@@ -138,10 +138,10 @@ func esRotateToTarget(r RotationComponent, t *targetRotationComponent) {
 		dp = tp - sp
 	}
 
-	t.time = math.Min(3.0, t.time+Client.delta)
+	t.time = math.Min(4.0, t.time+Client.delta)
 
-	py = sy + dy*(1/3.0)*t.time
-	pp = sp + dp*(1/3.0)*t.time
+	py = sy + dy*(1/4.0)*t.time
+	pp = sp + dp*(1/4.0)*t.time
 	r.SetPitch(pp)
 	r.SetYaw(py)
 }

@@ -62,6 +62,7 @@ type targetPositionComponent struct {
 	X, Y, Z float64
 
 	time       float64
+	stillTime  float64
 	pX, pY, pZ float64
 	sX, sY, sZ float64
 }
