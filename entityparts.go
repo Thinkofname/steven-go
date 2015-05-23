@@ -60,6 +60,10 @@ type PositionComponent interface {
 
 type targetPositionComponent struct {
 	X, Y, Z float64
+
+	time       float64
+	pX, pY, pZ float64
+	sX, sY, sZ float64
 }
 
 func (p *targetPositionComponent) TargetPosition() (x, y, z float64) {
@@ -101,6 +105,10 @@ type RotationComponent interface {
 
 type targetRotationComponent struct {
 	yaw, pitch float64
+
+	time         float64
+	pYaw, pPitch float64
+	sYaw, sPitch float64
 }
 
 func (r *targetRotationComponent) TargetYaw() float64 { return r.yaw }

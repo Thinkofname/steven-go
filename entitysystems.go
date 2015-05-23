@@ -87,40 +87,61 @@ func esMoveChunk(e Entity, p *positionComponent) {
 
 // Smoothly moves the entity from its current position to the target
 // location
-func esMoveToTarget(p PositionComponent, t TargetPositionComponent) {
+func esMoveToTarget(p PositionComponent, t *targetPositionComponent) {
 	px, py, pz := p.Position()
 	tx, ty, tz := t.TargetPosition()
 
-	dx, dy, dz := tx-px, ty-py, tz-pz
+	if t.pX != tx || t.pY != ty || t.pZ != tz {
+		t.sX, t.sY, t.sZ = px, py, pz
+		t.time = 0
+		t.pX = tx
+		t.pY = ty
+		t.pZ = tz
+	}
+	sx, sy, sz := t.sX, t.sY, t.sZ
 
-	px += dx * 0.4 * Client.delta
-	py += dy * 0.4 * Client.delta
-	pz += dz * 0.4 * Client.delta
+	dx, dy, dz := tx-sx, ty-sy, tz-sz
+
+	t.time = math.Min(3.0, t.time+Client.delta)
+
+	px = sx + dx*(1/3.0)*t.time
+	py = sy + dy*(1/3.0)*t.time
+	pz = sz + dz*(1/3.0)*t.time
 	p.SetPosition(px, py, pz)
 }
 
 // Smoothly rotates the entity from its current rotation to the target
 // rotation
-func esRotateToTarget(r RotationComponent, t TargetRotationComponent) {
+func esRotateToTarget(r RotationComponent, t *targetRotationComponent) {
 	py, pp := r.Yaw(), r.Pitch()
 	ty, tp := t.TargetYaw(), t.TargetPitch()
 
-	dy, dp := ty-py, tp-pp
+	if t.pPitch != tp || t.pYaw != ty {
+		t.sYaw, t.sPitch = py, pp
+		t.time = 0
+		t.pPitch = tp
+		t.pYaw = ty
+	}
+	sy, sp := t.sYaw, t.sPitch
+
+	dy, dp := ty-sy, tp-sp
 	// Make sure we go for the shortest route.
 	// e.g. (in degrees) 1 to 359 is quicker
 	// to decrease to wrap around than it is
 	// to increase all the way around
 	if dy > math.Pi || dy < -math.Pi {
-		py += math.Copysign(math.Pi*2, dy)
-		dy = ty - py
+		sy += math.Copysign(math.Pi*2, dy)
+		dy = ty - sy
 	}
 	if dp > math.Pi || dp < -math.Pi {
-		pp += math.Copysign(math.Pi*2, dp)
-		dp = tp - pp
+		sp += math.Copysign(math.Pi*2, dp)
+		dp = tp - sp
 	}
 
-	py += dy * 0.4 * Client.delta
-	pp += dp * 0.4 * Client.delta
+	t.time = math.Min(3.0, t.time+Client.delta)
+
+	py = sy + dy*(1/3.0)*t.time
+	pp = sp + dp*(1/3.0)*t.time
 	r.SetPitch(pp)
 	r.SetYaw(py)
 }
