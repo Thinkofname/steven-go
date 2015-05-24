@@ -407,9 +407,22 @@ func relMove(e Entity, dx, dy, dz float64) {
 	}
 }
 
-func (handler) DestoryEntities(e *protocol.EntityDestroy) {
+func (handler) DestroyEntities(e *protocol.EntityDestroy) {
 	for _, id := range e.EntityIDs {
 		Client.entities.remove(int(id))
+	}
+}
+
+func (handler) Animation(p *protocol.Animation) {
+	e, ok := Client.entities.entities[int(p.EntityID)]
+	if !ok {
+		return
+	}
+	switch p.AnimationID {
+	case 0: // Swing arm
+		if p, ok := e.(PlayerModelComponent); ok {
+			p.SwingArm()
+		}
 	}
 }
 

@@ -223,6 +223,7 @@ func (c *ClientState) initEntity(head bool) {
 	copy(ce.uuid[:], ub)
 	c.entity = ce
 	ce.hasHead = head
+	ce.isFirstPerson = !head
 }
 
 func (c *ClientState) cycleCamera() {
@@ -399,6 +400,7 @@ func (c *ClientState) armTick() {
 		c.swingTimer -= c.delta
 		if c.swingTimer < 0 {
 			c.swingTimer = 15
+			c.entity.SwingArm()
 			c.network.Write(&protocol.ArmSwing{})
 			e := c.targetEntity()
 			if ne, ok := e.(NetworkComponent); ok {

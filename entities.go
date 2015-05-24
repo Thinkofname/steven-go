@@ -31,6 +31,7 @@ func newPlayer() Entity {
 	p := &player{}
 	p.hasHead = true
 	p.hasNameTag = true
+	p.isFirstPerson = false
 	p.bounds = vmath.NewAABB(-0.3, 0, -0.3, 0.6, 2.0, 0.6)
 	return p
 }

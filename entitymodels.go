@@ -76,17 +76,28 @@ func appendBoxExtra(verts []*render.StaticVertex, x, y, z, w, h, d float32, text
 // Player
 
 type playerModelComponent struct {
-	model      *render.StaticModel
-	skin       string
-	hasHead    bool
-	hasNameTag bool
+	model         *render.StaticModel
+	skin          string
+	hasHead       bool
+	hasNameTag    bool
+	isFirstPerson bool
 
 	dir      float64
 	time     float64
 	idleTime float64
+
+	armTime float64
 }
 
 func (p *playerModelComponent) Model() *render.StaticModel { return p.model }
+
+func (p *playerModelComponent) SwingArm() {
+	p.armTime = 15
+}
+
+type PlayerModelComponent interface {
+	SwingArm()
+}
 
 const (
 	playerModelHead = iota
@@ -183,10 +194,10 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 	model := render.NewStaticModel([][]*render.StaticVertex{
 		playerModelHead:     hverts,
 		playerModelBody:     bverts,
-		playerModelLegLeft:  lverts[0],
-		playerModelLegRight: lverts[1],
-		playerModelArmLeft:  lverts[2],
-		playerModelArmRight: lverts[3],
+		playerModelLegRight: lverts[0],
+		playerModelLegLeft:  lverts[1],
+		playerModelArmRight: lverts[2],
+		playerModelArmLeft:  lverts[3],
 		playerModelNameTag:  nverts,
 	})
 	p.model = model
@@ -283,20 +294,38 @@ func esPlayerModelTick(p *playerModelComponent,
 	}
 	ang := ((time / 15) - 1) * (math.Pi / 4)
 
-	model.Matrix[playerModelLegLeft] = offMat.Mul4(mgl32.Translate3D(2/16.0, -12/16.0, 0)).
+	model.Matrix[playerModelLegRight] = offMat.Mul4(mgl32.Translate3D(2/16.0, -12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(float32(ang)).Mat4())
-	model.Matrix[playerModelLegRight] = offMat.Mul4(mgl32.Translate3D(-2/16.0, -12/16.0, 0)).
+	model.Matrix[playerModelLegLeft] = offMat.Mul4(mgl32.Translate3D(-2/16.0, -12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(-float32(ang)).Mat4())
 
 	iTime := p.idleTime
 	iTime += Client.delta * 0.02
 	p.idleTime = iTime
 
-	model.Matrix[playerModelArmLeft] = offMat.Mul4(mgl32.Translate3D(6/16.0, -12/16.0-12/16.0, 0)).
-		Mul4(mgl32.Rotate3DX(-float32(ang * 0.75)).Mat4()).
-		Mul4(mgl32.Rotate3DZ(float32(math.Cos(iTime)*0.06) - 0.06).Mat4()).
-		Mul4(mgl32.Rotate3DX(float32(math.Sin(iTime) * 0.06)).Mat4())
-	model.Matrix[playerModelArmRight] = offMat.Mul4(mgl32.Translate3D(-6/16.0, -12/16.0-12/16.0, 0)).
+	if p.armTime <= 0 {
+		p.armTime = 0
+	} else {
+		p.armTime -= Client.delta
+	}
+
+	model.Matrix[playerModelArmRight] = offMat.Mul4(mgl32.Translate3D(6/16.0, -12/16.0-12/16.0, 0))
+	if !p.isFirstPerson {
+		model.Matrix[playerModelArmRight] = model.Matrix[playerModelArmRight].
+			Mul4(mgl32.Rotate3DX(-float32(ang * 0.75)).Mat4()).
+			Mul4(mgl32.Rotate3DZ(float32(math.Cos(iTime)*0.06) - 0.06).Mat4()).
+			Mul4(mgl32.Rotate3DX(float32(math.Sin(iTime)*0.06) - float32((7.5-math.Abs(p.armTime-7.))/7.5)).Mat4())
+	} else {
+		pitch := r.Pitch()
+		if pitch > math.Pi {
+			pitch -= math.Pi * 2
+		}
+		model.Matrix[playerModelArmRight] = model.Matrix[playerModelArmRight].
+			Mul4(mgl32.Rotate3DX(float32(-1.2) - float32((7.5-math.Abs(p.armTime-7.5))/7.5) + float32(pitch*0.4)).Mat4()).
+			Mul4(mgl32.Rotate3DZ(-0.15 - float32((7.5-math.Abs(p.armTime-7.5))/15.0)).Mat4())
+	}
+
+	model.Matrix[playerModelArmLeft] = offMat.Mul4(mgl32.Translate3D(-6/16.0, -12/16.0-12/16.0, 0)).
 		Mul4(mgl32.Rotate3DX(float32(ang * 0.75)).Mat4()).
 		Mul4(mgl32.Rotate3DZ(-float32(math.Cos(iTime)*0.06) + 0.06).Mat4()).
 		Mul4(mgl32.Rotate3DX(-float32(math.Sin(iTime) * 0.06)).Mat4())
