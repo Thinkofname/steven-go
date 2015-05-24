@@ -94,6 +94,7 @@ type ClientState struct {
 		enabled  bool
 		position *ui.Text
 		facing   *ui.Text
+		rotation   *ui.Text
 		fps      *ui.Text
 		memory   *ui.Text
 
@@ -244,14 +245,14 @@ func (c *ClientState) renderTick(delta float64) {
 	c.hotbarUI.SetX(-184 + 24 + 40*float64(c.currentHotbarSlot))
 	c.tickItemName()
 
-	forward, yaw := c.calculateMovement()
-
+	forward, yaw, pitch := c.calculateMovement()
+	
 	c.LX, c.LY, c.LZ = c.X, c.Y, c.Z
 
 	if c.GameMode.Fly() {
-		c.X += forward * math.Cos(yaw) * -math.Cos(c.Pitch) * delta * 0.2
-		c.Z -= forward * math.Sin(yaw) * -math.Cos(c.Pitch) * delta * 0.2
-		c.Y -= forward * math.Sin(c.Pitch) * delta * 0.2
+		c.X += forward * math.Sin(yaw) * -math.Cos(pitch) * delta * 0.2
+		c.Z += forward * math.Cos(yaw) * -math.Cos(pitch) * delta * 0.2
+		c.Y += forward * -math.Sin(pitch) * delta * 0.2
 	} else if chunkMap[chunkPosition{int(math.Floor(c.X)) >> 4, int(math.Floor(c.Z)) >> 4}] != nil {
 		speed := 4.317 / 60.0
 		if c.KeyState[KeySprint] {
@@ -277,8 +278,8 @@ func (c *ClientState) renderTick(delta float64) {
 		} else {
 			c.VSpeed = 0
 		}
-		c.X += forward * math.Cos(yaw) * delta * speed
-		c.Z -= forward * math.Sin(yaw) * delta * speed
+		c.X += forward * math.Sin(yaw) * delta * speed
+		c.Z += forward * math.Cos(yaw) * delta * speed
 		c.Y += c.VSpeed * delta
 	}
 
@@ -341,8 +342,8 @@ func (c *ClientState) renderTick(delta float64) {
 		c.Yaw += math.Pi * 2
 	}
 
-	ox := math.Cos(c.Yaw-math.Pi/2) * 0.25
-	oz := -math.Sin(c.Yaw-math.Pi/2) * 0.25
+	ox := math.Sin(c.Yaw) * 0.25
+	oz := math.Cos(c.Yaw) * 0.25
 	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
 	c.entity.SetTargetYaw(-c.Yaw)
 	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
@@ -785,31 +786,33 @@ func (c *ClientState) checkGround() {
 	}
 }
 
-func (c *ClientState) calculateMovement() (float64, float64) {
-	forward := 0.0
-	yaw := c.Yaw - math.Pi/2
-	if c.KeyState[KeyForward] || c.KeyState[KeyBackwards] {
-		forward = 1
-		if c.KeyState[KeyBackwards] {
-			yaw += math.Pi
-		}
-	}
-	change := 0.0
-	if c.KeyState[KeyLeft] {
-		change = (math.Pi / 2) / (math.Abs(forward) + 1)
-	}
-	if c.KeyState[KeyRight] {
-		change = -(math.Pi / 2) / (math.Abs(forward) + 1)
-	}
-	if c.KeyState[KeyRight] || c.KeyState[KeyLeft] {
-		forward = 1
+func (c *ClientState) calculateMovement() (forward, yaw, pitch float64) {
+	forward = 1
+	pitch = c.Pitch
+	// Calculate target point in xy plane
+	x := 0.0
+	y := 0.0
+	if c.KeyState[KeyForward] {
+		x += 1
 	}
 	if c.KeyState[KeyBackwards] {
-		yaw -= change
-	} else {
-		yaw += change
+		x -= 1
+		pitch = -pitch
 	}
-	return forward, yaw
+	if c.KeyState[KeyLeft] {
+		y += 1
+		pitch = math.Pi
+	}
+	if c.KeyState[KeyRight] {
+		y -= 1
+		pitch = math.Pi
+	}
+	if x == 0 && y == 0 {
+		forward = 0
+	}
+	// Calculate angle
+	yaw = math.Atan2(y, x) + c.Yaw
+	return
 }
 
 func (c *ClientState) facingDirection() direction.Type {
