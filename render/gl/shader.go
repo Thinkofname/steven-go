@@ -206,5 +206,5 @@ func (s Shader) InfoLog() string {
 	buf := make([]byte, l)
 
 	gl.GetShaderInfoLog(uint32(s), int32(l), nil, (*uint8)(gl.Ptr(buf)))
-	return string(buf)
+	return string(buf[:len(buf)-1])
 }
