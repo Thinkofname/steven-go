@@ -83,11 +83,6 @@ func Main(username, uuid, accessToken, s string) {
 	}
 	loadBiomes()
 
-	if profile.IsComplete() && server != "" {
-		// Start connecting whilst starting the renderer
-		connect()
-	}
-
 	setUIScale()
 
 	startWindow()
@@ -122,7 +117,10 @@ func setUIScale() {
 func start() {
 	render.LoadTextures()
 	initBlocks()
-	if Client == nil {
+
+	if profile.IsComplete() && server != "" {
+		connect()
+	} else {
 		initClient()
 		fakeGen()
 		if !profile.IsComplete() {
