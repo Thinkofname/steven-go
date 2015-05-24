@@ -26,7 +26,7 @@ import (
 
 const (
 	chatHistoryLines = 10
-	maxLineWidth     = 500
+	maxLineWidth     = 640
 )
 
 type ChatUI struct {
@@ -50,12 +50,12 @@ type chatLine struct {
 }
 
 func (c *ChatUI) init() {
-	c.container = ui.NewContainer(0, 44, 500, chatHistoryLines*18+2)
+	c.container = ui.NewContainer(0, 44, maxLineWidth, chatHistoryLines*18+2)
 	c.container.Attach(ui.Bottom, ui.Left)
 	c.input = ui.NewText("", 5, 1, 255, 255, 255).Attach(ui.Bottom, ui.Left)
 	c.input.SetDraw(false)
 	c.input.AttachTo(c.container)
-	c.inputBackground = ui.NewImage(render.GetTexture("solid"), 0, 0, 500, 20, 0, 0, 1, 1, 0, 0, 0).Attach(ui.Bottom, ui.Left)
+	c.inputBackground = ui.NewImage(render.GetTexture("solid"), 0, 0, maxLineWidth, 20, 0, 0, 1, 1, 0, 0, 0).Attach(ui.Bottom, ui.Left)
 	c.inputBackground.SetA(77)
 	c.inputBackground.AttachTo(c.container)
 	c.inputBackground.SetDraw(false)
@@ -202,12 +202,12 @@ func (c *ChatUI) Add(msg chat.AnyComponent) {
 	chat.ConvertLegacy(msg)
 	copy(c.Lines[0:chatHistoryLines-1], c.Lines[1:])
 	c.Lines[chatHistoryLines-1] = msg
-	f := ui.NewFormattedWidth(msg, 5, chatHistoryLines*18+1, 500-10).Attach(ui.Top, ui.Left)
+	f := ui.NewFormattedWidth(msg, 5, chatHistoryLines*18+1, maxLineWidth-10).Attach(ui.Top, ui.Left)
 	f.AttachTo(c.container)
 	line := &chatLine{
 		text:       f,
 		fade:       3.0,
-		background: ui.NewImage(render.GetTexture("solid"), 0, chatHistoryLines*18, 500, f.Height, 0, 0, 1, 1, 0, 0, 0),
+		background: ui.NewImage(render.GetTexture("solid"), 0, chatHistoryLines*18, maxLineWidth, f.Height, 0, 0, 1, 1, 0, 0, 0),
 	}
 	line.background.AttachTo(c.container)
 	line.background.SetA(77)
