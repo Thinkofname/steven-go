@@ -83,14 +83,6 @@ func Main(username, uuid, accessToken, s string) {
 	}
 	loadBiomes()
 
-	// Done on its own goroutine so the connection
-	// + window opening, can be done in parallel
-	render.LoadTextures()
-	go func() {
-		initBlocks()
-		loadChan <- struct{}{}
-	}()
-
 	if profile.IsComplete() && server != "" {
 		// Start connecting whilst starting the renderer
 		connect()
@@ -128,7 +120,8 @@ func setUIScale() {
 }
 
 func start() {
-	<-loadChan
+	render.LoadTextures()
+	initBlocks()
 	if Client == nil {
 		initClient()
 		fakeGen()

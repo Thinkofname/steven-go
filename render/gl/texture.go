@@ -15,6 +15,8 @@
 package gl
 
 import (
+	"unsafe"
+
 	"github.com/thinkofdeath/gl/v3.2-core/gl"
 )
 
@@ -105,7 +107,11 @@ func (t Texture) Image3D(level, width, height, depth int, format TextureFormat, 
 	if t != currentTexture {
 		panic("texture not bound")
 	}
-	gl.TexImage3D(uint32(currentTextureTarget), int32(level), int32(format), int32(width), int32(height), int32(depth), int32(0), uint32(format), uint32(ty), gl.Ptr(pix))
+	var ptr unsafe.Pointer
+	if len(pix) != 0 {
+		ptr = gl.Ptr(pix)
+	}
+	gl.TexImage3D(uint32(currentTextureTarget), int32(level), int32(format), int32(width), int32(height), int32(depth), int32(0), uint32(format), uint32(ty), ptr)
 }
 
 // SubImage3D updates a region of a 3D texture.

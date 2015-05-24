@@ -20,10 +20,10 @@ import (
 	"image"
 	"image/draw"
 	"image/png"
-	"sort"
 	"strings"
 	"sync"
 
+	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/render/atlas"
 	"github.com/thinkofdeath/steven/render/gl"
 	"github.com/thinkofdeath/steven/resource"
@@ -33,6 +33,7 @@ var (
 	textures         []*atlas.Type
 	textureCount     int
 	textureMap       = map[string]*textureInfo{}
+	loadedTextures   []*loadedTexture
 	textureLock      sync.RWMutex
 	animatedTextures []*animatedTexture
 )
@@ -138,29 +139,52 @@ func GetTexture(name string) TextureInfo {
 	defer textureLock.RUnlock()
 	t, ok := textureMap[name]
 	if !ok {
-		t = textureMap["missing_texture"]
+		textureLock.RUnlock()
+		ret := make(chan struct{}, 1)
+		f := func() {
+			textureLock.Lock()
+			defer textureLock.Unlock()
+			// Check to see if it was already loaded between
+			// requesting it
+			if _, ok = textureMap[name]; ok {
+				ret <- struct{}{}
+				return
+			}
+			r, err := resource.Open("minecraft", "textures/"+name+".png")
+			if err == nil {
+				defer r.Close()
+				img, err := png.Decode(r)
+				if err != nil {
+					panic(fmt.Sprintf("(%s): %s", name, err))
+				}
+				s := &loadedTexture{
+					File:  "textures/" + name + ".png",
+					Image: img,
+				}
+				loadedTextures = append(loadedTextures, s)
+				loadTexFile(s)
+			}
+			t, ok = textureMap[name]
+			if !ok {
+				t = textureMap["missing_texture"]
+				textureMap[name] = t
+			}
+			ret <- struct{}{}
+		}
+		if w := glfw.GetCurrentContext(); w == nil {
+			syncChan <- f
+		} else {
+			f()
+		}
+		<-ret
+		textureLock.RLock()
 	}
 	return t
 }
 
-type sortableTexture struct {
-	Area  int
+type loadedTexture struct {
 	File  string
 	Image image.Image
-}
-
-type sortableTextures []sortableTexture
-
-func (s sortableTextures) Swap(a, b int) {
-	s[a], s[b] = s[b], s[a]
-}
-
-func (s sortableTextures) Len() int {
-	return len(s)
-}
-
-func (s sortableTextures) Less(a, b int) bool {
-	return s[a].Area > s[b].Area
 }
 
 // LoadTextures (re)loads all the block textures from the resource pack(s)
@@ -172,6 +196,20 @@ func LoadTextures() {
 		glTexture.Bind(gl.Texture2DArray)
 		data := make([]byte, AtlasSize*AtlasSize*textureCount*4)
 		glTexture.Image3D(0, AtlasSize, AtlasSize, textureCount, gl.RGBA, gl.UnsignedByte, data)
+	} else {
+		glTexture = gl.CreateTexture()
+		glTexture.Bind(gl.Texture2DArray)
+		textureDepth = len(textures)
+		glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, AtlasSize*AtlasSize*len(textures)*4))
+		glTexture.Parameter(gl.TextureMagFilter, gl.Nearest)
+		glTexture.Parameter(gl.TextureMinFilter, gl.Nearest)
+		glTexture.Parameter(gl.TextureWrapS, gl.ClampToEdge)
+		glTexture.Parameter(gl.TextureWrapT, gl.ClampToEdge)
+		for i, tex := range textures {
+			glTexture.SubImage3D(0, 0, 0, i, AtlasSize, AtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
+			textures[i] = nil
+		}
+		texturesCreated = true
 	}
 	freeTextures = nil
 	animatedTextures = nil
@@ -195,31 +233,19 @@ func LoadTextures() {
 		t.rect = info.rect
 	}
 
-	names := resource.Search("minecraft", "textures/", ".png")
-	tList := make(sortableTextures, 0, len(names))
-	for _, file := range names {
-		if strings.HasPrefix(file, "textures/font") {
-			continue
-		}
-		r, err := resource.Open("minecraft", file)
-		if err != nil {
-			panic(err)
-		}
-		defer r.Close()
-		img, err := png.Decode(r)
-		if err != nil {
-			panic(fmt.Sprintf("(%s): %s", file, err))
-		}
-		width, height := img.Bounds().Dx(), img.Bounds().Dy()
-		tList = append(tList, sortableTexture{
-			Area:  width * height,
-			File:  file,
-			Image: img,
-		})
-	}
-	sort.Sort(tList)
-	for _, st := range tList {
-		loadTexFile(st)
+	for _, s := range loadedTextures {
+		func() {
+			r, err := resource.Open("minecraft", s.File)
+			if err == nil {
+				defer r.Close()
+				img, err := png.Decode(r)
+				if err != nil {
+					panic(fmt.Sprintf("(%s): %s", s.File, err))
+				}
+				s.Image = img
+				loadTexFile(s)
+			}
+		}()
 	}
 
 	pix = []byte{255, 255, 255, 255}
@@ -255,7 +281,7 @@ func LoadTextures() {
 	}
 }
 
-func loadTexFile(st sortableTexture) {
+func loadTexFile(st *loadedTexture) {
 	file := st.File
 	ii := st.Image
 	img := ii.(draw.Image)

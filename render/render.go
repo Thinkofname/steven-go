@@ -63,22 +63,6 @@ func Start() {
 	shaderChunkT = &chunkShader{}
 	InitStruct(shaderChunkT, chunkProgramT)
 
-	textureLock.Lock()
-	glTexture = gl.CreateTexture()
-	glTexture.Bind(gl.Texture2DArray)
-	textureDepth = len(textures)
-	glTexture.Image3D(0, AtlasSize, AtlasSize, len(textures), gl.RGBA, gl.UnsignedByte, make([]byte, AtlasSize*AtlasSize*len(textures)*4))
-	glTexture.Parameter(gl.TextureMagFilter, gl.Nearest)
-	glTexture.Parameter(gl.TextureMinFilter, gl.Nearest)
-	glTexture.Parameter(gl.TextureWrapS, gl.ClampToEdge)
-	glTexture.Parameter(gl.TextureWrapT, gl.ClampToEdge)
-	for i, tex := range textures {
-		glTexture.SubImage3D(0, 0, 0, i, AtlasSize, AtlasSize, 1, gl.RGBA, gl.UnsignedByte, tex.Buffer)
-		textures[i] = nil
-	}
-	texturesCreated = true
-	textureLock.Unlock()
-
 	initUI()
 	initLineDraw()
 	initStatic()
