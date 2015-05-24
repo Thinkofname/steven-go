@@ -48,7 +48,7 @@ func (w world) BlockLight(x, y, z int) int {
 	cx := x >> 4
 	cz := z >> 4
 	chunk := w[chunkPosition{cx, cz}]
-	if chunk == nil {
+	if chunk == nil || y < 0 || y > 255 {
 		return 0
 	}
 	if s := chunk.Sections[y>>4]; s != nil {
@@ -61,7 +61,7 @@ func (w world) SkyLight(x, y, z int) int {
 	cx := x >> 4
 	cz := z >> 4
 	chunk := w[chunkPosition{cx, cz}]
-	if chunk == nil {
+	if chunk == nil || y < 0 || y > 255 {
 		return 15
 	}
 	if s := chunk.Sections[y>>4]; s != nil {
@@ -293,6 +293,9 @@ itQueue:
 			continue itQueue
 		}
 		s := y >> 4
+		if s < 0 || s > 15 {
+			continue
+		}
 		sec := c.Sections[s]
 		if sec == nil {
 			continue itQueue
