@@ -15,6 +15,7 @@
 package gl
 
 import (
+	"strings"
 	"unsafe"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -203,8 +204,13 @@ func (s Shader) Parameter(param ShaderParameter) int {
 func (s Shader) InfoLog() string {
 	l := s.Parameter(InfoLogLength)
 
-	buf := make([]byte, l)
+	var ptr unsafe.Pointer
+	var buf []byte
+	if l > 0 {
+		buf = make([]byte, l)
+		ptr = gl.Ptr(buf)
+	}
 
-	gl.GetShaderInfoLog(uint32(s), int32(l), nil, (*uint8)(gl.Ptr(buf)))
-	return string(buf[:len(buf)-1])
+	gl.GetShaderInfoLog(uint32(s), int32(l), nil, (*uint8)(ptr))
+	return strings.TrimRight(string(buf), "\x00")
 }
