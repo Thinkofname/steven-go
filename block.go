@@ -107,10 +107,10 @@ func (b *baseBlock) init(name string) {
 		pos := strings.IndexRune(name, ':')
 		b.plugin = name[:pos]
 		b.name = name[pos+1:]
-		return
+	} else {
+		b.name = name
+		b.plugin = "minecraft"
 	}
-	b.name = name
-	b.plugin = "minecraft"
 	b.cullAgainst = true
 	b.collidable = true
 	b.renderable = true
@@ -273,7 +273,7 @@ func (b *baseBlock) states() (out []blockState) {
 func GetBlockByCombinedID(id uint16) Block {
 	b := blocks[id]
 	if b == nil {
-		return Blocks.Stone.Base
+		return Blocks.MissingBlock.Base
 	}
 	return b
 }
@@ -414,7 +414,7 @@ func (bs *BlockSet) stringify(block Block) string {
 }
 
 func initBlocks() {
-	missingModel := findStateModel("minecraft", "clay")
+	missingModel := findStateModel("steven", "missing_block")
 	// Flatten the ids
 	for _, bs := range blockSetsByID {
 		if bs == nil {
@@ -458,7 +458,7 @@ func initBlocks() {
 
 func reinitBlocks() {
 	blockStateModels = map[pluginKey]*blockStateModel{}
-	missingModel := findStateModel("minecraft", "clay")
+	missingModel := findStateModel("steven", "missing_block")
 	// Flatten the ids
 	for _, bs := range blockSetsByID {
 		if bs == nil {

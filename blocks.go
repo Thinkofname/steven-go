@@ -220,6 +220,8 @@ var Blocks = struct {
 	JungleDoor                 *BlockSet `type:"door"`
 	AcaciaDoor                 *BlockSet `type:"door"`
 	DarkOakDoor                *BlockSet `type:"door"`
+
+	MissingBlock *BlockSet `mc:"steven:missing_block"`
 }{}
 
 var blockTypes = map[string]reflect.Type{}
