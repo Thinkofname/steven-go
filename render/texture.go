@@ -148,6 +148,7 @@ func GetTexture(name string) TextureInfo {
 			// Check to see if it was already loaded between
 			// requesting it
 			if _, ok = textureMap[name]; ok {
+				t = textureMap[name]
 				ret <- struct{}{}
 				return
 			}
