@@ -134,6 +134,7 @@ func (r *relativeTexture) Sub(x, y, w, h int) TextureInfo {
 
 // GetTexture returns the related TextureInfo for the requested texture.
 // If the texture isn't found a placeholder is returned instead.
+// The plugin prefix of 'minecraft:' is defualt
 func GetTexture(name string) TextureInfo {
 	textureLock.RLock()
 	defer textureLock.RUnlock()
@@ -150,7 +151,13 @@ func GetTexture(name string) TextureInfo {
 				ret <- struct{}{}
 				return
 			}
-			r, err := resource.Open("minecraft", "textures/"+name+".png")
+			ns := name
+			plugin := "minecraft"
+			if pos := strings.IndexRune(name, ':'); pos != -1 {
+				plugin = name[:pos]
+				ns = name[pos+1:]
+			}
+			r, err := resource.Open(plugin, "textures/"+ns+".png")
 			if err == nil {
 				defer r.Close()
 				img, err := png.Decode(r)
@@ -158,8 +165,9 @@ func GetTexture(name string) TextureInfo {
 					panic(fmt.Sprintf("(%s): %s", name, err))
 				}
 				s := &loadedTexture{
-					File:  "textures/" + name + ".png",
-					Image: img,
+					Plugin: plugin,
+					File:   "textures/" + ns + ".png",
+					Image:  img,
 				}
 				loadedTextures = append(loadedTextures, s)
 				loadTexFile(s)
@@ -183,8 +191,9 @@ func GetTexture(name string) TextureInfo {
 }
 
 type loadedTexture struct {
-	File  string
-	Image image.Image
+	Plugin string
+	File   string
+	Image  image.Image
 }
 
 // LoadTextures (re)loads all the block textures from the resource pack(s)
@@ -235,7 +244,7 @@ func LoadTextures() {
 
 	for _, s := range loadedTextures {
 		func() {
-			r, err := resource.Open("minecraft", s.File)
+			r, err := resource.Open(s.Plugin, s.File)
 			if err == nil {
 				defer r.Close()
 				img, err := png.Decode(r)
@@ -305,6 +314,9 @@ func loadTexFile(st *loadedTexture) {
 	}
 	pix := imgToBytes(img)
 	name := file[len("textures/") : len(file)-4]
+	if st.Plugin != "minecraft" {
+		name = st.Plugin + ":" + name
+	}
 	info := addTexture(pix, width, height)
 	if t, ok := textureMap[name]; ok {
 		t.atlas = info.atlas
