@@ -266,6 +266,10 @@ void main() {
 `
 	staticFragment = `
 #version 150
+#extension GL_ARB_conservative_depth : enable
+#ifdef GL_ARB_conservative_depth
+layout(depth_less) out float gl_FragDepth;
+#endif
 
 const float atlasSize = ` + atlasSizeStr + `;
 
