@@ -106,8 +106,15 @@ func Refresh(profile Profile, token string) (Profile, error) {
 	r := bytes.NewReader(b)
 	resp, err := http.Post(validateURL, "application/json", r)
 	if err == nil {
-		resp.Body.Close()
-		return profile, nil
+		defer resp.Body.Close()
+		reply, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			var me Error
+			err = json.Unmarshal(reply, &me)
+			if err != nil || me.Type == "" {
+				return profile, nil
+			}
+		}
 	}
 	r = bytes.NewReader(b)
 
