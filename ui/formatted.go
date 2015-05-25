@@ -109,6 +109,7 @@ func (f *Formatted) Draw(r Region, delta float64) {
 		for _, t := range f.Text {
 			r := getDrawRegion(t, sx, sy)
 			t.SetLayer(f.layer)
+			t.dirty = true
 			t.Draw(r, delta)
 			f.data = append(f.data, t.data...)
 		}
