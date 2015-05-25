@@ -10,10 +10,8 @@ func TestSet(t *testing.T) {
 		}
 	}
 	for i := 0; i < 200; i++ {
-		if i%3 == 0 {
-			if !s.Get(i) {
-				t.Fail()
-			}
+		if s.Get(i) != (i%3 == 0) {
+			t.Fail()
 		}
 	}
 }
