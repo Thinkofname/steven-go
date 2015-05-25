@@ -37,16 +37,13 @@ func newEditServer(index int) *editServer {
 		scene: scene.New(true),
 		index: index,
 	}
+
+	// For the text boxes
 	window.SetKeyCallback(se.handleKey)
 	window.SetCharCallback(se.handleChar)
 	se.logo.init(se.scene)
 
-	se.scene.AddDrawable(
-		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
-	)
-	se.scene.AddDrawable(
-		ui.NewText("Not affiliated with Mojang/Minecraft", 5, 5, 255, 200, 200).Attach(ui.Bottom, ui.Right),
-	)
+	uiFooter(se.scene)
 
 	done, txt := newButtonText("Done", 110, 100, 200, 40)
 	se.scene.AddDrawable(done.Attach(ui.Center, ui.Middle))

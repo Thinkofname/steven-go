@@ -23,6 +23,33 @@ import (
 	"github.com/thinkofdeath/steven/ui/scene"
 )
 
+func setUIScale() {
+	switch Config.Game.UIScale {
+	case uiAuto:
+		ui.DrawMode = ui.Scaled
+		ui.Scale = 1.0
+	case uiSmall:
+		ui.DrawMode = ui.Unscaled
+		ui.Scale = 0.4
+	case uiMedium:
+		ui.DrawMode = ui.Unscaled
+		ui.Scale = 0.6
+	case uiLarge:
+		ui.DrawMode = ui.Unscaled
+		ui.Scale = 1.0
+	}
+	ui.ForceDraw()
+}
+
+func uiFooter(scene *scene.Type) {
+	scene.AddDrawable(
+		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
+	)
+	scene.AddDrawable(
+		ui.NewText("Not affiliated with Mojang/Minecraft", 5, 5, 255, 200, 200).Attach(ui.Bottom, ui.Right),
+	)
+}
+
 type baseUI struct{}
 
 func (b *baseUI) init()                        {}

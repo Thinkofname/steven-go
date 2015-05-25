@@ -20,7 +20,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
@@ -29,45 +28,15 @@ import (
 )
 
 var (
-	profile       mojang.Profile
-	server        string
-	loadChan      = make(chan struct{})
-	currentScreen screen
-	connected     bool
+	profile   mojang.Profile
+	server    string
+	connected bool
 
 	stevenBuildVersion string = "dev"
 )
 
 func stevenVersion() string {
 	return fmt.Sprintf("%s-%s", resource.ResourcesVersion, stevenBuildVersion)
-}
-
-type screen interface {
-	init()
-	tick(delta float64)
-	hover(x, y float64, w, h int)
-	click(down bool, x, y float64, w, h int)
-	remove()
-}
-
-func setScreen(s screen) {
-	if currentScreen != nil {
-		currentScreen.remove()
-	}
-	currentScreen = s
-	if s != nil {
-		Client.scene.Hide()
-		Client.hotbarScene.Hide()
-		lockMouse = false
-		window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
-		for i := range Client.KeyState {
-			Client.KeyState[i] = false
-		}
-		s.init()
-	} else {
-		Client.scene.Show()
-		Client.hotbarScene.Show()
-	}
 }
 
 func Main(username, uuid, accessToken, s string) {
@@ -94,24 +63,6 @@ func connect() {
 	disconnectReason.Value = nil
 	Client.network.Connect(profile, server)
 	server = ""
-}
-
-func setUIScale() {
-	switch Config.Game.UIScale {
-	case uiAuto:
-		ui.DrawMode = ui.Scaled
-		ui.Scale = 1.0
-	case uiSmall:
-		ui.DrawMode = ui.Unscaled
-		ui.Scale = 0.4
-	case uiMedium:
-		ui.DrawMode = ui.Unscaled
-		ui.Scale = 0.6
-	case uiLarge:
-		ui.DrawMode = ui.Unscaled
-		ui.Scale = 1.0
-	}
-	ui.ForceDraw()
 }
 
 func start() {

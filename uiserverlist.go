@@ -60,12 +60,7 @@ func newServerList() screen {
 	}
 	sl.logo.init(sl.scene)
 
-	sl.scene.AddDrawable(
-		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
-	)
-	sl.scene.AddDrawable(
-		ui.NewText("Not affiliated with Mojang/Minecraft", 5, 5, 255, 200, 200).Attach(ui.Bottom, ui.Right),
-	)
+	uiFooter(sl.scene)
 
 	sl.redraw()
 

@@ -117,9 +117,8 @@ func newOptionMenu(ret func() screen) *optionMenu {
 	om.scene.AddDrawable(
 		ui.NewText("* Requires a client restart to take effect", 0, 100, 255, 200, 200).Attach(ui.Bottom, ui.Middle),
 	)
-	om.scene.AddDrawable(
-		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
-	)
+
+	uiFooter(om.scene)
 
 	scales := []string{
 		uiAuto, uiSmall, uiMedium, uiLarge,

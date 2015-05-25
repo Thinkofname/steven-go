@@ -58,12 +58,7 @@ func newResourceList(ret func() screen) screen {
 	}
 	rl.logo.init(rl.scene)
 
-	rl.scene.AddDrawable(
-		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
-	)
-	rl.scene.AddDrawable(
-		ui.NewText("Not affiliated with Mojang/Minecraft", 5, 5, 255, 200, 200).Attach(ui.Bottom, ui.Right),
-	)
+	uiFooter(rl.scene)
 
 	rl.redraw()
 

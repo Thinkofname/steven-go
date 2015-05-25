@@ -52,9 +52,7 @@ func newGameMenu() screen {
 	gm.scene.AddDrawable(txt)
 	option.ClickFunc = func() { setScreen(newOptionMenu(newGameMenu)) }
 
-	gm.scene.AddDrawable(
-		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
-	)
+	uiFooter(gm.scene)
 	return gm
 }
 

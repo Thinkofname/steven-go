@@ -88,12 +88,7 @@ func newLoginScreen() *loginScreen {
 	ls.scene.AddDrawable(ls.loginTxt)
 	ls.loginBtn.ClickFunc = ls.login
 
-	ls.scene.AddDrawable(
-		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
-	)
-	ls.scene.AddDrawable(
-		ui.NewText("Not affiliated with Mojang/Minecraft", 5, 5, 255, 200, 200).Attach(ui.Bottom, ui.Right),
-	)
+	uiFooter(ls.scene)
 
 	ls.loginError = ui.NewText("", 0, 150, 255, 50, 50).Attach(ui.Center, ui.Middle)
 	ls.scene.AddDrawable(ls.loginError)

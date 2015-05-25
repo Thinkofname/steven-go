@@ -54,9 +54,7 @@ func newRespawnScreen() *respawnScreen {
 	rs.scene.AddDrawable(txt)
 	disconnect.ClickFunc = func() { Client.network.SignalClose(errManualDisconnect) }
 
-	rs.scene.AddDrawable(
-		ui.NewText("Steven - "+stevenVersion(), 5, 5, 255, 255, 255).Attach(ui.Bottom, ui.Left),
-	)
+	uiFooter(rs.scene)
 	return rs
 }
 
