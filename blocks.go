@@ -68,7 +68,7 @@ var Blocks = struct {
 	DoubleStoneSlab            *BlockSet `type:"slabDoubleSeamless" variant:"stone"`
 	StoneSlab                  *BlockSet `type:"slab" variant:"stone"`
 	BrickBlock                 *BlockSet
-	TNT                        *BlockSet
+	TNT                        *BlockSet `mc:"tnt"`
 	BookShelf                  *BlockSet
 	MossyCobblestone           *BlockSet
 	Obsidian                   *BlockSet
