@@ -52,6 +52,22 @@ var entityTypes = map[int]func() Entity{
 	120: newVillager,
 }
 
+var globalSystems []globalSystem
+
+type globalSystem struct {
+	Stage    entitysys.Stage
+	F        interface{}
+	Matchers []entitysys.Matcher
+}
+
+func addSystem(stage entitysys.Stage, f interface{}, matchers ...entitysys.Matcher) {
+	globalSystems = append(globalSystems, globalSystem{
+		Stage:    stage,
+		F:        f,
+		Matchers: matchers,
+	})
+}
+
 type clientEntities struct {
 	entities  map[int]Entity
 	container *entitysys.Container
@@ -60,9 +76,9 @@ type clientEntities struct {
 func (ce *clientEntities) init() {
 	ce.container = entitysys.NewContainer()
 	ce.entities = map[int]Entity{}
-	ce.register()
-	ce.registerModels()
-	ce.registerBlockEntities()
+	for _, g := range globalSystems {
+		ce.container.AddSystem(g.Stage, g.F, g.Matchers...)
+	}
 }
 
 func (ce *clientEntities) add(id int, e Entity) {

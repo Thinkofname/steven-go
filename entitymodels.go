@@ -23,13 +23,13 @@ import (
 	"github.com/thinkofdeath/steven/type/direction"
 )
 
-func (ce *clientEntities) registerModels() {
-	ce.container.AddSystem(entitysys.Add, esPlayerModelAdd)
-	ce.container.AddSystem(entitysys.Tick, esPlayerModelTick)
-	ce.container.AddSystem(entitysys.Remove, esPlayerModelRemove)
+func init() {
+	addSystem(entitysys.Add, esPlayerModelAdd)
+	addSystem(entitysys.Tick, esPlayerModelTick)
+	addSystem(entitysys.Remove, esPlayerModelRemove)
 
 	// Generic removal
-	ce.container.AddSystem(entitysys.Remove, esModelRemove)
+	addSystem(entitysys.Remove, esModelRemove)
 }
 
 func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures [6]render.TextureInfo) []*render.StaticVertex {

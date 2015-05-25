@@ -24,10 +24,10 @@ import (
 	"github.com/thinkofdeath/steven/render"
 )
 
-func (ce *clientEntities) registerBlockEntities() {
-	ce.container.AddSystem(entitysys.Add, esSkullAdd)
-	ce.container.AddSystem(entitysys.Remove, esSkullRemove)
-	ce.container.AddSystem(entitysys.Add, esSignAdd)
+func init() {
+	addSystem(entitysys.Add, esSkullAdd)
+	addSystem(entitysys.Remove, esSkullRemove)
+	addSystem(entitysys.Add, esSignAdd)
 }
 
 // updates the Colors of the model to fake lighting

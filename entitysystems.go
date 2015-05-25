@@ -21,12 +21,12 @@ import (
 	"github.com/thinkofdeath/steven/render"
 )
 
-func (ce *clientEntities) register() {
-	ce.container.AddSystem(entitysys.Tick, esMoveToTarget)
-	ce.container.AddSystem(entitysys.Tick, esRotateToTarget)
-	ce.container.AddSystem(entitysys.Tick, esDrawOutline)
-	ce.container.AddSystem(entitysys.Tick, esLightModel)
-	ce.container.AddSystem(entitysys.Tick, esMoveChunk)
+func init() {
+	addSystem(entitysys.Tick, esMoveToTarget)
+	addSystem(entitysys.Tick, esRotateToTarget)
+	addSystem(entitysys.Tick, esDrawOutline)
+	addSystem(entitysys.Tick, esLightModel)
+	addSystem(entitysys.Tick, esMoveChunk)
 }
 
 func esDrawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
