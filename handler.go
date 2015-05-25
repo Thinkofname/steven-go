@@ -426,6 +426,20 @@ func (handler) Animation(p *protocol.Animation) {
 	}
 }
 
+func (handler) EntityEquipment(p *protocol.EntityEquipment) {
+	e, ok := Client.entities.entities[int(p.EntityID)]
+	if !ok {
+		return
+	}
+	switch p.Slot {
+	case 0: // Swing arm
+		if pl, ok := e.(PlayerModelComponent); ok {
+			pl.SetCurrentItem(ItemStackFromProtocol(p.Item))
+		}
+	}
+
+}
+
 func (handler) PlayerListInfo(p *protocol.PlayerInfo) {
 	playerList := Client.playerList.info
 	for _, pl := range p.Players {

@@ -18,6 +18,7 @@ import (
 	"image"
 	"math"
 
+	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/type/direction"
 )
@@ -28,12 +29,13 @@ type processedModel struct {
 }
 
 type processedFace struct {
-	cullFace  direction.Type
-	facing    direction.Type
-	vertices  []chunkVertex
-	indices   []int32
-	shade     bool
-	tintIndex int
+	cullFace        direction.Type
+	facing          direction.Type
+	vertices        []chunkVertex
+	verticesTexture []render.TextureInfo
+	indices         []int32
+	shade           bool
+	tintIndex       int
 }
 
 var faceRotation = []direction.Type{
@@ -133,6 +135,7 @@ func precomputeModel(bm *model) *processedModel {
 			var maxX, maxY, maxZ int16 = math.MinInt16, math.MinInt16, math.MinInt16
 
 			for v := range vert.verts {
+				pFace.verticesTexture = append(pFace.verticesTexture, tex)
 				vert.verts[v].TX = uint16(rect.X)
 				vert.verts[v].TY = uint16(rect.Y)
 				vert.verts[v].TW = uint16(rect.Width)

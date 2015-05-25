@@ -129,20 +129,3 @@ func createItemIcon(item *ItemStack, scene *scene.Type, x, y float64) *ui.Contai
 	}
 	return container
 }
-
-var modelCache = map[string]*model{}
-
-func getModel(name string) *model {
-	if mdl, ok := modelCache[name]; ok {
-		return mdl
-	}
-	js := &jsModel{}
-	err := loadJSON("minecraft", "models/item/"+name+".json", js)
-	if err != nil {
-		modelCache[name] = nil
-		return nil
-	}
-	mdl := parseModel("minecraft", js)
-	modelCache[name] = mdl
-	return mdl
-}
