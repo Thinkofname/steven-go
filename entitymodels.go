@@ -127,6 +127,7 @@ func (p *playerModelComponent) SetCurrentItem(item *ItemStack) {
 	p.heldModel = render.NewStaticModel([][]*render.StaticVertex{
 		out,
 	})
+	p.heldModel.Radius = 3
 }
 
 type PlayerModelComponent interface {
@@ -308,6 +309,9 @@ func esPlayerModelTick(p *playerModelComponent,
 	model := p.model
 
 	model.X, model.Y, model.Z = -float32(x), -float32(y), float32(z)
+	if p.heldModel != nil {
+		p.heldModel.X, p.heldModel.Y, p.heldModel.Z = -float32(x), -float32(y), float32(z)
+	}
 
 	offMat := mgl32.Translate3D(float32(x), -float32(y), float32(z)).
 		Mul4(mgl32.Rotate3DY(math.Pi - float32(r.Yaw())).Mat4())
