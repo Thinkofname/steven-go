@@ -82,9 +82,11 @@ type playerModelComponent struct {
 	hasNameTag    bool
 	isFirstPerson bool
 
-	dir      float64
-	time     float64
-	idleTime float64
+	dir        float64
+	time       float64
+	idleTime   float64
+	manualMove bool
+	walking    bool
 
 	armTime float64
 
@@ -375,7 +377,7 @@ func esPlayerModelTick(p *playerModelComponent,
 		Mul4(mgl32.Rotate3DX(-float32(math.Sin(iTime) * 0.06)).Mat4())
 
 	update := true
-	if t.X == t.sX && t.Y == t.sY && t.Z == t.sZ {
+	if (!p.manualMove && t.X == t.sX && t.Y == t.sY && t.Z == t.sZ) || (p.manualMove && !p.walking) {
 		if t.stillTime > 5.0 {
 			if math.Abs(time-15) <= 1.5*Client.delta {
 				time = 15

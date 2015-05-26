@@ -225,6 +225,7 @@ func (c *ClientState) initEntity(head bool) {
 	c.entity = ce
 	ce.hasHead = head
 	ce.isFirstPerson = !head
+	ce.manualMove = true
 	ce.SetCurrentItem(c.lastHotbarItem)
 }
 
@@ -250,6 +251,7 @@ func (c *ClientState) renderTick(delta float64) {
 	forward, yaw := c.calculateMovement()
 
 	c.LX, c.LY, c.LZ = c.X, c.Y, c.Z
+	lx, ly, lz := c.X, c.Y, c.Z
 
 	if c.GameMode.Fly() {
 		c.X += forward * math.Cos(yaw) * -math.Cos(c.Pitch) * delta * 0.2
@@ -349,6 +351,7 @@ func (c *ClientState) renderTick(delta float64) {
 	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
 	c.entity.SetTargetYaw(-c.Yaw)
 	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
+	c.entity.walking = c.X != lx || c.Y != ly || c.Z != lz
 
 	//  Highlights the target block
 	c.highlightTarget()
