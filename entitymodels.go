@@ -115,9 +115,6 @@ func (p *playerModelComponent) SetCurrentItem(item *ItemStack) {
 		blk = bt.block
 	}
 	mode := "thirdperson"
-	if p.isFirstPerson {
-		mode = "firstperson"
-	}
 
 	var out []*render.StaticVertex
 	if mdl.builtIn == builtInGenerated {
@@ -357,40 +354,19 @@ func esPlayerModelTick(p *playerModelComponent,
 	}
 
 	model.Matrix[playerModelArmRight] = offMat.Mul4(mgl32.Translate3D(6/16.0, -12/16.0-12/16.0, 0))
-	if !p.isFirstPerson {
-		model.Matrix[playerModelArmRight] = model.Matrix[playerModelArmRight].
+	model.Matrix[playerModelArmRight] = model.Matrix[playerModelArmRight].
+		Mul4(mgl32.Rotate3DX(-float32(ang * 0.75)).Mat4()).
+		Mul4(mgl32.Rotate3DZ(float32(math.Cos(iTime)*0.06) - 0.06).Mat4()).
+		Mul4(mgl32.Rotate3DX(float32(math.Sin(iTime)*0.06) - float32((7.5-math.Abs(p.armTime-7.5))/7.5)).Mat4())
+
+	if p.heldModel != nil {
+		p.heldModel.Matrix[0] = offMat.Mul4(mgl32.Translate3D(6/16.0, -12/16.0-12/16.0, 0.0)).
 			Mul4(mgl32.Rotate3DX(-float32(ang * 0.75)).Mat4()).
 			Mul4(mgl32.Rotate3DZ(float32(math.Cos(iTime)*0.06) - 0.06).Mat4()).
-			Mul4(mgl32.Rotate3DX(float32(math.Sin(iTime)*0.06) - float32((7.5-math.Abs(p.armTime-7.5))/7.5)).Mat4())
-
-		if p.heldModel != nil {
-			p.heldModel.Matrix[0] = offMat.Mul4(mgl32.Translate3D(6/16.0, -12/16.0-12/16.0, 0.0)).
-				Mul4(mgl32.Rotate3DX(-float32(ang * 0.75)).Mat4()).
-				Mul4(mgl32.Rotate3DZ(float32(math.Cos(iTime)*0.06) - 0.06).Mat4()).
-				Mul4(mgl32.Rotate3DX(float32(math.Sin(iTime)*0.06) - float32((7.5-math.Abs(p.armTime-7.5))/7.5)).Mat4()).
-				Mul4(mgl32.Translate3D(0, 11/16.0, -5/16.0)).
-				Mul4(mgl32.Rotate3DX(math.Pi).Mat4()).
-				Mul4(p.heldMat)
-		}
-	} else {
-		pitch := r.Pitch()
-		if pitch > math.Pi {
-			pitch -= math.Pi * 2
-		}
-		model.Matrix[playerModelArmRight] = model.Matrix[playerModelArmRight].
-			Mul4(mgl32.Rotate3DX(float32(-1.2) - float32((7.5-math.Abs(p.armTime-7.5))/7.5) + float32(pitch*0.4)).Mat4()).
-			Mul4(mgl32.Rotate3DZ(-0.15 - float32((7.5-math.Abs(p.armTime-7.5))/15.0)).Mat4()).
-			Mul4(mgl32.Translate3D(0, -4/16.0, 0))
-
-		if p.heldModel != nil {
-			p.heldModel.Matrix[0] = offMat.Mul4(mgl32.Translate3D(6/16.0, -12/16.0-12/16.0, 0)).
-				Mul4(mgl32.Rotate3DX(float32(-1.2) - float32((7.5-math.Abs(p.armTime-7.5))/7.5) + float32(pitch*0.4)).Mat4()).
-				Mul4(mgl32.Rotate3DZ(-0.15 - float32((7.5-math.Abs(p.armTime-7.5))/15.0)).Mat4()).
-				Mul4(mgl32.Translate3D(0, 8/16.0, -2/16.0)).
-				Mul4(mgl32.Scale3D(0.3, 0.3, 0.3)).
-				Mul4(mgl32.Rotate3DX(math.Pi / 2).Mat4()).
-				Mul4(p.heldMat)
-		}
+			Mul4(mgl32.Rotate3DX(float32(math.Sin(iTime)*0.06) - float32((7.5-math.Abs(p.armTime-7.5))/7.5)).Mat4()).
+			Mul4(mgl32.Translate3D(0, 11/16.0, -5/16.0)).
+			Mul4(mgl32.Rotate3DX(math.Pi).Mat4()).
+			Mul4(p.heldMat)
 	}
 
 	model.Matrix[playerModelArmLeft] = offMat.Mul4(mgl32.Translate3D(-6/16.0, -12/16.0-12/16.0, 0)).
