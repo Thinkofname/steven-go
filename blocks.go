@@ -120,7 +120,7 @@ var Blocks = struct {
 	StainedGlass               *BlockSet `type:"stainedGlass"`
 	TrapDoor                   *BlockSet
 	MonsterEgg                 *BlockSet
-	StoneBrick                 *BlockSet `mc:"stonebrick"`
+	StoneBrick                 *BlockSet `mc:"stonebrick" type:"stonebrick"`
 	BrownMushroomBlock         *BlockSet
 	RedMushroomBlock           *BlockSet
 	IronBars                   *BlockSet `type:"connectable"`

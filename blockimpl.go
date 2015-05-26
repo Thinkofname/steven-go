@@ -1826,3 +1826,42 @@ func (b *blockLilypad) TintImage() *image.NRGBA {
 func (b *blockLilypad) toData() int {
 	return 0
 }
+
+// Stone brick
+
+type stoneBrickVariant int
+
+const (
+	stoneBrickNormal stoneBrickVariant = iota
+	stoneBrickMossy
+	stoneBrickCracked
+	stoneBrickChiseled
+)
+
+func (s stoneBrickVariant) String() string {
+	switch s {
+	case stoneBrickNormal:
+		return "stonebrick"
+	case stoneBrickMossy:
+		return "mossy_stonebrick"
+	case stoneBrickCracked:
+		return "cracked_stonebrick"
+	case stoneBrickChiseled:
+		return "chiseled_stonebrick"
+	}
+	return fmt.Sprintf("stoneBrickVariant(%d)", s)
+}
+
+type blockStoneBrick struct {
+	baseBlock
+	Variant stoneBrickVariant `state:"variant,0-3"`
+}
+
+func (b *blockStoneBrick) ModelName() string {
+	return b.Variant.String()
+}
+
+func (b *blockStoneBrick) toData() int {
+	data := int(b.Variant)
+	return data
+}
