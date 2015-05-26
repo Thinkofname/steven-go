@@ -223,12 +223,12 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, indices int) 
 
 	cb.bufferTI.Bind(gl.ElementArrayBuffer)
 	cb.transData, cb.bufferTIType = genElementBuffer(indices)
-	cb.bufferTI.Data(cb.transData, gl.DynamicDraw)
+	cb.bufferTI.Data(cb.transData, gl.StreamDraw)
 
 	cb.bufferT.Bind(gl.ArrayBuffer)
 	if n || len(data) > cb.bufferTSize {
 		cb.bufferTSize = len(data)
-		cb.bufferT.Data(data, gl.StreamDraw)
+		cb.bufferT.Data(data, gl.DynamicDraw)
 	} else {
 		target := cb.bufferT.Map(gl.WriteOnly, len(data))
 		copy(target, data)

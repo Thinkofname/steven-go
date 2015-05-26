@@ -17,6 +17,7 @@ package steven
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math"
 	"strings"
 
@@ -63,7 +64,7 @@ func loadStateModel(key pluginKey) *blockStateModel {
 	var data jsType
 	err := loadJSON(key.Plugin, fmt.Sprintf("blockstates/%s.json", key.Name), &data)
 	if err != nil {
-		fmt.Printf("Error loading state %s: %s\n", key.Name, err)
+		log.Printf("Error loading state %s: %s\n", key.Name, err)
 		return nil
 	}
 	bs := &blockStateModel{
@@ -140,7 +141,7 @@ func parseBlockStateVariant(plugin string, js realjson.RawMessage) *model {
 	var data jsType
 	err := json.Unmarshal(js, &data)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return nil
 	}
 	var bdata jsModel
@@ -170,7 +171,7 @@ func parseModel(plugin string, data *jsModel) *model {
 		var pdata jsModel
 		err := loadJSON(plugin, "models/"+data.Parent+".json", &pdata)
 		if err != nil {
-			fmt.Printf("Error loading model %s: %s\n", data.Parent, err)
+			log.Printf("Error loading model %s: %s\n", data.Parent, err)
 			return nil
 		}
 		bm = parseModel(plugin, &pdata)

@@ -15,6 +15,9 @@
 package steven
 
 import (
+	"io"
+	"log"
+	"os"
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
@@ -27,6 +30,13 @@ var window *glfw.Window
 
 func init() {
 	runtime.LockOSThread()
+
+	f, err := os.Create("steven-log.txt")
+	if err != nil {
+		panic(err)
+	}
+	log.SetOutput(io.MultiWriter(f, os.Stdout))
+	log.SetFlags(log.Lshortfile | log.Ltime)
 }
 
 func startWindow() {
@@ -40,6 +50,9 @@ func startWindow() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	glfw.WindowHint(glfw.Samples, Config.Render.Samples)
+	if os.Getenv("STEVEN_DEBUG") == "true" {
+		glfw.WindowHint(glfw.OpenGLDebugContext, glfw.True)
+	}
 	render.MultiSample = Config.Render.Samples > 0
 
 	var err error

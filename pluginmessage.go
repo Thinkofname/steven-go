@@ -16,8 +16,8 @@ package steven
 
 import (
 	"bytes"
-	"fmt"
 	"io"
+	"log"
 	"reflect"
 
 	"github.com/thinkofdeath/steven/protocol"
@@ -46,13 +46,13 @@ func (h handler) handlePluginMessage(channel string, r io.Reader, serverbound bo
 		pm, ok = pluginMessagesClientbound[channel]
 	}
 	if !ok {
-		fmt.Printf("Unhandled plugin message %s\n", channel)
+		log.Printf("Unhandled plugin message %s\n", channel)
 		return
 	}
 	p := reflect.New(pm).Interface().(pluginMessage)
 	err := p.read(r)
 	if err != nil {
-		fmt.Printf("Failed to handle plugin message %s: %s", channel, err)
+		log.Printf("Failed to handle plugin message %s: %s", channel, err)
 		return
 	}
 	h.Handle(p)

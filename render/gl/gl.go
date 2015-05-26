@@ -17,6 +17,7 @@ package gl
 
 import (
 	"fmt"
+	"log"
 	"unsafe"
 
 	"github.com/thinkofdeath/gl/v3.2-core/gl"
@@ -248,6 +249,56 @@ func DebugLog() {
 		length int32,
 		message string,
 		userParam unsafe.Pointer) {
-		fmt.Printf("GL: %d, %d, %d, %d: %s\n", source, gltype, id, severity, message)
+		// Source
+		strSource := "unknown"
+		switch source {
+		case gl.DEBUG_SOURCE_API:
+			strSource = "api"
+		case gl.DEBUG_SOURCE_WINDOW_SYSTEM:
+			strSource = "windowSystem"
+		case gl.DEBUG_SOURCE_SHADER_COMPILER:
+			strSource = "shaderCompiler"
+		case gl.DEBUG_SOURCE_THIRD_PARTY:
+			strSource = "thirdParty"
+		case gl.DEBUG_SOURCE_APPLICATION:
+			strSource = "application"
+		case gl.DEBUG_SOURCE_OTHER:
+			strSource = "other"
+		}
+		// Type
+		strType := "unknown"
+		switch gltype {
+		case gl.DEBUG_TYPE_ERROR:
+			strType = "error"
+		case gl.DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+			strType = "deprecatedBehavior"
+		case gl.DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+			strType = "undefinedBehavior"
+		case gl.DEBUG_TYPE_PORTABILITY:
+			strType = "portability"
+		case gl.DEBUG_TYPE_PERFORMANCE:
+			strType = "performance"
+		case gl.DEBUG_TYPE_MARKER:
+			strType = "marker"
+		case gl.DEBUG_TYPE_PUSH_GROUP:
+			strType = "pushGroup"
+		case gl.DEBUG_TYPE_POP_GROUP:
+			strType = "popGroup"
+		case gl.DEBUG_TYPE_OTHER:
+			strType = "other"
+		}
+		// Severity
+		strSeverity := "unknown"
+		switch severity {
+		case gl.DEBUG_SEVERITY_HIGH:
+			strSeverity = "high"
+		case gl.DEBUG_SEVERITY_MEDIUM:
+			strSeverity = "medium"
+		case gl.DEBUG_SEVERITY_LOW:
+			strSeverity = "low"
+		case gl.DEBUG_SEVERITY_NOTIFICATION:
+			return
+		}
+		log.Printf("[%s][%s][%s]: %s\n", strSource, strType, strSeverity, message)
 	}, nil)
 }

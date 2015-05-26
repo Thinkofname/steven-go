@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"log"
 	"math"
 	"reflect"
 	"strconv"
@@ -444,9 +445,9 @@ func initBlocks() {
 					)
 					continue
 				}
-				fmt.Printf("Missing block variant (%s) for %s\n", b.ModelVariant(), b)
+				log.Printf("Missing block variant (%s) for %s\n", b.ModelVariant(), b)
 			} else {
-				fmt.Printf("Missing block model for %s\n", b)
+				log.Printf("Missing block model for %s\n", b)
 			}
 			br.FieldByName("BlockVariants").Set(
 				reflect.ValueOf(missingModel.variant("normal")),
@@ -478,9 +479,9 @@ func reinitBlocks() {
 					)
 					continue
 				}
-				fmt.Printf("Missing block variant (%s) for %s\n", b.ModelVariant(), b)
+				log.Printf("Missing block variant (%s) for %s\n", b.ModelVariant(), b)
 			} else {
-				fmt.Printf("Missing block model for %s\n", b)
+				log.Printf("Missing block model for %s\n", b)
 			}
 			br.FieldByName("BlockVariants").Set(
 				reflect.ValueOf(missingModel.variant("normal")),

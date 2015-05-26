@@ -16,6 +16,7 @@ package render
 
 import (
 	"math"
+	"os"
 	"strings"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -49,6 +50,10 @@ var (
 
 // Start starts the renderer
 func Start() {
+	if os.Getenv("STEVEN_DEBUG") == "true" {
+		gl.DebugLog()
+	}
+
 	gl.ClearColor(122.0/255.0, 165.0/255.0, 247.0/255.0, 1.0)
 	gl.Enable(gl.DepthTest)
 	gl.Enable(gl.CullFaceFlag)
