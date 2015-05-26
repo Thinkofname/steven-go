@@ -109,21 +109,23 @@ func (p *playerModelComponent) SetCurrentItem(item *ItemStack) {
 	if mdl == nil {
 		mdl = getModel("stone")
 	}
+
+	var blk Block
+	if bt, ok := item.Type.(*blockItem); ok {
+		blk = bt.block
+	}
+	mode := "thirdperson"
+	if p.isFirstPerson {
+		mode = "firstperson"
+	}
+
 	var out []*render.StaticVertex
 	if mdl.builtIn == builtInGenerated {
-		// TODO
-		p.heldMat = mgl32.Ident4()
+		out, p.heldMat = genStaticModelFromItem(mdl, blk, mode)
 	} else if mdl.builtIn == builtInFalse {
-		var blk Block
-		if bt, ok := item.Type.(*blockItem); ok {
-			blk = bt.block
-		}
-		mode := "thirdperson"
-		if p.isFirstPerson {
-			mode = "firstperson"
-		}
 		out, p.heldMat = staticModelFromItem(mdl, blk, mode)
 	}
+
 	p.heldModel = render.NewStaticModel([][]*render.StaticVertex{
 		out,
 	})
