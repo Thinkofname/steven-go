@@ -884,8 +884,8 @@ func (c *ClientState) copyToCamera() {
 	render.Camera.X = x
 	render.Camera.Y = y + playerHeight
 	render.Camera.Z = z
-	render.Camera.Yaw = -c.entity.Yaw()
-	render.Camera.Pitch = -c.entity.Pitch() + math.Pi
+	render.Camera.Yaw = c.Yaw
+	render.Camera.Pitch = c.Pitch
 	switch c.cameraMode {
 	case cameraBehind:
 		render.Camera.X -= 4 * math.Cos(-c.entity.Yaw()-math.Pi/2) * -math.Cos(-c.entity.Pitch()+math.Pi)
