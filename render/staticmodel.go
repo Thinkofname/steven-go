@@ -83,7 +83,7 @@ func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
 	staticState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 36, 12)
 	staticState.shader.TextureOffset.PointerInt(3, gl.Short, 36, 20)
 	staticState.shader.Color.Pointer(4, gl.UnsignedByte, true, 36, 28)
-	staticState.shader.ID.PointerInt(1, gl.UnsignedByte, 36, 32)
+	staticState.shader.ID.PointerInt(4, gl.UnsignedByte, 36, 32)
 
 	model.Matrix = make([]mgl32.Mat4, len(parts))
 	model.Colors = make([][4]float32, len(parts))
