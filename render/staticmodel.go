@@ -40,8 +40,10 @@ type staticVertexInternal struct {
 	X, Y, Z                    float32
 	TX, TY, TW, TH             uint16
 	TOffsetX, TOffsetY, TAtlas int16
+	Pad0                       int16
 	R, G, B, A                 byte
 	ID                         byte
+	Pad1, Pad2, Pad3           byte
 }
 
 var staticFunc, staticTypes = builder.Struct(&staticVertexInternal{})
@@ -77,11 +79,11 @@ func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
 	staticState.shader.TextureOffset.Enable()
 	staticState.shader.Color.Enable()
 	staticState.shader.ID.Enable()
-	staticState.shader.Position.Pointer(3, gl.Float, false, 31, 0)
-	staticState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 31, 12)
-	staticState.shader.TextureOffset.PointerInt(3, gl.Short, 31, 20)
-	staticState.shader.Color.Pointer(4, gl.UnsignedByte, true, 31, 26)
-	staticState.shader.ID.PointerInt(1, gl.UnsignedByte, 31, 30)
+	staticState.shader.Position.Pointer(3, gl.Float, false, 36, 0)
+	staticState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 36, 12)
+	staticState.shader.TextureOffset.PointerInt(3, gl.Short, 36, 20)
+	staticState.shader.Color.Pointer(4, gl.UnsignedByte, true, 36, 28)
+	staticState.shader.ID.PointerInt(1, gl.UnsignedByte, 36, 32)
 
 	model.Matrix = make([]mgl32.Mat4, len(parts))
 	model.Colors = make([][4]float32, len(parts))

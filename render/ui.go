@@ -55,10 +55,10 @@ func initUI() {
 	uiState.shader.TextureInfo.Enable()
 	uiState.shader.TextureOffset.Enable()
 	uiState.shader.Color.Enable()
-	uiState.shader.Position.PointerInt(3, gl.Short, 24, 0)
-	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 24, 6)
-	uiState.shader.TextureOffset.PointerInt(3, gl.Short, 24, 14)
-	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 24, 20)
+	uiState.shader.Position.PointerInt(3, gl.Short, 28, 0)
+	uiState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 28, 8)
+	uiState.shader.TextureOffset.PointerInt(3, gl.Short, 28, 16)
+	uiState.shader.Color.Pointer(4, gl.UnsignedByte, true, 28, 24)
 
 	uiState.indexBuffer = gl.CreateBuffer()
 	uiState.indexBuffer.Bind(gl.ElementArrayBuffer)
@@ -115,7 +115,7 @@ type UIElement struct {
 
 func UIAddBytes(data []byte) {
 	uiState.data = append(uiState.data, data...)
-	uiState.count += (len(data) / (24 * 4)) * 6
+	uiState.count += (len(data) / (28 * 4)) * 6
 }
 
 func NewUIElement(tex TextureInfo, x, y, width, height float64, tx, ty, tw, th float64) *UIElement {
@@ -143,7 +143,7 @@ func NewUIElement(tex TextureInfo, x, y, width, height float64, tx, ty, tw, th f
 }
 
 func (u *UIElement) Bytes() []byte {
-	data := make([]byte, 0, 24*4)
+	data := make([]byte, 0, 28*4)
 	data = u.appendVertex(data, u.X, u.Y, u.TOffsetX, u.TOffsetY)
 	data = u.appendVertex(data, u.X+u.W, u.Y, u.TOffsetX+u.TSizeW, u.TOffsetY)
 	data = u.appendVertex(data, u.X, u.Y+u.H, u.TOffsetX, u.TOffsetY+u.TSizeH)
@@ -164,6 +164,7 @@ func (u *UIElement) appendVertex(data []byte, x, y float64, tx, ty int16) []byte
 	data = appendShort(data, int16(math.Floor((dx*float64(lastWidth))+0.5)))
 	data = appendShort(data, int16(math.Floor((dy*float64(lastHeight))+0.5)))
 	data = appendShort(data, int16(u.Layer*256))
+	data = appendShort(data, 0)
 	data = appendUnsignedShort(data, u.TX)
 	data = appendUnsignedShort(data, u.TY)
 	data = appendUnsignedShort(data, u.TW)
@@ -171,6 +172,7 @@ func (u *UIElement) appendVertex(data []byte, x, y float64, tx, ty int16) []byte
 	data = appendShort(data, tx)
 	data = appendShort(data, ty)
 	data = appendShort(data, u.TAtlas)
+	data = appendShort(data, 0)
 	data = appendUnsignedByte(data, u.R)
 	data = appendUnsignedByte(data, u.G)
 	data = appendUnsignedByte(data, u.B)

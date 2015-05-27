@@ -118,7 +118,7 @@ func newUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UITex
 }
 
 func (u UIText) Bytes() []byte {
-	data := make([]byte, 0, 24*4*len(u.Elements))
+	data := make([]byte, 0, 28*4*len(u.Elements))
 	for _, e := range u.Elements {
 		data = append(data, e.Bytes()...)
 	}
