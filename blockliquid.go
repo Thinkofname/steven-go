@@ -26,6 +26,8 @@ type blockLiquid struct {
 	baseBlock
 	Lava  bool
 	Level int `state:"level,0-15"`
+
+	Tex render.TextureInfo
 }
 
 func (l *blockLiquid) load(tag reflect.StructTag) {
@@ -57,16 +59,14 @@ func (l *blockLiquid) toData() int {
 }
 
 func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder.Buffer, indices *int) {
-	var tex render.TextureInfo
+	tex := l.Tex
 	var b1, b2 *BlockSet
 	if l.Lava {
 		b1 = Blocks.Lava
 		b2 = Blocks.FlowingLava
-		tex = render.GetTexture("blocks/lava_still")
 	} else {
 		b1 = Blocks.Water
 		b2 = Blocks.FlowingWater
-		tex = render.GetTexture("blocks/water_still")
 	}
 
 	var tl, tr, bl, br int

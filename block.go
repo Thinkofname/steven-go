@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/type/vmath"
 )
 
@@ -434,7 +435,15 @@ func initBlocks() {
 				blocks[(bs.ID<<4)|data] = b
 			}
 			// Liquids have custom rendering
-			if _, ok := b.(*blockLiquid); ok || !b.Renderable() {
+			if l, ok := b.(*blockLiquid); ok {
+				if l.Lava {
+					l.Tex = render.GetTexture("blocks/lava_still")
+				} else {
+					l.Tex = render.GetTexture("blocks/water_still")
+				}
+				continue
+			}
+			if !b.Renderable() {
 				continue
 			}
 
