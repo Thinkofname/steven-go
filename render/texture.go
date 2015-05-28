@@ -175,7 +175,8 @@ func GetTexture(name string) TextureInfo {
 			}
 			t, ok = textureMap[name]
 			if !ok {
-				t = textureMap["missing_texture"]
+				ti := *textureMap["missing_texture"]
+				t = &ti
 				textureMap[name] = t
 			}
 			ret <- struct{}{}
