@@ -25,6 +25,7 @@ import (
 // Formatted is a drawable that draws a string.
 type Formatted struct {
 	baseElement
+	value          chat.AnyComponent
 	x, y           float64
 	MaxWidth       float64
 	scaleX, scaleY float64
@@ -136,6 +137,7 @@ func (f *Formatted) Remove() {
 
 // Update updates the component drawn by this drawable.
 func (f *Formatted) Update(val chat.AnyComponent) {
+	f.value = val
 	f.Text = f.Text[:0]
 	state := formatState{
 		f: f,

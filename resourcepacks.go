@@ -16,14 +16,46 @@ package steven
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource"
 	"github.com/thinkofdeath/steven/ui"
 )
 
+func initResources() {
+	var progressBar *ui.Image
+	var progressText *ui.Text
+	resource.Init(func(progress float64, done bool) {
+		fmt.Printf("Progress: %0.2f %t\n", progress, done)
+		if !done {
+			if progressBar == nil {
+				progressBar = ui.NewImage(render.GetTexture("solid"), 0, 0, 854, 21, 0, 0, 1, 1, 0, 125, 0)
+				ui.AddDrawable(progressBar.Attach(ui.Top, ui.Left))
+				progressText = ui.NewText("", 1, 1, 255, 255, 255)
+				ui.AddDrawable(progressText.Attach(ui.Top, ui.Left))
+			}
+			progressText.Update(fmt.Sprintf("Downloading: %d/100", int(100*progress)))
+			width, _ := window.GetFramebufferSize()
+			sw := 854 / float64(width)
+			if ui.DrawMode == ui.Unscaled {
+				sw = ui.Scale
+				progressBar.SetWidth(854 * sw * progress)
+			} else {
+				progressBar.SetWidth(float64(width) * progress)
+			}
+		} else {
+			if progressBar != nil {
+				progressBar.Remove()
+				progressText.Remove()
+			}
+			reloadResources()
+		}
+	}, syncChan)
+}
+
 func AddPack(path string) {
-	fmt.Println("Adding pack " + path)
+	log.Println("Adding pack " + path)
 	if err := resource.LoadZip(path); err != nil {
 		fmt.Println("Failed to load pack", path)
 		return
@@ -34,7 +66,7 @@ func AddPack(path string) {
 }
 
 func RemovePack(path string) {
-	fmt.Println("Removing pack " + path)
+	log.Println("Removing pack " + path)
 	resource.RemovePack(path)
 	for i, pck := range Config.Game.ResourcePacks {
 		if pck == path {
@@ -47,7 +79,7 @@ func RemovePack(path string) {
 }
 
 func reloadResources() {
-	fmt.Println("Bringing everything to a stop")
+	log.Println("Bringing everything to a stop")
 	for freeBuilders < maxBuilders {
 		select {
 		case pos := <-completeBuilders:
@@ -60,14 +92,14 @@ func reloadResources() {
 		}
 	}
 	modelCache = map[string]*model{}
-	fmt.Println("Reloading textures")
+	log.Println("Reloading textures")
 	render.LoadTextures()
-	fmt.Println("Reloading biomes")
+	log.Println("Reloading biomes")
 	loadBiomes()
 	ui.ForceDraw()
-	fmt.Println("Reloading blocks")
+	log.Println("Reloading blocks")
 	reinitBlocks()
-	fmt.Println("Marking chunks for rebuild")
+	log.Println("Marking chunks for rebuild")
 	for _, c := range chunkMap {
 		for _, s := range c.Sections {
 			if s != nil {
@@ -75,8 +107,8 @@ func reloadResources() {
 			}
 		}
 	}
-	fmt.Println("Rebuilding static models")
+	log.Println("Rebuilding static models")
 	render.RefreshStaticModels()
-	fmt.Println("Reloading inventory")
+	log.Println("Reloading inventory")
 	Client.playerInventory.Update()
 }

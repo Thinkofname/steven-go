@@ -19,6 +19,7 @@ import (
 	"image"
 	icolor "image/color"
 	"image/png"
+	"log"
 
 	"github.com/thinkofdeath/steven/resource"
 )
@@ -34,7 +35,11 @@ func loadBiomes() {
 }
 
 func loadBiomeColors(name string) *image.NRGBA {
-	f, _ := resource.Open("minecraft", fmt.Sprintf("textures/colormap/%s.png", name))
+	f, err := resource.Open("minecraft", fmt.Sprintf("textures/colormap/%s.png", name))
+	if err != nil {
+		log.Println("loading biome colors: ", err)
+		return image.NewNRGBA(image.Rect(0, 0, 256, 256))
+	}
 	defer f.Close()
 	img, err := png.Decode(f)
 	if err != nil {

@@ -31,6 +31,14 @@ var (
 
 func ForceDraw() {
 	lastWidth = -1
+	for _, d := range drawables {
+		switch dd := d.Drawable.(type) {
+		case *Text:
+			dd.Update(dd.Value())
+		case *Formatted:
+			dd.Update(dd.value)
+		}
+	}
 }
 
 type drawRef struct {

@@ -16,6 +16,7 @@ package steven
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"runtime"
 	"time"
@@ -46,6 +47,8 @@ func Main(username, uuid, accessToken, s string) {
 		AccessToken: accessToken,
 	}
 	server = s
+
+	initResources()
 
 	for _, pck := range Config.Game.ResourcePacks {
 		resource.LoadZip(pck)
@@ -117,7 +120,7 @@ handle:
 			connected = false
 
 			Client.network.Close()
-			fmt.Printf("Disconnected: %s\n", err)
+			log.Printf("Disconnected: %s\n", err)
 			// Reset the ready state to stop packets from being
 			// sent.
 			ready = false

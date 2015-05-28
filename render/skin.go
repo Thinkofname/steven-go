@@ -45,7 +45,8 @@ var skinBuffer []byte
 func init() {
 	r, err := resource.Open("minecraft", "textures/entity/steve.png")
 	if err != nil {
-		panic(err)
+		skinBuffer = make([]byte, 64*64*4)
+		return
 	}
 	defer r.Close()
 	i, err := png.Decode(r)

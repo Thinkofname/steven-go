@@ -178,6 +178,12 @@ func GetTexture(name string) TextureInfo {
 				ti := *textureMap["missing_texture"]
 				t = &ti
 				textureMap[name] = t
+				s := &loadedTexture{
+					Plugin: plugin,
+					File:   "textures/" + ns + ".png",
+					Image:  nil,
+				}
+				loadedTextures = append(loadedTextures, s)
 			}
 			ret <- struct{}{}
 		}

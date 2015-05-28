@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -142,20 +143,31 @@ func RemovePack(name string) {
 	}
 }
 
+type TickFunc func(progress float64, done bool)
+
 // TODO(Think) Ideally this package has a way to start the download instead of
 // being an init thing. Also should have a way to get progress information.
 
-func init() {
+func Init(tick TickFunc, sync chan<- func()) {
+	fromInternal()
 	defLocation := fmt.Sprintf("./resources-%s", ResourcesVersion)
 	_, err := os.Stat(defLocation)
 	if os.IsNotExist(err) {
-		downloadDefault(defLocation)
+		go func() {
+			sync <- func() { tick(0, false) }
+			downloadDefault(tick, sync, defLocation)
+			sync <- func() {
+				if err := fromDir(defLocation); err != nil {
+					panic(err)
+				}
+				tick(1, true)
+			}
+		}()
+	} else {
+		if err := fromDir(defLocation); err != nil {
+			panic(err)
+		}
 	}
-	if err := fromDir(defLocation); err != nil {
-		panic(err)
-	}
-
-	fromInternal()
 }
 
 type dummyCloser struct {
@@ -207,7 +219,7 @@ func fromDir(d string) error {
 		return err
 	}
 
-	packs = append(packs, p)
+	packs = append([]*pack{packs[0], p}, packs[1:]...)
 	return nil
 }
 
@@ -242,8 +254,28 @@ func fromFile(f *os.File, name string) error {
 	return nil
 }
 
-func downloadDefault(target string) {
-	fmt.Printf("Obtaining vanilla resources for %s, please wait...\n", ResourcesVersion)
+type progressRead struct {
+	max  int64
+	n    int64
+	tick TickFunc
+	sync chan<- func()
+
+	r io.Reader
+}
+
+func (p *progressRead) Read(buf []byte) (n int, err error) {
+	n, err = p.r.Read(buf)
+	if n > 0 {
+		p.n += int64(n)
+		p.sync <- func() {
+			p.tick(float64(p.n)/float64(p.max), false)
+		}
+	}
+	return
+}
+
+func downloadDefault(tick TickFunc, sync chan<- func(), target string) {
+	log.Printf("Obtaining vanilla resources for %s, please wait...\n", ResourcesVersion)
 	resp, err := http.Get(fmt.Sprintf(vanillaURL, ResourcesVersion))
 	if err != nil {
 		panic(err)
@@ -256,13 +288,21 @@ func downloadDefault(target string) {
 	}
 	defer os.Remove(target + ".tmp")
 	defer f.Close()
-	size, err := io.Copy(f, resp.Body)
+	_, err = io.Copy(f, &progressRead{
+		max:  resp.ContentLength,
+		tick: tick,
+		sync: sync,
+		r:    resp.Body,
+	})
 	if err != nil {
 		panic(err)
 	}
 
 	f.Seek(0, 0) // Go back to the start
-	fr, err := zip.NewReader(f, size)
+	fr, err := zip.NewReader(f, resp.ContentLength)
+	if err != nil {
+		panic(err)
+	}
 
 	os.MkdirAll(target, 0777)
 
