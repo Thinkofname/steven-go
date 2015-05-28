@@ -16,6 +16,7 @@
 
 ## Issue Submission
 
+* steven-log.txt should be submitted with all bug reports.
 * Logs/Crash logs should be wrapped in \`\`\` to keep it readable. 
 * In the case the log is too large use https://gist.github.com
 * The title of the issue should clearly state the issue and the package (if known) that the issue occurs in
