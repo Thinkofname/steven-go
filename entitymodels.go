@@ -109,7 +109,7 @@ func (p *playerModelComponent) SetCurrentItem(item *ItemStack) {
 	}
 	mdl := getModel(item.Type.Name())
 	if mdl == nil {
-		mdl = getModel("stone")
+		return
 	}
 
 	var blk Block

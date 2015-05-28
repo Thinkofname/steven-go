@@ -146,7 +146,7 @@ func genStaticModelFromItem(mdl *model, block Block, mode string) (out []*render
 	}
 	f, err := resource.Open(plugin, "textures/"+tName+".png")
 	if err != nil {
-		panic(err)
+		return
 	}
 	defer f.Close()
 	img, err := png.Decode(f)
