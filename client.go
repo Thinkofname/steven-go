@@ -213,6 +213,7 @@ type clientEntity struct {
 	rotationComponent
 	targetRotationComponent
 	targetPositionComponent
+	sizeComponent
 
 	playerComponent
 	playerModelComponent
@@ -227,6 +228,7 @@ func (c *ClientState) initEntity(head bool) {
 	ce.isFirstPerson = !head
 	ce.manualMove = true
 	ce.SetCurrentItem(c.lastHotbarItem)
+	ce.bounds = c.Bounds
 }
 
 func (c *ClientState) cycleCamera() {

@@ -17,6 +17,7 @@ package steven
 import (
 	"math"
 
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/entitysys"
 	"github.com/thinkofdeath/steven/render"
 )
@@ -46,17 +47,35 @@ func esDrawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
 }
 
 // updates the Colors of the model to fake lighting
-func esLightModel(p PositionComponent, m interface {
+func esLightModel(p PositionComponent, s SizeComponent, m interface {
 	Model() *render.StaticModel
 }) {
 	if m.Model() == nil {
 		return
 	}
-	x, y, z := p.Position()
-	bx, by, bz := int(math.Floor(x)), int(math.Floor(y)), int(math.Floor(z))
-	bl := float64(chunkMap.BlockLight(bx, by, bz)) / 16
-	sl := float64(chunkMap.SkyLight(bx, by, bz)) / 16
-	light := math.Max(bl, sl) + (1 / 16.0)
+	xx, yy, zz := p.Position()
+	bounds := s.Bounds()
+	bounds = bounds.Shift(float32(xx), float32(yy), float32(zz))
+
+	c := bounds.Max.Sub(bounds.Min).Mul(0.5)
+
+	var light float64
+	var count float64
+	for y := bounds.Min.Y(); y <= bounds.Max.Y(); y++ {
+		for z := bounds.Min.Z() - 1; z <= bounds.Max.Z()+1; z++ {
+			for x := bounds.Min.X() - 1; x <= bounds.Max.X()+1; x++ {
+				bx, by, bz := int(math.Floor(float64(x))), int(math.Floor(float64(y))), int(math.Floor(float64(z)))
+				bl := float64(chunkMap.BlockLight(bx, by, bz)) / 16
+				sl := float64(chunkMap.SkyLight(bx, by, bz)) / 16
+
+				dist := float64(c.Sub(mgl32.Vec3{float32(bx) + 0.5, float32(by) + 0.5, float32(bz) + 0.5}).Len())
+
+				light += (math.Max(bl, sl) + (1 / 16.0)) * dist
+				count += dist
+			}
+		}
+	}
+	light /= count
 	model := m.Model()
 	for i := range model.Colors {
 		model.Colors[i] = [4]float32{
