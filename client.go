@@ -213,6 +213,7 @@ type clientEntity struct {
 	rotationComponent
 	targetRotationComponent
 	targetPositionComponent
+	sizeComponent
 
 	playerComponent
 	playerModelComponent
@@ -225,7 +226,9 @@ func (c *ClientState) initEntity(head bool) {
 	c.entity = ce
 	ce.hasHead = head
 	ce.isFirstPerson = !head
+	ce.manualMove = true
 	ce.SetCurrentItem(c.lastHotbarItem)
+	ce.bounds = c.Bounds
 }
 
 func (c *ClientState) cycleCamera() {
@@ -250,6 +253,7 @@ func (c *ClientState) renderTick(delta float64) {
 	forward, yaw := c.calculateMovement()
 
 	c.LX, c.LY, c.LZ = c.X, c.Y, c.Z
+	lx, ly, lz := c.X, c.Y, c.Z
 
 	if c.GameMode.Fly() {
 		c.X += forward * math.Cos(yaw) * -math.Cos(c.Pitch) * delta * 0.2
@@ -349,6 +353,7 @@ func (c *ClientState) renderTick(delta float64) {
 	c.entity.SetTargetPosition(c.X-ox, c.Y, c.Z-oz)
 	c.entity.SetTargetYaw(-c.Yaw)
 	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
+	c.entity.walking = c.X != lx || c.Y != ly || c.Z != lz
 
 	//  Highlights the target block
 	c.highlightTarget()
@@ -887,17 +892,17 @@ func (c *ClientState) copyToCamera() {
 	render.Camera.X = x
 	render.Camera.Y = y + playerHeight
 	render.Camera.Z = z
-	render.Camera.Yaw = -c.entity.Yaw()
-	render.Camera.Pitch = -c.entity.Pitch() + math.Pi
+	render.Camera.Yaw = c.Yaw
+	render.Camera.Pitch = c.Pitch
 	switch c.cameraMode {
 	case cameraBehind:
-		render.Camera.X -= 4 * math.Cos(-c.entity.Yaw()-math.Pi/2) * -math.Cos(-c.entity.Pitch()+math.Pi)
-		render.Camera.Z += 4 * math.Sin(-c.entity.Yaw()-math.Pi/2) * -math.Cos(-c.entity.Pitch()+math.Pi)
-		render.Camera.Y += 4 * math.Sin(-c.entity.Pitch()+math.Pi)
+		render.Camera.X -= 4 * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+		render.Camera.Z += 4 * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+		render.Camera.Y += 4 * math.Sin(c.Pitch)
 	case cameraFront:
-		render.Camera.X += 4 * math.Cos(-c.entity.Yaw()-math.Pi/2) * -math.Cos(-c.entity.Pitch()+math.Pi)
-		render.Camera.Z -= 4 * math.Sin(-c.entity.Yaw()-math.Pi/2) * -math.Cos(-c.entity.Pitch()+math.Pi)
-		render.Camera.Y -= 4 * math.Sin(-c.entity.Pitch()+math.Pi)
+		render.Camera.X += 4 * math.Cos(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+		render.Camera.Z -= 4 * math.Sin(c.Yaw-math.Pi/2) * -math.Cos(c.Pitch)
+		render.Camera.Y -= 4 * math.Sin(c.Pitch)
 		render.Camera.Yaw += math.Pi
 		render.Camera.Pitch = -render.Camera.Pitch
 	}
