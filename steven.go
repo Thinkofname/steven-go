@@ -25,6 +25,7 @@ import (
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource"
+	"github.com/thinkofdeath/steven/resource/locale"
 	"github.com/thinkofdeath/steven/ui"
 )
 
@@ -53,6 +54,7 @@ func Main(username, uuid, accessToken, s string) {
 	for _, pck := range Config.Game.ResourcePacks {
 		resource.LoadZip(pck)
 	}
+	locale.Clear()
 	loadBiomes()
 
 	setUIScale()

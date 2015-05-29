@@ -20,6 +20,7 @@ import (
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource"
+	"github.com/thinkofdeath/steven/resource/locale"
 	"github.com/thinkofdeath/steven/ui"
 )
 
@@ -91,6 +92,7 @@ func reloadResources() {
 			}
 		}
 	}
+	locale.Clear()
 	modelCache = map[string]*model{}
 	console.Text("Reloading textures")
 	render.LoadTextures()
