@@ -30,6 +30,7 @@ type consoleScreen struct {
 
 	container  *ui.Container
 	background *ui.Image
+	inputText  *ui.Text
 
 	lastLine  chat.AnyComponent
 	lastWidth float64
@@ -39,19 +40,26 @@ type consoleScreen struct {
 	pos     float64
 	visible bool
 
-	prevKey glfw.KeyCallback
+	prevKey  glfw.KeyCallback
+	prevChar glfw.CharCallback
+
+	input      string
+	cursorTick float64
 }
 
 func (cs *consoleScreen) init() {
 	cs.scene = scene.New(true)
-	cs.container = ui.NewContainer(0, -200, 854, 200)
+	cs.container = ui.NewContainer(0, -220, 854, 220)
 	cs.container.SetLayer(-200)
-	cs.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 854, 200, 0, 0, 1, 1, 0, 0, 0)
+	cs.background = ui.NewImage(render.GetTexture("solid"), 0, 0, 854, 220, 0, 0, 1, 1, 0, 0, 0)
 	cs.background.SetA(180)
 	cs.background.AttachTo(cs.container)
 	cs.scene.AddDrawable(cs.background.Attach(ui.Top, ui.Left))
 
-	cs.pos = -200
+	cs.inputText = ui.NewText("", 5, 200, 255, 255, 255)
+	cs.inputText.AttachTo(cs.container)
+	cs.scene.AddDrawable(cs.inputText.Attach(ui.Top, ui.Left))
+	cs.pos = -220
 	cs.visible = false
 }
 
@@ -59,18 +67,45 @@ func (cs *consoleScreen) focus() {
 	cs.visible = true
 
 	cs.prevKey = window.SetKeyCallback(cs.onKey)
+	cs.prevChar = window.SetCharCallback(cs.onChar)
 }
 
 func (cs *consoleScreen) onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	if key == glfw.KeyGraveAccent && action == glfw.Release {
 		cs.visible = false
 		window.SetKeyCallback(cs.prevKey)
+		window.SetCharCallback(cs.prevChar)
+		cs.input = cs.input[:len(cs.input)-1]
 	}
+	if key == glfw.KeyBackspace && action != glfw.Release {
+		if len(cs.input) > 0 {
+			cs.input = cs.input[:len(cs.input)-1]
+		}
+	}
+	if key == glfw.KeyEnter && action == glfw.Release {
+		err := console.Execute(cs.input)
+		cs.input = ""
+		if err != nil {
+			console.Component(chat.
+				Build("Error").
+				Color(chat.Red).
+				Append(": ").
+				Color(chat.Yellow).
+				Append(err.Error()).
+				Color(chat.Red).
+				Create(),
+			)
+		}
+	}
+}
+
+func (cs *consoleScreen) onChar(w *glfw.Window, char rune) {
+	cs.input += string(char)
 }
 
 func (cs *consoleScreen) tick(delta float64) {
 	if cs.visible {
-		if cs.pos == -200 {
+		if cs.pos == -220 {
 			cs.lastWidth = -1 // Force a redraw
 		}
 		if cs.pos < 0 {
@@ -79,12 +114,12 @@ func (cs *consoleScreen) tick(delta float64) {
 			cs.pos = 0
 		}
 	} else {
-		if cs.pos > -200 {
+		if cs.pos > -220 {
 			cs.pos -= delta * 4
 		} else {
-			cs.pos = -200
+			cs.pos = -220
 		}
-		if cs.pos == -200 {
+		if cs.pos == -220 {
 			cs.scene.Hide()
 			return
 		}
@@ -131,4 +166,12 @@ func (cs *consoleScreen) tick(delta float64) {
 
 	cs.lastWidth = w
 	cs.lastLine = console.History(1)[0]
+
+	cs.cursorTick += delta
+	// Add on our cursor
+	if int(cs.cursorTick/30)%2 == 0 {
+		cs.inputText.Update(string(cs.input) + "|")
+	} else {
+		cs.inputText.Update(string(cs.input))
+	}
 }
