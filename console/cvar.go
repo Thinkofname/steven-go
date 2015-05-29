@@ -78,8 +78,10 @@ func (s *StringVar) print() {
 	Component(chat.Build(s.name).
 		Color(chat.Aqua).
 		Append(" = ").
-		Append(fmt.Sprintf("\"%s\"", s.Value)).
+		Append("\"").Color(chat.Yellow).
+		Append(s.Value).
 		Color(chat.Aqua).
+		Append("\"").Color(chat.Yellow).
 		Create(),
 	)
 }
