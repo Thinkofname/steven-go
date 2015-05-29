@@ -158,6 +158,15 @@ func genStaticModelFromItem(mdl *model, block Block, mode string) (out []*render
 	sx := 1 / float32(w)
 	sy := 1 / float32(h)
 
+	isSolid := func(x, y int) bool {
+		col := img.At(x, y)
+		_, _, _, aa := col.RGBA()
+		if aa == 0 {
+			return false
+		}
+		return true
+	}
+
 	for x := 0; x < w; x++ {
 		for y := 0; y < h; y++ {
 			col := img.At(x, y)
@@ -167,11 +176,18 @@ func genStaticModelFromItem(mdl *model, block Block, mode string) (out []*render
 			}
 
 			for i, f := range faceVertices {
+				facing := direction.Type(i)
+				if facing != direction.North && facing != direction.South {
+					xx, yy, _ := facing.Offset()
+					if isSolid(x+xx, y+yy) {
+						continue
+					}
+				}
+
 				var cr, cg, cb byte
 				cr = byte(rr >> 8)
 				cg = byte(gg >> 8)
 				cb = byte(bb >> 8)
-				facing := direction.Type(i)
 				if facing == direction.East || facing == direction.West {
 					cr = byte(float64(cr) * 0.8)
 					cg = byte(float64(cg) * 0.8)
