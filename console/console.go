@@ -20,6 +20,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/thinkofdeath/steven/chat"
 )
@@ -31,6 +32,7 @@ var (
 	// For the possible option of scrolling in the
 	// future
 	historyBuffer [200]chat.AnyComponent
+	lock          sync.Mutex
 
 	defaultRegistry registry
 )
@@ -73,6 +75,8 @@ func Text(format string, args ...interface{}) {
 
 // Component appends the component to the log buffer.
 func Component(c chat.AnyComponent) {
+	lock.Lock()
+	defer lock.Unlock()
 	checkInit()
 	io.WriteString(w, c.String()+"\n")
 	copy(historyBuffer[1:], historyBuffer[:])
@@ -84,6 +88,8 @@ func Component(c chat.AnyComponent) {
 //
 // As a special case -1 will return the whole buffer.
 func History(lines int) []chat.AnyComponent {
+	lock.Lock()
+	defer lock.Unlock()
 	if lines == -1 || lines > len(historyBuffer) {
 		return historyBuffer[:]
 	}
