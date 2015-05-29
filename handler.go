@@ -556,6 +556,8 @@ func (h handler) PluginMessage(p *protocol.PluginMessageClientbound) {
 	h.handlePluginMessage(p.Channel, bytes.NewReader(p.Data), false)
 }
 
+var serverBrand = console.NewStringVar("sv_brand", "unknown")
+
 func (h handler) ServerBrand(b *pmMinecraftBrand) {
-	console.Text("The server is running: %s", b.Brand)
+	serverBrand.Value = b.Brand
 }
