@@ -19,12 +19,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"log"
 	"math"
 	"reflect"
 	"strings"
 
 	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
 )
@@ -64,7 +64,7 @@ func (h handler) Handle(packet interface{}) {
 }
 
 func (handler) ServerMessage(msg *protocol.ServerMessage) {
-	log.Printf("MSG(%d): %s\n", msg.Type, msg.Message.Value)
+	console.Text("MSG(%d): %s", msg.Type, msg.Message.Value)
 	Client.chat.Add(msg.Message)
 }
 
@@ -85,7 +85,7 @@ func (handler) Respawn(r *protocol.Respawn) {
 
 func (handler) Disconnect(d *protocol.Disconnect) {
 	disconnectReason = d.Reason
-	log.Println("Disconnect: ", disconnectReason)
+	console.Text("Disconnect: %s", disconnectReason)
 	Client.network.SignalClose(errManualDisconnect)
 }
 
@@ -557,5 +557,5 @@ func (h handler) PluginMessage(p *protocol.PluginMessageClientbound) {
 }
 
 func (h handler) ServerBrand(b *pmMinecraftBrand) {
-	log.Printf("The server is running: %s\n", b.Brand)
+	console.Text("The server is running: %s", b.Brand)
 }

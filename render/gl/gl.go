@@ -17,10 +17,10 @@ package gl
 
 import (
 	"fmt"
-	"log"
 	"unsafe"
 
 	"github.com/thinkofdeath/gl/v3.2-core/gl"
+	"github.com/thinkofdeath/steven/console"
 )
 
 // ClearFlags is a set of flags to mark what should be cleared during
@@ -299,6 +299,6 @@ func DebugLog() {
 		case gl.DEBUG_SEVERITY_NOTIFICATION:
 			return
 		}
-		log.Printf("[%s][%s][%s]: %s\n", strSource, strType, strSeverity, message)
+		console.Text("[%s][%s][%s]: %s", strSource, strType, strSeverity, message)
 	}, nil)
 }

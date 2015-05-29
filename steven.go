@@ -16,12 +16,12 @@ package steven
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"runtime"
 	"time"
 
 	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource"
@@ -71,6 +71,7 @@ func connect() {
 func start() {
 	render.LoadTextures()
 	initBlocks()
+	con.init()
 
 	if profile.IsComplete() && server != "" {
 		connect()
@@ -120,7 +121,7 @@ handle:
 			connected = false
 
 			Client.network.Close()
-			log.Printf("Disconnected: %s\n", err)
+			console.Text("Disconnected: %s", err)
 			// Reset the ready state to stop packets from being
 			// sent.
 			ready = false
@@ -186,6 +187,7 @@ handle:
 			render.Camera.Yaw = 0
 		}
 	}
+	con.tick(delta)
 	ui.Draw(width, height, delta)
 
 	render.Draw(width, height, delta)

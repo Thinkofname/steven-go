@@ -19,9 +19,9 @@ import (
 	"image"
 	"image/png"
 	"io"
-	"log"
 	"math"
 
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/resource"
 )
 
@@ -249,7 +249,7 @@ func calculateFontSizes(img image.Image) {
 func loadFontInfo() {
 	r, err := resource.Open("minecraft", "font/glyph_sizes.bin")
 	if err != nil {
-		log.Println("Error loading font info, ", err)
+		console.Text("Error loading font info, %s", err)
 		return
 	}
 	var data [0x10000]byte

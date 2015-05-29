@@ -172,6 +172,12 @@ var keyStateMap = map[glfw.Key]Key{
 }
 
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	// Debug override
+	if key == glfw.KeyGraveAccent && action == glfw.Release {
+		con.focus()
+		return
+	}
+
 	if currentScreen != nil {
 		return
 	}

@@ -146,7 +146,7 @@ func (i *Image) Draw(r Region, delta float64) {
 		e.G = byte(i.g)
 		e.B = byte(i.b)
 		e.A = byte(i.a)
-		e.Layer = i.layer
+		e.Layer = i.Layer()
 		i.data = e.Bytes()
 	}
 	render.UIAddBytes(i.data)

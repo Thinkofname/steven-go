@@ -33,6 +33,11 @@ type AnyComponent struct {
 	Value interface{}
 }
 
+// Wrap wraps the passed component with an AnyComponent
+func Wrap(i interface{}) AnyComponent {
+	return AnyComponent{Value: i}
+}
+
 // Type returns the type of the component this contains.
 // It is genernally prefered to type switch over the result
 // of Value().

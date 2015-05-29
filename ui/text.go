@@ -150,7 +150,7 @@ func (t *Text) Draw(r Region, delta float64) {
 		}
 		text.Alpha(t.a)
 		for _, txt := range text.Elements {
-			txt.Layer = t.layer
+			txt.Layer = t.Layer()
 		}
 		t.data = text.Bytes()
 	}

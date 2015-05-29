@@ -20,13 +20,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/resource/internal"
 )
 
@@ -275,7 +275,7 @@ func (p *progressRead) Read(buf []byte) (n int, err error) {
 }
 
 func downloadDefault(tick TickFunc, sync chan<- func(), target string) {
-	log.Printf("Obtaining vanilla resources for %s, please wait...\n", ResourcesVersion)
+	console.Text("Obtaining vanilla resources for %s, please wait...", ResourcesVersion)
 	resp, err := http.Get(fmt.Sprintf(vanillaURL, ResourcesVersion))
 	if err != nil {
 		panic(err)

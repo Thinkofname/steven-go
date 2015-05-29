@@ -18,12 +18,12 @@ import (
 	"bytes"
 	"fmt"
 	"image"
-	"log"
 	"math"
 	"reflect"
 	"strconv"
 	"strings"
 
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/type/vmath"
 )
@@ -454,9 +454,9 @@ func initBlocks() {
 					)
 					continue
 				}
-				log.Printf("Missing block variant (%s) for %s\n", b.ModelVariant(), b)
+				console.Text("Missing block variant (%s) for %s", b.ModelVariant(), b)
 			} else {
-				log.Printf("Missing block model for %s\n", b)
+				console.Text("Missing block model for %s", b)
 			}
 			br.FieldByName("BlockVariants").Set(
 				reflect.ValueOf(missingModel.variant("normal")),
@@ -488,9 +488,9 @@ func reinitBlocks() {
 					)
 					continue
 				}
-				log.Printf("Missing block variant (%s) for %s\n", b.ModelVariant(), b)
+				console.Text("Missing block variant (%s) for %s", b.ModelVariant(), b)
 			} else {
-				log.Printf("Missing block model for %s\n", b)
+				console.Text("Missing block model for %s", b)
 			}
 			br.FieldByName("BlockVariants").Set(
 				reflect.ValueOf(missingModel.variant("normal")),

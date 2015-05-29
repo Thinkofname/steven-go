@@ -196,7 +196,7 @@ func newClient() {
 			Attach(ui.Bottom, ui.Center),
 	)
 
-	c.itemNameUI = ui.NewFormatted(chat.AnyComponent{Value: &chat.TextComponent{}}, 0, -16-8-10-16)
+	c.itemNameUI = ui.NewFormatted(chat.Wrap(&chat.TextComponent{}), 0, -16-8-10-16)
 	c.itemNameUI.AttachTo(c.hotbar)
 	c.scene.AddDrawable(c.itemNameUI.Attach(ui.Top, ui.Middle))
 
@@ -378,15 +378,15 @@ func (c *ClientState) tickItemName() {
 		if item != nil {
 			var name chat.AnyComponent
 			if di, ok := item.Type.(DisplayTag); ok && di.DisplayName() != "" {
-				name = chat.AnyComponent{Value: &chat.TextComponent{Text: di.DisplayName()}}
+				name = chat.Wrap(&chat.TextComponent{Text: di.DisplayName()})
 				chat.ConvertLegacy(name)
 			} else {
-				name = chat.AnyComponent{Value: &chat.TranslateComponent{Translate: item.Type.NameLocaleKey()}}
+				name = chat.Wrap(&chat.TranslateComponent{Translate: item.Type.NameLocaleKey()})
 			}
 			c.itemNameUI.Update(name)
 			c.itemNameTimer = 120
 		} else {
-			c.itemNameUI.Update(chat.AnyComponent{Value: &chat.TextComponent{}})
+			c.itemNameUI.Update(chat.Wrap(&chat.TextComponent{}))
 			c.itemNameTimer = 0
 		}
 	}

@@ -171,7 +171,7 @@ func (rl *resourceList) redraw() {
 		icon.AttachTo(container)
 		sc.AddDrawable(icon)
 
-		msg := chat.AnyComponent{&chat.TextComponent{Text: desc}}
+		msg := chat.Wrap(&chat.TextComponent{Text: desc})
 		chat.ConvertLegacy(msg)
 		motd := ui.NewFormattedWidth(msg, 90+10, 5+18, 700-(90+10+5)).Attach(ui.Top, ui.Left)
 		motd.AttachTo(container)

@@ -70,7 +70,7 @@ func (s *signComponent) create() {
 		wrap := &chat.TextComponent{}
 		wrap.Color = chat.Black
 		wrap.Extra = []chat.AnyComponent{line}
-		f := ui.NewFormatted(chat.AnyComponent{Value: wrap}, 0, 0)
+		f := ui.NewFormatted(chat.Wrap(wrap), 0, 0)
 		offset := 0.0
 		for _, txt := range f.Text {
 			str := txt.Value()

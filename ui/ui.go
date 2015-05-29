@@ -62,6 +62,7 @@ type Drawable interface {
 	ShouldDraw() bool
 	AttachedTo() Drawable
 	Attachment() (vAttach, hAttach AttachPoint)
+	Layer() int
 
 	isDirty() bool
 	flagDirty()
@@ -287,6 +288,9 @@ func (b *baseElement) AttachTo(d Drawable) {
 }
 
 func (b *baseElement) Layer() int {
+	if b.parent != nil {
+		return b.layer + b.parent.Layer()
+	}
 	return b.layer
 }
 

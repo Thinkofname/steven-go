@@ -174,7 +174,7 @@ func (sl *serverList) redraw() {
 		sc.AddDrawable(players)
 
 		msg := &chat.TextComponent{Text: "Connecting..."}
-		motd := ui.NewFormattedWidth(chat.AnyComponent{msg}, 90+10, 5+18, 700-(90+10+5)).Attach(ui.Top, ui.Left)
+		motd := ui.NewFormattedWidth(chat.Wrap(msg), 90+10, 5+18, 700-(90+10+5)).Attach(ui.Top, ui.Left)
 		motd.AttachTo(container)
 		sc.AddDrawable(motd)
 		s := s
@@ -219,7 +219,7 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 		syncChan <- func() {
 			msg := &chat.TextComponent{Text: err.Error()}
 			msg.Color = chat.Red
-			motd.Update(chat.AnyComponent{msg})
+			motd.Update(chat.Wrap(msg))
 		}
 		return
 	}
@@ -229,7 +229,7 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 		if err != nil {
 			msg := &chat.TextComponent{Text: err.Error()}
 			msg.Color = chat.Red
-			motd.Update(chat.AnyComponent{msg})
+			motd.Update(chat.Wrap(msg))
 			return
 		}
 		y := 0.0

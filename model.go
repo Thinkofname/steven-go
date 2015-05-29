@@ -17,12 +17,12 @@ package steven
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math"
 	"strings"
 
 	realjson "encoding/json"
 
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/encoding/json"
 
 	"github.com/thinkofdeath/steven/render"
@@ -64,7 +64,7 @@ func loadStateModel(key pluginKey) *blockStateModel {
 	var data jsType
 	err := loadJSON(key.Plugin, fmt.Sprintf("blockstates/%s.json", key.Name), &data)
 	if err != nil {
-		log.Printf("Error loading state %s: %s\n", key.Name, err)
+		console.Text("Error loading state %s: %s", key.Name, err)
 		return nil
 	}
 	bs := &blockStateModel{
@@ -141,7 +141,7 @@ func parseBlockStateVariant(plugin string, js realjson.RawMessage) *model {
 	var data jsType
 	err := json.Unmarshal(js, &data)
 	if err != nil {
-		log.Println(err)
+		console.Text("%s", err)
 		return nil
 	}
 	var bdata jsModel
@@ -171,7 +171,7 @@ func parseModel(plugin string, data *jsModel) *model {
 		var pdata jsModel
 		err := loadJSON(plugin, "models/"+data.Parent+".json", &pdata)
 		if err != nil {
-			log.Printf("Error loading model %s: %s\n", data.Parent, err)
+			console.Text("Error loading model %s: %s", data.Parent, err)
 			return nil
 		}
 		bm = parseModel(plugin, &pdata)

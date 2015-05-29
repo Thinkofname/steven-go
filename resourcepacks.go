@@ -16,8 +16,8 @@ package steven
 
 import (
 	"fmt"
-	"log"
 
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource"
 	"github.com/thinkofdeath/steven/ui"
@@ -40,7 +40,7 @@ func initResources() {
 			sw := 854 / float64(width)
 			if ui.DrawMode == ui.Unscaled {
 				sw = ui.Scale
-				progressBar.SetWidth(854 * sw * progress)
+				progressBar.SetWidth((854 / sw) * progress)
 			} else {
 				progressBar.SetWidth(float64(width) * progress)
 			}
@@ -55,7 +55,7 @@ func initResources() {
 }
 
 func AddPack(path string) {
-	log.Println("Adding pack " + path)
+	console.Text("Adding pack " + path)
 	if err := resource.LoadZip(path); err != nil {
 		fmt.Println("Failed to load pack", path)
 		return
@@ -66,7 +66,7 @@ func AddPack(path string) {
 }
 
 func RemovePack(path string) {
-	log.Println("Removing pack " + path)
+	console.Text("Removing pack " + path)
 	resource.RemovePack(path)
 	for i, pck := range Config.Game.ResourcePacks {
 		if pck == path {
@@ -79,7 +79,7 @@ func RemovePack(path string) {
 }
 
 func reloadResources() {
-	log.Println("Bringing everything to a stop")
+	console.Text("Bringing everything to a stop")
 	for freeBuilders < maxBuilders {
 		select {
 		case pos := <-completeBuilders:
@@ -92,14 +92,14 @@ func reloadResources() {
 		}
 	}
 	modelCache = map[string]*model{}
-	log.Println("Reloading textures")
+	console.Text("Reloading textures")
 	render.LoadTextures()
-	log.Println("Reloading biomes")
+	console.Text("Reloading biomes")
 	loadBiomes()
 	ui.ForceDraw()
-	log.Println("Reloading blocks")
+	console.Text("Reloading blocks")
 	reinitBlocks()
-	log.Println("Marking chunks for rebuild")
+	console.Text("Marking chunks for rebuild")
 	for _, c := range chunkMap {
 		for _, s := range c.Sections {
 			if s != nil {
@@ -107,8 +107,8 @@ func reloadResources() {
 			}
 		}
 	}
-	log.Println("Rebuilding static models")
+	console.Text("Rebuilding static models")
 	render.RefreshStaticModels()
-	log.Println("Reloading inventory")
+	console.Text("Reloading inventory")
 	Client.playerInventory.Update()
 }
