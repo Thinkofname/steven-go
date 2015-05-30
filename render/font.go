@@ -30,6 +30,7 @@ var (
 	isFontLoaded            [0x100]bool
 	fontCharacterInfo       [0x10000]fontInfo
 	aPageWidth, aPageHeight float64
+	charMap                 = map[rune]rune{}
 )
 
 type fontInfo struct {
@@ -74,6 +75,9 @@ func newUIText(str string, x, y, sx, sy, rotation float64, rr, gg, bb int) UITex
 		texture := CharacterTexture(r)
 		if texture == nil {
 			continue
+		}
+		if r>>8 == 0 {
+			r = charMap[r]
 		}
 		var w float64
 		info := fontCharacterInfo[r]
@@ -139,6 +143,9 @@ func CharacterTexture(r rune) TextureInfo {
 	if p == nil {
 		return nil
 	}
+	if page == 0 {
+		r = charMap[r]
+	}
 	c := int(r & 0xFF)
 	cx, cy := c&0xF, c>>4
 	info := fontCharacterInfo[r]
@@ -156,6 +163,7 @@ func SizeOfCharacter(r rune) float64 {
 	}
 	info := fontCharacterInfo[r]
 	if r>>8 == 0 {
+		r = charMap[r]
 		sw := aPageWidth / 16
 		return (float64(info.End-info.Start) / sw) * 16
 	}
@@ -262,5 +270,14 @@ func loadFontInfo() {
 		// Bottom nibble - end position
 		fontCharacterInfo[i].Start = int(data[i] >> 4)
 		fontCharacterInfo[i].End = int(data[i]&0xF) + 1
+	}
+}
+
+var asciiChars = "ÀÁÂÈÊËÍÓÔÕÚßãõğİıŒœŞşŴŵžȇ        !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜø£Ø×ƒáíóúñÑªº¿®¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αβΓπΣσμτΦΘΩδ∞∅∈∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■"
+
+func init() {
+	var chars = []rune(asciiChars)
+	for i, r := range chars {
+		charMap[r] = rune(i)
 	}
 }
