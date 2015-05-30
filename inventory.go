@@ -120,7 +120,7 @@ func createItemIcon(item *ItemStack, scene *scene.Type, x, y float64) *ui.Contai
 		bar.AttachTo(container)
 		scene.AddDrawable(bar.Attach(ui.Bottom, ui.Left))
 	}
-	if item.Type.Stackable() {
+	if item.Count > 1 {
 		txt := ui.NewText(fmt.Sprint(item.Count), -2, -2, 255, 255, 255).
 			Attach(ui.Bottom, ui.Right)
 		txt.AttachTo(container)

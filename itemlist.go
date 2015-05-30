@@ -1162,7 +1162,3 @@ type itemSword struct {
 	itemSimpleLocale
 	itemNamed
 }
-
-func (i *itemSword) Stackable() bool {
-	return false
-}

@@ -44,8 +44,6 @@ type ItemType interface {
 	Name() string
 	NameLocaleKey() string
 
-	Stackable() bool
-
 	ParseDamage(d int16)
 	ParseTag(tag *nbt.Compound)
 }
@@ -124,10 +122,6 @@ func (b *blockItem) ParseDamage(d int16) {
 }
 func (b *blockItem) ParseTag(tag *nbt.Compound) {
 	b.displayTag.ParseTag(tag)
-}
-
-func (b *blockItem) Stackable() bool {
-	return true
 }
 
 type itemSimpleLocale struct {
