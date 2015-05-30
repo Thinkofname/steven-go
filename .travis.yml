@@ -1,0 +1,10 @@
+language: go
+go:
+  - 1.4
+  - tip
+sudo: required
+install:
+  - sudo apt-get install libXxf86vm-dev
+  - go get -u github.com/thinkofdeath/gl/...
+  - go get -u github.com/go-gl/mathgl/...
+  - go get -u github.com/go-gl/glfw/v3.1/glfw
