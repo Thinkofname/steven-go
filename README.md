@@ -1,4 +1,5 @@
 # Steven
+[![Build Status](https://travis-ci.org/thinkofdeath/steven.svg?branch=master)](https://travis-ci.org/thinkofdeath/steven)
 
 A work in progress Minecraft client in Go.
 Don't expect it to go anywhere, just doing this for fun.
