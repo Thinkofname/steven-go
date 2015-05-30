@@ -27,7 +27,7 @@ type IntVar struct {
 }
 
 // NewIntVar creates and registers a integer console variable
-func NewIntVar(name string, val int) *IntVar {
+func NewIntVar(name string, val int, mut bool) *IntVar {
 	i := &IntVar{
 		name:  name,
 		Value: val,
@@ -35,10 +35,12 @@ func NewIntVar(name string, val int) *IntVar {
 	Register(fmt.Sprintf("%s", name), func() {
 		i.print()
 	})
-	Register(fmt.Sprintf("%s = %%", name), func(v int) {
-		i.Value = v
-		i.print()
-	})
+	if mut {
+		Register(fmt.Sprintf("%s = %%", name), func(v int) {
+			i.Value = v
+			i.print()
+		})
+	}
 	return i
 }
 
@@ -59,7 +61,7 @@ type StringVar struct {
 }
 
 // NewStringVar creates and registers a string console variable
-func NewStringVar(name string, val string) *StringVar {
+func NewStringVar(name, val string, mut bool) *StringVar {
 	s := &StringVar{
 		name:  name,
 		Value: val,
@@ -67,10 +69,12 @@ func NewStringVar(name string, val string) *StringVar {
 	Register(fmt.Sprintf("%s", name), func() {
 		s.print()
 	})
-	Register(fmt.Sprintf("%s = %%", name), func(v string) {
-		s.Value = v
-		s.print()
-	})
+	if mut {
+		Register(fmt.Sprintf("%s = %%", name), func(v string) {
+			s.Value = v
+			s.print()
+		})
+	}
 	return s
 }
 

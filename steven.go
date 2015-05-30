@@ -41,6 +41,11 @@ func stevenVersion() string {
 	return fmt.Sprintf("%s-%s", resource.ResourcesVersion, stevenBuildVersion)
 }
 
+func init() {
+	console.NewStringVar("cl_version", stevenBuildVersion, false)
+	console.NewStringVar("cl_mc_version", resource.ResourcesVersion, false)
+}
+
 func Main(username, uuid, accessToken, s string) {
 	profile = mojang.Profile{
 		Username:    username,
