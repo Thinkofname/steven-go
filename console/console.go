@@ -56,7 +56,7 @@ func Text(format string, args ...interface{}) {
 		file = "unknown"
 		line = 0
 	}
-	file = file[strings.LastIndexByte(file, '/')+1:]
+	file = file[strings.LastIndex(file, "/")+1:]
 
 	msg := &chat.TextComponent{
 		Text: fmt.Sprintf("[%s:%d] ", file, line),
