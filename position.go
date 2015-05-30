@@ -14,10 +14,20 @@
 
 package steven
 
+import "github.com/thinkofdeath/steven/type/direction"
+
 type Position struct {
 	X, Y, Z int
 }
 
 func (p Position) Shift(x, y, z int) Position {
 	return Position{X: p.X + x, Y: p.Y + y, Z: p.Z + z}
+}
+
+func (p Position) ShiftDir(d direction.Type) Position {
+	return p.Shift(d.Offset())
+}
+
+func (p Position) Get() (int, int, int) {
+	return p.X, p.Y, p.Z
 }

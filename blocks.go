@@ -47,7 +47,7 @@ var Blocks = struct {
 	LapisBlock                 *BlockSet
 	Dispenser                  *BlockSet `type:"dispenser"`
 	Sandstone                  *BlockSet
-	Note                       *BlockSet
+	NoteBlock                  *BlockSet `mc:"noteblock"`
 	Bed                        *BlockSet `type:"bed"`
 	GoldenRail                 *BlockSet `type:"poweredRail"`
 	DetectorRail               *BlockSet `type:"poweredRail"`
@@ -59,21 +59,21 @@ var Blocks = struct {
 	PistonHead                 *BlockSet `type:"pistonHead"`
 	Wool                       *BlockSet `type:"wool"`
 	PistonExtension            *BlockSet `renderable:"false"`
-	YellowFlower               *BlockSet `cullAgainst:"false" collidable:"false"`
-	RedFlower                  *BlockSet `cullAgainst:"false" collidable:"false"`
+	YellowFlower               *BlockSet `type:"yellowFlower"`
+	RedFlower                  *BlockSet `type:"redFlower"`
 	BrownMushroom              *BlockSet `cullAgainst:"false" collidable:"false"`
-	RedMushrrom                *BlockSet `cullAgainst:"false" collidable:"false"`
+	RedMushroom                *BlockSet `cullAgainst:"false" collidable:"false"`
 	GoldBlock                  *BlockSet
 	IronBlock                  *BlockSet
 	DoubleStoneSlab            *BlockSet `type:"slabDoubleSeamless" variant:"stone"`
 	StoneSlab                  *BlockSet `type:"slab" variant:"stone"`
 	BrickBlock                 *BlockSet
 	TNT                        *BlockSet `mc:"tnt"`
-	BookShelf                  *BlockSet
+	BookShelf                  *BlockSet `mc:"bookshelf"`
 	MossyCobblestone           *BlockSet
 	Obsidian                   *BlockSet
 	Torch                      *BlockSet `type:"torch" model:"torch"`
-	Fire                       *BlockSet
+	Fire                       *BlockSet `type:"fire"`
 	MobSpawner                 *BlockSet
 	OakStairs                  *BlockSet `type:"stairs"`
 	Chest                      *BlockSet
@@ -264,6 +264,8 @@ func init() {
 		set := alloc(block)
 		fv.Set(reflect.ValueOf(set))
 	}
+
+	initBurnable()
 }
 
 func formatFieldName(name string) string {

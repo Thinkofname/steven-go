@@ -1865,3 +1865,183 @@ func (b *blockStoneBrick) toData() int {
 	data := int(b.Variant)
 	return data
 }
+
+// Yellow flower
+
+type blockYellowFlower struct {
+	baseBlock
+}
+
+func (b *blockYellowFlower) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.collidable = false
+}
+
+func (b *blockYellowFlower) ModelName() string {
+	return "dandelion"
+}
+
+func (b *blockYellowFlower) toData() int {
+	return 0
+}
+
+// Red flower
+
+type redFlowerVariant int
+
+const (
+	rfPoppy redFlowerVariant = iota
+	rfBlueOrchid
+	rfAllium
+	rfHoustonia
+	rfRedTulip
+	rfOrangeTulip
+	rfWhiteTulip
+	rfPinkTulip
+	rfOxeyeDaisy
+)
+
+func (r redFlowerVariant) String() string {
+	switch r {
+	case rfPoppy:
+		return "poppy"
+	case rfBlueOrchid:
+		return "blue_orchid"
+	case rfAllium:
+		return "allium"
+	case rfHoustonia:
+		return "houstonia"
+	case rfRedTulip:
+		return "red_tulip"
+	case rfOrangeTulip:
+		return "orange_tulip"
+	case rfWhiteTulip:
+		return "white_tulip"
+	case rfPinkTulip:
+		return "pink_tulip"
+	case rfOxeyeDaisy:
+		return "oxeye_daisy"
+	}
+	return fmt.Sprintf("redFlowerVariant(%d)", r)
+}
+
+type blockRedFlower struct {
+	baseBlock
+	Variant redFlowerVariant `state:"type,0-8"`
+}
+
+func (b *blockRedFlower) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.collidable = false
+}
+
+func (b *blockRedFlower) ModelName() string {
+	return b.Variant.String()
+}
+
+func (b *blockRedFlower) toData() int {
+	return int(b.Variant)
+}
+
+// Fire
+
+var burnableBlocks map[*BlockSet]bool
+
+func initBurnable() {
+	burnableBlocks = map[*BlockSet]bool{
+		Blocks.Planks:           true,
+		Blocks.DoubleWoodenSlab: true,
+		Blocks.WoodenSlab:       true,
+
+		Blocks.Fence:        true,
+		Blocks.SpruceFence:  true,
+		Blocks.BirchFence:   true,
+		Blocks.JungleFence:  true,
+		Blocks.DarkOakFence: true,
+		Blocks.AcaciaFence:  true,
+
+		Blocks.FenceGate:        true,
+		Blocks.SpruceFenceGate:  true,
+		Blocks.BirchFenceGate:   true,
+		Blocks.JungleFenceGate:  true,
+		Blocks.DarkOakFenceGate: true,
+		Blocks.AcaciaFenceGate:  true,
+
+		Blocks.OakStairs:     true,
+		Blocks.SpruceStairs:  true,
+		Blocks.BirchStairs:   true,
+		Blocks.JungleStairs:  true,
+		Blocks.DarkOakStairs: true,
+		Blocks.AcaciaStairs:  true,
+
+		Blocks.Log:     true,
+		Blocks.Log2:    true,
+		Blocks.Leaves:  true,
+		Blocks.Leaves2: true,
+
+		Blocks.BookShelf:    true,
+		Blocks.TNT:          true,
+		Blocks.TallGrass:    true,
+		Blocks.DoublePlant:  true,
+		Blocks.YellowFlower: true,
+		Blocks.RedFlower:    true,
+		Blocks.DeadBush:     true,
+		Blocks.Wool:         true,
+		Blocks.Vine:         true,
+		Blocks.CoalBlock:    true,
+		Blocks.HayBlock:     true,
+		Blocks.Carpet:       true,
+	}
+}
+
+type blockFire struct {
+	baseBlock
+
+	Age   int  `state:"age,0-15"`
+	Alt   bool `state:"alt"`
+	Flip  bool `state:"flip"`
+	Upper int  `state:"upper,0-2"`
+	North bool `state:"north"`
+	South bool `state:"south"`
+	East  bool `state:"east"`
+	West  bool `state:"west"`
+}
+
+func (b *blockFire) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.collidable = false
+}
+
+func (b *blockFire) UpdateState(x, y, z int) Block {
+	pos := Position{X: x, Y: y, Z: z}
+	bl := chunkMap.Block(pos.ShiftDir(direction.Down).Get())
+	if !bl.ShouldCullAgainst() && !burnableBlocks[bl.BlockSet()] {
+		alt := (x+y+z)&1 == 1
+		flip := (x/2+y/2+z/2)&1 == 1
+		upper := 0
+		if burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.Up).Get()).BlockSet()] {
+			if alt {
+				upper = 1
+			} else {
+				upper = 2
+			}
+		}
+		return b.
+			Set("north", burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.North).Get()).BlockSet()]).
+			Set("south", burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.South).Get()).BlockSet()]).
+			Set("east", burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.East).Get()).BlockSet()]).
+			Set("west", burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.West).Get()).BlockSet()]).
+			Set("upper", upper).
+			Set("flip", flip).
+			Set("alt", alt)
+	}
+	return Blocks.Fire.Base
+}
+
+func (b *blockFire) ModelVariant() string {
+	return fmt.Sprintf("alt=%t,east=%t,flip=%t,north=%t,south=%t,upper=%d,west=%t", b.Alt, b.East, b.Flip, b.North, b.South, b.Upper, b.West)
+}
+
+func (b *blockFire) toData() int {
+	return b.Age
+}
