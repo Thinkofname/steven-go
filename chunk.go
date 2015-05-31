@@ -18,6 +18,7 @@ import (
 	"encoding/binary"
 	"math"
 	"sort"
+	"sync"
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/type/direction"
@@ -376,9 +377,19 @@ func (c *chunk) free() {
 			for _, e := range s.BlockEntities {
 				Client.entities.container.RemoveEntity(e)
 			}
+			sectionPool.Put(s)
 		}
 	}
 	render.FreeColumn(c.X, c.Z)
+}
+
+var sectionPool = sync.Pool{
+	New: func() interface{} {
+		return &chunkSection{
+			BlockLight: nibble.New(16 * 16 * 16),
+			SkyLight:   nibble.New(16 * 16 * 16),
+		}
+	},
 }
 
 type chunkSection struct {
@@ -395,6 +406,20 @@ type chunkSection struct {
 
 	dirty    bool
 	building bool
+}
+
+func newChunkSection(c *chunk, y int) *chunkSection {
+	cs := sectionPool.Get().(*chunkSection)
+	cs.chunk = c
+	cs.Y = y
+	cs.Buffer = nil
+	cs.dirty = false
+	cs.building = false
+	cs.BlockEntities = map[Position]BlockEntity{}
+	for i := range cs.Blocks {
+		cs.Blocks[i] = Blocks.Air.Blocks[0].SID()
+	}
+	return cs
 }
 
 func (cs *chunkSection) block(x, y, z int) Block {
@@ -419,20 +444,6 @@ func (cs *chunkSection) skyLight(x, y, z int) byte {
 }
 func (cs *chunkSection) setSkyLight(l byte, x, y, z int) {
 	cs.SkyLight.Set((y<<8)|(z<<4)|x, l)
-}
-
-func newChunkSection(c *chunk, y int) *chunkSection {
-	cs := &chunkSection{
-		chunk:         c,
-		Y:             y,
-		BlockLight:    nibble.New(16 * 16 * 16),
-		SkyLight:      nibble.New(16 * 16 * 16),
-		BlockEntities: map[Position]BlockEntity{},
-	}
-	for i := range cs.Blocks {
-		cs.Blocks[i] = Blocks.Air.Blocks[0].SID()
-	}
-	return cs
 }
 
 func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
