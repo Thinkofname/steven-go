@@ -2035,7 +2035,7 @@ func (b *blockFire) UpdateState(x, y, z int) Block {
 			Set("flip", flip).
 			Set("alt", alt)
 	}
-	return Blocks.Fire.Base
+	return Blocks.Fire.Base.Set("age", b.Age)
 }
 
 func (b *blockFire) ModelVariant() string {
@@ -2044,4 +2044,88 @@ func (b *blockFire) ModelVariant() string {
 
 func (b *blockFire) toData() int {
 	return b.Age
+}
+
+// Redstone
+
+type redstoneConnection int
+
+const (
+	rcNone redstoneConnection = iota
+	rcSide
+	rcUp
+)
+
+func (r redstoneConnection) String() string {
+	switch r {
+	case rcNone:
+		return "none"
+	case rcSide:
+		return "side"
+	case rcUp:
+		return "up"
+	}
+	return fmt.Sprintf("redstoneConnection(%d)", r)
+}
+
+type blockRedstone struct {
+	baseBlock
+
+	Power int                `state:"power,0-15"`
+	North redstoneConnection `state:"north,0-2"`
+	South redstoneConnection `state:"south,0-2"`
+	East  redstoneConnection `state:"east,0-2"`
+	West  redstoneConnection `state:"west,0-2"`
+}
+
+func (b *blockRedstone) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.collidable = false
+}
+
+func (b *blockRedstone) UpdateState(x, y, z int) Block {
+	pos := Position{X: x, Y: y, Z: z}
+	return b.
+		Set("north", b.check(direction.North, pos)).
+		Set("south", b.check(direction.South, pos)).
+		Set("east", b.check(direction.East, pos)).
+		Set("west", b.check(direction.West, pos))
+}
+
+func (b *blockRedstone) check(dir direction.Type, pos Position) redstoneConnection {
+	spos := pos.ShiftDir(dir)
+	bl := chunkMap.Block(spos.Get())
+	if bl.ShouldCullAgainst() {
+		p := spos.ShiftDir(direction.Up)
+		if chunkMap.Block(p.Get()).BlockSet() == b.BlockSet() && !chunkMap.Block(pos.ShiftDir(direction.Up).Get()).ShouldCullAgainst() {
+			return rcUp
+		}
+		return rcNone
+	}
+	if bl.BlockSet() == b.BlockSet() || chunkMap.Block(spos.ShiftDir(direction.Down).Get()).BlockSet() == b.BlockSet() {
+		return rcSide
+	}
+	return rcNone
+}
+
+func (b *blockRedstone) ModelVariant() string {
+	return fmt.Sprintf("east=%s,north=%s,south=%s,west=%s", b.East, b.North, b.South, b.West)
+}
+
+func (b *blockRedstone) TintColor() (byte, byte, byte) {
+	brightness := byte((255.0 / 30.0) * (float64(b.Power) + 14.0))
+	return brightness, 0, 0
+}
+
+func (b *blockRedstone) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			vmath.NewAABB(0, 0, 0, 1.0, 1/64.0, 1.0),
+		}
+	}
+	return b.bounds
+}
+
+func (b *blockRedstone) toData() int {
+	return b.Power
 }

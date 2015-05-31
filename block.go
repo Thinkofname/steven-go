@@ -61,6 +61,7 @@ type Block interface {
 	ForceShade() bool
 	ShouldCullAgainst() bool
 	TintImage() *image.NRGBA
+	TintColor() (r, g, b byte)
 	IsTranslucent() bool
 
 	LightReduction() int
@@ -192,6 +193,10 @@ func (b *baseBlock) ForceShade() bool {
 
 func (b *baseBlock) TintImage() *image.NRGBA {
 	return nil
+}
+
+func (b *baseBlock) TintColor() (byte, byte, byte) {
+	return 255, 255, 255
 }
 
 func (b *baseBlock) IsTranslucent() bool {

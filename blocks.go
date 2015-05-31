@@ -77,7 +77,7 @@ var Blocks = struct {
 	MobSpawner                 *BlockSet
 	OakStairs                  *BlockSet `type:"stairs"`
 	Chest                      *BlockSet
-	RedstoneWire               *BlockSet
+	RedstoneWire               *BlockSet `type:"redstone"`
 	DiamondOre                 *BlockSet
 	DiamondBlock               *BlockSet
 	CraftingTable              *BlockSet

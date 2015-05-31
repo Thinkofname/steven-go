@@ -304,10 +304,12 @@ func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf *builder.Buf
 		cr = 255
 		cg = 255
 		cb = 255
-		if this.TintImage() != nil {
-			switch f.tintIndex {
-			case 0:
+		switch f.tintIndex {
+		case 0:
+			if this.TintImage() != nil {
 				cr, cg, cb = calculateBiome(bs, x, z, this.TintImage())
+			} else {
+				cr, cg, cb = this.TintColor()
 			}
 		}
 		if f.facing == direction.West || f.facing == direction.East {
