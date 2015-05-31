@@ -43,8 +43,8 @@ Feel free to pop in to say hi, [Webchat can be found here](https://irc.spi.gt/ir
 
 |  #  |      Linux      | OS X |      Windows      |
 |:---:|:---------------:|:----:|:-----------------:|
-| x64 | [linux_amd64.zip](http://ci.thinkofdeath.uk/guestAuth/repository/download/Steven_Client/.lastSuccessful/linux_amd64.zip) |   -  | [windows_amd64.zip](http://ci.thinkofdeath.uk/guestAuth/repository/download/Steven_Client/.lastSuccessful/windows_amd64.zip) |
-| x32 |        -        |   -  |  [windows_386.zip](http://ci.thinkofdeath.uk/guestAuth/repository/download/Steven_Client/.lastSuccessful/windows_386.zip)  |
+| x64 | [linux_amd64.zip](http://ci.thinkofdeath.uk/guestAuth/repository/download/Steven_Client/.lastSuccessful/linux_amd64.zip) |   [Issue](https://github.com/thinkofdeath/steven/issues/27)  | [windows_amd64.zip](http://ci.thinkofdeath.uk/guestAuth/repository/download/Steven_Client/.lastSuccessful/windows_amd64.zip) |
+| x32 |   [Issue](https://github.com/thinkofdeath/steven/issues/28)       |   [Issue](https://github.com/thinkofdeath/steven/issues/27)  |  [windows_386.zip](http://ci.thinkofdeath.uk/guestAuth/repository/download/Steven_Client/.lastSuccessful/windows_386.zip)  |
 
 Older builds can be found [here](http://ci.thinkofdeath.co.uk/viewType.html?buildTypeId=Steven_Client&guest=1)
 
