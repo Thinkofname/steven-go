@@ -15,6 +15,7 @@
 package steven
 
 import (
+	"errors"
 	"math"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -150,7 +151,8 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 	uuid := pl.UUID()
 	info := Client.playerList.info[uuid]
 	if info == nil {
-		panic("missing player info")
+		Client.network.SignalClose(errors.New("missing player info"))
+		return
 	}
 	skin := info.skin
 	p.skin = info.skinHash
