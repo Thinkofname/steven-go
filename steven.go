@@ -61,6 +61,7 @@ func Main(username, uuid, accessToken, s string) {
 	}
 	locale.Clear()
 	loadBiomes()
+	render.LoadSkinBuffer()
 
 	setUIScale()
 

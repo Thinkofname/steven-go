@@ -93,6 +93,7 @@ func reloadResources() {
 		}
 	}
 	locale.Clear()
+	render.LoadSkinBuffer()
 	modelCache = map[string]*model{}
 	console.Text("Reloading textures")
 	render.LoadTextures()

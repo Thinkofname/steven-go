@@ -40,9 +40,9 @@ type skin struct {
 
 const skinCache = "skincache/"
 
-var skinBuffer []byte
+var skinBuffer = make([]byte, 64*64*4)
 
-func init() {
+func LoadSkinBuffer() {
 	r, err := resource.Open("minecraft", "textures/entity/steve.png")
 	if err != nil {
 		skinBuffer = make([]byte, 64*64*4)
