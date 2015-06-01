@@ -17,9 +17,18 @@ package steven
 import (
 	"fmt"
 
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 )
+
+// Controls the log level of packets
+// 0 - No logging
+// 1 - Log all reads apart from chunk packets
+// 2 - Log all reads/writes apart from chunk packets
+// 3 - Log everything
+// Must be done before the connection starts
+var networkLog = console.NewIntVar("cl_packet_log", 0, true)
 
 type networkManager struct {
 	conn      *protocol.Conn
@@ -37,12 +46,31 @@ func (n *networkManager) init() {
 }
 
 func (n *networkManager) Connect(profile mojang.Profile, server string) {
+	logLevel := networkLog.Value
 	go func() {
 		var err error
 		n.conn, err = protocol.Dial(server)
 		if err != nil {
 			n.SignalClose(err)
 			return
+		}
+		if logLevel > 0 {
+			n.conn.Logger = func(read bool, packet protocol.Packet) {
+				if !read && logLevel < 2 {
+					return
+				}
+				if logLevel < 3 {
+					switch packet.(type) {
+					case *protocol.ChunkData, *protocol.ChunkDataBulk:
+						return
+					}
+				}
+				dir := "read"
+				if !read {
+					dir = "write"
+				}
+				console.Text("%s[%s] %T%+v", server, dir, packet, packet)
+			}
 		}
 
 		err = n.conn.LoginToServer(profile)

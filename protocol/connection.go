@@ -43,6 +43,8 @@ type Conn struct {
 	State                State
 	compressionThreshold int
 
+	Logger func(read bool, packet Packet)
+
 	host string
 	port uint16
 
@@ -147,6 +149,9 @@ func (c *Conn) WritePacket(packet Packet) error {
 	}
 
 	_, err := buf.WriteTo(c.w)
+	if c.Logger != nil {
+		c.Logger(false, packet)
+	}
 	return err
 }
 
@@ -231,6 +236,9 @@ func (c *Conn) readPacket() (Packet, error) {
 	// Mostly likely our packet definitions are out of date or incorrect
 	if r.Len() > 0 {
 		return packet, fmt.Errorf("Didn't finish reading packet %s:%02X, have %d bytes left", c.State, id, r.Len())
+	}
+	if c.Logger != nil {
+		c.Logger(true, packet)
 	}
 	return packet, nil
 }
