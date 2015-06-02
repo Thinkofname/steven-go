@@ -364,12 +364,7 @@ func addTexture(pix []byte, width, height int) *textureInfo {
 			return info
 		}
 	}
-	var a *atlas.Type
-	if texturesCreated {
-		a = atlas.NewLight(AtlasSize, AtlasSize, 0)
-	} else {
-		a = atlas.New(AtlasSize, AtlasSize, 4)
-	}
+	a := atlas.NewLight(AtlasSize, AtlasSize, 0)
 	textures = append(textures, a)
 	reupload := false
 	if len(textures) > textureCount {
@@ -382,16 +377,14 @@ func addTexture(pix []byte, width, height int) *textureInfo {
 	}
 
 	info := &textureInfo{atlas: len(textures) - 1, rect: *rect}
-	if texturesCreated {
-		if reupload {
-			glTexture.Bind(gl.Texture2DArray)
-			data := make([]byte, AtlasSize*AtlasSize*textureCount*4)
-			glTexture.Get(0, gl.RGBA, gl.UnsignedByte, data)
-			glTexture.Image3D(0, AtlasSize, AtlasSize, textureCount, gl.RGBA, gl.UnsignedByte, data)
-			textureDepth = textureCount
-		}
-		uploadTexture(info, pix)
+	if reupload {
+		glTexture.Bind(gl.Texture2DArray)
+		data := make([]byte, AtlasSize*AtlasSize*textureCount*4)
+		glTexture.Get(0, gl.RGBA, gl.UnsignedByte, data)
+		glTexture.Image3D(0, AtlasSize, AtlasSize, textureCount, gl.RGBA, gl.UnsignedByte, data)
+		textureDepth = textureCount
 	}
+	uploadTexture(info, pix)
 
 	return info
 }

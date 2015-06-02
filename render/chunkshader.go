@@ -64,7 +64,7 @@ void main() {
 	fragment = `
 #version 150
 
-const float atlasSize = ` + atlasSizeStr + `;
+const float invAtlasSize = 1.0 / ` + atlasSizeStr + `;
 
 uniform sampler2DArray textures;
 
@@ -80,7 +80,7 @@ void main() {
 	vec2 tPos = vTextureOffset;
 	tPos = mod(tPos, vTextureInfo.zw);
 	tPos += vTextureInfo.xy;
-	tPos /= atlasSize;
+	tPos *= invAtlasSize;
 	vec4 col = texture(textures, vec3(tPos, vAtlas));
 	#ifndef alpha
 	if (col.a < 0.5) discard;
