@@ -107,14 +107,14 @@ sync:
 		perspectiveMatrix = mgl32.Perspective(
 			(math.Pi/180)*float32(FOV),
 			float32(width)/float32(height),
-			1,
+			0.1,
 			500.0,
 		)
 		gl.Viewport(0, 0, width, height)
 		frustum.SetPerspective(
 			(math.Pi/180)*float32(FOV),
 			float32(width)/float32(height),
-			1,
+			0.1,
 			500.0,
 		)
 	}

@@ -246,18 +246,11 @@ out vec4 vColor;
 out vec4 vTextureInfo;
 out vec2 vTextureOffset;
 out float vAtlas;
-out float vLogDepth;
 out float vID;
-
-const float C = 0.01;
-const float FC = 1.0/log(500.0*C + 1);
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
 	gl_Position = perspectiveMatrix * cameraMatrix * modelMatrix[id] * vec4(pos, 1.0);
-
-	vLogDepth = log(gl_Position.w*C + 1)*FC;
-	gl_Position.z = (2*vLogDepth - 1)*gl_Position.w;
 
 	vColor = aColor;
 	vTextureInfo = aTextureInfo;
@@ -268,10 +261,6 @@ void main() {
 `
 	staticFragment = `
 #version 150
-#ifdef GL_ARB_conservative_depth
-#extension GL_ARB_conservative_depth : enable
-layout(depth_less) out float gl_FragDepth;
-#endif
 
 const float atlasSize = ` + atlasSizeStr + `;
 
@@ -282,13 +271,11 @@ in vec4 vColor;
 in vec4 vTextureInfo;
 in vec2 vTextureOffset;
 in float vAtlas;
-in float vLogDepth;
 in float vID;
 
 out vec4 fragColor;
 
 void main() {
-	gl_FragDepth = vLogDepth;
 	vec2 tPos = vTextureOffset;
 	tPos = mod(tPos, vTextureInfo.zw);
 	tPos += vTextureInfo.xy;

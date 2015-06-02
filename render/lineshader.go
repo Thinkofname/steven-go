@@ -33,37 +33,24 @@ uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
 
 out vec4 vColor;
-out float vLogDepth;
-
-const float C = 0.01;
-const float FC = 1.0/log(500.0*C + 1);
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
 	gl_Position = perspectiveMatrix * cameraMatrix * vec4(pos, 1.0);
-
-	vLogDepth = log(gl_Position.w*C + 1)*FC;
-	gl_Position.z = (2*vLogDepth - 1)*gl_Position.w;
 
 	vColor = aColor;
 }
 `
 	fragmentLine = `
 #version 150
-#ifdef GL_ARB_conservative_depth
-#extension GL_ARB_conservative_depth : enable
-layout(depth_less) out float gl_FragDepth;
-#endif
 
 const float atlasSize = ` + atlasSizeStr + `;
 
 in vec4 vColor;
-in float vLogDepth;
 
 out vec4 fragColor;
 
 void main() {
-	gl_FragDepth = vLogDepth;
 	fragColor = vec4(vColor);
 }
 `
