@@ -96,16 +96,16 @@ func (c *ChatUI) Draw(delta float64) {
 			c.cursorTick = 0
 		}
 	}
-	parts := c.parts
-	offset := 0
+
 	limit := 0.0
 	if c.enteringText {
 		limit = -18
 	}
-	for i, p := range parts {
+	for i := 0; i < len(c.parts); i++ {
+		p := c.parts[i]
 		if p.background.Y() < limit {
-			c.parts = c.parts[i+1-offset:]
-			offset = i + 1
+			c.parts = c.parts[i+1:]
+			i--
 			p.text.Remove()
 			p.background.Remove()
 		} else {
