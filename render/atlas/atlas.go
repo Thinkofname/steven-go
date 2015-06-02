@@ -85,8 +85,9 @@ func NewPadded(width, height, pixelSize, padding int) *Type {
 // a pixel. This will have no backing buffer.
 func NewLight(width, height, padding int) *Type {
 	a := &Type{
-		width:  width,
-		height: height,
+		width:   width,
+		height:  height,
+		padding: padding,
 	}
 	a.freeSpace = append(a.freeSpace, &Rect{
 		X:      0,
