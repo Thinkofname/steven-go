@@ -131,8 +131,8 @@ func precomputeModel(bm *model) *processedModel {
 				}
 			}
 
-			var minX, minY, minZ int16 = math.MaxInt16, math.MaxInt16, math.MaxInt16
-			var maxX, maxY, maxZ int16 = math.MinInt16, math.MinInt16, math.MinInt16
+			var minX, minY, minZ = float32(math.Inf(1)), float32(math.Inf(1)), float32(math.Inf(1))
+			var maxX, maxY, maxZ = float32(math.Inf(-1)), float32(math.Inf(-1)), float32(math.Inf(-1))
 
 			for v := range vert.verts {
 				pFace.verticesTexture = append(pFace.verticesTexture, tex)
@@ -143,19 +143,19 @@ func precomputeModel(bm *model) *processedModel {
 				vert.verts[v].TAtlas = int16(tex.Atlas())
 
 				if vert.verts[v].X == 0 {
-					vert.verts[v].X = int16(el.from[0] * 16)
+					vert.verts[v].X = float32(el.from[0] / 16.0)
 				} else {
-					vert.verts[v].X = int16(el.to[0] * 16)
+					vert.verts[v].X = float32(el.to[0] / 16.0)
 				}
 				if vert.verts[v].Y == 0 {
-					vert.verts[v].Y = int16(el.from[1] * 16)
+					vert.verts[v].Y = float32(el.from[1] / 16.0)
 				} else {
-					vert.verts[v].Y = int16(el.to[1] * 16)
+					vert.verts[v].Y = float32(el.to[1] / 16.0)
 				}
 				if vert.verts[v].Z == 0 {
-					vert.verts[v].Z = int16(el.from[2] * 16)
+					vert.verts[v].Z = float32(el.from[2] / 16.0)
 				} else {
-					vert.verts[v].Z = int16(el.to[2] * 16)
+					vert.verts[v].Z = float32(el.to[2] / 16.0)
 				}
 
 				if el.rotation != nil {
@@ -165,47 +165,47 @@ func precomputeModel(bm *model) *processedModel {
 						rotY := -r.angle * (math.Pi / 180)
 						c := math.Cos(rotY)
 						s := math.Sin(rotY)
-						x := float64(vert.verts[v].X) - r.origin[0]*16
-						z := float64(vert.verts[v].Z) - r.origin[2]*16
-						vert.verts[v].X = int16(r.origin[0]*16 + (x*c - z*s))
-						vert.verts[v].Z = int16(r.origin[2]*16 + (z*c + x*s))
+						x := float64(vert.verts[v].X) - (r.origin[0] / 16.0)
+						z := float64(vert.verts[v].Z) - (r.origin[2] / 16.0)
+						vert.verts[v].X = float32(r.origin[0]/16.0 + (x*c - z*s))
+						vert.verts[v].Z = float32(r.origin[2]/16.0 + (z*c + x*s))
 					case "x":
 						rotX := r.angle * (math.Pi / 180)
 						c := math.Cos(-rotX)
 						s := math.Sin(-rotX)
-						z := float64(vert.verts[v].Z) - r.origin[2]*16
-						y := float64(vert.verts[v].Y) - r.origin[1]*16
-						vert.verts[v].Z = int16(r.origin[2]*16 + (z*c - y*s))
-						vert.verts[v].Y = int16(r.origin[1]*16 + (y*c + z*s))
+						z := float64(vert.verts[v].Z) - (r.origin[2] / 16.0)
+						y := float64(vert.verts[v].Y) - (r.origin[1] / 16.0)
+						vert.verts[v].Z = float32(r.origin[2]/16.0 + (z*c - y*s))
+						vert.verts[v].Y = float32(r.origin[1]/16.0 + (y*c + z*s))
 					case "z":
 						rotZ := -r.angle * (math.Pi / 180)
 						c := math.Cos(-rotZ)
 						s := math.Sin(-rotZ)
-						x := float64(vert.verts[v].X) - r.origin[0]*16
-						y := float64(vert.verts[v].Y) - r.origin[1]*16
-						vert.verts[v].X = int16(r.origin[0]*16 + (x*c - y*s))
-						vert.verts[v].Y = int16(r.origin[1]*16 + (y*c + x*s))
+						x := float64(vert.verts[v].X) - (r.origin[0] / 16.0)
+						y := float64(vert.verts[v].Y) - (r.origin[1] / 16.0)
+						vert.verts[v].X = float32(r.origin[0]/16.0 + (x*c - y*s))
+						vert.verts[v].Y = float32(r.origin[1]/16.0 + (y*c + x*s))
 					}
 				}
 
 				if bm.x > 0 {
 					rotX := bm.x * (math.Pi / 180)
-					c := int16(math.Cos(rotX))
-					s := int16(math.Sin(rotX))
-					z := vert.verts[v].Z - 8*16
-					y := vert.verts[v].Y - 8*16
-					vert.verts[v].Z = 8*16 + int16(z*c-y*s)
-					vert.verts[v].Y = 8*16 + int16(y*c+z*s)
+					c := float32(math.Cos(rotX))
+					s := float32(math.Sin(rotX))
+					z := vert.verts[v].Z - 0.5
+					y := vert.verts[v].Y - 0.5
+					vert.verts[v].Z = 0.5 + (z*c - y*s)
+					vert.verts[v].Y = 0.5 + (y*c + z*s)
 				}
 
 				if bm.y > 0 {
 					rotY := bm.y * (math.Pi / 180)
-					c := int16(math.Cos(rotY))
-					s := int16(math.Sin(rotY))
-					x := vert.verts[v].X - 8*16
-					z := vert.verts[v].Z - 8*16
-					vert.verts[v].X = 8*16 + int16(x*c-z*s)
-					vert.verts[v].Z = 8*16 + int16(z*c+x*s)
+					c := float32(math.Cos(rotY))
+					s := float32(math.Sin(rotY))
+					x := vert.verts[v].X - 0.5
+					z := vert.verts[v].Z - 0.5
+					vert.verts[v].X = 0.5 + (x*c - z*s)
+					vert.verts[v].Z = 0.5 + (z*c + x*s)
 				}
 
 				if vert.verts[v].TOffsetX == 0 {
@@ -271,13 +271,13 @@ func precomputeModel(bm *model) *processedModel {
 			}
 
 			if el.rotation != nil && el.rotation.rescale {
-				diffX := float64(maxX - minX)
-				diffY := float64(maxY - minY)
-				diffZ := float64(maxZ - minZ)
+				diffX := maxX - minX
+				diffY := maxY - minY
+				diffZ := maxZ - minZ
 				for v := range vert.verts {
-					vert.verts[v].X = int16((float64(vert.verts[v].X-minX) / diffX) * 256)
-					vert.verts[v].Y = int16((float64(vert.verts[v].Y-minY) / diffY) * 256)
-					vert.verts[v].Z = int16((float64(vert.verts[v].Z-minZ) / diffZ) * 256)
+					vert.verts[v].X = (vert.verts[v].X - minX) / diffX
+					vert.verts[v].Y = (vert.verts[v].Y - minY) / diffY
+					vert.verts[v].Z = (vert.verts[v].Z - minZ) / diffZ
 				}
 			}
 
@@ -325,16 +325,16 @@ func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf *builder.Buf
 			vert.G = cg
 			vert.B = cb
 
-			vert.X += int16(x * 256)
-			vert.Y += int16(y * 256)
-			vert.Z += int16(z * 256)
+			vert.X += float32(x)
+			vert.Y += float32(y)
+			vert.Z += float32(z)
 
 			vert.BlockLight, vert.SkyLight = calculateLight(
 				bs,
 				x, y, z,
-				float64(vert.X)/256.0,
-				float64(vert.Y)/256.0,
-				float64(vert.Z)/256.0,
+				float64(vert.X),
+				float64(vert.Y),
+				float64(vert.Z),
 				f.facing, p.ambientOcclusion, this.ForceShade(),
 			)
 			buildVertex(buf, vert)

@@ -25,7 +25,7 @@ import (
 )
 
 type chunkVertex struct {
-	X, Y, Z                    int16
+	X, Y, Z                    float32
 	TX, TY, TW, TH             uint16
 	TOffsetX, TOffsetY, TAtlas int16
 	R, G, B                    byte
@@ -226,10 +226,9 @@ func floodFill(bs *blocksSnapshot, visited bit.Set, x, y, z int) uint8 {
 // builder.Struct works by reflection which is to slow for this
 // as its called so often.
 func buildVertex(b *builder.Buffer, v chunkVertex) {
-	b.Short(v.X)
-	b.Short(v.Y)
-	b.Short(v.Z)
-	b.Short(0)
+	b.Float(v.X)
+	b.Float(v.Y)
+	b.Float(v.Z)
 	b.UnsignedShort(v.TX)
 	b.UnsignedShort(v.TY)
 	b.UnsignedShort(v.TW)

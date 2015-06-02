@@ -112,40 +112,32 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder
 				vert.B = cb
 
 				if vert.Y == 0 {
-					vert.Y = int16(0 + y*256)
+					vert.Y = float32(y)
 				} else {
 					if vert.X == 0 && vert.Z == 0 {
-						height := int((16.0/8.0)*float64(tl)) * 16
-						vert.Y = int16(height + y*256)
+						height := int((16.0 / 8.0) * float64(tl))
+						vert.Y = float32(height)/16.0 + float32(y)
 					} else if vert.X != 0 && vert.Z == 0 {
-						height := int((16.0/8.0)*float64(tr)) * 16
-						vert.Y = int16(height + y*256)
+						height := int((16.0 / 8.0) * float64(tr))
+						vert.Y = float32(height)/16.0 + float32(y)
 					} else if vert.X == 0 && vert.Z != 0 {
-						height := int((16.0/8.0)*float64(bl)) * 16
-						vert.Y = int16(height + y*256)
+						height := int((16.0 / 8.0) * float64(bl))
+						vert.Y = float32(height)/16.0 + float32(y)
 					} else {
-						height := int((16.0/8.0)*float64(br)) * 16
-						vert.Y = int16(height + y*256)
+						height := int((16.0 / 8.0) * float64(br))
+						vert.Y = float32(height)/16.0 + float32(y)
 					}
 				}
 
-				if vert.X == 0 {
-					vert.X = int16(0 + x*256)
-				} else {
-					vert.X = int16(256 + x*256)
-				}
-				if vert.Z == 0 {
-					vert.Z = int16(0 + z*256)
-				} else {
-					vert.Z = int16(256 + z*256)
-				}
+				vert.X += float32(x)
+				vert.Z += float32(z)
 
 				vert.BlockLight, vert.SkyLight = calculateLight(
 					bs,
 					x, y, z,
-					float64(vert.X)/256.0,
-					float64(vert.Y)/256.0,
-					float64(vert.Z)/256.0,
+					float64(vert.X),
+					float64(vert.Y),
+					float64(vert.Z),
 					1, !l.Lava, l.ForceShade(),
 				)
 

@@ -182,11 +182,11 @@ func (cb *ChunkBuffer) Upload(data []byte, indices int, cullBits uint64) {
 		copy(target, data)
 		cb.buffer.Unmap()
 	}
-	shaderChunk.Position.PointerInt(3, gl.Short, 36, 0)
-	shaderChunk.TextureInfo.Pointer(4, gl.UnsignedShort, false, 36, 8)
-	shaderChunk.TextureOffset.Pointer(3, gl.Short, false, 36, 16)
-	shaderChunk.Color.Pointer(3, gl.UnsignedByte, true, 36, 24)
-	shaderChunk.Lighting.Pointer(2, gl.UnsignedShort, false, 36, 28)
+	shaderChunk.Position.Pointer(3, gl.Float, false, 40, 0)
+	shaderChunk.TextureInfo.Pointer(4, gl.UnsignedShort, false, 40, 12)
+	shaderChunk.TextureOffset.Pointer(3, gl.Short, false, 40, 20)
+	shaderChunk.Color.Pointer(3, gl.UnsignedByte, true, 40, 28)
+	shaderChunk.Lighting.Pointer(2, gl.UnsignedShort, false, 40, 32)
 
 	cb.count = indices
 }
@@ -234,11 +234,11 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, indices int) 
 		copy(target, data)
 		cb.bufferT.Unmap()
 	}
-	shaderChunkT.Position.PointerInt(3, gl.Short, 36, 0)
-	shaderChunkT.TextureInfo.Pointer(4, gl.UnsignedShort, false, 36, 8)
-	shaderChunkT.TextureOffset.Pointer(3, gl.Short, false, 36, 16)
-	shaderChunkT.Color.Pointer(3, gl.UnsignedByte, true, 36, 24)
-	shaderChunkT.Lighting.Pointer(2, gl.UnsignedShort, false, 36, 28)
+	shaderChunkT.Position.Pointer(3, gl.Float, false, 40, 0)
+	shaderChunkT.TextureInfo.Pointer(4, gl.UnsignedShort, false, 40, 12)
+	shaderChunkT.TextureOffset.Pointer(3, gl.Short, false, 40, 20)
+	shaderChunkT.Color.Pointer(3, gl.UnsignedByte, true, 40, 28)
+	shaderChunkT.Lighting.Pointer(2, gl.UnsignedShort, false, 40, 32)
 
 	cb.countT = indices
 	cb.transInfo = info

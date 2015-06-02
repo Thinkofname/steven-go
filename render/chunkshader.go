@@ -31,7 +31,7 @@ type chunkShader struct {
 const (
 	vertex = `
 #version 150
-in ivec3 aPosition;
+in vec3 aPosition;
 in vec4 aTextureInfo;
 in vec3 aTextureOffset;
 in vec3 aColor;
@@ -48,9 +48,9 @@ out float vAtlas;
 out float vLighting;
 
 void main() {
-	ivec3 pos = ivec3(aPosition.x, -aPosition.y, aPosition.z);
+	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
 	vec3 o = vec3(offset.x, -offset.y, offset.z);
-	gl_Position = perspectiveMatrix * cameraMatrix * vec4((pos / 256.0) + o * 16.0, 1.0);
+	gl_Position = perspectiveMatrix * cameraMatrix * vec4(pos + o * 16.0, 1.0);
 
 	vColor = aColor;
 	vTextureInfo = aTextureInfo;
