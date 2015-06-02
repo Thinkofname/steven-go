@@ -128,7 +128,7 @@ func genElementBuffer(size int) ([]byte, gl.Type) {
 		ty = gl.UnsignedInt
 	}
 	for i := 0; i < size/6; i++ {
-		for _, val := range []uint32{0, 1, 2, 3, 2, 1} {
+		for _, val := range []uint32{0, 1, 2, 2, 1, 3} {
 			if ty == gl.UnsignedInt {
 				native.Order.PutUint32(data[offset:], uint32(i)*4+val)
 				offset += 4
