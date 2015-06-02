@@ -101,9 +101,9 @@ func modelToUI(mdl *model, block Block) *ui.Model {
 
 		for _, vert := range f.vertices {
 			vert := &ui.ModelVertex{
-				X:        float32(vert.X) / 256,
-				Y:        float32(vert.Y) / 256,
-				Z:        float32(vert.Z) / 256,
+				X:        vert.X,
+				Y:        vert.Y,
+				Z:        vert.Z,
 				TOffsetX: vert.TOffsetX,
 				TOffsetY: vert.TOffsetY,
 				R:        cr,

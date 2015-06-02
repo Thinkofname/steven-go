@@ -81,7 +81,7 @@ func staticModelFromItem(mdl *model, block Block, mode string) (out []*render.St
 		}
 
 		for i, vert := range f.vertices {
-			vX, vY, vZ := float32(vert.X)/256, float32(vert.Y)/256, float32(vert.Z)/256
+			vX, vY, vZ := vert.X, vert.Y, vert.Z
 			tex := f.verticesTexture[i]
 			rect := tex.Rect()
 			vert := &render.StaticVertex{
