@@ -50,6 +50,8 @@ func startWindow() {
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 	glfw.WindowHint(glfw.Samples, Config.Render.Samples)
+	glfw.WindowHint(glfw.DepthBits, 32)
+	glfw.WindowHint(glfw.StencilBits, 0)
 	if os.Getenv("STEVEN_DEBUG") == "true" {
 		glfw.WindowHint(glfw.OpenGLDebugContext, glfw.True)
 	}
