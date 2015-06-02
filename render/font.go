@@ -164,6 +164,7 @@ func SizeOfCharacter(r rune) float64 {
 	info := fontCharacterInfo[r]
 	if r>>8 == 0 {
 		r = charMap[r]
+		info = fontCharacterInfo[r]
 		sw := aPageWidth / 16
 		return (float64(info.End-info.Start) / sw) * 16
 	}
