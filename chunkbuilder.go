@@ -140,11 +140,11 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 			var data, dataT []byte
 			if len(bO) > 0 {
 				size := len(bO) * int(unsafe.Sizeof(bO[0]))
-				data = (*[1 << 31]byte)(unsafe.Pointer(&bO[0]))[:size]
+				data = (*[1 << 28]byte)(unsafe.Pointer(&bO[0]))[:size]
 			}
 			if len(bT) > 0 {
 				size := len(bT) * int(unsafe.Sizeof(bT[0]))
-				dataT = (*[1 << 31]byte)(unsafe.Pointer(&bT[0]))[:size]
+				dataT = (*[1 << 28]byte)(unsafe.Pointer(&bT[0]))[:size]
 			}
 			cs.Buffer.Upload(data, *bOI, cullBits)
 			cs.Buffer.UploadTrans(tInfo, dataT, *bTI)
