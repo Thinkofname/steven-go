@@ -17,6 +17,7 @@ package steven
 import (
 	"math/rand"
 	"sync"
+	"unsafe"
 
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/render/builder"
@@ -28,9 +29,11 @@ type chunkVertex struct {
 	X, Y, Z                    float32
 	TX, TY, TW, TH             uint16
 	TOffsetX, TOffsetY, TAtlas int16
+	Pad0                       int16
 	R, G, B                    byte
-	Pad                        byte
+	Pad1                       byte
 	BlockLight, SkyLight       uint16
+	Pad2, Pad3                 uint16
 }
 
 type buildPos struct {
@@ -41,7 +44,7 @@ var (
 	_, chunkVertexType = builder.Struct(chunkVertex{})
 	builderPool        = sync.Pool{
 		New: func() interface{} {
-			return builder.New(chunkVertexType...)
+			return []chunkVertex(nil)
 		},
 	}
 )
@@ -54,8 +57,8 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 	bs.y = -2
 	bs.z = -2
 	go func() {
-		bO := builderPool.Get().(*builder.Buffer)
-		bT := builderPool.Get().(*builder.Buffer)
+		bO := builderPool.Get().([]chunkVertex)[:0]
+		bT := builderPool.Get().([]chunkVertex)[:0]
 		bOI := new(int)
 		bTI := new(int)
 
@@ -74,11 +77,9 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 						r.Int()
 						continue
 					}
-					b := bO
 					bI := bOI
 					// Translucent models need special handling
 					if bl.IsTranslucent() {
-						b = bT
 						bI = bTI
 					}
 					offset := *bI
@@ -86,7 +87,11 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 					// Liquids can't be represented by the model system
 					// due to the number of possible states they have
 					if l, ok := bl.(*blockLiquid); ok {
-						l.renderLiquid(bs, x, y, z, b, bI)
+						if bl.IsTranslucent() {
+							bT = l.renderLiquid(bs, x, y, z, bT, bI)
+						} else {
+							bO = l.renderLiquid(bs, x, y, z, bO, bI)
+						}
 						r.Int() // See the comment above for air
 						count := *bI - offset
 						if bl.IsTranslucent() && count > 0 {
@@ -106,7 +111,11 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 					index := r.Intn(len(bl.Models()))
 
 					if variant := bl.Models().selectModel(index); variant != nil {
-						variant.Render(x, y, z, bs, b, bI)
+						if bl.IsTranslucent() {
+							bT = variant.Render(x, y, z, bs, bT, bI)
+						} else {
+							bO = variant.Render(x, y, z, bs, bO, bI)
+						}
 						count := *bI - offset
 						if bl.IsTranslucent() && count > 0 {
 							tInfo = append(tInfo, render.ObjectInfo{
@@ -128,10 +137,18 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 
 		// Upload the buffers on the render goroutine
 		render.Sync(func() {
-			cs.Buffer.Upload(bO.Data(), *bOI, cullBits)
-			cs.Buffer.UploadTrans(tInfo, bT.Data(), *bTI)
-			bO.Reset()
-			bT.Reset()
+			var data, dataT []byte
+			if len(bO) > 0 {
+				size := len(bO) * int(unsafe.Sizeof(bO[0]))
+				data = (*[1 << 31]byte)(unsafe.Pointer(&bO[0]))[:size]
+			}
+			if len(bT) > 0 {
+				size := len(bT) * int(unsafe.Sizeof(bT[0]))
+				dataT = (*[1 << 31]byte)(unsafe.Pointer(&bT[0]))[:size]
+			}
+			cs.Buffer.Upload(data, *bOI, cullBits)
+			cs.Buffer.UploadTrans(tInfo, dataT, *bTI)
+
 			builderPool.Put(bO)
 			builderPool.Put(bT)
 		})

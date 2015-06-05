@@ -18,7 +18,6 @@ import (
 	"reflect"
 
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/type/direction"
 )
 
@@ -58,7 +57,7 @@ func (l *blockLiquid) toData() int {
 	return l.Level
 }
 
-func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder.Buffer, indices *int) {
+func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf []chunkVertex, indices *int) []chunkVertex {
 	tex := l.Tex
 	var b1, b2 *BlockSet
 	if l.Lava {
@@ -151,10 +150,11 @@ func (l *blockLiquid) renderLiquid(bs *blocksSnapshot, x, y, z int, buf *builder
 				} else {
 					vert.TOffsetY = int16(uy2)
 				}
-				buildVertex(buf, vert)
+				buf = append(buf, vert)
 			}
 		}
 	}
+	return buf
 }
 
 func (l *blockLiquid) averageLiquidLevel(bs *blocksSnapshot, x, y, z int) int {
