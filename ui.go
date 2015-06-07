@@ -19,12 +19,36 @@ import (
 	"strings"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/ui/scene"
 )
 
+const (
+	uiAuto   = "auto"
+	uiSmall  = "small"
+	uiMedium = "medium"
+	uiLarge  = "large"
+)
+
+var uiScale = console.NewStringVar("cl_ui_scale", "auto", console.Mutable, console.Serializable).
+	Doc(`
+cl_ui_scale sets the scaling used for the user interface. 
+Valid values are:
+- auto
+- small
+- medium
+- large
+`)
+
+func init() {
+	uiScale.Callback(func() {
+		setUIScale()
+	})
+}
+
 func setUIScale() {
-	switch Config.Game.UIScale {
+	switch uiScale.Value() {
 	case uiAuto:
 		ui.DrawMode = ui.Scaled
 		ui.Scale = 1.0

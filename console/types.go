@@ -63,6 +63,7 @@ func (r *registry) initTypes() {
 
 	r.RegisterType(reflect.TypeOf(""), stringHandler{})
 	r.RegisterType(reflect.TypeOf(int(0)), intHandler{})
+	r.RegisterType(reflect.TypeOf(false), boolHandler{})
 }
 
 type stringHandler struct{}
@@ -129,4 +130,18 @@ func (intHandler) ParseType(arg string, info interface{}) (interface{}, error) {
 
 func (intHandler) Equals(a, b interface{}) bool {
 	return a.(intDetails) == b.(intDetails)
+}
+
+type boolHandler struct{}
+
+func (boolHandler) DefineType(arg string) interface{} {
+	return nil
+}
+
+func (boolHandler) ParseType(arg string, info interface{}) (interface{}, error) {
+	return strconv.ParseBool(arg)
+}
+
+func (boolHandler) Equals(a, b interface{}) bool {
+	return true
 }

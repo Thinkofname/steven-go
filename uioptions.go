@@ -63,10 +63,10 @@ func newOptionMenu(ret func() screen) *optionMenu {
 	txt.AttachTo(samples.back)
 	om.scene.AddDrawable(txt)
 	samples.UpdateFunc = func() {
-		Config.Render.Samples = round(16 * samples.Value)
-		txt.Update(fmt.Sprintf("Samples*: %d", Config.Render.Samples))
+		renderSamples.SetValue(round(16 * samples.Value))
+		txt.Update(fmt.Sprintf("Samples*: %d", renderSamples.Value()))
 	}
-	samples.Value = float64(Config.Render.Samples) / 16
+	samples.Value = float64(renderSamples.Value()) / 16
 	samples.update()
 
 	fov := newSlider(160, -100, 300, 40)
@@ -77,27 +77,24 @@ func newOptionMenu(ret func() screen) *optionMenu {
 	ftxt.AttachTo(fov.back)
 	om.scene.AddDrawable(ftxt)
 	fov.UpdateFunc = func() {
-		Config.Render.FOV = 60 + round(119*fov.Value)
-		ftxt.Update(fmt.Sprintf("FOV: %d", Config.Render.FOV))
-		render.FOV = Config.Render.FOV
+		render.FOV.SetValue(60 + round(119*fov.Value))
+		ftxt.Update(fmt.Sprintf("FOV: %d", render.FOV.Value()))
 	}
-	fov.Value = (float64(Config.Render.FOV) - 60) / 119.0
+	fov.Value = (float64(render.FOV.Value()) - 60) / 119.0
 	fov.update()
 
 	vsync, vtxt := newButtonText("", -160, -50, 300, 40)
 	om.scene.AddDrawable(vsync.Attach(ui.Center, ui.Middle))
 	om.scene.AddDrawable(vtxt)
 	vsync.ClickFunc = func() {
-		Config.Render.VSync = !Config.Render.VSync
-		if Config.Render.VSync {
+		renderVSync.SetValue(!renderVSync.Value())
+		if renderVSync.Value() {
 			vtxt.Update("VSync: Enabled")
-			glfw.SwapInterval(1)
 		} else {
 			vtxt.Update("VSync: Disabled")
-			glfw.SwapInterval(0)
 		}
 	}
-	Config.Render.VSync = !Config.Render.VSync
+	renderVSync.SetValue(!renderVSync.Value())
 	vsync.ClickFunc()
 
 	mouseS := newSlider(160, -50, 300, 40)
@@ -108,10 +105,10 @@ func newOptionMenu(ret func() screen) *optionMenu {
 	mtxt.AttachTo(mouseS.back)
 	om.scene.AddDrawable(mtxt)
 	mouseS.UpdateFunc = func() {
-		Config.Game.MouseSensitivity = 500 + round(10000.0*mouseS.Value)
-		mtxt.Update(fmt.Sprintf("Mouse Speed: %d", Config.Game.MouseSensitivity))
+		mouseSensitivity.SetValue(500 + round(9500.0*mouseS.Value))
+		mtxt.Update(fmt.Sprintf("Mouse Speed: %d", mouseSensitivity.Value()))
 	}
-	mouseS.Value = (float64(Config.Game.MouseSensitivity) - 500) / 10000.0
+	mouseS.Value = (float64(mouseSensitivity.Value()) - 500) / 9500.0
 	mouseS.update()
 
 	om.scene.AddDrawable(
@@ -125,23 +122,22 @@ func newOptionMenu(ret func() screen) *optionMenu {
 	}
 	curScale := func() int {
 		for i, s := range scales {
-			if s == Config.Game.UIScale {
+			if s == uiScale.Value() {
 				return i
 			}
 		}
 		return 0
 	}
 
-	uiScale, utxt := newButtonText("", -160, 0, 300, 40)
-	om.scene.AddDrawable(uiScale.Attach(ui.Center, ui.Middle))
+	uiS, utxt := newButtonText("", -160, 0, 300, 40)
+	om.scene.AddDrawable(uiS.Attach(ui.Center, ui.Middle))
 	om.scene.AddDrawable(utxt)
-	uiScale.ClickFunc = func() {
-		Config.Game.UIScale = scales[(curScale()+1)%len(scales)]
-		utxt.Update(fmt.Sprintf("UI Scale: %s", Config.Game.UIScale))
-		setUIScale()
+	uiS.ClickFunc = func() {
+		uiScale.SetValue(scales[(curScale()+1)%len(scales)])
+		utxt.Update(fmt.Sprintf("UI Scale: %s", uiScale.Value()))
 	}
-	Config.Game.UIScale = scales[(len(scales)+curScale()-1)%len(scales)]
-	uiScale.ClickFunc()
+	uiScale.SetValue(scales[(len(scales)+curScale()-1)%len(scales)])
+	uiS.ClickFunc()
 
 	return om
 }

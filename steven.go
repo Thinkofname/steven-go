@@ -99,7 +99,6 @@ func start() {
 			setScreen(newServerList())
 		}
 	}
-	render.FOV = Config.Render.FOV
 	render.Start()
 }
 

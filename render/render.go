@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/render/gl"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
@@ -33,7 +34,11 @@ var (
 	lineProgram   gl.Program
 	shaderLine    *lineShader
 
-	FOV, lastFOV          int = 90, 90
+	FOV = console.NewIntVar("r_fov", 90, console.Mutable, console.Serializable).Doc(`
+r_fov controls the field of view of the camera. Measured
+in degrees.
+`)
+	lastFOV               int = 90
 	lastWidth, lastHeight int = -1, -1
 	perspectiveMatrix         = mgl32.Mat4{}
 	cameraMatrix              = mgl32.Mat4{}
@@ -99,20 +104,20 @@ sync:
 	}
 
 	// Only update the viewport if the window was resized
-	if lastHeight != height || lastWidth != width || lastFOV != FOV {
+	if lastHeight != height || lastWidth != width || lastFOV != FOV.Value() {
 		lastWidth = width
 		lastHeight = height
-		lastFOV = FOV
+		lastFOV = FOV.Value()
 
 		perspectiveMatrix = mgl32.Perspective(
-			(math.Pi/180)*float32(FOV),
+			(math.Pi/180)*float32(lastFOV),
 			float32(width)/float32(height),
 			0.1,
 			500.0,
 		)
 		gl.Viewport(0, 0, width, height)
 		frustum.SetPerspective(
-			(math.Pi/180)*float32(FOV),
+			(math.Pi/180)*float32(lastFOV),
 			float32(width)/float32(height),
 			0.1,
 			500.0,

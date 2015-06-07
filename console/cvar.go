@@ -41,6 +41,7 @@ type cvar struct {
 	properties Property
 
 	documentation string
+	callback      func()
 }
 
 type cvarI interface {
@@ -51,6 +52,9 @@ func (c *cvar) props() Property { return c.properties }
 
 // Doc sets the documentation for this cvar
 func (c *cvar) Doc(d string) { c.documentation = strings.TrimSpace(d) }
+
+// Callback sets the callback to be called when the value is updated
+func (c *cvar) Callback(cb func()) { c.callback = cb }
 
 func (c *cvar) String() string {
 	var buf bytes.Buffer
@@ -114,9 +118,15 @@ func (i *IntVar) String() string {
 // Doc sets the documentation for this cvar
 func (i *IntVar) Doc(d string) *IntVar { i.cvar.Doc(d); return i }
 
+// Callback sets the callback to be called when the value is updated
+func (i *IntVar) Callback(cb func()) *IntVar { i.cvar.Callback(cb); return i }
+
 func (i *IntVar) Value() int { return i.value }
 func (i *IntVar) SetValue(v int) {
 	i.value = v
+	if i.callback != nil {
+		i.callback()
+	}
 	if i.properties.is(Serializable) {
 		saveConf()
 	}
@@ -155,7 +165,7 @@ func NewStringVar(name, val string, props ...Property) *StringVar {
 	})
 	if s.properties.is(Mutable) {
 		Register(fmt.Sprintf("%s %%", name), func(v string) {
-			s.value = v
+			s.SetValue(v)
 			s.print()
 		})
 	}
@@ -173,9 +183,16 @@ func (s *StringVar) String() string {
 
 // Doc sets the documentation for this cvar
 func (s *StringVar) Doc(d string) *StringVar { s.cvar.Doc(d); return s }
-func (s *StringVar) Value() string           { return s.value }
+
+// Callback sets the callback to be called when the value is updated
+func (s *StringVar) Callback(cb func()) *StringVar { s.cvar.Callback(cb); return s }
+
+func (s *StringVar) Value() string { return s.value }
 func (s *StringVar) SetValue(v string) {
 	s.value = v
+	if s.callback != nil {
+		s.callback()
+	}
 	if s.properties.is(Serializable) {
 		saveConf()
 	}
@@ -189,6 +206,76 @@ func (s *StringVar) print() {
 		Append(s.value).
 		Color(chat.Aqua).
 		Append("\"").Color(chat.Yellow).
+		Create(),
+	)
+}
+
+// BoolVar is a console var that contains an bool
+type BoolVar struct {
+	cvar
+	name  string
+	value bool
+}
+
+// NewBoolVar creates and registers a bool console variable
+func NewBoolVar(name string, val bool, props ...Property) *BoolVar {
+	b := &BoolVar{
+		name:  name,
+		value: val,
+	}
+	cvars = append(cvars, b)
+	for _, p := range props {
+		b.properties |= p
+	}
+	Register(fmt.Sprintf("%s", name), func() {
+		b.printDoc()
+		b.print()
+	})
+	if b.properties.is(Mutable) {
+		Register(fmt.Sprintf("%s %%", name), func(v bool) {
+			b.SetValue(v)
+			b.print()
+		})
+	}
+	return b
+}
+
+func (b *BoolVar) String() string {
+	var buf bytes.Buffer
+	buf.WriteString(b.cvar.String())
+	buf.WriteString(b.name)
+	buf.WriteRune(' ')
+	fmt.Fprint(&buf, b.value)
+	return buf.String()
+}
+
+// Doc sets the documentation for this cvar
+func (b *BoolVar) Doc(d string) *BoolVar { b.cvar.Doc(d); return b }
+
+// Callback sets the callback to be called when the value is updated
+func (b *BoolVar) Callback(cb func()) *BoolVar { b.cvar.Callback(cb); return b }
+
+func (b *BoolVar) Value() bool { return b.value }
+func (b *BoolVar) SetValue(v bool) {
+	b.value = v
+	if b.callback != nil {
+		b.callback()
+	}
+	if b.properties.is(Serializable) {
+		saveConf()
+	}
+}
+
+func (b *BoolVar) print() {
+	col := chat.Red
+	if b.value {
+		col = chat.Green
+	}
+	Component(chat.Build(b.name).
+		Color(chat.Aqua).
+		Append(" ").
+		Append(fmt.Sprint(b.value)).
+		Color(col).
 		Create(),
 	)
 }

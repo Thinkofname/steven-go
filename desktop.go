@@ -21,6 +21,7 @@ import (
 	"runtime"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/render/gl"
@@ -39,6 +40,35 @@ func init() {
 	log.SetFlags(log.Lshortfile | log.Ltime)
 }
 
+var (
+	renderSamples = console.NewIntVar("r_samples", 0, console.Mutable, console.Serializable).Doc(`
+r_samples sets the number of samples used for AA, set to
+0 to disable. 
+This requires a restart to take effect.
+`)
+	renderVSync = console.NewBoolVar("r_vsync", true, console.Mutable, console.Serializable).
+			Doc(`
+r_vsync controls whether vsync is enabled. VSync tries to
+keep the refreshing of the game in sync with the monitor's
+refresh rate.
+`)
+	mouseSensitivity = console.NewIntVar("cl_mouse_speed", 8000, console.Mutable, console.Serializable).
+				Doc(`
+cl_mouse_speed controls how fast you rotate when moving 
+the mouse. Higher values means faster rotation.
+`)
+)
+
+func init() {
+	renderVSync.Callback(func() {
+		if renderVSync.Value() {
+			glfw.SwapInterval(1)
+		} else {
+			glfw.SwapInterval(0)
+		}
+	})
+}
+
 func startWindow() {
 	if err := glfw.Init(); err != nil {
 		panic(err)
@@ -49,13 +79,13 @@ func startWindow() {
 	glfw.WindowHint(glfw.ContextVersionMinor, 2)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-	glfw.WindowHint(glfw.Samples, Config.Render.Samples)
+	glfw.WindowHint(glfw.Samples, renderSamples.Value())
 	glfw.WindowHint(glfw.DepthBits, 32)
 	glfw.WindowHint(glfw.StencilBits, 0)
 	if os.Getenv("STEVEN_DEBUG") == "true" {
 		glfw.WindowHint(glfw.OpenGLDebugContext, glfw.True)
 	}
-	render.MultiSample = Config.Render.Samples > 0
+	render.MultiSample = renderSamples.Value() > 0
 
 	var err error
 	window, err = glfw.CreateWindow(854, 480, "Steven", nil, nil)
@@ -63,7 +93,7 @@ func startWindow() {
 		panic(err)
 	}
 	window.MakeContextCurrent()
-	if Config.Render.VSync {
+	if renderVSync.Value() {
 		glfw.SwapInterval(1)
 	} else {
 		glfw.SwapInterval(0)
@@ -129,7 +159,7 @@ func onMouseMove(w *glfw.Window, xpos float64, ypos float64) {
 	ww, hh := float64(width/2), float64(height/2)
 	w.SetCursorPos(ww, hh)
 
-	s := float64(Config.Game.MouseSensitivity)
+	s := float64(10000-mouseSensitivity.Value()) + 0.01
 	rotate((xpos-ww)/s, (ypos-hh)/s)
 }
 
