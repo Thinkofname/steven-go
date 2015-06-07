@@ -556,8 +556,12 @@ func (h handler) PluginMessage(p *protocol.PluginMessageClientbound) {
 	h.handlePluginMessage(p.Channel, bytes.NewReader(p.Data), false)
 }
 
-var serverBrand = console.NewStringVar("sv_brand", "unknown")
+var serverBrand = console.NewStringVar("sv_brand", "unknown").Doc(`
+sv_brand shows the last sent MC|Brand packet from the server.
+This identifies the make of the server like vanilla, spigot, forge
+etc. 
+`)
 
 func (h handler) ServerBrand(b *pmMinecraftBrand) {
-	serverBrand.Value = b.Brand
+	serverBrand.SetValue(b.Brand)
 }

@@ -22,13 +22,14 @@ import (
 	"github.com/thinkofdeath/steven/protocol/mojang"
 )
 
-// Controls the log level of packets
-// 0 - No logging
-// 1 - Log all reads apart from chunk packets
-// 2 - Log all reads/writes apart from chunk packets
-// 3 - Log everything
-// Must be done before the connection starts
-var networkLog = console.NewIntVar("cl_packet_log", 0, console.Mutable)
+var networkLog = console.NewIntVar("cl_packet_log", 0, console.Mutable, console.Serializable).Doc(`
+cl_packet_log controls the log level of packets.
+0 - No logging
+1 - Log all reads apart from chunk packets
+2 - Log all reads/writes apart from chunk packets
+3 - Log everything
+Must be done before the connection starts.
+`)
 
 type networkManager struct {
 	conn      *protocol.Conn
@@ -46,7 +47,7 @@ func (n *networkManager) init() {
 }
 
 func (n *networkManager) Connect(profile mojang.Profile, server string) {
-	logLevel := networkLog.Value
+	logLevel := networkLog.Value()
 	go func() {
 		var err error
 		n.conn, err = protocol.Dial(server)

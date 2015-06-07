@@ -42,11 +42,18 @@ func stevenVersion() string {
 }
 
 func init() {
-	console.NewStringVar("cl_version", stevenBuildVersion)
-	console.NewStringVar("cl_mc_version", resource.ResourcesVersion)
+	console.NewStringVar("cl_version", stevenBuildVersion).Doc(`
+cl_version returns the build information compiled into steven.
+Returns dev if not set.
+`)
+	console.NewStringVar("cl_mc_version", resource.ResourcesVersion).Doc(`
+cl_mc_version returns the minecraft version steven currently supports.
+`)
 }
 
 func Main(username, uuid, accessToken, s string) {
+	console.ExecConf("conf.cfg")
+	console.ExecConf("autoexec.cfg")
 	profile = mojang.Profile{
 		Username:    username,
 		ID:          uuid,

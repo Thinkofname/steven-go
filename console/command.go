@@ -144,7 +144,14 @@ func Execute(cmd string, extra ...interface{}) (err error) {
 		Append(cmd).
 		Create(),
 	)
-	return defaultRegistry.Execute(cmd, extra...)
+	for _, c := range strings.Split(cmd, ";") {
+		c = strings.TrimSpace(c)
+		err = defaultRegistry.Execute(c, extra...)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *registry) Execute(cmd string, extra ...interface{}) (err error) {
