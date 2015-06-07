@@ -20,23 +20,39 @@ import (
 	"github.com/thinkofdeath/steven/chat"
 )
 
+// Property is a flag for cvar to control how its handled
+type Property int
+
+const (
+	// Mutable marks whether the var can be changed from the
+	// console
+	Mutable Property = 1 << iota
+)
+
+func (p Property) is(po Property) bool { return p&po == po }
+
 // IntVar is a console var that contains an integer
 type IntVar struct {
 	name  string
 	Value int
+
+	properties Property
 }
 
 // NewIntVar creates and registers a integer console variable
-func NewIntVar(name string, val int, mut bool) *IntVar {
+func NewIntVar(name string, val int, props ...Property) *IntVar {
 	i := &IntVar{
 		name:  name,
 		Value: val,
 	}
+	for _, p := range props {
+		i.properties |= p
+	}
 	Register(fmt.Sprintf("%s", name), func() {
 		i.print()
 	})
-	if mut {
-		Register(fmt.Sprintf("%s = %%", name), func(v int) {
+	if i.properties.is(Mutable) {
+		Register(fmt.Sprintf("%s %%", name), func(v int) {
 			i.Value = v
 			i.print()
 		})
@@ -47,7 +63,7 @@ func NewIntVar(name string, val int, mut bool) *IntVar {
 func (i *IntVar) print() {
 	Component(chat.Build(i.name).
 		Color(chat.Aqua).
-		Append(" = ").
+		Append(" ").
 		Append(fmt.Sprint(i.Value)).
 		Color(chat.Aqua).
 		Create(),
@@ -56,21 +72,25 @@ func (i *IntVar) print() {
 
 // StringVar is a console var that contains an string
 type StringVar struct {
-	name  string
-	Value string
+	name       string
+	Value      string
+	properties Property
 }
 
 // NewStringVar creates and registers a string console variable
-func NewStringVar(name, val string, mut bool) *StringVar {
+func NewStringVar(name, val string, props ...Property) *StringVar {
 	s := &StringVar{
 		name:  name,
 		Value: val,
 	}
+	for _, p := range props {
+		s.properties |= p
+	}
 	Register(fmt.Sprintf("%s", name), func() {
 		s.print()
 	})
-	if mut {
-		Register(fmt.Sprintf("%s = %%", name), func(v string) {
+	if s.properties.is(Mutable) {
+		Register(fmt.Sprintf("%s %%", name), func(v string) {
 			s.Value = v
 			s.print()
 		})
@@ -81,7 +101,7 @@ func NewStringVar(name, val string, mut bool) *StringVar {
 func (s *StringVar) print() {
 	Component(chat.Build(s.name).
 		Color(chat.Aqua).
-		Append(" = ").
+		Append(" ").
 		Append("\"").Color(chat.Yellow).
 		Append(s.Value).
 		Color(chat.Aqua).

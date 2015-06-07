@@ -28,7 +28,7 @@ import (
 // 2 - Log all reads/writes apart from chunk packets
 // 3 - Log everything
 // Must be done before the connection starts
-var networkLog = console.NewIntVar("cl_packet_log", 0, true)
+var networkLog = console.NewIntVar("cl_packet_log", 0, console.Mutable)
 
 type networkManager struct {
 	conn      *protocol.Conn

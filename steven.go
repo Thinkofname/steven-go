@@ -42,8 +42,8 @@ func stevenVersion() string {
 }
 
 func init() {
-	console.NewStringVar("cl_version", stevenBuildVersion, false)
-	console.NewStringVar("cl_mc_version", resource.ResourcesVersion, false)
+	console.NewStringVar("cl_version", stevenBuildVersion)
+	console.NewStringVar("cl_mc_version", resource.ResourcesVersion)
 }
 
 func Main(username, uuid, accessToken, s string) {
