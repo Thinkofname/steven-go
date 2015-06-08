@@ -245,21 +245,6 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 
 func createNameTag(name string) (verts []*render.StaticVertex) {
 	width := render.SizeOfString(name) + 4
-	tex := render.GetTexture("solid")
-	for _, v := range faceVertices[direction.North].verts {
-		vert := &render.StaticVertex{
-			X:        float32(v.X)*float32(width*0.01) - float32((width/2)*0.01),
-			Y:        float32(v.Y)*0.2 - 0.1,
-			Texture:  tex,
-			TextureX: float64(v.TOffsetX),
-			TextureY: float64(v.TOffsetY),
-			R:        0,
-			G:        0,
-			B:        0,
-			A:        100,
-		}
-		verts = append(verts, vert)
-	}
 	offset := -(width/2)*0.01 + (2 * 0.01)
 	for _, r := range name {
 		tex := render.CharacterTexture(r)
@@ -269,9 +254,24 @@ func createNameTag(name string) (verts []*render.StaticVertex) {
 		s := render.SizeOfCharacter(r)
 		for _, v := range faceVertices[direction.North].verts {
 			vert := &render.StaticVertex{
+				X:        float32(v.X)*float32(s*0.01) - float32(offset+s*0.01) - 0.01,
+				Y:        float32(v.Y)*0.16 - 0.08 - 0.01,
+				Z:        0.05,
+				Texture:  tex,
+				TextureX: float64(v.TOffsetX),
+				TextureY: float64(v.TOffsetY),
+				R:        64,
+				G:        64,
+				B:        64,
+				A:        255,
+			}
+			verts = append(verts, vert)
+		}
+		for _, v := range faceVertices[direction.North].verts {
+			vert := &render.StaticVertex{
 				X:        float32(v.X)*float32(s*0.01) - float32(offset+s*0.01),
 				Y:        float32(v.Y)*0.16 - 0.08,
-				Z:        -0.01,
+				Z:        0,
 				Texture:  tex,
 				TextureX: float64(v.TOffsetX),
 				TextureY: float64(v.TOffsetY),
