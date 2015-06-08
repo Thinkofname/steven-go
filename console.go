@@ -83,6 +83,12 @@ func (cs *consoleScreen) onKey(w *glfw.Window, key glfw.Key, scancode int, actio
 		}
 	}
 	if key == glfw.KeyEnter && action == glfw.Release {
+		console.Component(chat.
+			Build("> ").
+			Color(chat.Yellow).
+			Append(cs.input).
+			Create(),
+		)
 		err := console.Execute(cs.input)
 		cs.input = ""
 		if err != nil {
