@@ -20,6 +20,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/protocol/mojang"
@@ -52,6 +53,11 @@ cl_mc_version returns the minecraft version steven currently supports.
 }
 
 func Main(username, uuid, accessToken, s string) {
+	if err := glfw.Init(); err != nil {
+		panic(err)
+	}
+	defer glfw.Terminate()
+
 	console.ExecConf("conf.cfg")
 	console.ExecConf("autoexec.cfg")
 	profile = mojang.Profile{
