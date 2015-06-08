@@ -22,7 +22,10 @@ import (
 	"github.com/thinkofdeath/steven/chat"
 )
 
-var cvars cvarList
+var (
+	cvars          cvarList
+	configOverride bool
+)
 
 // Property is a flag for cvar to control how its handled
 type Property int
@@ -98,12 +101,16 @@ func NewIntVar(name string, val int, props ...Property) *IntVar {
 		i.printDoc()
 		i.print()
 	})
-	if i.properties.is(Mutable) {
-		Register(fmt.Sprintf("%s %%", name), func(v int) {
+	Register(fmt.Sprintf("%s %%", name), func(v int) {
+		if configOverride || i.properties.is(Mutable) {
 			i.SetValue(v)
-			i.print()
-		})
-	}
+			if !configOverride {
+				i.print()
+			}
+		} else {
+			panic("this var is not mutable")
+		}
+	})
 	return i
 }
 
@@ -166,12 +173,16 @@ func NewStringVar(name, val string, props ...Property) *StringVar {
 		s.printDoc()
 		s.print()
 	})
-	if s.properties.is(Mutable) {
-		Register(fmt.Sprintf("%s %%", name), func(v string) {
+	Register(fmt.Sprintf("%s %%", name), func(v string) {
+		if configOverride || s.properties.is(Mutable) {
 			s.SetValue(v)
-			s.print()
-		})
-	}
+			if !configOverride {
+				s.print()
+			}
+		} else {
+			panic("this var is not mutable")
+		}
+	})
 	return s
 }
 
@@ -236,12 +247,16 @@ func NewBoolVar(name string, val bool, props ...Property) *BoolVar {
 		b.printDoc()
 		b.print()
 	})
-	if b.properties.is(Mutable) {
-		Register(fmt.Sprintf("%s %%", name), func(v bool) {
+	Register(fmt.Sprintf("%s %%", name), func(v bool) {
+		if configOverride || b.properties.is(Mutable) {
 			b.SetValue(v)
-			b.print()
-		})
-	}
+			if !configOverride {
+				b.print()
+			}
+		} else {
+			panic("this var is not mutable")
+		}
+	})
 	return b
 }
 

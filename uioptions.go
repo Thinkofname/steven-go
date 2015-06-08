@@ -48,12 +48,12 @@ func newOptionMenu(ret func() screen) *optionMenu {
 	done, txt := newButtonText("Done", 0, 50, 400, 40)
 	om.scene.AddDrawable(done.Attach(ui.Bottom, ui.Middle))
 	om.scene.AddDrawable(txt)
-	done.ClickFunc = func() { saveConfig(); setScreen(om.ret()) }
+	done.ClickFunc = func() { setScreen(om.ret()) }
 
 	rp, txt := newButtonText("Resource packs", -160, 150, 300, 40)
 	om.scene.AddDrawable(rp.Attach(ui.Bottom, ui.Middle))
 	om.scene.AddDrawable(txt)
-	rp.ClickFunc = func() { saveConfig(); setScreen(newResourceList(om.ret)) }
+	rp.ClickFunc = func() { setScreen(newResourceList(om.ret)) }
 
 	samples := newSlider(-160, -100, 300, 40)
 	samples.back.Attach(ui.Center, ui.Middle)
@@ -169,7 +169,6 @@ func (om *optionMenu) tick(delta float64) {
 
 func (om *optionMenu) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	if key == glfw.KeyEscape && action == glfw.Release {
-		saveConfig()
 		setScreen(om.ret())
 	}
 }

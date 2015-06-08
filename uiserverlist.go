@@ -199,7 +199,7 @@ func (sl *serverList) redraw() {
 		sc.AddDrawable(txt)
 		del.ClickFunc = func() {
 			Config.Servers = append(Config.Servers[:index], Config.Servers[index+1:]...)
-			saveConfig()
+			saveServers()
 			sl.redraw()
 		}
 		edit, txt := newButtonText("E", 25, 0, 25, 25)
@@ -275,10 +275,7 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 }
 
 func (sl *serverList) connect(s string) {
-	server = s
-	initClient()
-	connect()
-	setScreen(nil)
+	connect(s)
 }
 
 func (sl *serverList) tick(delta float64) {

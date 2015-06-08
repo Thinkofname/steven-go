@@ -19,6 +19,7 @@ import (
 	"encoding/hex"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/ui/scene"
@@ -42,11 +43,10 @@ func newLoginScreen() *loginScreen {
 	ls := &loginScreen{
 		scene: scene.New(true),
 	}
-	if Config.ClientToken == "" {
+	if clientToken.Value() == "" {
 		data := make([]byte, 16)
 		crand.Read(data)
-		Config.ClientToken = hex.EncodeToString(data)
-		saveConfig()
+		clientToken.SetValue(hex.EncodeToString(data))
 	}
 
 	window.SetKeyCallback(ls.handleKey)
@@ -93,7 +93,7 @@ func newLoginScreen() *loginScreen {
 	ls.loginError = ui.NewText("", 0, 150, 255, 50, 50).Attach(ui.Center, ui.Middle)
 	ls.scene.AddDrawable(ls.loginError)
 
-	if Config.Profile.IsComplete() {
+	if getProfile().IsComplete() {
 		ls.refresh()
 	}
 
@@ -111,16 +111,12 @@ func (ls *loginScreen) postLogin(p mojang.Profile, err error) {
 		ls.loginTxt.Update("Login")
 		return
 	}
-	profile = p
-	Config.Profile = p
-	saveConfig()
-	if server == "" {
-		setScreen(newServerList())
-	} else {
-		initClient()
-		connect()
-		setScreen(nil)
-	}
+	clientUsername.SetValue(p.Username)
+	clientUUID.SetValue(p.ID)
+	clientAccessToken.SetValue(p.AccessToken)
+
+	setScreen(newServerList())
+	console.ExecConf("autoexec.cfg")
 }
 
 func (ls *loginScreen) refresh() {
@@ -128,7 +124,7 @@ func (ls *loginScreen) refresh() {
 	ls.loginBtn.SetDisabled(true)
 	ls.loginTxt.Update("Logging in...")
 	go func() {
-		p, err := mojang.Refresh(Config.Profile, Config.ClientToken)
+		p, err := mojang.Refresh(getProfile(), clientToken.Value())
 		syncChan <- func() { ls.postLogin(p, err) }
 	}()
 }
@@ -138,7 +134,7 @@ func (ls *loginScreen) login() {
 	ls.loginBtn.SetDisabled(true)
 	ls.loginTxt.Update("Logging in...")
 	go func() {
-		p, err := mojang.Login(ls.user.input, ls.pass.input, Config.ClientToken)
+		p, err := mojang.Login(ls.user.input, ls.pass.input, clientToken.Value())
 		syncChan <- func() { ls.postLogin(p, err) }
 	}()
 }

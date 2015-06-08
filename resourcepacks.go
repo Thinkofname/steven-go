@@ -15,7 +15,9 @@
 package steven
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/render"
@@ -23,6 +25,11 @@ import (
 	"github.com/thinkofdeath/steven/resource/locale"
 	"github.com/thinkofdeath/steven/ui"
 )
+
+var resourcePacks = console.NewStringVar("cl_resource_packs", "", console.Serializable).Doc(`
+cl_resource_packs is a comma seperated list of resource packs 
+that are currently enabled.
+`)
 
 func initResources() {
 	var progressBar *ui.Image
@@ -53,6 +60,16 @@ func initResources() {
 			reloadResources()
 		}
 	}, syncChan)
+
+	for _, pck := range strings.Split(resourcePacks.Value(), ",") {
+		if pck == "" {
+			continue
+		}
+		resource.LoadZip(pck)
+	}
+	locale.Clear()
+	loadBiomes()
+	render.LoadSkinBuffer()
 }
 
 func AddPack(path string) {
@@ -61,21 +78,29 @@ func AddPack(path string) {
 		fmt.Println("Failed to load pack", path)
 		return
 	}
-	Config.Game.ResourcePacks = append(Config.Game.ResourcePacks, path)
-	saveConfig()
+	if resourcePacks.Value() != "" {
+		resourcePacks.SetValue(resourcePacks.Value() + "," + path)
+	} else {
+		resourcePacks.SetValue(path)
+	}
 	reloadResources()
 }
 
 func RemovePack(path string) {
 	console.Text("Removing pack " + path)
 	resource.RemovePack(path)
-	for i, pck := range Config.Game.ResourcePacks {
-		if pck == path {
-			Config.Game.ResourcePacks = append(Config.Game.ResourcePacks[:i], Config.Game.ResourcePacks[i+1:]...)
-			break
+	var buf bytes.Buffer
+	for _, pck := range strings.Split(resourcePacks.Value(), ",") {
+		if pck != path {
+			buf.WriteString(pck)
+			buf.WriteRune(',')
 		}
 	}
-	saveConfig()
+	val := buf.String()
+	if strings.HasPrefix(val, ",") {
+		val = val[:len(val)-1]
+	}
+	resourcePacks.SetValue(val)
 	reloadResources()
 }
 

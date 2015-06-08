@@ -108,7 +108,7 @@ func (se *editServer) save() {
 		Config.Servers[se.index].Name = se.name.input
 		Config.Servers[se.index].Address = se.address.input
 	}
-	saveConfig()
+	saveServers()
 	setScreen(newServerList())
 }
 

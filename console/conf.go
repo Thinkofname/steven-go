@@ -26,8 +26,13 @@ import (
 
 // ExecConf executes/loads the passed config file
 func ExecConf(path string) {
+	// The config file needs special rights
+	if path == "conf.cfg" {
+		configOverride = true
+	}
 	defer func() {
 		if path == "conf.cfg" {
+			configOverride = false
 			saveConf()
 		}
 	}()

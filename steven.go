@@ -26,21 +26,31 @@ import (
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource"
-	"github.com/thinkofdeath/steven/resource/locale"
 	"github.com/thinkofdeath/steven/ui"
 )
 
 var (
-	profile   mojang.Profile
-	server    string
 	connected bool
 
 	stevenBuildVersion string = "dev"
-)
 
-func stevenVersion() string {
-	return fmt.Sprintf("%s-%s", resource.ResourcesVersion, stevenBuildVersion)
-}
+	clientUsername = console.NewStringVar("cl_username", "", console.Serializable).Doc(`
+cl_username is the username that the client will use to connect
+to servers.
+`)
+	clientUUID = console.NewStringVar("cl_uuid", "", console.Serializable).Doc(`
+cl_uuid is the uuid of the client. This is unique to a player 
+unlike their username.
+`)
+	clientAccessToken = console.NewStringVar("auth_token", "", console.Serializable).Doc(`
+auth_token is the token used for this session to auth to servers
+or relogin to this account.
+`)
+	clientToken = console.NewStringVar("auth_client_token", "", console.Serializable).Doc(`
+auth_client_token is a token that stays static between sessions.
+Used to identify this client vs others.
+`)
+)
 
 func init() {
 	console.NewStringVar("cl_version", stevenBuildVersion).Doc(`
@@ -50,43 +60,52 @@ Returns dev if not set.
 	console.NewStringVar("cl_mc_version", resource.ResourcesVersion).Doc(`
 cl_mc_version returns the minecraft version steven currently supports.
 `)
+	console.Register("connect %", connect)
 }
 
-func Main(username, uuid, accessToken, s string) {
+func stevenVersion() string {
+	return fmt.Sprintf("%s-%s", resource.ResourcesVersion, stevenBuildVersion)
+}
+
+func Main(username, uuid, accessToken string) {
 	if err := glfw.Init(); err != nil {
 		panic(err)
 	}
 	defer glfw.Terminate()
 
 	console.ExecConf("conf.cfg")
-	console.ExecConf("autoexec.cfg")
-	profile = mojang.Profile{
-		Username:    username,
-		ID:          uuid,
-		AccessToken: accessToken,
+
+	if username != "" {
+		clientUsername.SetValue(username)
 	}
-	server = s
+	if uuid != "" {
+		clientUUID.SetValue(uuid)
+	}
+	if accessToken != "" {
+		clientAccessToken.SetValue(accessToken)
+	}
 
 	initResources()
-
-	for _, pck := range Config.Game.ResourcePacks {
-		resource.LoadZip(pck)
-	}
-	locale.Clear()
-	loadBiomes()
-	render.LoadSkinBuffer()
 
 	setUIScale()
 
 	startWindow()
 }
 
-func connect() {
+func getProfile() mojang.Profile {
+	return mojang.Profile{
+		Username:    clientUsername.Value(),
+		ID:          clientUUID.Value(),
+		AccessToken: clientAccessToken.Value(),
+	}
+}
+
+func connect(server string) {
+	setScreen(nil)
 	initClient()
 	connected = true
 	disconnectReason.Value = nil
-	Client.network.Connect(profile, server)
-	server = ""
+	Client.network.Connect(getProfile(), server)
 }
 
 func start() {
@@ -94,17 +113,9 @@ func start() {
 	initBlocks()
 	con.init()
 
-	if profile.IsComplete() && server != "" {
-		connect()
-	} else {
-		initClient()
-		fakeGen()
-		if !profile.IsComplete() {
-			setScreen(newLoginScreen())
-		} else {
-			setScreen(newServerList())
-		}
-	}
+	initClient()
+	fakeGen()
+	setScreen(newLoginScreen())
 	render.Start()
 }
 

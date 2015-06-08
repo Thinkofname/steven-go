@@ -17,21 +17,12 @@ package steven
 import (
 	"encoding/json"
 	"os"
-
-	"github.com/thinkofdeath/steven/protocol/mojang"
 )
 
 var Config ConfigData
 
 type ConfigData struct {
-	Profile     mojang.Profile
-	ClientToken string
-
 	Servers []ConfigServer
-
-	Game struct {
-		ResourcePacks []string
-	}
 }
 
 type ConfigServer struct {
@@ -40,7 +31,7 @@ type ConfigServer struct {
 }
 
 func init() {
-	f, err := os.Open("config.json")
+	f, err := os.Open("servers.json")
 	if err != nil {
 		return
 	}
@@ -49,11 +40,11 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	saveConfig()
+	saveServers()
 }
 
-func saveConfig() {
-	f, err := os.Create("config.json")
+func saveServers() {
+	f, err := os.Create("servers.json")
 	if err != nil {
 		panic(err)
 	}

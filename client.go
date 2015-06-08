@@ -221,7 +221,7 @@ type clientEntity struct {
 
 func (c *ClientState) initEntity(head bool) {
 	ce := &clientEntity{}
-	ub, _ := hex.DecodeString(profile.ID)
+	ub, _ := hex.DecodeString(clientUUID.Value())
 	copy(ce.uuid[:], ub)
 	c.entity = ce
 	ce.hasHead = head
