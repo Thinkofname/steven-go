@@ -20,8 +20,6 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
-
-	"github.com/thinkofdeath/steven/chat"
 )
 
 // Registry contains information required to store
@@ -138,12 +136,6 @@ main:
 // Panics if the number of extra arguments doesn't match the
 // amount specified in Registry's ExtraParameters
 func Execute(cmd string, extra ...interface{}) (err error) {
-	Component(chat.
-		Build("> ").
-		Color(chat.Yellow).
-		Append(cmd).
-		Create(),
-	)
 	for _, c := range strings.Split(cmd, ";") {
 		c = strings.TrimSpace(c)
 		err = defaultRegistry.Execute(c, extra...)
