@@ -22,7 +22,7 @@ import (
 	"github.com/thinkofdeath/steven/chat"
 )
 
-var cvars []cvarI
+var cvars cvarList
 
 // Property is a flag for cvar to control how its handled
 type Property int
@@ -45,6 +45,7 @@ type cvar struct {
 }
 
 type cvarI interface {
+	Name() string
 	props() Property
 }
 
@@ -115,6 +116,8 @@ func (i *IntVar) String() string {
 	return buf.String()
 }
 
+func (i *IntVar) Name() string { return i.name }
+
 // Doc sets the documentation for this cvar
 func (i *IntVar) Doc(d string) *IntVar { i.cvar.Doc(d); return i }
 
@@ -180,6 +183,8 @@ func (s *StringVar) String() string {
 	fmt.Fprintf(&buf, "\"%s\"", s.value)
 	return buf.String()
 }
+
+func (s *StringVar) Name() string { return s.name }
 
 // Doc sets the documentation for this cvar
 func (s *StringVar) Doc(d string) *StringVar { s.cvar.Doc(d); return s }
@@ -248,6 +253,8 @@ func (b *BoolVar) String() string {
 	fmt.Fprint(&buf, b.value)
 	return buf.String()
 }
+
+func (b *BoolVar) Name() string { return b.name }
 
 // Doc sets the documentation for this cvar
 func (b *BoolVar) Doc(d string) *BoolVar { b.cvar.Doc(d); return b }

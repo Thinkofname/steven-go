@@ -18,6 +18,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/thinkofdeath/steven/chat"
@@ -59,6 +60,7 @@ func saveConf() {
 		panic(err)
 	}
 	defer f.Close()
+	sort.Sort(cvars)
 	for _, c := range cvars {
 		if c.props().is(Serializable) {
 			fmt.Fprintln(f, c)
@@ -66,3 +68,9 @@ func saveConf() {
 		}
 	}
 }
+
+type cvarList []cvarI
+
+func (c cvarList) Len() int           { return len(c) }
+func (c cvarList) Swap(a, b int)      { c[a], c[b] = c[b], c[a] }
+func (c cvarList) Less(a, b int) bool { return c[a].Name() < c[b].Name() }
