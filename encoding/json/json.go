@@ -145,8 +145,19 @@ func (s *state) any() mode {
 		s.parseComment()
 		return mAny
 	}
-	s.err = fmt.Errorf("any: unexpected rune %c", r)
-	return 0
+	s.out.WriteRune('"')
+	s.out.WriteRune(r)
+	for s.offset < len(s.data) {
+		r := s.data[s.offset]
+		s.offset++
+		if !unicode.IsLetter(r) {
+			s.offset--
+			break
+		}
+		s.out.WriteRune(r)
+	}
+	s.out.WriteRune('"')
+	return s.endValue()
 }
 
 func (s *state) endValue() mode {
