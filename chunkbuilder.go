@@ -63,7 +63,6 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 		bTI := new(int)
 
 		r := rand.New(rand.NewSource(int64(cs.chunk.X) | (int64(cs.chunk.Z) << 32)))
-		var tInfo []render.ObjectInfo
 
 		for y := 0; y < 16; y++ {
 			for x := 0; x < 16; x++ {
@@ -82,7 +81,6 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 					if bl.IsTranslucent() {
 						bI = bTI
 					}
-					offset := *bI
 
 					// Liquids can't be represented by the model system
 					// due to the number of possible states they have
@@ -93,16 +91,6 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 							bO = l.renderLiquid(bs, x, y, z, bO, bI)
 						}
 						r.Int() // See the comment above for air
-						count := *bI - offset
-						if bl.IsTranslucent() && count > 0 {
-							tInfo = append(tInfo, render.ObjectInfo{
-								X:      (cs.chunk.X << 4) + x,
-								Y:      (cs.Y << 4) + y,
-								Z:      (cs.chunk.Z << 4) + z,
-								Offset: offset,
-								Count:  count,
-							})
-						}
 						continue
 					}
 
@@ -115,16 +103,6 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 							bT = variant.Render(x, y, z, bs, bT, bI)
 						} else {
 							bO = variant.Render(x, y, z, bs, bO, bI)
-						}
-						count := *bI - offset
-						if bl.IsTranslucent() && count > 0 {
-							tInfo = append(tInfo, render.ObjectInfo{
-								X:      (cs.chunk.X << 4) + x,
-								Y:      (cs.Y << 4) + y,
-								Z:      (cs.chunk.Z << 4) + z,
-								Offset: offset,
-								Count:  count,
-							})
 						}
 					}
 				}
@@ -147,7 +125,7 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 				dataT = (*[1 << 28]byte)(unsafe.Pointer(&bT[0]))[:size]
 			}
 			cs.Buffer.Upload(data, *bOI, cullBits)
-			cs.Buffer.UploadTrans(tInfo, dataT, *bTI)
+			cs.Buffer.UploadTrans(dataT, *bTI)
 
 			builderPool.Put(bO)
 			builderPool.Put(bT)

@@ -49,8 +49,6 @@ in degrees.
 	glTexture       gl.Texture
 	textureDepth    int
 	texturesCreated bool
-
-	MultiSample bool
 )
 
 // Start starts the renderer
@@ -122,15 +120,15 @@ sync:
 			0.1,
 			500.0,
 		)
+		initTrans()
 	}
 
-	if MultiSample {
-		gl.Enable(gl.Multisample)
-	}
+	mainFramebuffer.Bind()
 
-	glTexture.Bind(gl.Texture2DArray)
 	gl.ActiveTexture(0)
+	glTexture.Bind(gl.Texture2DArray)
 
+	gl.ClearColor(122.0/255.0, 165.0/255.0, 247.0/255.0, 1.0)
 	gl.Clear(gl.ColorBufferBit | gl.DepthBufferBit)
 
 	chunkProgram.Use()
@@ -181,33 +179,30 @@ sync:
 	shaderChunkT.Texture.Int(0)
 
 	gl.Enable(gl.Blend)
-	for i := range renderOrder {
-		chunk := renderOrder[len(renderOrder)-1-i]
+	gl.DepthMask(false)
+	transFramebuffer.Bind()
+	gl.ClearColor(0, 0, 0, 1)
+	gl.Clear(gl.ColorBufferBit)
+	gl.BlendFuncSeparate(gl.OneFactor, gl.OneFactor, gl.ZeroFactor, gl.OneMinusSrcAlpha)
+	for _, chunk := range renderOrder {
 		if chunk.countT > 0 && chunk.bufferT.IsValid() {
 			shaderChunkT.Offset.Int3(chunk.X, chunk.Y, chunk.Z)
 
 			chunk.arrayT.Bind()
-			chunk.bufferTI.Bind(gl.ElementArrayBuffer)
-			insertSort(chunk.transInfo)
-
-			offset := 0
-			data := chunk.bufferTI.Map(gl.WriteOnly, len(chunk.transData))
-			m := 2
-			if chunk.bufferTIType == gl.UnsignedInt {
-				m = 4
-			}
-			for _, i := range chunk.transInfo {
-				offset += copy(data[offset:], chunk.transData[i.Offset*m:(i.Offset+i.Count)*m])
-			}
-			chunk.bufferTI.Unmap()
-			gl.DrawElements(gl.Triangles, chunk.countT, chunk.bufferTIType, 0)
+			gl.DrawElements(gl.Triangles, chunk.countT, elementBufferType, 0)
 		}
 	}
+
+	gl.UnbindFramebuffer()
+	gl.Disable(gl.DepthTest)
+	gl.Clear(gl.ColorBufferBit)
 	gl.Disable(gl.Blend)
 
-	if MultiSample {
-		gl.Disable(gl.Multisample)
-	}
+	transDraw()
+
+	gl.Enable(gl.DepthTest)
+	gl.DepthMask(true)
+	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
 
 	drawUI()
 }

@@ -23,7 +23,6 @@ import (
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/protocol"
-	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/render/gl"
 )
 
@@ -41,11 +40,6 @@ func init() {
 }
 
 var (
-	renderSamples = console.NewIntVar("r_samples", 0, console.Mutable, console.Serializable).Doc(`
-r_samples sets the number of samples used for AA, set to
-0 to disable. 
-This requires a restart to take effect.
-`)
 	renderVSync = console.NewBoolVar("r_vsync", true, console.Mutable, console.Serializable).
 			Doc(`
 r_vsync controls whether vsync is enabled. VSync tries to
@@ -74,13 +68,11 @@ func startWindow() {
 	glfw.WindowHint(glfw.ContextVersionMinor, 2)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-	glfw.WindowHint(glfw.Samples, renderSamples.Value())
 	glfw.WindowHint(glfw.DepthBits, 32)
 	glfw.WindowHint(glfw.StencilBits, 0)
 	if os.Getenv("STEVEN_DEBUG") == "true" {
 		glfw.WindowHint(glfw.OpenGLDebugContext, glfw.True)
 	}
-	render.MultiSample = renderSamples.Value() > 0
 
 	var err error
 	window, err = glfw.CreateWindow(854, 480, "Steven", nil, nil)

@@ -28,7 +28,6 @@ type optionMenu struct {
 	scene *scene.Type
 
 	background *ui.Image
-	samples    *slider
 	fov        *slider
 	mouseS     *slider
 
@@ -54,20 +53,6 @@ func newOptionMenu(ret func() screen) *optionMenu {
 	om.scene.AddDrawable(rp.Attach(ui.Bottom, ui.Middle))
 	om.scene.AddDrawable(txt)
 	rp.ClickFunc = func() { setScreen(newResourceList(om.ret)) }
-
-	samples := newSlider(-160, -100, 300, 40)
-	samples.back.Attach(ui.Center, ui.Middle)
-	samples.add(om.scene)
-	om.samples = samples
-	txt = ui.NewText("", 0, 0, 255, 255, 255).Attach(ui.Center, ui.Middle)
-	txt.AttachTo(samples.back)
-	om.scene.AddDrawable(txt)
-	samples.UpdateFunc = func() {
-		renderSamples.SetValue(round(16 * samples.Value))
-		txt.Update(fmt.Sprintf("Samples*: %d", renderSamples.Value()))
-	}
-	samples.Value = float64(renderSamples.Value()) / 16
-	samples.update()
 
 	fov := newSlider(160, -100, 300, 40)
 	fov.back.Attach(ui.Center, ui.Middle)
@@ -147,13 +132,11 @@ func (om *optionMenu) init() {
 }
 
 func (om *optionMenu) hover(x, y float64, w, h int) {
-	om.samples.hover(x, y, w, h)
 	om.fov.hover(x, y, w, h)
 	om.mouseS.hover(x, y, w, h)
 	ui.Hover(x, y, w, h)
 }
 func (om *optionMenu) click(down bool, x, y float64, w, h int) {
-	om.samples.click(down, x, y, w, h)
 	om.fov.click(down, x, y, w, h)
 	om.mouseS.click(down, x, y, w, h)
 	if down {

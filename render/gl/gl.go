@@ -112,6 +112,8 @@ type Factor uint32
 const (
 	SrcAlpha         Factor = gl.SRC_ALPHA
 	OneMinusSrcAlpha Factor = gl.ONE_MINUS_SRC_ALPHA
+	OneFactor        Factor = gl.ONE
+	ZeroFactor       Factor = gl.ZERO
 )
 
 // Init inits the gl library. This should be called once a context is ready.
@@ -237,6 +239,11 @@ func ClearStencil(i int) {
 // BlendFunc sets the factors to be used when blending.
 func BlendFunc(sFactor, dFactor Factor) {
 	gl.BlendFunc(uint32(sFactor), uint32(dFactor))
+}
+
+// BlendFuncSeparate sets the factors to be used when blending.
+func BlendFuncSeparate(sFactorRGB, dFactorRGB, sFactorA, dFactorA Factor) {
+	gl.BlendFuncSeparate(uint32(sFactorRGB), uint32(dFactorRGB), uint32(sFactorA), uint32(dFactorA))
 }
 
 // DebugLog enables OpenGL's debug messages and logs them to stdout.

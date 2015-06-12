@@ -35,9 +35,14 @@ type TextureFormat uint32
 
 // Valid texture formats.
 const (
-	RGB   TextureFormat = gl.RGB
-	RGBA  TextureFormat = gl.RGBA
-	RGBA8 TextureFormat = gl.RGBA8
+	Red              TextureFormat = gl.RED
+	RGB              TextureFormat = gl.RGB
+	RGBA             TextureFormat = gl.RGBA
+	RGBA8            TextureFormat = gl.RGBA8
+	RGBA16F          TextureFormat = gl.RGBA16F
+	R16F             TextureFormat = gl.R16F
+	DepthComponent24 TextureFormat = gl.DEPTH_COMPONENT24
+	DepthComponent   TextureFormat = gl.DEPTH_COMPONENT
 )
 
 // TextureParameter is a parameter that can be read or set on a texture.
@@ -124,19 +129,28 @@ func (t Texture) SubImage3D(level, x, y, z, width, height, depth int, format Tex
 
 // Image2D uploads a 2D texture to the GPU.
 func (t Texture) Image2D(level, width, height int, format TextureFormat, ty Type, pix []byte) {
+	t.Image2DEx(level, width, height, format, format, ty, pix)
+}
+
+// Image2DEx uploads a 2D texture to the GPU.
+func (t Texture) Image2DEx(level, width, height int, internalFormat, format TextureFormat, ty Type, pix []byte) {
 	if t != currentTexture {
 		panic("texture not bound")
+	}
+	var ptr unsafe.Pointer
+	if pix != nil {
+		ptr = gl.Ptr(pix)
 	}
 	gl.TexImage2D(
 		uint32(currentTextureTarget),
 		int32(level),
-		int32(format),
+		int32(internalFormat),
 		int32(width),
 		int32(height),
 		0,
 		uint32(format),
 		uint32(ty),
-		gl.Ptr(pix),
+		ptr,
 	)
 }
 
@@ -164,4 +178,8 @@ func (t Texture) Parameter(param TextureParameter, val TextureValue) {
 		panic("texture not bound")
 	}
 	gl.TexParameteri(uint32(currentTextureTarget), uint32(param), int32(val))
+}
+
+func (t Texture) Delete() {
+	gl.DeleteTextures(1, &t.internal)
 }

@@ -34,22 +34,18 @@ type ChunkBuffer struct {
 	position
 	invalid bool
 
-	array        gl.VertexArray
-	buffer       gl.Buffer
-	bufferSize   int
-	count        int
-	arrayT       gl.VertexArray
-	bufferT      gl.Buffer
-	bufferTI     gl.Buffer
-	bufferTIType gl.Type
-	bufferTSize  int
-	countT       int
-	cullBits     uint64
+	array       gl.VertexArray
+	buffer      gl.Buffer
+	bufferSize  int
+	count       int
+	arrayT      gl.VertexArray
+	bufferT     gl.Buffer
+	bufferTI    gl.Buffer
+	bufferTSize int
+	countT      int
+	cullBits    uint64
 
 	renderedOn uint
-
-	transInfo objectInfoList
-	transData []byte
 
 	neighborChunks [6]*ChunkBuffer
 }
@@ -192,7 +188,7 @@ func (cb *ChunkBuffer) Upload(data []byte, indices int, cullBits uint64) {
 }
 
 // UploadTrans uploads the passed vertex data to the translucent buffer.
-func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, indices int) {
+func (cb *ChunkBuffer) UploadTrans(data []byte, indices int) {
 	if cb.invalid {
 		return
 	}
@@ -203,7 +199,6 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, indices int) 
 			cb.bufferT.Delete()
 			cb.bufferTI.Delete()
 		}
-		cb.transInfo = nil
 		return
 	}
 
@@ -221,9 +216,8 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, indices int) 
 	shaderChunkT.Color.Enable()
 	shaderChunkT.Lighting.Enable()
 
-	cb.bufferTI.Bind(gl.ElementArrayBuffer)
-	cb.transData, cb.bufferTIType = genElementBuffer(indices)
-	cb.bufferTI.Data(cb.transData, gl.StreamDraw)
+	ensureElementBuffer(indices)
+	elementBuffer.Bind(gl.ElementArrayBuffer)
 
 	cb.bufferT.Bind(gl.ArrayBuffer)
 	if n || len(data) > cb.bufferTSize {
@@ -241,7 +235,6 @@ func (cb *ChunkBuffer) UploadTrans(info []ObjectInfo, data []byte, indices int) 
 	shaderChunkT.Lighting.Pointer(2, gl.UnsignedShort, false, 40, 32)
 
 	cb.countT = indices
-	cb.transInfo = info
 }
 
 // Free removes the buffer and frees related resources.
@@ -253,8 +246,6 @@ func (cb *ChunkBuffer) Free() {
 	cb.invalid = true
 	cb.count = 0
 	cb.countT = 0
-	cb.transInfo = nil
-	cb.transData = nil
 	cb.cullBits = math.MaxUint64
 
 	if cb.buffer.IsValid() {
@@ -269,39 +260,4 @@ func (cb *ChunkBuffer) Free() {
 	if cb.arrayT.IsValid() {
 		cb.arrayT.Delete()
 	}
-	if cb.bufferTI.IsValid() {
-		cb.bufferTI.Delete()
-	}
-}
-
-// ObjectInfo contains information about an renderable object that needs
-// to be sorted before rendering.
-type ObjectInfo struct {
-	X, Y, Z       int
-	Offset, Count int
-}
-
-type objectInfoList []ObjectInfo
-
-func (o objectInfoList) Swap(a, b int) {
-	o[a], o[b] = o[b], o[a]
-}
-
-func (o objectInfoList) Less(aa, bb int) bool {
-	a := o[aa]
-	b := o[bb]
-	dx := float64(a.X) + 0.5 - Camera.X
-	dy := float64(a.Y) + 0.5 - Camera.Y
-	dz := float64(a.Z) + 0.5 - Camera.Z
-	adist := dx*dx + dy*dy + dz*dz
-
-	dx = float64(b.X) + 0.5 - Camera.X
-	dy = float64(b.Y) + 0.5 - Camera.Y
-	dz = float64(b.Z) + 0.5 - Camera.Z
-	bdist := dx*dx + dy*dy + dz*dz
-	return adist > bdist
-}
-
-func (o objectInfoList) Len() int {
-	return len(o)
 }
