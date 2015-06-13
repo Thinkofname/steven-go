@@ -39,7 +39,7 @@ func (t *Type) Show() {
 	}
 	t.visible = true
 	for _, d := range t.drawables {
-		ui.AddDrawableHook(d, t.removeHook)
+		ui.AddDrawable(d)
 	}
 }
 
@@ -60,8 +60,9 @@ func (t *Type) Hide() {
 func (t *Type) AddDrawable(d ui.Drawable) {
 	t.drawables = append(t.drawables, d)
 	if t.visible {
-		ui.AddDrawableHook(d, t.removeHook)
+		ui.AddDrawable(d)
 	}
+	d.SetRemoveHook(t.removeHook)
 }
 
 func (t *Type) removeHook(d ui.Drawable) {

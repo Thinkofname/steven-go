@@ -43,7 +43,6 @@ func ForceDraw() {
 
 type drawRef struct {
 	Drawable
-	removeHook func(d Drawable)
 }
 
 // Region is an area for a Drawable to draw to
@@ -63,6 +62,8 @@ type Drawable interface {
 	AttachedTo() Drawable
 	Attachment() (vAttach, hAttach AttachPoint)
 	Layer() int
+	OnRemove(d Drawable)
+	SetRemoveHook(func(Drawable))
 
 	isDirty() bool
 	flagDirty()
@@ -78,14 +79,6 @@ type Interactable interface {
 func AddDrawable(d Drawable) {
 	d.flagDirty()
 	drawables = append(drawables, drawRef{Drawable: d})
-}
-
-// AddDrawableHook adds the drawable to the draw list.
-// The passed function will be called when the drawable
-// is removed.
-func AddDrawableHook(d Drawable, hook func(d Drawable)) {
-	d.flagDirty()
-	drawables = append(drawables, drawRef{Drawable: d, removeHook: hook})
 }
 
 var screen = Region{W: scaledWidth, H: scaledHeight}
@@ -236,11 +229,9 @@ func getDrawRegion(d Drawable, sw, sh float64) Region {
 
 // Remove removes the drawable from the screen.
 func Remove(d Drawable) {
+	d.OnRemove(d)
 	for i, dd := range drawables {
 		if dd.Drawable == d {
-			if dd.removeHook != nil {
-				dd.removeHook(d)
-			}
 			drawables = append(drawables[:i], drawables[i+1:]...)
 			return
 		}
@@ -256,6 +247,18 @@ type baseElement struct {
 	dirty bool
 	isNew bool
 	data  []byte
+
+	removeHook func(d Drawable)
+}
+
+func (b *baseElement) OnRemove(d Drawable) {
+	if b.removeHook != nil {
+		b.removeHook(d)
+	}
+}
+
+func (b *baseElement) SetRemoveHook(r func(Drawable)) {
+	b.removeHook = r
 }
 
 // Attachment returns the sides where this element is attached too.
