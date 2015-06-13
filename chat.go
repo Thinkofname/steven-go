@@ -104,7 +104,7 @@ func (c *ChatUI) Draw(delta float64) {
 	for i := 0; i < len(c.parts); i++ {
 		p := c.parts[i]
 		if p.background.Y() < limit {
-			c.parts = c.parts[i+1:]
+			c.parts = append(c.parts[:i], c.parts[i+1:]...)
 			i--
 			p.text.Remove()
 			p.background.Remove()
