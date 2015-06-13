@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math"
+	"math/rand"
 	"strings"
 
 	realjson "encoding/json"
@@ -98,8 +99,20 @@ func (bs *blockStateModel) variant(key string) blockVariants {
 	return bs.variants[key]
 }
 
-func (bv blockVariants) selectModel(index int) *processedModel {
-	return bv[uint(index)%uint(len(bv))]
+func (bv blockVariants) selectModel(r *rand.Rand) *processedModel {
+	totalW := 0
+	for _, m := range bv {
+		totalW += m.weight
+	}
+	i := r.Intn(totalW)
+	offset := 0
+	for _, m := range bv {
+		if i <= offset+m.weight {
+			return m
+		}
+		offset += m.weight
+	}
+	panic("should not be reached")
 }
 
 type builtInType int
@@ -117,6 +130,7 @@ type model struct {
 	elements         []*modelElement
 	ambientOcclusion bool
 	aoSet            bool
+	weight           int
 
 	uvLock bool
 	y, x   float64
@@ -137,6 +151,7 @@ func parseBlockStateVariant(plugin string, js realjson.RawMessage) *model {
 		Model  string
 		X, Y   float64
 		UVLock bool
+		Weight *int
 	}
 	var data jsType
 	err := json.Unmarshal(js, &data)
@@ -154,6 +169,11 @@ func parseBlockStateVariant(plugin string, js realjson.RawMessage) *model {
 	bm.y = data.Y
 	bm.x = data.X
 	bm.uvLock = data.UVLock
+	if data.Weight != nil {
+		bm.weight = *data.Weight
+	} else {
+		bm.weight = 1
+	}
 	return bm
 }
 

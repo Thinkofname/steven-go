@@ -94,11 +94,9 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 						continue
 					}
 
-					// The index is used to select a 'random' variant which is
-					// constant for that position.
-					index := r.Intn(len(bl.Models()))
-
-					if variant := bl.Models().selectModel(index); variant != nil {
+					// The random generator is used to select a 'random' variant
+					// which is constant for that position.
+					if variant := bl.Models().selectModel(r); variant != nil {
 						if bl.IsTranslucent() {
 							bT = variant.Render(x, y, z, bs, bT, bI)
 						} else {

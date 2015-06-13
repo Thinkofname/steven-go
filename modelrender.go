@@ -25,6 +25,7 @@ import (
 type processedModel struct {
 	faces            []processedFace
 	ambientOcclusion bool
+	weight           int
 }
 
 type processedFace struct {
@@ -70,6 +71,7 @@ func rotateDirection(val direction.Type, offset int, rots []direction.Type, inva
 func precomputeModel(bm *model) *processedModel {
 	p := &processedModel{}
 	p.ambientOcclusion = bm.ambientOcclusion
+	p.weight = bm.weight
 	for ei := range bm.elements {
 		// Render the last element first so that
 		// grass's overlay works correctly.
