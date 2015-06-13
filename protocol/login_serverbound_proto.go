@@ -45,7 +45,7 @@ func (e *EncryptionResponse) read(rr io.Reader) (err error) {
 		return
 	}
 	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
@@ -59,7 +59,7 @@ func (e *EncryptionResponse) read(rr io.Reader) (err error) {
 		return
 	}
 	if tmp1 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp1, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp1, math.MaxInt16)
 	}
 	if tmp1 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp1)

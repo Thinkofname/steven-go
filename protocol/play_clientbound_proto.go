@@ -978,7 +978,7 @@ func (e *EntityDestroy) read(rr io.Reader) (err error) {
 		return
 	}
 	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
@@ -1505,7 +1505,7 @@ func (e *EntityProperties) read(rr io.Reader) (err error) {
 	}
 	tmp0 = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
 	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
@@ -1526,7 +1526,7 @@ func (e *EntityProperties) read(rr io.Reader) (err error) {
 			return
 		}
 		if tmp3 > math.MaxInt16 {
-			return fmt.Errorf("array larger than max value: %d > %d", tmp3, math.MaxUint16)
+			return fmt.Errorf("array larger than max value: %d > %d", tmp3, math.MaxInt16)
 		}
 		if tmp3 < 0 {
 			return fmt.Errorf("negative array size: %d < 0", tmp3)
@@ -1665,7 +1665,7 @@ func (m *MultiBlockChange) read(rr io.Reader) (err error) {
 		return
 	}
 	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
@@ -1849,7 +1849,7 @@ func (c *ChunkDataBulk) read(rr io.Reader) (err error) {
 		return
 	}
 	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
@@ -1989,7 +1989,7 @@ func (e *Explosion) read(rr io.Reader) (err error) {
 	}
 	tmp4 = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
 	if tmp4 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp4, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp4, math.MaxInt16)
 	}
 	if tmp4 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp4)
@@ -2294,7 +2294,7 @@ func (p *Particle) read(rr io.Reader) (err error) {
 	p.Count = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
 	tmp7 := particleDataLength(p)
 	if tmp7 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp7, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp7, math.MaxInt16)
 	}
 	if tmp7 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp7)
@@ -2541,7 +2541,7 @@ func (w *WindowItems) read(rr io.Reader) (err error) {
 	}
 	tmp0 = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
 	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
@@ -2776,7 +2776,7 @@ func (m *Maps) read(rr io.Reader) (err error) {
 		return
 	}
 	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
@@ -2818,7 +2818,7 @@ func (m *Maps) read(rr io.Reader) (err error) {
 			return
 		}
 		if tmp2 > math.MaxInt16 {
-			return fmt.Errorf("array larger than max value: %d > %d", tmp2, math.MaxUint16)
+			return fmt.Errorf("array larger than max value: %d > %d", tmp2, math.MaxInt16)
 		}
 		if tmp2 < 0 {
 			return fmt.Errorf("negative array size: %d < 0", tmp2)
@@ -2916,7 +2916,7 @@ func (s *Statistics) read(rr io.Reader) (err error) {
 		return
 	}
 	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
@@ -3006,7 +3006,7 @@ func (p *PlayerInfo) read(rr io.Reader) (err error) {
 		return
 	}
 	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
@@ -3025,7 +3025,7 @@ func (p *PlayerInfo) read(rr io.Reader) (err error) {
 				return
 			}
 			if tmp2 > math.MaxInt16 {
-				return fmt.Errorf("array larger than max value: %d > %d", tmp2, math.MaxUint16)
+				return fmt.Errorf("array larger than max value: %d > %d", tmp2, math.MaxInt16)
 			}
 			if tmp2 < 0 {
 				return fmt.Errorf("negative array size: %d < 0", tmp2)
@@ -3140,7 +3140,7 @@ func (t *TabCompleteReply) read(rr io.Reader) (err error) {
 		return
 	}
 	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 	}
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
@@ -3339,7 +3339,7 @@ func (t *Teams) read(rr io.Reader) (err error) {
 			return
 		}
 		if tmp0 > math.MaxInt16 {
-			return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxUint16)
+			return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
 		}
 		if tmp0 < 0 {
 			return fmt.Errorf("negative array size: %d < 0", tmp0)

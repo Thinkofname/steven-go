@@ -99,7 +99,7 @@ func (r *reading) readType(e ast.Expr, name string, tag reflect.StructTag) {
 		if tag.Get("nolimit") != "true" && lT != "byte" && lT != "uint8" && lT != "int8" {
 			imports["math"] = struct{}{}
 			fmt.Fprintf(&r.buf, `if %s > math.MaxInt16 { 
-			return fmt.Errorf("array larger than max value: %%d > %%d", %s, math.MaxUint16) 
+			return fmt.Errorf("array larger than max value: %%d > %%d", %s, math.MaxInt16)
 			}
 			 `, lenVar, lenVar)
 		}
