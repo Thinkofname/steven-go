@@ -15,7 +15,9 @@
 package main
 
 import (
+	"io"
 	"os"
+	"os/exec"
 	"runtime"
 
 	"github.com/thinkofdeath/steven"
@@ -27,6 +29,7 @@ func main() {
 	// Can't use flags as we need to support a weird flag
 	// format
 	var username, uuid, accessToken string
+	var noFork bool
 
 	for i, arg := range os.Args {
 		switch arg {
@@ -36,7 +39,22 @@ func main() {
 			uuid = os.Args[i+1]
 		case "--accessToken":
 			accessToken = os.Args[i+1]
+		case "--no-fork":
+			noFork = true
 		}
 	}
-	steven.Main(username, uuid, accessToken)
+	if noFork {
+		steven.Main(username, uuid, accessToken)
+		return
+	}
+
+	cmd := exec.Command(os.Args[0], append(os.Args[1:], "--no-fork")...)
+	cmd.Stdout = os.Stdout
+	f, err := os.Create("steven-error.log")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	cmd.Stderr = io.MultiWriter(f, os.Stderr)
+	cmd.Run()
 }
