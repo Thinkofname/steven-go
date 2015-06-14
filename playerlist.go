@@ -70,6 +70,7 @@ func (p *playerListUI) init() {
 }
 
 func (p *playerListUI) free() {
+	p.set(false)
 	for _, pl := range p.info {
 		if pl.skinHash != "" {
 			render.FreeSkin(pl.skinHash)

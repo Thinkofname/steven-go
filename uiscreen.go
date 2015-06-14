@@ -32,6 +32,7 @@ func setScreen(s screen) {
 	}
 	currentScreen = s
 	if s != nil {
+		Client.playerList.set(false)
 		Client.scene.Hide()
 		Client.hotbarScene.Hide()
 		lockMouse = false
