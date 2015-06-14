@@ -85,8 +85,9 @@ type ClientState struct {
 	OnGround, didTouchGround bool
 	isLeftDown               bool
 
-	GameMode gameMode
-	HardCore bool
+	GameMode  gameMode
+	HardCore  bool
+	WorldType worldType
 
 	Bounds vmath.AABB
 

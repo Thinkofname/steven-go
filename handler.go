@@ -75,12 +75,14 @@ func (handler) JoinGame(j *protocol.JoinGame) {
 	})
 	Client.GameMode = gameMode(j.Gamemode & 0x7)
 	Client.HardCore = j.Gamemode&0x8 != 0
+	Client.WorldType = worldType(j.Dimension)
 }
 
 func (handler) Respawn(r *protocol.Respawn) {
 	clearChunks()
 	Client.GameMode = gameMode(r.Gamemode & 0x7)
 	Client.HardCore = r.Gamemode&0x8 != 0
+	Client.WorldType = worldType(r.Dimension)
 }
 
 func (handler) Disconnect(d *protocol.Disconnect) {
@@ -139,7 +141,7 @@ func (handler) ChunkData(c *protocol.ChunkData) {
 	}
 	pos := chunkPosition{int(c.ChunkX), int(c.ChunkZ)}
 	loadingChunks[pos] = nil
-	go loadChunk(pos.X, pos.Z, c.Data, c.BitMask, true, c.New)
+	go loadChunk(pos.X, pos.Z, c.Data, c.BitMask, Client.WorldType == wtOverworld, c.New)
 }
 
 func (handler) ChunkDataBulk(c *protocol.ChunkDataBulk) {
