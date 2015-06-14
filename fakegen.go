@@ -53,9 +53,25 @@ func fakeGen() {
 			b := bl*((15-float64(x))/15.0) + br*(float64(x)/15.0)
 			return int(t*((15-float64(z))/15.0) + b*(float64(z)/15.0))
 		}
-		liquid := uint16(9)
-		if r.Float64() < 0.01 {
-			liquid = 11
+		liquid := Blocks.Water
+		top := Blocks.Grass
+		mid := Blocks.Dirt
+		bot := Blocks.Stone
+		ra := r.Intn(3)
+		if ra == 1 {
+			liquid = Blocks.Lava
+			render.LightLevel = 0.9
+			render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 52/255.0, 8/255.0, 8/255.0
+			top = Blocks.Netherrack
+			mid = Blocks.Netherrack
+			bot = Blocks.SoulSand
+		} else if ra == 2 {
+			liquid = Blocks.Air
+			render.LightLevel = 0.8
+			render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 23/255.0, 0, 23/255.0
+			top = Blocks.EndStone
+			mid = Blocks.EndStone
+			bot = Blocks.EndStone
 		}
 
 		for cx := -fakeGenDistance; cx <= fakeGenDistance; cx++ {
@@ -73,18 +89,18 @@ func fakeGen() {
 								var val uint16
 								switch {
 								case ry <= height-5:
-									val = (1 << 4)
+									val = uint16(bot.ID << 4)
 								case ry <= height-1:
-									val = (3 << 4)
+									val = uint16(mid.ID << 4)
 								case ry == height:
-									val = (2 << 4)
+									val = uint16(top.ID << 4)
 								default:
 									level := 0xF
 									if ry >= 60 {
 										val = (0 << 4)
 									} else {
-										val = (liquid << 4)
-										if liquid == 9 {
+										val = uint16(liquid.ID << 4)
+										if liquid == Blocks.Water {
 											level = 13 - (60-ry)*2
 										}
 									}

@@ -231,7 +231,7 @@ func (c *ClientState) updateWorldType(wt worldType) {
 		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 52/255.0, 8/255.0, 8/255.0
 	case wtEnd:
 		render.LightLevel = 0.8
-		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 0, 0, 0
+		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 23/255.0, 0, 23/255.0
 	}
 }
 
