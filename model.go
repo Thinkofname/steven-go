@@ -192,7 +192,7 @@ func parseModel(plugin string, data *jsModel) *model {
 		err := loadJSON(plugin, "models/"+data.Parent+".json", &pdata)
 		if err != nil {
 			console.Text("Error loading model %s: %s", data.Parent, err)
-			return nil
+			loadJSON("steven", "models/block/missing_block.json", &pdata)
 		}
 		bm = parseModel(plugin, &pdata)
 	} else {
