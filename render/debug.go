@@ -24,7 +24,6 @@ type debugBuffer struct {
 }
 
 var debugBuffers = []debugBuffer{
-	{&mainFramebuffer, gl.ColorAttachment0},
 	{&transFramebuffer, gl.ColorAttachment0},
 	{&transFramebuffer, gl.ColorAttachment1},
 }
@@ -42,7 +41,7 @@ func blitBuffers() {
 		gl.BlitFramebuffer(
 			0, 0, lastWidth, lastHeight,
 			ox, lastHeight-height-oy, ox+width, lastHeight-oy,
-			gl.ColorBufferBit, gl.Linear,
+			gl.ColorBufferBit, gl.Nearest,
 		)
 		ox += width
 		if ox+width >= lastWidth {

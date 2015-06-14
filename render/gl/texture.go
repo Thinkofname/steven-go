@@ -25,8 +25,9 @@ type TextureTarget uint32
 
 // Valid texture targets.
 const (
-	Texture2D      TextureTarget = gl.TEXTURE_2D
-	Texture2DArray TextureTarget = gl.TEXTURE_2D_ARRAY
+	Texture2D            TextureTarget = gl.TEXTURE_2D
+	Texture2DMultisample TextureTarget = gl.TEXTURE_2D_MULTISAMPLE
+	Texture2DArray       TextureTarget = gl.TEXTURE_2D_ARRAY
 )
 
 // TextureFormat is the format of a texture either internally or
@@ -151,6 +152,21 @@ func (t Texture) Image2DEx(level, width, height int, internalFormat, format Text
 		uint32(format),
 		uint32(ty),
 		ptr,
+	)
+}
+
+// Image2DEx uploads a 2D texture to the GPU.
+func (t Texture) Image2DSample(samples, width, height int, format TextureFormat, fixed bool) {
+	if t != currentTexture {
+		panic("texture not bound")
+	}
+	gl.TexImage2DMultisample(
+		uint32(currentTextureTarget),
+		int32(samples),
+		uint32(format),
+		int32(width),
+		int32(height),
+		fixed,
 	)
 }
 

@@ -133,6 +133,7 @@ sync:
 	}
 
 	mainFramebuffer.Bind()
+	gl.Enable(gl.Multisample)
 
 	gl.ActiveTexture(0)
 	glTexture.Bind(gl.Texture2DArray)
@@ -189,6 +190,15 @@ sync:
 	shaderChunkT.Texture.Int(0)
 	shaderChunkT.LightLevel.Float(LightLevel)
 
+	// Copy the depth buffer
+	mainFramebuffer.BindRead()
+	transFramebuffer.BindDraw()
+	gl.BlitFramebuffer(
+		0, 0, lastWidth, lastHeight,
+		0, 0, lastWidth, lastHeight,
+		gl.DepthBufferBit, gl.Nearest,
+	)
+
 	gl.Enable(gl.Blend)
 	gl.DepthMask(false)
 	transFramebuffer.Bind()
@@ -214,11 +224,14 @@ sync:
 	gl.Enable(gl.DepthTest)
 	gl.DepthMask(true)
 	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
+	gl.Disable(gl.Multisample)
 
 	drawUI()
 
 	if debugFramebuffers.Value() {
+		gl.Enable(gl.Multisample)
 		blitBuffers()
+		gl.Disable(gl.Multisample)
 	}
 }
 

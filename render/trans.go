@@ -15,6 +15,7 @@
 package render
 
 import (
+	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/render/gl"
 )
@@ -26,6 +27,7 @@ var (
 	transFramebuffer gl.Framebuffer
 	accum            gl.Texture
 	revealage        gl.Texture
+	transDepth       gl.Texture
 	transCreated     bool
 	transState       = struct {
 		program gl.Program
@@ -33,6 +35,12 @@ var (
 		array   gl.VertexArray
 		buffer  gl.Buffer
 	}{}
+
+	rSamples = console.NewIntVar("r_samples", 1, console.Serializable, console.Mutable).Doc(`
+r_samples controls the number of samples taken whilst rendering. 
+Increasing this will increase the amount of AA used but decrease
+performance.
+`).Callback(func() { lastWidth = -1; lastHeight = -1 })
 )
 
 func initTrans() {
@@ -62,12 +70,12 @@ func initTrans() {
 	revealage.Parameter(gl.TextureMagFilter, gl.Linear)
 	transFramebuffer.Texture2D(gl.ColorAttachment1, gl.Texture2D, revealage, 0)
 
-	fbDepth = gl.CreateTexture()
-	fbDepth.Bind(gl.Texture2D)
-	fbDepth.Image2DEx(0, lastWidth, lastHeight, gl.DepthComponent24, gl.DepthComponent, gl.UnsignedByte, nil)
-	fbDepth.Parameter(gl.TextureMinFilter, gl.Linear)
-	fbDepth.Parameter(gl.TextureMagFilter, gl.Linear)
-	transFramebuffer.Texture2D(gl.DepthAttachment, gl.Texture2D, fbDepth, 0)
+	transDepth = gl.CreateTexture()
+	transDepth.Bind(gl.Texture2D)
+	transDepth.Image2DEx(0, lastWidth, lastHeight, gl.DepthComponent24, gl.DepthComponent, gl.UnsignedByte, nil)
+	transDepth.Parameter(gl.TextureMinFilter, gl.Linear)
+	transDepth.Parameter(gl.TextureMagFilter, gl.Linear)
+	transFramebuffer.Texture2D(gl.DepthAttachment, gl.Texture2D, transDepth, 0)
 
 	chunkProgramT.Use()
 	gl.BindFragDataLocation(chunkProgramT, 0, "accum")
@@ -82,14 +90,14 @@ func initTrans() {
 	mainFramebuffer.Bind()
 
 	fbColor = gl.CreateTexture()
-	fbColor.Bind(gl.Texture2D)
-	fbColor.Image2DEx(0, lastWidth, lastHeight, gl.RGBA8, gl.RGBA, gl.UnsignedByte, nil)
-	fbColor.Parameter(gl.TextureMinFilter, gl.Linear)
-	fbColor.Parameter(gl.TextureMagFilter, gl.Linear)
-	mainFramebuffer.Texture2D(gl.ColorAttachment0, gl.Texture2D, fbColor, 0)
+	fbColor.Bind(gl.Texture2DMultisample)
+	fbColor.Image2DSample(rSamples.Value(), lastWidth, lastHeight, gl.RGBA8, false)
+	mainFramebuffer.Texture2D(gl.ColorAttachment0, gl.Texture2DMultisample, fbColor, 0)
 
-	fbDepth.Bind(gl.Texture2D)
-	mainFramebuffer.Texture2D(gl.DepthAttachment, gl.Texture2D, fbDepth, 0)
+	fbDepth = gl.CreateTexture()
+	fbDepth.Bind(gl.Texture2DMultisample)
+	fbDepth.Image2DSample(rSamples.Value(), lastWidth, lastHeight, gl.DepthComponent24, false)
+	mainFramebuffer.Texture2D(gl.DepthAttachment, gl.Texture2DMultisample, fbDepth, 0)
 
 	gl.UnbindFramebuffer()
 
@@ -118,12 +126,13 @@ func transDraw() {
 	gl.ActiveTexture(1)
 	revealage.Bind(gl.Texture2D)
 	gl.ActiveTexture(2)
-	fbColor.Bind(gl.Texture2D)
+	fbColor.Bind(gl.Texture2DMultisample)
 
 	transState.program.Use()
 	transState.shader.Accum.Int(0)
 	transState.shader.Revealage.Int(1)
 	transState.shader.Color.Int(2)
+	transState.shader.Samples.Int(rSamples.Value())
 	transState.array.Bind()
 	gl.DrawArrays(gl.Triangles, 0, 6)
 }
@@ -133,6 +142,7 @@ type transShader struct {
 	Accum     gl.Uniform   `gl:"taccum"`
 	Revealage gl.Uniform   `gl:"trevealage"`
 	Color     gl.Uniform   `gl:"tcolor"`
+	Samples   gl.Uniform   `gl:"samples"`
 }
 
 const (
@@ -149,17 +159,26 @@ void main() {
 
 uniform sampler2D taccum;
 uniform sampler2D trevealage;
-uniform sampler2D tcolor;
+uniform sampler2DMS tcolor;
+
+uniform int samples;
 
 out vec4 fragColor;
 
 void main() {	
 	ivec2 C = ivec2(gl_FragCoord.xy);
-    vec4 accum = texelFetch(taccum, C, 0);
-    float r = accum.a;
-    accum.a = texelFetch(trevealage, C, 0).r;
+	vec4 accum = texelFetch(taccum, C, 0);
+	float aa = texelFetch(trevealage, C, 0).r;
 	vec4 col = texelFetch(tcolor, C, 0);
-    if (r >= 1.0) {
+
+	for (int i = 1; i < samples; i++) {
+		col += texelFetch(tcolor, C, i);
+	}
+	col /= float(samples);
+
+	float r = accum.a;
+	accum.a = aa;
+	if (r >= 1.0) {
 		fragColor = vec4(col.rgb, 0.0);
 	} else {
 		vec3 alp = clamp(accum.rgb / clamp(accum.a, 1e-4, 5e4), 0.0, 1.0);
