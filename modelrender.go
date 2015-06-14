@@ -365,21 +365,19 @@ func calculateBiome(bs *blocksSnapshot, x, z int, img *image.NRGBA) (byte, byte,
 
 func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 	x, y, z float64, face direction.Type, smooth, force bool) (uint16, uint16) {
+	ox, oy, oz := face.Offset()
+	if !bs.block(origX, origY, origZ).ShouldCullAgainst() {
+		ox, oy, oz = 0, 0, 0
+	}
+	sblockLight := bs.blockLight(origX+ox, origY+oy, origZ+oz)
+	sskyLight := bs.skyLight(origX+ox, origY+oy, origZ+oz)
 	if !smooth {
-		ox, oy, oz := face.Offset()
-		if !bs.block(origX, origY, origZ).ShouldCullAgainst() {
-			ox, oy, oz = 0, 0, 0
-		}
-		blockLight := bs.blockLight(origX+ox, origY+oy, origZ+oz)
-		skyLight := bs.skyLight(origX+ox, origY+oy, origZ+oz)
-		return uint16(blockLight) * 4000, uint16(skyLight) * 4000
+		return uint16(sblockLight) * 4000, uint16(sskyLight) * 4000
 	}
 	blockLight := 0
 	skyLight := 0
 	count := 0
 
-	sblockLight := bs.blockLight(origX, origY, origZ)
-	sskyLight := bs.skyLight(origX, origY, origZ)
 	dbl := int8(sblockLight) - 8
 	if dbl < 0 {
 		dbl = 0
@@ -401,6 +399,10 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 				bl := int(bs.blockLight(lx, ly, lz))
 				sl := int(bs.skyLight(lx, ly, lz))
 				if force && !bs.block(lx, ly, lz).Is(Blocks.Air) {
+					bl = int(sblockLight)
+					sl = int(sskyLight)
+				}
+				if sl == 0 && bl == 0 {
 					bl = int(sblockLight)
 					sl = int(sskyLight)
 				}
