@@ -46,8 +46,24 @@ func (f Framebuffer) Bind() {
 	gl.BindFramebuffer(gl.FRAMEBUFFER, f.internal)
 }
 
+func (f Framebuffer) BindRead() {
+	gl.BindFramebuffer(gl.READ_FRAMEBUFFER, f.internal)
+}
+
+func (f Framebuffer) BindDraw() {
+	gl.BindFramebuffer(gl.DRAW_FRAMEBUFFER, f.internal)
+}
+
 func UnbindFramebuffer() {
 	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+}
+
+func UnbindFramebufferRead() {
+	gl.BindFramebuffer(gl.READ_FRAMEBUFFER, 0)
+}
+
+func UnbindFramebufferDraw() {
+	gl.BindFramebuffer(gl.DRAW_FRAMEBUFFER, 0)
 }
 
 func DrawBuffers(bufs []Attachment) {
@@ -60,4 +76,16 @@ func (f Framebuffer) Texture2D(attachment Attachment, texTarget TextureTarget, t
 
 func (f Framebuffer) Delete() {
 	gl.DeleteFramebuffers(1, &f.internal)
+}
+
+func BlitFramebuffer(sx0, sy0, sx1, sy1, dx0, dy0, dx1, dy1 int, mask ClearFlags, filter TextureValue) {
+	gl.BlitFramebuffer(
+		int32(sx0), int32(sy0), int32(sx1), int32(sy1),
+		int32(dx0), int32(dy0), int32(dx1), int32(dy1),
+		uint32(mask), uint32(filter),
+	)
+}
+
+func (f Framebuffer) ReadBuffer(a Attachment) {
+	gl.ReadBuffer(uint32(a))
 }

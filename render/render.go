@@ -49,6 +49,11 @@ in degrees.
 	glTexture       gl.Texture
 	textureDepth    int
 	texturesCreated bool
+
+	debugFramebuffers = console.NewBoolVar("r_debug_buffers", false, console.Mutable).Doc(`
+r_debug_buffers blits all frame buffers to the screen for
+debugging.
+`)
 )
 
 // Start starts the renderer
@@ -205,6 +210,35 @@ sync:
 	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
 
 	drawUI()
+
+	if debugFramebuffers.Value() {
+		// Screen
+		gl.Framebuffer{}.BindDraw()
+
+		mainFramebuffer.BindRead()
+		gl.BlitFramebuffer(
+			0, 0, lastWidth, lastHeight,
+			5, 5, 5+300, 5+150,
+			gl.ColorBufferBit, gl.Linear,
+		)
+
+		transFramebuffer.BindRead()
+		transFramebuffer.ReadBuffer(gl.ColorAttachment0)
+		gl.BlitFramebuffer(
+			0, 0, lastWidth, lastHeight,
+			300+5, 5, 300+5+300, 5+150,
+			gl.ColorBufferBit, gl.Linear,
+		)
+		transFramebuffer.ReadBuffer(gl.ColorAttachment1)
+		gl.BlitFramebuffer(
+			0, 0, lastWidth, lastHeight,
+			600+5, 5, 600+5+300, 5+150,
+			gl.ColorBufferBit, gl.Linear,
+		)
+
+		gl.UnbindFramebufferDraw()
+		gl.UnbindFramebufferRead()
+	}
 }
 
 var (
