@@ -54,7 +54,7 @@ func fakeGen() {
 			return int(t*((15-float64(z))/15.0) + b*(float64(z)/15.0))
 		}
 		liquid := uint16(9)
-		if r.Float64() < 0.1 {
+		if r.Float64() < 0.01 {
 			liquid = 11
 		}
 
