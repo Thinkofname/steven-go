@@ -212,32 +212,7 @@ sync:
 	drawUI()
 
 	if debugFramebuffers.Value() {
-		// Screen
-		gl.Framebuffer{}.BindDraw()
-
-		mainFramebuffer.BindRead()
-		gl.BlitFramebuffer(
-			0, 0, lastWidth, lastHeight,
-			5, 5, 5+300, 5+150,
-			gl.ColorBufferBit, gl.Linear,
-		)
-
-		transFramebuffer.BindRead()
-		transFramebuffer.ReadBuffer(gl.ColorAttachment0)
-		gl.BlitFramebuffer(
-			0, 0, lastWidth, lastHeight,
-			300+5, 5, 300+5+300, 5+150,
-			gl.ColorBufferBit, gl.Linear,
-		)
-		transFramebuffer.ReadBuffer(gl.ColorAttachment1)
-		gl.BlitFramebuffer(
-			0, 0, lastWidth, lastHeight,
-			600+5, 5, 600+5+300, 5+150,
-			gl.ColorBufferBit, gl.Linear,
-		)
-
-		gl.UnbindFramebufferDraw()
-		gl.UnbindFramebufferRead()
+		blitBuffers()
 	}
 }
 
