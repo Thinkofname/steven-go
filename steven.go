@@ -31,6 +31,7 @@ import (
 
 var (
 	connected bool
+	skipLogin bool
 
 	stevenBuildVersion string = "dev"
 
@@ -83,6 +84,7 @@ func Main(username, uuid, accessToken string) {
 	}
 	if accessToken != "" {
 		clientAccessToken.SetValue(accessToken)
+		skipLogin = true
 	}
 
 	initResources()
@@ -115,7 +117,12 @@ func start() {
 
 	initClient()
 	fakeGen()
-	setScreen(newLoginScreen())
+	if skipLogin {
+		setScreen(newServerList())
+		console.ExecConf("autoexec.cfg")
+	} else {
+		setScreen(newLoginScreen())
+	}
 	render.Start()
 }
 
