@@ -8,6 +8,8 @@ Don't expect it to go anywhere, just doing this for fun.
 
 ![Steven](http://i.imgur.com/VVnmbkV.png)
 
+![Steven with Nether style background and a resource pack](https://i.imgur.com/QjBb1UT.png)
+
 ![Steven's server list after disconnecting from a server](https://i.imgur.com/JRFXt0e.png)
 
 ## Building
