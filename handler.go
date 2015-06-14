@@ -75,14 +75,14 @@ func (handler) JoinGame(j *protocol.JoinGame) {
 	})
 	Client.GameMode = gameMode(j.Gamemode & 0x7)
 	Client.HardCore = j.Gamemode&0x8 != 0
-	Client.WorldType = worldType(j.Dimension)
+	Client.updateWorldType(worldType(j.Dimension))
 }
 
 func (handler) Respawn(r *protocol.Respawn) {
 	clearChunks()
 	Client.GameMode = gameMode(r.Gamemode & 0x7)
 	Client.HardCore = r.Gamemode&0x8 != 0
-	Client.WorldType = worldType(r.Dimension)
+	Client.updateWorldType(worldType(r.Dimension))
 }
 
 func (handler) Disconnect(d *protocol.Disconnect) {

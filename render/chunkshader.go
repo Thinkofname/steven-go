@@ -26,6 +26,7 @@ type chunkShader struct {
 	CameraMatrix      gl.Uniform   `gl:"cameraMatrix"`
 	Offset            gl.Uniform   `gl:"offset"`
 	Texture           gl.Uniform   `gl:"textures"`
+	LightLevel        gl.Uniform   `gl:"lightLevel"`
 }
 
 const (
@@ -40,6 +41,7 @@ in vec2 aLighting;
 uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
 uniform ivec3 offset;
+uniform float lightLevel;
 
 out vec3 vColor;
 out vec4 vTextureInfo;
@@ -59,8 +61,8 @@ void main() {
 	vTextureOffset = aTextureOffset.xy / 16.0;
 	vAtlas = aTextureOffset.z;
 
-	float light = max(aLighting.x, aLighting.y * 1.0);
-	vLighting = clamp(0.05 + pow(light / (4000.0 * 16.0), 1.5), 0.1, 1.0);
+	float light = max(aLighting.x, aLighting.y * 1.0) / 4000.0;
+	vLighting = 1.0 * pow(lightLevel, 15.0 - light); // clamp(0.05 + pow(light / (4000.0 * 16.0), 1.5), 0.1, 1.0);
 }
 `
 	fragment = `

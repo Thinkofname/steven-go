@@ -141,7 +141,7 @@ var Blocks = struct {
 	EnchantingTable            *BlockSet
 	BrewingStand               *BlockSet
 	Cauldron                   *BlockSet
-	EndPortal                  *BlockSet
+	EndPortal                  *BlockSet `collidable:"false"`
 	EndPortalFrame             *BlockSet
 	EndStone                   *BlockSet
 	DragonEgg                  *BlockSet

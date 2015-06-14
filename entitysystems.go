@@ -65,17 +65,18 @@ func esLightModel(p PositionComponent, s SizeComponent, m interface {
 		for z := bounds.Min.Z() - 1; z <= bounds.Max.Z()+1; z++ {
 			for x := bounds.Min.X() - 1; x <= bounds.Max.X()+1; x++ {
 				bx, by, bz := int(math.Floor(float64(x))), int(math.Floor(float64(y))), int(math.Floor(float64(z)))
-				bl := float64(chunkMap.BlockLight(bx, by, bz)) / 16
-				sl := float64(chunkMap.SkyLight(bx, by, bz)) / 16
+				bl := float64(chunkMap.BlockLight(bx, by, bz))
+				sl := float64(chunkMap.SkyLight(bx, by, bz))
 
 				dist := float64(c.Sub(mgl32.Vec3{float32(bx) + 0.5, float32(by) + 0.5, float32(bz) + 0.5}).Len())
 
-				light += (math.Max(bl, sl) + (1 / 16.0)) * dist
+				light += math.Max(bl, sl) * dist
 				count += dist
 			}
 		}
 	}
 	light /= count
+	light = math.Pow(float64(render.LightLevel), 15.0-light)
 	model := m.Model()
 	for i := range model.Colors {
 		model.Colors[i] = [4]float32{

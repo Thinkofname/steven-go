@@ -220,6 +220,21 @@ type clientEntity struct {
 	playerModelComponent
 }
 
+func (c *ClientState) updateWorldType(wt worldType) {
+	c.WorldType = wt
+	switch c.WorldType {
+	case wtOverworld:
+		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 122.0/255.0, 165.0/255.0, 247.0/255.0
+		render.LightLevel = 0.8
+	case wtNether:
+		render.LightLevel = 0.9
+		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 52/255.0, 8/255.0, 8/255.0
+	case wtEnd:
+		render.LightLevel = 0.8
+		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 0, 0, 0
+	}
+}
+
 func (c *ClientState) initEntity(head bool) {
 	ce := &clientEntity{}
 	ub, _ := hex.DecodeString(clientUUID.Value())

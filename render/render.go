@@ -54,6 +54,11 @@ in degrees.
 r_debug_buffers blits all frame buffers to the screen for
 debugging.
 `)
+
+	LightLevel  float32 = 0.8
+	ClearColour         = struct{ R, G, B float32 }{
+		122.0 / 255.0, 165.0 / 255.0, 247.0 / 255.0,
+	}
 )
 
 // Start starts the renderer
@@ -62,7 +67,6 @@ func Start() {
 		gl.DebugLog()
 	}
 
-	gl.ClearColor(122.0/255.0, 165.0/255.0, 247.0/255.0, 1.0)
 	gl.Enable(gl.DepthTest)
 	gl.Enable(gl.CullFaceFlag)
 	gl.CullFace(gl.Back)
@@ -133,7 +137,7 @@ sync:
 	gl.ActiveTexture(0)
 	glTexture.Bind(gl.Texture2DArray)
 
-	gl.ClearColor(122.0/255.0, 165.0/255.0, 247.0/255.0, 1.0)
+	gl.ClearColor(ClearColour.R, ClearColour.G, ClearColour.B, 1.0)
 	gl.Clear(gl.ColorBufferBit | gl.DepthBufferBit)
 
 	chunkProgram.Use()
@@ -160,6 +164,7 @@ sync:
 	shaderChunk.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
 	shaderChunk.CameraMatrix.Matrix4(&cameraMatrix)
 	shaderChunk.Texture.Int(0)
+	shaderChunk.LightLevel.Float(LightLevel)
 
 	chunkPos := position{
 		X: int(Camera.X) >> 4,
@@ -182,6 +187,7 @@ sync:
 	shaderChunkT.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
 	shaderChunkT.CameraMatrix.Matrix4(&cameraMatrix)
 	shaderChunkT.Texture.Int(0)
+	shaderChunkT.LightLevel.Float(LightLevel)
 
 	gl.Enable(gl.Blend)
 	gl.DepthMask(false)

@@ -408,6 +408,14 @@ type chunkSection struct {
 	building bool
 }
 
+var fullBrightLight = nibble.New(16 * 16 * 16)
+
+func init() {
+	for i := range fullBrightLight {
+		fullBrightLight[i] = 0xFF
+	}
+}
+
 func newChunkSection(c *chunk, y int) *chunkSection {
 	cs := sectionPool.Get().(*chunkSection)
 	cs.chunk = c
@@ -419,6 +427,7 @@ func newChunkSection(c *chunk, y int) *chunkSection {
 	for i := range cs.Blocks {
 		cs.Blocks[i] = Blocks.Air.Blocks[0].SID()
 	}
+	copy(cs.SkyLight, fullBrightLight)
 	return cs
 }
 
@@ -496,13 +505,17 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 		copy(section.BlockLight, data[offset:])
 		offset += len(section.BlockLight)
 	}
-	if sky {
-		for i, section := range c.Sections {
-			if section == nil || mask&(1<<uint(i)) == 0 {
-				continue
-			}
+	for i, section := range c.Sections {
+		if section == nil || mask&(1<<uint(i)) == 0 {
+			continue
+		}
+		if sky {
 			copy(section.SkyLight, data[offset:])
 			offset += len(section.BlockLight)
+		} else {
+			for i := range section.SkyLight {
+				section.SkyLight[i] = 0x00
+			}
 		}
 	}
 

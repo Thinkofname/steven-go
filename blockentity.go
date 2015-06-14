@@ -33,9 +33,9 @@ func init() {
 // updates the Colors of the model to fake lighting
 func lightBlockModel(model *render.StaticModel, bp Position) {
 	bx, by, bz := bp.X, bp.Y, bp.Z
-	bl := float64(chunkMap.BlockLight(bx, by, bz)) / 16
-	sl := float64(chunkMap.SkyLight(bx, by, bz)) / 16
-	light := math.Max(bl, sl) + (1 / 16.0)
+	bl := float64(chunkMap.BlockLight(bx, by, bz))
+	sl := float64(chunkMap.SkyLight(bx, by, bz))
+	light := math.Pow(float64(render.LightLevel), 15.0-math.Max(bl, sl))
 	for i := range model.Colors {
 		model.Colors[i] = [4]float32{
 			float32(light),
