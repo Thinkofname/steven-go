@@ -378,6 +378,19 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 	skyLight := 0
 	count := 0
 
+	sblockLight := bs.blockLight(origX, origY, origZ)
+	sskyLight := bs.skyLight(origX, origY, origZ)
+	dbl := int8(sblockLight) - 8
+	if dbl < 0 {
+		dbl = 0
+	}
+	sblockLight = byte(dbl)
+	dsl := int8(sskyLight) - 8
+	if dsl < 0 {
+		dsl = 0
+	}
+	sskyLight = byte(dsl)
+
 	dx, dy, dz := face.Offset()
 	for ox := -1; ox <= 0; ox++ {
 		for oy := -1; oy <= 0; oy++ {
@@ -388,8 +401,8 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 				bl := int(bs.blockLight(lx, ly, lz))
 				sl := int(bs.skyLight(lx, ly, lz))
 				if force && !bs.block(lx, ly, lz).Is(Blocks.Air) {
-					bl = 0
-					sl = 0
+					bl = int(sblockLight)
+					sl = int(sskyLight)
 				}
 				blockLight += bl
 				skyLight += sl
