@@ -101,7 +101,7 @@ var Blocks = struct {
 	RedstoneTorch              *BlockSet `type:"torch" model:"redstone_torch"`
 	StoneButton                *BlockSet
 	SnowLayer                  *BlockSet
-	Ice                        *BlockSet
+	Ice                        *BlockSet `translucent:"true" cullAgainst:"false"`
 	Snow                       *BlockSet
 	Cactus                     *BlockSet `type:"cactus"`
 	Clay                       *BlockSet
