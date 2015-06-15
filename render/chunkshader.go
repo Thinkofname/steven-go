@@ -80,7 +80,7 @@ vec3 getLight(vec2 light) {
 
 	float sr = (0.131653 * pow(sk, 2.0) - 0.761625 * sk + 35.0393);
 	float sg = (0.136555 * pow(sk, 2.0) - 0.853782 * sk + 29.6143);
-	float sb = (0.277311 * pow(sk, 2.0) - 1.62017 * sk + 28.0929);
+	float sb = (0.327311 * pow(sk, 2.0) - 1.62017 * sk + 28.0929);
 	float srl = (0.996148 * pow(sk, 2) - 4.19629 * sk + 51.4036);
 	float sgl = (1.03904 * pow(sk, 2) - 4.81516 * sk + 47.0911);
 	float sbl = (1.076164 * pow(sk, 2) - 5.36376 * sk + 43.9089);
