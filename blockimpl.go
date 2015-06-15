@@ -2280,3 +2280,32 @@ func (b *blockQuartzBlock) toData() int {
 	}
 	return -1
 }
+
+// Snow layer
+
+type blockSnowLayer struct {
+	baseBlock
+
+	Layers int `state:"moisture,1-8"`
+}
+
+func (b *blockSnowLayer) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+}
+
+func (b *blockSnowLayer) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			vmath.NewAABB(0.0, 0.0, 0.0, 1.0, (1.0/8.0)*float32(b.Layers), 1.0),
+		}
+	}
+	return b.bounds
+}
+
+func (b *blockSnowLayer) ModelVariant() string {
+	return fmt.Sprintf("layers=%d", b.Layers)
+}
+
+func (b *blockSnowLayer) toData() int {
+	return b.Layers - 1
+}
