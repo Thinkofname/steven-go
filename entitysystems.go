@@ -59,30 +59,32 @@ func esLightModel(p PositionComponent, s SizeComponent, m interface {
 
 	c := bounds.Max.Sub(bounds.Min).Mul(0.5)
 
-	var light float64
+	var light, skyLight float64
 	var count float64
 	for y := bounds.Min.Y(); y <= bounds.Max.Y(); y++ {
 		for z := bounds.Min.Z() - 1; z <= bounds.Max.Z()+1; z++ {
 			for x := bounds.Min.X() - 1; x <= bounds.Max.X()+1; x++ {
 				bx, by, bz := int(math.Floor(float64(x))), int(math.Floor(float64(y))), int(math.Floor(float64(z)))
 				bl := float64(chunkMap.BlockLight(bx, by, bz))
-				sl := float64(chunkMap.SkyLight(bx, by, bz)) * float64(render.SkyOffset)
+				sl := float64(chunkMap.SkyLight(bx, by, bz))
 
 				dist := float64(c.Sub(mgl32.Vec3{float32(bx) + 0.5, float32(by) + 0.5, float32(bz) + 0.5}).Len())
 
-				light += math.Max(bl, sl) * dist
+				light += bl * dist
+				skyLight += sl * dist
 				count += dist
 			}
 		}
 	}
 	light /= count
-	light = math.Pow(float64(render.LightLevel), 15.0-light)
+	skyLight /= count
+	r, g, b := getLightColor(light, skyLight)
 	model := m.Model()
 	for i := range model.Colors {
 		model.Colors[i] = [4]float32{
-			float32(light),
-			float32(light),
-			float32(light),
+			float32(r),
+			float32(g),
+			float32(b),
 			1.0,
 		}
 	}

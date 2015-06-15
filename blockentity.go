@@ -16,7 +16,6 @@ package steven
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/encoding/nbt"
@@ -39,13 +38,13 @@ func lightBlockModel(m interface {
 	bp := be.Position()
 	bx, by, bz := bp.X, bp.Y, bp.Z
 	bl := float64(chunkMap.BlockLight(bx, by, bz))
-	sl := float64(chunkMap.SkyLight(bx, by, bz)) * float64(render.SkyOffset)
-	light := math.Pow(float64(render.LightLevel), 15.0-math.Max(bl, sl))
+	sl := float64(chunkMap.SkyLight(bx, by, bz))
+	r, g, b := getLightColor(bl, sl)
 	for i := range model.Colors {
 		model.Colors[i] = [4]float32{
-			float32(light),
-			float32(light),
-			float32(light),
+			float32(r),
+			float32(g),
+			float32(b),
 			1.0,
 		}
 	}
