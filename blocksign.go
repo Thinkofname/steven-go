@@ -147,7 +147,6 @@ func (s *signComponent) create() {
 		float32(z)+0.5,
 	).Mul4(mgl32.Rotate3DY(float32(s.rotation)).Mat4()).
 		Mul4(mgl32.Translate3D(float32(s.ox), float32(-s.oy), float32(s.oz)))
-	lightBlockModel(s.model, s.position)
 }
 
 func esSignAdd(s *signComponent, b BlockComponent) {

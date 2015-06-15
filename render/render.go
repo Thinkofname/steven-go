@@ -55,8 +55,8 @@ r_debug_buffers blits all frame buffers to the screen for
 debugging.
 `)
 
-	LightLevel  float32 = 0.8
-	ClearColour         = struct{ R, G, B float32 }{
+	LightLevel, SkyOffset float32 = 0.8, 1.0
+	ClearColour                   = struct{ R, G, B float32 }{
 		122.0 / 255.0, 165.0 / 255.0, 247.0 / 255.0,
 	}
 )
@@ -166,6 +166,7 @@ sync:
 	shaderChunk.CameraMatrix.Matrix4(&cameraMatrix)
 	shaderChunk.Texture.Int(0)
 	shaderChunk.LightLevel.Float(LightLevel)
+	shaderChunk.SkyOffset.Float(SkyOffset)
 
 	chunkPos := position{
 		X: int(Camera.X) >> 4,
@@ -189,6 +190,7 @@ sync:
 	shaderChunkT.CameraMatrix.Matrix4(&cameraMatrix)
 	shaderChunkT.Texture.Int(0)
 	shaderChunkT.LightLevel.Float(LightLevel)
+	shaderChunkT.SkyOffset.Float(SkyOffset)
 
 	// Copy the depth buffer
 	mainFramebuffer.BindRead()

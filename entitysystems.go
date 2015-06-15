@@ -66,7 +66,7 @@ func esLightModel(p PositionComponent, s SizeComponent, m interface {
 			for x := bounds.Min.X() - 1; x <= bounds.Max.X()+1; x++ {
 				bx, by, bz := int(math.Floor(float64(x))), int(math.Floor(float64(y))), int(math.Floor(float64(z)))
 				bl := float64(chunkMap.BlockLight(bx, by, bz))
-				sl := float64(chunkMap.SkyLight(bx, by, bz))
+				sl := float64(chunkMap.SkyLight(bx, by, bz)) * float64(render.SkyOffset)
 
 				dist := float64(c.Sub(mgl32.Vec3{float32(bx) + 0.5, float32(by) + 0.5, float32(bz) + 0.5}).Len())
 

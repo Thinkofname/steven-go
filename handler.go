@@ -85,6 +85,16 @@ func (handler) Respawn(r *protocol.Respawn) {
 	Client.updateWorldType(worldType(r.Dimension))
 }
 
+func (handler) TimeUpdate(p *protocol.TimeUpdate) {
+	Client.WorldTime = float64(p.TimeOfDay % 24000)
+	if Client.WorldTime < 0 {
+		Client.WorldTime = -Client.WorldTime
+		Client.TickTime = false
+	} else {
+		Client.TickTime = true
+	}
+}
+
 func (handler) Disconnect(d *protocol.Disconnect) {
 	disconnectReason = d.Reason
 	console.Text("Disconnect: %s", disconnectReason)

@@ -88,6 +88,8 @@ type ClientState struct {
 	GameMode  gameMode
 	HardCore  bool
 	WorldType worldType
+	WorldTime float64
+	TickTime  bool
 
 	Bounds vmath.AABB
 
@@ -224,15 +226,34 @@ func (c *ClientState) updateWorldType(wt worldType) {
 	c.WorldType = wt
 	switch c.WorldType {
 	case wtOverworld:
-		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 122.0/255.0, 165.0/255.0, 247.0/255.0
 		render.LightLevel = 0.8
+		c.updateSky()
 	case wtNether:
 		render.LightLevel = 0.9
+		render.SkyOffset = 0.0
 		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 52/255.0, 8/255.0, 8/255.0
 	case wtEnd:
 		render.LightLevel = 0.8
+		render.SkyOffset = 0.0
 		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 23/255.0, 0, 23/255.0
 	}
+}
+
+func (c *ClientState) updateSky() {
+	if c.WorldType != wtOverworld {
+		return
+	}
+	time := (c.WorldTime - 6000) / 12000
+	if time > 1 {
+		time = 2 - time
+	} else if time < 0 {
+		time = -time
+	}
+	render.SkyOffset = 1.0 - float32(time)*0.6
+	timeO := 1.0 - float32(time)*0.9
+	render.ClearColour.R = (122.0 / 255.0) * timeO
+	render.ClearColour.G = (165.0 / 255.0) * timeO
+	render.ClearColour.B = (247.0 / 255.0) * timeO
 }
 
 func (c *ClientState) initEntity(head bool) {
@@ -383,6 +404,11 @@ func (c *ClientState) renderTick(delta float64) {
 	c.playerList.render(delta)
 	c.entities.tick()
 	c.copyToCamera()
+
+	if c.TickTime {
+		c.WorldTime += delta
+	}
+	c.updateSky()
 }
 
 func (c *ClientState) tickItemName() {

@@ -28,13 +28,18 @@ func init() {
 	addSystem(entitysys.Add, esSkullAdd)
 	addSystem(entitysys.Remove, esSkullRemove)
 	addSystem(entitysys.Add, esSignAdd)
+	addSystem(entitysys.Tick, lightBlockModel)
 }
 
 // updates the Colors of the model to fake lighting
-func lightBlockModel(model *render.StaticModel, bp Position) {
+func lightBlockModel(m interface {
+	Model() *render.StaticModel
+}, be BlockEntity) {
+	model := m.Model()
+	bp := be.Position()
 	bx, by, bz := bp.X, bp.Y, bp.Z
 	bl := float64(chunkMap.BlockLight(bx, by, bz))
-	sl := float64(chunkMap.SkyLight(bx, by, bz))
+	sl := float64(chunkMap.SkyLight(bx, by, bz)) * float64(render.SkyOffset)
 	light := math.Pow(float64(render.LightLevel), 15.0-math.Max(bl, sl))
 	for i := range model.Colors {
 		model.Colors[i] = [4]float32{
