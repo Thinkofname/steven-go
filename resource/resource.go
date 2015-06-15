@@ -151,7 +151,7 @@ type TickFunc func(progress float64, done bool)
 func Init(tick TickFunc, sync chan<- func()) {
 	fromInternal()
 	defLocation := fmt.Sprintf("./resources-%s", ResourcesVersion)
-	_, err := os.Stat(defLocation)
+	_, err := os.Stat(fmt.Sprintf("%s/steven.assets", defLocation))
 	if os.IsNotExist(err) {
 		go func() {
 			sync <- func() { tick(0, false) }
@@ -268,7 +268,7 @@ func (p *progressRead) Read(buf []byte) (n int, err error) {
 	if n > 0 {
 		p.n += int64(n)
 		p.sync <- func() {
-			p.tick(float64(p.n)/float64(p.max), false)
+			p.tick((float64(p.n)/float64(p.max))*0.75, false)
 		}
 	}
 	return
@@ -307,7 +307,8 @@ func downloadDefault(tick TickFunc, sync chan<- func(), target string) {
 	os.MkdirAll(target, 0777)
 
 	// Copy the assets (not the classes) in the new zip
-	for _, f := range fr.File {
+	fCount := float64(len(fr.File))
+	for i, f := range fr.File {
 		if !strings.HasPrefix(f.Name, "assets/") {
 			continue
 		}
@@ -329,5 +330,14 @@ func downloadDefault(tick TickFunc, sync chan<- func(), target string) {
 				panic(err)
 			}
 		}()
+		sync <- func() {
+			tick(0.75+(float64(i)/fCount)*0.25, false)
+		}
 	}
+	lFile, err := os.Create(fmt.Sprintf("%s/steven.assets", target))
+	if err != nil {
+		panic(err)
+	}
+	defer lFile.Close()
+	lFile.WriteString(ResourcesVersion)
 }
