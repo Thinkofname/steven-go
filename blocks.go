@@ -81,8 +81,8 @@ var Blocks = struct {
 	DiamondOre                 *BlockSet
 	DiamondBlock               *BlockSet
 	CraftingTable              *BlockSet
-	Wheat                      *BlockSet
-	Farmland                   *BlockSet
+	Wheat                      *BlockSet `type:"crop"`
+	Farmland                   *BlockSet `type:"farmland"`
 	Furnace                    *BlockSet
 	FurnaceLit                 *BlockSet
 	StandingSign               *BlockSet `type:"floorSign"`
@@ -103,7 +103,7 @@ var Blocks = struct {
 	SnowLayer                  *BlockSet
 	Ice                        *BlockSet
 	Snow                       *BlockSet
-	Cactus                     *BlockSet `cullAgainst:"false"`
+	Cactus                     *BlockSet `type:"cactus"`
 	Clay                       *BlockSet
 	Reeds                      *BlockSet `cullAgainst:"false" collidable:"false"`
 	Jukebox                    *BlockSet
@@ -163,8 +163,8 @@ var Blocks = struct {
 	Beacon                     *BlockSet `cullAgainst:"false"`
 	CobblestoneWall            *BlockSet `type:"wall"`
 	FlowerPot                  *BlockSet
-	Carrots                    *BlockSet
-	Potatoes                   *BlockSet
+	Carrots                    *BlockSet `type:"crop"`
+	Potatoes                   *BlockSet `type:"crop"`
 	WoodenButton               *BlockSet
 	Skull                      *BlockSet `type:"skull"`
 	Anvil                      *BlockSet

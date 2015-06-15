@@ -2129,3 +2129,78 @@ func (b *blockRedstone) CollisionBounds() []vmath.AABB {
 func (b *blockRedstone) toData() int {
 	return b.Power
 }
+
+// Cactus
+
+type blockCactus struct {
+	baseBlock
+
+	Age int `state:"age,0-15"`
+}
+
+func (b *blockCactus) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+}
+
+func (b *blockCactus) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			vmath.NewAABB(1.0/16.0, 0, 1.0/16.0, 15.0/16.0, 1.0, 15.0/16.0),
+		}
+	}
+	return b.bounds
+}
+
+func (b *blockCactus) toData() int {
+	return b.Age
+}
+
+// Crop
+
+type blockCrop struct {
+	baseBlock
+
+	Age int `state:"age,0-7"`
+}
+
+func (b *blockCrop) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.collidable = false
+}
+
+func (b *blockCrop) ModelVariant() string {
+	return fmt.Sprintf("age=%d", b.Age)
+}
+
+func (b *blockCrop) toData() int {
+	return b.Age
+}
+
+// Crop
+
+type blockFarmland struct {
+	baseBlock
+
+	Moisture int `state:"moisture,0-7"`
+}
+
+func (b *blockFarmland) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+}
+
+func (b *blockFarmland) CollisionBounds() []vmath.AABB {
+	if b.bounds == nil {
+		b.bounds = []vmath.AABB{
+			vmath.NewAABB(0.0, 0.0, 0.0, 1.0, 15.0/16.0, 1.0),
+		}
+	}
+	return b.bounds
+}
+
+func (b *blockFarmland) ModelVariant() string {
+	return fmt.Sprintf("moisture=%d", b.Moisture)
+}
+
+func (b *blockFarmland) toData() int {
+	return b.Moisture
+}
