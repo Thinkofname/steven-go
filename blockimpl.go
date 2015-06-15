@@ -2176,7 +2176,7 @@ func (b *blockCrop) toData() int {
 	return b.Age
 }
 
-// Crop
+// Farmland
 
 type blockFarmland struct {
 	baseBlock
@@ -2203,4 +2203,80 @@ func (b *blockFarmland) ModelVariant() string {
 
 func (b *blockFarmland) toData() int {
 	return b.Moisture
+}
+
+// Quartz block
+
+type quartzVariant int
+
+const (
+	qvDefault quartzVariant = iota
+	qvChiseled
+	qvLinesY
+	qvLinesX
+	qvLinesZ
+)
+
+func (q quartzVariant) String() string {
+	switch q {
+	case qvDefault:
+		return "default"
+	case qvChiseled:
+		return "chiseled"
+	case qvLinesY:
+		return "lines_y"
+	case qvLinesX:
+		return "lines_x"
+	case qvLinesZ:
+		return "lines_z"
+	}
+	return fmt.Sprintf("quartzVariant(%d)", q)
+}
+
+type blockQuartzBlock struct {
+	baseBlock
+
+	Variant quartzVariant `state:"variant,0-4"`
+}
+
+func (b *blockQuartzBlock) ModelVariant() string {
+	if b.Variant == qvDefault || b.Variant == qvChiseled {
+		return "normal"
+	}
+	a := "x"
+	switch b.Variant {
+	case qvLinesY:
+		a = "y"
+	case qvLinesZ:
+		a = "z"
+	}
+	return fmt.Sprintf("axis=%s", a)
+}
+
+func (b *blockQuartzBlock) ModelName() string {
+	switch b.Variant {
+	case qvLinesX, qvLinesY, qvLinesZ:
+		return "quartz_column"
+	case qvDefault:
+		return "quartz_block"
+	case qvChiseled:
+		return "chiseled_quartz_block"
+	}
+	panic("unknown quartz block")
+}
+
+func (b *blockQuartzBlock) toData() int {
+	switch b.Variant {
+	case qvLinesX:
+		return 3
+	case qvLinesY:
+		return 2
+	case qvLinesZ:
+		return 4
+	case qvDefault:
+		return 0
+	case qvChiseled:
+		return 1
+	}
+	return -1
 }

@@ -177,7 +177,7 @@ var Blocks = struct {
 	RedstoneBlock              *BlockSet
 	QuartzOre                  *BlockSet
 	Hopper                     *BlockSet
-	QuartzBlock                *BlockSet
+	QuartzBlock                *BlockSet `type:"quartzBlock"`
 	QuartzStairs               *BlockSet `type:"stairs"`
 	ActivatorRail              *BlockSet `type:"poweredRail"`
 	Dropper                    *BlockSet `type:"dispenser"`

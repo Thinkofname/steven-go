@@ -61,4 +61,5 @@ func init() {
 	registerBlockType("fire", &blockFire{})
 	registerBlockType("redstone", &blockRedstone{})
 	registerBlockType("cactus", &blockCactus{})
+	registerBlockType("quartzBlock", &blockQuartzBlock{})
 }
