@@ -100,6 +100,16 @@ type blockGrass struct {
 	Snowy bool `state:"snowy"`
 }
 
+func (b *blockGrass) UpdateState(x, y, z int) Block {
+	if bl := chunkMap.Block(x, y+1, z); bl.Is(Blocks.Snow) || bl.Is(Blocks.SnowLayer) {
+		return b.Set("snowy", true)
+	}
+	if b.Snowy {
+		return b.Set("snowy", false)
+	}
+	return b
+}
+
 func (g *blockGrass) ModelVariant() string {
 	return fmt.Sprintf("snowy=%t", g.Snowy)
 }
