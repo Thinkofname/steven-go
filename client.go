@@ -249,7 +249,7 @@ func (c *ClientState) updateSky() {
 	} else if time < 0 {
 		time = -time
 	}
-	render.SkyOffset = 1.0 - float32(time)*0.6
+	render.SkyOffset = 1.0 - float32(time)
 	timeO := 1.0 - float32(time)*0.9
 	render.ClearColour.R = (122.0 / 255.0) * timeO
 	render.ClearColour.G = (165.0 / 255.0) * timeO

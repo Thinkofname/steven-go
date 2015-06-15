@@ -28,6 +28,7 @@ const (
 	Texture2D            TextureTarget = gl.TEXTURE_2D
 	Texture2DMultisample TextureTarget = gl.TEXTURE_2D_MULTISAMPLE
 	Texture2DArray       TextureTarget = gl.TEXTURE_2D_ARRAY
+	Texture3D            TextureTarget = gl.TEXTURE_3D
 )
 
 // TextureFormat is the format of a texture either internally or
