@@ -125,6 +125,9 @@ func (t *Text) SetRotation(r float64) {
 
 // Update updates the string drawn by this drawable.
 func (t *Text) Update(val string) {
+	if t.value == val {
+		return
+	}
 	t.value = val
 	t.Width = render.SizeOfString(val)
 	t.dirty = true
