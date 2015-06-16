@@ -72,10 +72,7 @@ func precomputeModel(bm *model) *processedModel {
 	p := &processedModel{}
 	p.ambientOcclusion = bm.ambientOcclusion
 	p.weight = bm.weight
-	for ei := range bm.elements {
-		// Render the last element first so that
-		// grass's overlay works correctly.
-		el := bm.elements[len(bm.elements)-1-ei]
+	for _, el := range bm.elements {
 		for i, face := range el.faces {
 			faceID := direction.Type(i)
 			if face == nil {

@@ -17,11 +17,11 @@ package render
 import (
 	"math"
 	"os"
-	"strings"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/render/gl"
+	"github.com/thinkofdeath/steven/render/glsl"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
 )
@@ -72,11 +72,17 @@ func Start() {
 	gl.CullFace(gl.Back)
 	gl.FrontFace(gl.ClockWise)
 
-	chunkProgram = CreateProgram(vertex, fragment)
+	chunkProgram = CreateProgram(
+		glsl.Get("chunk_vertex"),
+		glsl.Get("chunk_frag"),
+	)
 	shaderChunk = &chunkShader{}
 	InitStruct(shaderChunk, chunkProgram)
 
-	chunkProgramT = CreateProgram(vertex, strings.Replace(fragment, "#version 150", "#version 150\n#define alpha", 1))
+	chunkProgramT = CreateProgram(
+		glsl.Get("chunk_vertex"),
+		glsl.Get("chunk_frag", "alpha"),
+	)
 	shaderChunkT = &chunkShader{}
 	InitStruct(shaderChunkT, chunkProgramT)
 

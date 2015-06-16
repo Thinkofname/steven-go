@@ -19,6 +19,7 @@ import (
 
 	"github.com/thinkofdeath/steven/native"
 	"github.com/thinkofdeath/steven/render/gl"
+	"github.com/thinkofdeath/steven/render/glsl"
 )
 
 const (
@@ -43,7 +44,7 @@ var (
 )
 
 func initUI() {
-	uiState.program = CreateProgram(vertexUI, fragmentUI)
+	uiState.program = CreateProgram(glsl.Get("ui_vertex"), glsl.Get("ui_frag"))
 	uiState.shader = &uiShader{}
 	InitStruct(uiState.shader, uiState.program)
 
@@ -96,7 +97,7 @@ func drawUI() {
 		gl.DrawElements(gl.Triangles, uiState.count, uiState.indexType, 0)
 	}
 	gl.Disable(gl.Blend)
-	gl.DepthFunc(gl.Less)
+	gl.DepthFunc(gl.LessOrEqual)
 	uiState.count = 0
 	uiState.data = uiState.data[:0]
 }

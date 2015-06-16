@@ -14,7 +14,10 @@
 
 package render
 
-import "github.com/thinkofdeath/steven/render/gl"
+import (
+	"github.com/thinkofdeath/steven/render/gl"
+	"github.com/thinkofdeath/steven/render/glsl"
+)
 
 type uiShader struct {
 	Position      gl.Attribute `gl:"aPosition"`
@@ -25,9 +28,8 @@ type uiShader struct {
 	ScreenSize    gl.Uniform   `gl:"screenSize"`
 }
 
-const (
-	vertexUI = `
-#version 150
+func init() {
+	glsl.Register("ui_vertex", `
 in ivec3 aPosition;
 in vec4 aTextureInfo;
 in ivec3 aTextureOffset;
@@ -48,12 +50,8 @@ void main() {
 	vTextureOffset = aTextureOffset.xy / 16.0;
 	vAtlas = aTextureOffset.z;
 }
-`
-	fragmentUI = `
-#version 150
-
-const float atlasSize = ` + atlasSizeStr + `;
-
+`)
+	glsl.Register("ui_frag", `
 uniform sampler2DArray textures;
 
 in vec4 vColor;
@@ -63,15 +61,13 @@ in float vAtlas;
 
 out vec4 fragColor;
 
+#include lookup_texture
+
 void main() {
-	vec2 tPos = floor(vTextureOffset);
-	tPos = mod(tPos, vTextureInfo.zw);
-	tPos += vTextureInfo.xy;
-	tPos /= atlasSize;
-	vec4 col = texture(textures, vec3(tPos, vAtlas));
+	vec4 col = atlasTexture();
 	col *= vColor;
 	if (col.a == 0.0) discard;
 	fragColor = col;
 }
-`
-)
+`)
+}

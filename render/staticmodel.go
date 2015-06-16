@@ -18,6 +18,7 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/render/gl"
+	"github.com/thinkofdeath/steven/render/glsl"
 )
 
 var staticState = struct {
@@ -169,7 +170,7 @@ func RefreshStaticModels() {
 }
 
 func initStatic() {
-	staticState.program = CreateProgram(staticVertex, staticFragment)
+	staticState.program = CreateProgram(glsl.Get("static_vertex"), glsl.Get("static_frag"))
 	staticState.shader = &staticShader{}
 	InitStruct(staticState.shader, staticState.program)
 
@@ -229,9 +230,8 @@ type staticShader struct {
 	ColorMul          gl.Uniform   `gl:"colorMul[]"`
 }
 
-const (
-	staticVertex = `
-#version 150
+func init() {
+	glsl.Register("static_vertex", `
 in vec3 aPosition;
 in vec4 aTextureInfo;
 in ivec3 aTextureOffset;
@@ -258,11 +258,8 @@ void main() {
 	vAtlas = aTextureOffset.z;
 	vID = float(id);
 }
-`
-	staticFragment = `
-#version 150
-
-const float atlasSize = ` + atlasSizeStr + `;
+`)
+	glsl.Register("static_frag", `
 
 uniform sampler2DArray textures;
 uniform vec4 colorMul[10];
@@ -275,15 +272,13 @@ in float vID;
 
 out vec4 fragColor;
 
+#include lookup_texture
+
 void main() {
-	vec2 tPos = vTextureOffset;
-	tPos = mod(tPos, vTextureInfo.zw);
-	tPos += vTextureInfo.xy;
-	tPos /= atlasSize;
-	vec4 col = texture(textures, vec3(tPos, vAtlas));
+	vec4 col = atlasTexture();
 	if (col.a <= 0.05) discard;
 	col *= vColor;
 	fragColor = col * colorMul[int(vID)];
 }
-`
-)
+`)
+}
