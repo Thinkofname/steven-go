@@ -19,8 +19,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/thinkofdeath/steven/chat"
-	"github.com/thinkofdeath/steven/ui"
+	"github.com/thinkofdeath/steven/format"
+	"github.com/thinkofdeath/steven/render/ui"
 )
 
 var memoryStats runtime.MemStats
@@ -106,23 +106,23 @@ func formatMemory(alloc uint64) string {
 	return fmt.Sprintf("%d%s", alloc, l)
 }
 
-var debugStateColors = [...]chat.Color{
-	cWhite:     chat.White,
-	cOrange:    chat.Gold,
-	cMagenta:   chat.LightPurple,
-	cLightBlue: chat.Aqua,
-	cYellow:    chat.Yellow,
-	cLime:      chat.Green,
-	cPink:      chat.Red,
-	cGray:      chat.Gray,
-	cSilver:    chat.DarkGray,
-	cCyan:      chat.DarkAqua,
-	cPurple:    chat.DarkPurple,
-	cBlue:      chat.Blue,
-	cBrown:     chat.Gold,
-	cGreen:     chat.DarkGreen,
-	cRed:       chat.DarkRed,
-	cBlack:     chat.Black,
+var debugStateColors = [...]format.Color{
+	cWhite:     format.White,
+	cOrange:    format.Gold,
+	cMagenta:   format.LightPurple,
+	cLightBlue: format.Aqua,
+	cYellow:    format.Yellow,
+	cLime:      format.Green,
+	cPink:      format.Red,
+	cGray:      format.Gray,
+	cSilver:    format.DarkGray,
+	cCyan:      format.DarkAqua,
+	cPurple:    format.DarkPurple,
+	cBlue:      format.Blue,
+	cBrown:     format.Gold,
+	cGreen:     format.DarkGreen,
+	cRed:       format.DarkRed,
+	cBlack:     format.Black,
 }
 
 func (c *ClientState) displayTargetInfo() {

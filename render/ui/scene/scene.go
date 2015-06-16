@@ -15,7 +15,7 @@
 // Package scene provides methods to manage multiple ui scenes.
 package scene
 
-import "github.com/thinkofdeath/steven/ui"
+import "github.com/thinkofdeath/steven/render/ui"
 
 // Type stores a scene that can be removed and shown at any time.
 type Type struct {

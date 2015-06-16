@@ -22,7 +22,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 )
 
 var (
@@ -31,7 +31,7 @@ var (
 
 	// For the possible option of scrolling in the
 	// future
-	historyBuffer [200]chat.AnyComponent
+	historyBuffer [200]format.AnyComponent
 	lock          sync.Mutex
 
 	defaultRegistry registry
@@ -50,7 +50,7 @@ func checkInit() {
 
 // Text appends the passed formatted string plus a new line to
 // the log buffer. The formatting uses the same rules as fmt.
-func Text(format string, args ...interface{}) {
+func Text(f string, args ...interface{}) {
 	_, file, line, ok := runtime.Caller(1)
 	if !ok {
 		file = "unknown"
@@ -58,23 +58,23 @@ func Text(format string, args ...interface{}) {
 	}
 	file = file[strings.LastIndex(file, "/")+1:]
 
-	msg := &chat.TextComponent{
+	msg := &format.TextComponent{
 		Text: fmt.Sprintf("[%s:%d] ", file, line),
-		Component: chat.Component{
-			Color: chat.Aqua,
+		Component: format.Component{
+			Color: format.Aqua,
 		},
 	}
-	msg.Extra = append(msg.Extra, chat.Wrap(&chat.TextComponent{
-		Text: fmt.Sprintf(format, args...),
-		Component: chat.Component{
-			Color: chat.White,
+	msg.Extra = append(msg.Extra, format.Wrap(&format.TextComponent{
+		Text: fmt.Sprintf(f, args...),
+		Component: format.Component{
+			Color: format.White,
 		},
 	}))
-	Component(chat.Wrap(msg))
+	Component(format.Wrap(msg))
 }
 
 // Component appends the component to the log buffer.
-func Component(c chat.AnyComponent) {
+func Component(c format.AnyComponent) {
 	lock.Lock()
 	defer lock.Unlock()
 	checkInit()
@@ -87,7 +87,7 @@ func Component(c chat.AnyComponent) {
 // buffer.
 //
 // As a special case -1 will return the whole buffer.
-func History(lines int) []chat.AnyComponent {
+func History(lines int) []format.AnyComponent {
 	lock.Lock()
 	defer lock.Unlock()
 	if lines == -1 || lines > len(historyBuffer) {

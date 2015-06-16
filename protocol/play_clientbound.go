@@ -17,8 +17,8 @@
 package protocol
 
 import (
-	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/encoding/nbt"
+	"github.com/thinkofdeath/steven/format"
 )
 
 // KeepAliveClientbound is sent by a server to check if the
@@ -59,7 +59,7 @@ type JoinGame struct {
 //
 // Currently the packet id is: 0x02
 type ServerMessage struct {
-	Message chat.AnyComponent `as:"json"`
+	Message format.AnyComponent `as:"json"`
 	// 0 - Chat message, 1 - System message, 2 - Action bar message
 	Type byte
 }
@@ -528,7 +528,7 @@ type SpawnGlobalEntity struct {
 type WindowOpen struct {
 	ID        byte
 	Type      string
-	Title     chat.AnyComponent `as:"json"`
+	Title     format.AnyComponent `as:"json"`
 	SlotCount byte
 	EntityID  int32 `if:".Type == \"EntityHorse\""`
 }
@@ -583,10 +583,10 @@ type ConfirmTransaction struct {
 // Currently the packet id is: 0x33
 type UpdateSign struct {
 	Location Position
-	Line1    chat.AnyComponent `as:"json"`
-	Line2    chat.AnyComponent `as:"json"`
-	Line3    chat.AnyComponent `as:"json"`
-	Line4    chat.AnyComponent `as:"json"`
+	Line1    format.AnyComponent `as:"json"`
+	Line2    format.AnyComponent `as:"json"`
+	Line3    format.AnyComponent `as:"json"`
+	Line4    format.AnyComponent `as:"json"`
 }
 
 // Maps updates a single map's contents
@@ -651,13 +651,13 @@ type PlayerInfo struct {
 
 // PlayerDetail is used by PlayerInfo
 type PlayerDetail struct {
-	UUID        UUID              `as:"raw"`
-	Name        string            `if:"..Action==0"`
-	Properties  []PlayerProperty  `length:"VarInt" if:"..Action==0"`
-	GameMode    VarInt            `if:"..Action==0 ..Action == 1"`
-	Ping        VarInt            `if:"..Action==0 ..Action == 2"`
-	HasDisplay  bool              `if:"..Action==0 ..Action == 3"`
-	DisplayName chat.AnyComponent `as:"json" if:".HasDisplay==true"`
+	UUID        UUID                `as:"raw"`
+	Name        string              `if:"..Action==0"`
+	Properties  []PlayerProperty    `length:"VarInt" if:"..Action==0"`
+	GameMode    VarInt              `if:"..Action==0 ..Action == 1"`
+	Ping        VarInt              `if:"..Action==0 ..Action == 2"`
+	HasDisplay  bool                `if:"..Action==0 ..Action == 3"`
+	DisplayName format.AnyComponent `as:"json" if:".HasDisplay==true"`
 }
 
 // PlayerProperty is used by PlayerDetail
@@ -745,7 +745,7 @@ type PluginMessageClientbound struct {
 //
 // Currently the packet id is: 0x40
 type Disconnect struct {
-	Reason chat.AnyComponent `as:"json"`
+	Reason format.AnyComponent `as:"json"`
 }
 
 // ServerDifficulty changes the displayed difficulty in the client's menu
@@ -795,11 +795,11 @@ type WorldBorder struct {
 // Currently the packet id is: 0x45
 type Title struct {
 	Action   VarInt
-	Title    chat.AnyComponent `as:"json" if:".Action == 0"`
-	SubTitle chat.AnyComponent `as:"json" if:".Action == 1"`
-	FadeIn   int32             `if:".Action == 2"`
-	FadeStay int32             `if:".Action == 2"`
-	FadeOut  int32             `if:".Action == 2"`
+	Title    format.AnyComponent `as:"json" if:".Action == 0"`
+	SubTitle format.AnyComponent `as:"json" if:".Action == 1"`
+	FadeIn   int32               `if:".Action == 2"`
+	FadeStay int32               `if:".Action == 2"`
+	FadeOut  int32               `if:".Action == 2"`
 }
 
 // SetCompression updates the compression threshold.
@@ -813,8 +813,8 @@ type SetCompression struct {
 //
 // Currently the packet id is: 0x47
 type PlayerListHeaderFooter struct {
-	Header chat.AnyComponent `as:"json"`
-	Footer chat.AnyComponent `as:"json"`
+	Header format.AnyComponent `as:"json"`
+	Footer format.AnyComponent `as:"json"`
 }
 
 // ResourcePackSend causes the client to check its cache for the requested

@@ -17,7 +17,7 @@ package ui
 import (
 	"fmt"
 
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/render"
 	"github.com/thinkofdeath/steven/resource/locale"
 )
@@ -25,7 +25,7 @@ import (
 // Formatted is a drawable that draws a string.
 type Formatted struct {
 	baseElement
-	value          chat.AnyComponent
+	value          format.AnyComponent
 	x, y           float64
 	MaxWidth       float64
 	scaleX, scaleY float64
@@ -37,7 +37,7 @@ type Formatted struct {
 }
 
 // NewFormatted creates a new Formatted drawable.
-func NewFormatted(val chat.AnyComponent, x, y float64) *Formatted {
+func NewFormatted(val format.AnyComponent, x, y float64) *Formatted {
 	f := &Formatted{
 		x: x, y: y,
 		scaleX: 1, scaleY: 1,
@@ -52,7 +52,7 @@ func NewFormatted(val chat.AnyComponent, x, y float64) *Formatted {
 }
 
 // NewFormattedWidth creates a new Formatted drawable with a max width.
-func NewFormattedWidth(val chat.AnyComponent, x, y, width float64) *Formatted {
+func NewFormattedWidth(val format.AnyComponent, x, y, width float64) *Formatted {
 	f := &Formatted{
 		x: x, y: y,
 		scaleX: 1, scaleY: 1,
@@ -136,13 +136,13 @@ func (f *Formatted) Remove() {
 }
 
 // Update updates the component drawn by this drawable.
-func (f *Formatted) Update(val chat.AnyComponent) {
+func (f *Formatted) Update(val format.AnyComponent) {
 	f.value = val
 	f.Text = f.Text[:0]
 	state := formatState{
 		f: f,
 	}
-	state.build(val, func() chat.Color { return chat.White })
+	state.build(val, func() format.Color { return format.White })
 	f.Height = float64(state.lines+1) * 18
 	f.Width = state.width
 	f.Lines = state.lines + 1
@@ -174,15 +174,15 @@ type formatState struct {
 	width  float64
 }
 
-func (f *formatState) build(c chat.AnyComponent, color getColorFunc) {
+func (f *formatState) build(c format.AnyComponent, color getColorFunc) {
 	switch c := c.Value.(type) {
-	case *chat.TextComponent:
+	case *format.TextComponent:
 		gc := getColor(&c.Component, color)
 		f.appendText(c.Text, gc)
 		for _, e := range c.Extra {
 			f.build(e, gc)
 		}
-	case *chat.TranslateComponent:
+	case *format.TranslateComponent:
 		gc := getColor(&c.Component, color)
 		for _, part := range locale.Get(c.Translate) {
 			switch part := part.(type) {
@@ -236,53 +236,53 @@ func (f *formatState) appendText(text string, color getColorFunc) {
 	}
 }
 
-type getColorFunc func() chat.Color
+type getColorFunc func() format.Color
 
-func getColor(c *chat.Component, parent getColorFunc) getColorFunc {
-	return func() chat.Color {
+func getColor(c *format.Component, parent getColorFunc) getColorFunc {
+	return func() format.Color {
 		if c.Color != "" {
 			return c.Color
 		}
 		if parent != nil {
 			return parent()
 		}
-		return chat.White
+		return format.White
 	}
 }
 
-func colorRGB(c chat.Color) (r, g, b int) {
+func colorRGB(c format.Color) (r, g, b int) {
 	switch c {
-	case chat.Black:
+	case format.Black:
 		return 0, 0, 0
-	case chat.DarkBlue:
+	case format.DarkBlue:
 		return 0, 0, 170
-	case chat.DarkGreen:
+	case format.DarkGreen:
 		return 0, 170, 0
-	case chat.DarkAqua:
+	case format.DarkAqua:
 		return 0, 170, 170
-	case chat.DarkRed:
+	case format.DarkRed:
 		return 170, 0, 0
-	case chat.DarkPurple:
+	case format.DarkPurple:
 		return 170, 0, 170
-	case chat.Gold:
+	case format.Gold:
 		return 255, 170, 0
-	case chat.Gray:
+	case format.Gray:
 		return 170, 170, 170
-	case chat.DarkGray:
+	case format.DarkGray:
 		return 85, 85, 85
-	case chat.Blue:
+	case format.Blue:
 		return 85, 85, 255
-	case chat.Green:
+	case format.Green:
 		return 85, 255, 85
-	case chat.Aqua:
+	case format.Aqua:
 		return 85, 255, 255
-	case chat.Red:
+	case format.Red:
 		return 255, 85, 85
-	case chat.LightPurple:
+	case format.LightPurple:
 		return 255, 85, 255
-	case chat.Yellow:
+	case format.Yellow:
 		return 255, 255, 85
-	case chat.White:
+	case format.White:
 		return 255, 255, 255
 	}
 	return 255, 255, 255

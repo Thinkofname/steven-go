@@ -23,8 +23,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/console"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
 )
@@ -236,7 +236,7 @@ func (handler) SignUpdate(p *protocol.UpdateSign) {
 	if !ok {
 		return
 	}
-	s.Update([4]chat.AnyComponent{
+	s.Update([4]format.AnyComponent{
 		p.Line1,
 		p.Line2,
 		p.Line3,

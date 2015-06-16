@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 )
 
 // StatusReply is the reply retrieved from a server when pinging
@@ -33,8 +33,8 @@ type StatusReply struct {
 		Online int            `json:"online"`
 		Sample []StatusPlayer `json:"sample,omitempty"`
 	} `json:"players"`
-	Description chat.AnyComponent `json:"description"`
-	Favicon     string            `json:"favicon"`
+	Description format.AnyComponent `json:"description"`
+	Favicon     string              `json:"favicon"`
 }
 
 // StatusPlayer is one of the sample players in a StatusReply

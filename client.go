@@ -21,13 +21,13 @@ import (
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/ui"
+	"github.com/thinkofdeath/steven/render/ui/scene"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
 )
 
 const (
@@ -199,7 +199,7 @@ func newClient() {
 			Attach(ui.Bottom, ui.Center),
 	)
 
-	c.itemNameUI = ui.NewFormatted(chat.Wrap(&chat.TextComponent{}), 0, -16-8-10-16)
+	c.itemNameUI = ui.NewFormatted(format.Wrap(&format.TextComponent{}), 0, -16-8-10-16)
 	c.itemNameUI.AttachTo(c.hotbar)
 	c.scene.AddDrawable(c.itemNameUI.Attach(ui.Top, ui.Middle))
 
@@ -418,17 +418,17 @@ func (c *ClientState) tickItemName() {
 		c.lastHotbarItem = item
 		c.entity.SetCurrentItem(item)
 		if item != nil {
-			var name chat.AnyComponent
+			var name format.AnyComponent
 			if di, ok := item.Type.(DisplayTag); ok && di.DisplayName() != "" {
-				name = chat.Wrap(&chat.TextComponent{Text: di.DisplayName()})
-				chat.ConvertLegacy(name)
+				name = format.Wrap(&format.TextComponent{Text: di.DisplayName()})
+				format.ConvertLegacy(name)
 			} else {
-				name = chat.Wrap(&chat.TranslateComponent{Translate: item.Type.NameLocaleKey()})
+				name = format.Wrap(&format.TranslateComponent{Translate: item.Type.NameLocaleKey()})
 			}
 			c.itemNameUI.Update(name)
 			c.itemNameTimer = 120
 		} else {
-			c.itemNameUI.Update(chat.Wrap(&chat.TextComponent{}))
+			c.itemNameUI.Update(format.Wrap(&format.TextComponent{}))
 			c.itemNameTimer = 0
 		}
 	}

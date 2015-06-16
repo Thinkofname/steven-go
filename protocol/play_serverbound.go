@@ -17,7 +17,7 @@
 package protocol
 
 import (
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 )
 
 // KeepAliveServerbound is sent by a client as a response to a
@@ -186,10 +186,10 @@ type EnchantItem struct {
 // Currently the packet id is: 0x12
 type SetSign struct {
 	Location Position
-	Line1    chat.AnyComponent `as:"json"`
-	Line2    chat.AnyComponent `as:"json"`
-	Line3    chat.AnyComponent `as:"json"`
-	Line4    chat.AnyComponent `as:"json"`
+	Line1    format.AnyComponent `as:"json"`
+	Line2    format.AnyComponent `as:"json"`
+	Line3    format.AnyComponent `as:"json"`
+	Line4    format.AnyComponent `as:"json"`
 }
 
 // ClientAbilities is used to modify the players current abilities.

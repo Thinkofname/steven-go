@@ -16,16 +16,16 @@ package steven
 
 import (
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/ui"
 	"github.com/thinkofdeath/steven/type/direction"
-	"github.com/thinkofdeath/steven/ui"
 )
 
 type signComponent struct {
 	model *render.StaticModel
 
-	lines    [4]chat.AnyComponent
+	lines    [4]format.AnyComponent
 	position Position
 
 	ox, oy, oz float64
@@ -34,14 +34,14 @@ type signComponent struct {
 }
 
 type SignComponent interface {
-	Update(lines [4]chat.AnyComponent)
+	Update(lines [4]format.AnyComponent)
 }
 
 func (s *signComponent) Model() *render.StaticModel {
 	return s.model
 }
 
-func (s *signComponent) Update(lines [4]chat.AnyComponent) {
+func (s *signComponent) Update(lines [4]format.AnyComponent) {
 	s.free()
 	s.lines = lines
 	s.create()
@@ -62,15 +62,15 @@ func (s *signComponent) create() {
 		if line.Value == nil {
 			continue
 		}
-		chat.ConvertLegacy(line)
+		format.ConvertLegacy(line)
 		// Hijack ui.Formatted's component parsing to split
 		// up components into ui.Text elements.
 		// TODO(Think) Move this into some common place for
 		// easier reuse in other places?
-		wrap := &chat.TextComponent{}
-		wrap.Color = chat.Black
-		wrap.Extra = []chat.AnyComponent{line}
-		f := ui.NewFormatted(chat.Wrap(wrap), 0, 0)
+		wrap := &format.TextComponent{}
+		wrap.Color = format.Black
+		wrap.Extra = []format.AnyComponent{line}
+		f := ui.NewFormatted(format.Wrap(wrap), 0, 0)
 		offset := 0.0
 		for _, txt := range f.Text {
 			str := txt.Value()

@@ -17,7 +17,7 @@
 package protocol
 
 import (
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 )
 
 // LoginDisconnect is sent by the server if there was any issues
@@ -26,7 +26,7 @@ import (
 //
 // Currently the packet id is: 0x00
 type LoginDisconnect struct {
-	Reason chat.AnyComponent `as:"json"`
+	Reason format.AnyComponent `as:"json"`
 }
 
 // EncryptionRequest is sent by the server if the server is in

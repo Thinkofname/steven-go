@@ -17,11 +17,11 @@ package steven
 import (
 	"sort"
 
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
+	"github.com/thinkofdeath/steven/render/ui"
+	"github.com/thinkofdeath/steven/render/ui/scene"
 )
 
 const playerListWidth = 150
@@ -29,7 +29,7 @@ const playerListWidth = 150
 type playerInfo struct {
 	name        string
 	uuid        protocol.UUID
-	displayName chat.AnyComponent
+	displayName format.AnyComponent
 	gameMode    gameMode
 	ping        int
 

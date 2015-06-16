@@ -18,10 +18,10 @@ import (
 	"math"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/ui"
+	"github.com/thinkofdeath/steven/render/ui"
 )
 
 const (
@@ -30,7 +30,7 @@ const (
 )
 
 type ChatUI struct {
-	Lines [chatHistoryLines]chat.AnyComponent
+	Lines [chatHistoryLines]format.AnyComponent
 
 	container       *ui.Container
 	parts           []*chatLine
@@ -159,47 +159,47 @@ func (c *ChatUI) handleChar(w *glfw.Window, char rune) {
 	}
 }
 
-func chatColorRGB(c chat.Color) (r, g, b int) {
+func chatColorRGB(c format.Color) (r, g, b int) {
 	switch c {
-	case chat.Black:
+	case format.Black:
 		return 0, 0, 0
-	case chat.DarkBlue:
+	case format.DarkBlue:
 		return 0, 0, 170
-	case chat.DarkGreen:
+	case format.DarkGreen:
 		return 0, 170, 0
-	case chat.DarkAqua:
+	case format.DarkAqua:
 		return 0, 170, 170
-	case chat.DarkRed:
+	case format.DarkRed:
 		return 170, 0, 0
-	case chat.DarkPurple:
+	case format.DarkPurple:
 		return 170, 0, 170
-	case chat.Gold:
+	case format.Gold:
 		return 255, 170, 0
-	case chat.Gray:
+	case format.Gray:
 		return 170, 170, 170
-	case chat.DarkGray:
+	case format.DarkGray:
 		return 85, 85, 85
-	case chat.Blue:
+	case format.Blue:
 		return 85, 85, 255
-	case chat.Green:
+	case format.Green:
 		return 85, 255, 85
-	case chat.Aqua:
+	case format.Aqua:
 		return 85, 255, 255
-	case chat.Red:
+	case format.Red:
 		return 255, 85, 85
-	case chat.LightPurple:
+	case format.LightPurple:
 		return 255, 85, 255
-	case chat.Yellow:
+	case format.Yellow:
 		return 255, 255, 85
-	case chat.White:
+	case format.White:
 		return 255, 255, 255
 
 	}
 	return 255, 255, 255
 }
 
-func (c *ChatUI) Add(msg chat.AnyComponent) {
-	chat.ConvertLegacy(msg)
+func (c *ChatUI) Add(msg format.AnyComponent) {
+	format.ConvertLegacy(msg)
 	copy(c.Lines[0:chatHistoryLines-1], c.Lines[1:])
 	c.Lines[chatHistoryLines-1] = msg
 	f := ui.NewFormattedWidth(msg, 5, chatHistoryLines*18+1, maxLineWidth-10).Attach(ui.Top, ui.Left)

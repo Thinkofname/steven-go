@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 )
 
 var (
@@ -72,10 +72,10 @@ func (c *cvar) String() string {
 
 func (c *cvar) printDoc() {
 	for _, line := range strings.Split(c.documentation, "\n") {
-		Component(chat.Build("# ").
-			Color(chat.DarkGray).
+		Component(format.Build("# ").
+			Color(format.DarkGray).
 			Append(line).
-			Color(chat.Gray).
+			Color(format.Gray).
 			Create())
 	}
 }
@@ -143,11 +143,11 @@ func (i *IntVar) SetValue(v int) {
 }
 
 func (i *IntVar) print() {
-	Component(chat.Build(i.name).
-		Color(chat.Aqua).
+	Component(format.Build(i.name).
+		Color(format.Aqua).
 		Append(" ").
 		Append(fmt.Sprint(i.value)).
-		Color(chat.Aqua).
+		Color(format.Aqua).
 		Create(),
 	)
 }
@@ -215,13 +215,13 @@ func (s *StringVar) SetValue(v string) {
 }
 
 func (s *StringVar) print() {
-	Component(chat.Build(s.name).
-		Color(chat.Aqua).
+	Component(format.Build(s.name).
+		Color(format.Aqua).
 		Append(" ").
-		Append("\"").Color(chat.Yellow).
+		Append("\"").Color(format.Yellow).
 		Append(s.value).
-		Color(chat.Aqua).
-		Append("\"").Color(chat.Yellow).
+		Color(format.Aqua).
+		Append("\"").Color(format.Yellow).
 		Create(),
 	)
 }
@@ -289,12 +289,12 @@ func (b *BoolVar) SetValue(v bool) {
 }
 
 func (b *BoolVar) print() {
-	col := chat.Red
+	col := format.Red
 	if b.value {
-		col = chat.Green
+		col = format.Green
 	}
-	Component(chat.Build(b.name).
-		Color(chat.Aqua).
+	Component(format.Build(b.name).
+		Color(format.Aqua).
 		Append(" ").
 		Append(fmt.Sprint(b.value)).
 		Color(col).

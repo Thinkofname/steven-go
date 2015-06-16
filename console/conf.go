@@ -21,7 +21,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 )
 
 // ExecConf executes/loads the passed config file
@@ -38,7 +38,7 @@ func ExecConf(path string) {
 	}()
 	f, err := os.Open(path)
 	if err != nil {
-		Component(chat.Build("Failed to open ").
+		Component(format.Build("Failed to open ").
 			Append(path).
 			Append(": ").
 			Append(err.Error()).
@@ -54,7 +54,7 @@ func ExecConf(path string) {
 			continue
 		}
 		if err := Execute(txt); err != nil {
-			Component(chat.Build("Error: " + err.Error()).Color(chat.Red).Create())
+			Component(format.Build("Error: " + err.Error()).Color(format.Red).Create())
 		}
 	}
 }

@@ -26,11 +26,11 @@ import (
 	"strings"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/ui"
+	"github.com/thinkofdeath/steven/render/ui/scene"
 	"github.com/thinkofdeath/steven/resource"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
 )
 
 type resourceList struct {
@@ -171,8 +171,8 @@ func (rl *resourceList) redraw() {
 		icon.AttachTo(container)
 		sc.AddDrawable(icon)
 
-		msg := chat.Wrap(&chat.TextComponent{Text: desc})
-		chat.ConvertLegacy(msg)
+		msg := format.Wrap(&format.TextComponent{Text: desc})
+		format.ConvertLegacy(msg)
 		motd := ui.NewFormattedWidth(msg, 90+10, 5+18, 700-(90+10+5)).Attach(ui.Top, ui.Left)
 		motd.AttachTo(container)
 		sc.AddDrawable(motd)

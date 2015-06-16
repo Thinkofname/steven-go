@@ -21,12 +21,12 @@ import (
 	"time"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/console"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/ui"
 	"github.com/thinkofdeath/steven/resource"
-	"github.com/thinkofdeath/steven/ui"
 )
 
 var (
@@ -164,8 +164,8 @@ handle:
 			// sent.
 			ready = false
 			if err != errManualDisconnect && disconnectReason.Value == nil {
-				txt := &chat.TextComponent{Text: err.Error()}
-				txt.Color = chat.Red
+				txt := &format.TextComponent{Text: err.Error()}
+				txt.Color = format.Red
 				disconnectReason.Value = txt
 			}
 

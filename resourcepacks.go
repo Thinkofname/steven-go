@@ -21,9 +21,9 @@ import (
 
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/ui"
 	"github.com/thinkofdeath/steven/resource"
 	"github.com/thinkofdeath/steven/resource/locale"
-	"github.com/thinkofdeath/steven/ui"
 )
 
 var resourcePacks = console.NewStringVar("cl_resource_packs", "", console.Serializable).Doc(`

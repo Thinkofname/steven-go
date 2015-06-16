@@ -16,11 +16,11 @@ package steven
 
 import (
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/thinkofdeath/steven/chat"
 	"github.com/thinkofdeath/steven/console"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
+	"github.com/thinkofdeath/steven/render/ui"
+	"github.com/thinkofdeath/steven/render/ui/scene"
 )
 
 var con consoleScreen
@@ -32,7 +32,7 @@ type consoleScreen struct {
 	background *ui.Image
 	inputText  *ui.Text
 
-	lastLine  chat.AnyComponent
+	lastLine  format.AnyComponent
 	lastWidth float64
 
 	lines []*ui.Formatted
@@ -83,22 +83,22 @@ func (cs *consoleScreen) onKey(w *glfw.Window, key glfw.Key, scancode int, actio
 		}
 	}
 	if key == glfw.KeyEnter && action == glfw.Release {
-		console.Component(chat.
+		console.Component(format.
 			Build("> ").
-			Color(chat.Yellow).
+			Color(format.Yellow).
 			Append(cs.input).
 			Create(),
 		)
 		err := console.Execute(cs.input)
 		cs.input = ""
 		if err != nil {
-			console.Component(chat.
+			console.Component(format.
 				Build("Error").
-				Color(chat.Red).
+				Color(format.Red).
 				Append(": ").
-				Color(chat.Yellow).
+				Color(format.Yellow).
 				Append(err.Error()).
-				Color(chat.Red).
+				Color(format.Red).
 				Create(),
 			)
 		}

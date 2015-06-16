@@ -12,31 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package chat
+package format
 
 import (
-	"bytes"
-	"fmt"
+	"encoding/json"
+	"reflect"
+	"strings"
 )
 
-// String provides a string version of the component without
-// formatting.
-func (a AnyComponent) String() string {
-	return fmt.Sprint(a.Value)
-}
+func mapStruct(val interface{}, m map[string]json.RawMessage) error {
+	v := reflect.ValueOf(val).Elem()
+	t := v.Type()
 
-// String provides a string version of the component without
-// formatting.
-func (c *Component) String() string {
-	var buf bytes.Buffer
-	for _, e := range c.Extra {
-		fmt.Fprint(&buf, e)
+	for i := 0; i < t.NumField(); i++ {
+		f := t.Field(i)
+		if f.Type.Kind() == reflect.Struct {
+			mapStruct(v.Field(i).Addr().Interface(), m)
+			continue
+		}
+		name := f.Tag.Get("json")
+		if name == "" {
+			name = f.Name
+		}
+		if strings.ContainsRune(name, ',') {
+			name = name[:strings.IndexRune(name, ',')]
+		}
+		mv, ok := m[name]
+		if !ok {
+			continue
+		}
+		json.Unmarshal([]byte(mv), v.Field(i).Addr().Interface())
 	}
-	return buf.String()
-}
-
-// String provides a string version of the component without
-// formatting.
-func (t *TextComponent) String() string {
-	return t.Text + t.Component.String()
+	return nil
 }

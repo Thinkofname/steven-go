@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package chat
+package format
 
 // Builder allows for easy creation of simple messages.
 type Builder struct {

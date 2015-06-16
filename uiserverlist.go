@@ -25,15 +25,15 @@ import (
 	"strings"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/thinkofdeath/steven/chat"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
+	"github.com/thinkofdeath/steven/render/ui"
+	"github.com/thinkofdeath/steven/render/ui/scene"
 )
 
 var (
-	disconnectReason    chat.AnyComponent
+	disconnectReason    format.AnyComponent
 	errManualDisconnect = errors.New("manual disconnect")
 )
 
@@ -173,8 +173,8 @@ func (sl *serverList) redraw() {
 		players.AttachTo(container)
 		sc.AddDrawable(players)
 
-		msg := &chat.TextComponent{Text: "Connecting..."}
-		motd := ui.NewFormattedWidth(chat.Wrap(msg), 90+10, 5+18, 700-(90+10+5)).Attach(ui.Top, ui.Left)
+		msg := &format.TextComponent{Text: "Connecting..."}
+		motd := ui.NewFormattedWidth(format.Wrap(msg), 90+10, 5+18, 700-(90+10+5)).Attach(ui.Top, ui.Left)
 		motd.AttachTo(container)
 		sc.AddDrawable(motd)
 		s := s
@@ -217,9 +217,9 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 	conn, err := protocol.Dial(addr)
 	if err != nil {
 		syncChan <- func() {
-			msg := &chat.TextComponent{Text: err.Error()}
-			msg.Color = chat.Red
-			motd.Update(chat.Wrap(msg))
+			msg := &format.TextComponent{Text: err.Error()}
+			msg.Color = format.Red
+			motd.Update(format.Wrap(msg))
 		}
 		return
 	}
@@ -227,9 +227,9 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 	resp, pingTime, err := conn.RequestStatus()
 	syncChan <- func() {
 		if err != nil {
-			msg := &chat.TextComponent{Text: err.Error()}
-			msg.Color = chat.Red
-			motd.Update(chat.Wrap(msg))
+			msg := &format.TextComponent{Text: err.Error()}
+			msg.Color = format.Red
+			motd.Update(format.Wrap(msg))
 			return
 		}
 		y := 0.0
@@ -253,7 +253,7 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 		players.Update(fmt.Sprintf("%d/%d", resp.Players.Online, resp.Players.Max))
 
 		desc := resp.Description
-		chat.ConvertLegacy(desc)
+		format.ConvertLegacy(desc)
 		motd.Update(desc)
 
 		if strings.HasPrefix(resp.Favicon, "data:image/png;base64,") {

@@ -40,7 +40,6 @@ type ChunkBuffer struct {
 	count       int
 	arrayT      gl.VertexArray
 	bufferT     gl.Buffer
-	bufferTI    gl.Buffer
 	bufferTSize int
 	countT      int
 	cullBits    uint64
@@ -197,7 +196,6 @@ func (cb *ChunkBuffer) UploadTrans(data []byte, indices int) {
 		if cb.arrayT.IsValid() {
 			cb.arrayT.Delete()
 			cb.bufferT.Delete()
-			cb.bufferTI.Delete()
 		}
 		return
 	}
@@ -205,7 +203,6 @@ func (cb *ChunkBuffer) UploadTrans(data []byte, indices int) {
 	if !cb.arrayT.IsValid() {
 		cb.arrayT = gl.CreateVertexArray()
 		cb.bufferT = gl.CreateBuffer()
-		cb.bufferTI = gl.CreateBuffer()
 		n = true
 	}
 
