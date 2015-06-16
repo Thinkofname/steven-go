@@ -24,6 +24,9 @@ import (
 
 var shaders = map[string]string{}
 
+// Register adds the named shader to the database.
+// Once included they may be obtained from Get or
+// used within other shaders via #include
 func Register(name, source string) {
 	_, ok := shaders[name]
 	if ok {
@@ -32,6 +35,11 @@ func Register(name, source string) {
 	shaders[name] = strings.TrimSpace(source)
 }
 
+// Get returns the named shader optionally adding
+// the passed defines. The output from this will be
+// processed finding and expanding #include statements.
+// This also adds debugging information to the shaders
+// (line number and name).
 func Get(name string, defines ...string) string {
 	var out bytes.Buffer
 	out.WriteString("#version 150\n")
