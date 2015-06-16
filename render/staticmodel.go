@@ -21,14 +21,22 @@ import (
 	"github.com/thinkofdeath/steven/render/glsl"
 )
 
+// Really static is a bad name for this but i'm
+// too lazy to think of a better one
+
 var staticState = struct {
-	program     gl.Program
-	shader      *staticShader
-	models      []*StaticModel
-	indexBuffer gl.Buffer
-	indexType   gl.Type
-	maxIndex    int
+	models         []*staticCollection
+	baseCollection *staticCollection
+	indexBuffer    gl.Buffer
+	indexType      gl.Type
+	maxIndex       int
 }{}
+
+type staticCollection struct {
+	program gl.Program
+	shader  *staticShader
+	models  []*StaticModel
+}
 
 type StaticVertex struct {
 	X, Y, Z            float32
@@ -65,26 +73,34 @@ type StaticModel struct {
 	offsets []uintptr
 
 	all []*StaticVertex
+
+	c *staticCollection
 }
 
 func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
-	model := &StaticModel{}
+	return newStaticModel(parts, staticState.baseCollection)
+}
+
+func newStaticModel(parts [][]*StaticVertex, c *staticCollection) *StaticModel {
+	model := &StaticModel{
+		c: c,
+	}
 
 	model.array = gl.CreateVertexArray()
 	model.array.Bind()
 	staticState.indexBuffer.Bind(gl.ElementArrayBuffer)
 	model.buffer = gl.CreateBuffer()
 	model.buffer.Bind(gl.ArrayBuffer)
-	staticState.shader.Position.Enable()
-	staticState.shader.TextureInfo.Enable()
-	staticState.shader.TextureOffset.Enable()
-	staticState.shader.Color.Enable()
-	staticState.shader.ID.Enable()
-	staticState.shader.Position.Pointer(3, gl.Float, false, 36, 0)
-	staticState.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 36, 12)
-	staticState.shader.TextureOffset.PointerInt(3, gl.Short, 36, 20)
-	staticState.shader.Color.Pointer(4, gl.UnsignedByte, true, 36, 28)
-	staticState.shader.ID.PointerInt(4, gl.UnsignedByte, 36, 32)
+	c.shader.Position.Enable()
+	c.shader.TextureInfo.Enable()
+	c.shader.TextureOffset.Enable()
+	c.shader.Color.Enable()
+	c.shader.ID.Enable()
+	c.shader.Position.Pointer(3, gl.Float, false, 36, 0)
+	c.shader.TextureInfo.Pointer(4, gl.UnsignedShort, false, 36, 12)
+	c.shader.TextureOffset.PointerInt(3, gl.Short, 36, 20)
+	c.shader.Color.Pointer(4, gl.UnsignedByte, true, 36, 28)
+	c.shader.ID.PointerInt(4, gl.UnsignedByte, 36, 32)
 
 	model.Matrix = make([]mgl32.Mat4, len(parts))
 	model.Colors = make([][4]float32, len(parts))
@@ -104,7 +120,7 @@ func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
 	model.all = all
 	model.data()
 
-	staticState.models = append(staticState.models, model)
+	c.models = append(c.models, model)
 	return model
 }
 
@@ -155,24 +171,31 @@ func (sm *StaticModel) data() {
 func (sm *StaticModel) Free() {
 	sm.array.Delete()
 	sm.buffer.Delete()
-	for i, s := range staticState.models {
+	c := sm.c
+	for i, s := range c.models {
 		if s == sm {
-			staticState.models = append(staticState.models[:i], staticState.models[i+1:]...)
+			c.models = append(c.models[:i], c.models[i+1:]...)
 			return
 		}
 	}
 }
 
 func RefreshStaticModels() {
-	for _, mdl := range staticState.models {
-		mdl.data()
+	for _, c := range staticState.models {
+		for _, mdl := range c.models {
+			mdl.data()
+		}
 	}
 }
 
 func initStatic() {
-	staticState.program = CreateProgram(glsl.Get("static_vertex"), glsl.Get("static_frag"))
-	staticState.shader = &staticShader{}
-	InitStruct(staticState.shader, staticState.program)
+	c := &staticCollection{}
+	c.program = CreateProgram(glsl.Get("static_vertex"), glsl.Get("static_frag"))
+	c.shader = &staticShader{}
+	InitStruct(c.shader, c.program)
+
+	staticState.baseCollection = c
+	staticState.models = append(staticState.models, c)
 
 	staticState.indexBuffer = gl.CreateBuffer()
 }
@@ -187,30 +210,32 @@ func drawStatic() {
 	}
 
 	gl.Enable(gl.Blend)
-	staticState.program.Use()
-	staticState.shader.Texture.Int(0)
-	staticState.shader.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
-	staticState.shader.CameraMatrix.Matrix4(&cameraMatrix)
 
 	offsetBuf := make([]uintptr, 10)
 
-	for _, mdl := range staticState.models {
-		if mdl.Radius != 0 && !frustum.IsSphereInside(mdl.X, mdl.Y, mdl.Z, mdl.Radius) {
-			continue
-		}
-		mdl.array.Bind()
-		if len(mdl.counts) > 1 {
-			copy(offsetBuf, mdl.offsets)
-			for i := range mdl.offsets {
-				offsetBuf[i] *= uintptr(m)
+	for _, c := range staticState.models {
+		c.program.Use()
+		c.shader.Texture.Int(0)
+		c.shader.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
+		c.shader.CameraMatrix.Matrix4(&cameraMatrix)
+		for _, mdl := range c.models {
+			if mdl.Radius != 0 && !frustum.IsSphereInside(mdl.X, mdl.Y, mdl.Z, mdl.Radius) {
+				continue
 			}
-			staticState.shader.ModelMatrix.Matrix4Multi(mdl.Matrix)
-			staticState.shader.ColorMul.FloatMutliRaw(mdl.Colors, len(mdl.Colors))
-			gl.MultiDrawElements(gl.Triangles, mdl.counts, staticState.indexType, offsetBuf[:len(mdl.offsets)])
-		} else {
-			staticState.shader.ModelMatrix.Matrix4Multi(mdl.Matrix)
-			staticState.shader.ColorMul.FloatMutliRaw(mdl.Colors, len(mdl.Colors))
-			gl.DrawElements(gl.Triangles, int(mdl.counts[0]), staticState.indexType, int(mdl.offsets[0])*m)
+			mdl.array.Bind()
+			if len(mdl.counts) > 1 {
+				copy(offsetBuf, mdl.offsets)
+				for i := range mdl.offsets {
+					offsetBuf[i] *= uintptr(m)
+				}
+				c.shader.ModelMatrix.Matrix4Multi(mdl.Matrix)
+				c.shader.ColorMul.FloatMutliRaw(mdl.Colors, len(mdl.Colors))
+				gl.MultiDrawElements(gl.Triangles, mdl.counts, staticState.indexType, offsetBuf[:len(mdl.offsets)])
+			} else {
+				c.shader.ModelMatrix.Matrix4Multi(mdl.Matrix)
+				c.shader.ColorMul.FloatMutliRaw(mdl.Colors, len(mdl.Colors))
+				gl.DrawElements(gl.Triangles, int(mdl.counts[0]), staticState.indexType, int(mdl.offsets[0])*m)
+			}
 		}
 	}
 
