@@ -62,12 +62,13 @@ type StaticModel struct {
 	X, Y, Z float32
 	Radius  float32
 	// Per a part matrix
-	Matrix     []mgl32.Mat4
-	Colors     [][4]float32
-	array      gl.VertexArray
-	buffer     gl.Buffer
-	bufferSize int
-	count      int
+	Matrix               []mgl32.Mat4
+	Colors               [][4]float32
+	BlockLight, SkyLight float32
+	array                gl.VertexArray
+	buffer               gl.Buffer
+	bufferSize           int
+	count                int
 
 	counts  []int32
 	offsets []uintptr
@@ -83,7 +84,9 @@ func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
 
 func newStaticModel(parts [][]*StaticVertex, c *staticCollection) *StaticModel {
 	model := &StaticModel{
-		c: c,
+		c:          c,
+		BlockLight: 1.0,
+		SkyLight:   1.0,
 	}
 
 	model.array = gl.CreateVertexArray()
@@ -218,11 +221,14 @@ func drawStatic() {
 		c.shader.Texture.Int(0)
 		c.shader.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
 		c.shader.CameraMatrix.Matrix4(&cameraMatrix)
+		c.shader.SkyOffset.Float(SkyOffset)
+		c.shader.LightLevel.Float(LightLevel)
 		for _, mdl := range c.models {
 			if mdl.Radius != 0 && !frustum.IsSphereInside(mdl.X, mdl.Y, mdl.Z, mdl.Radius) {
 				continue
 			}
 			mdl.array.Bind()
+			c.shader.Lighting.Float2(mdl.BlockLight, mdl.SkyLight)
 			if len(mdl.counts) > 1 {
 				copy(offsetBuf, mdl.offsets)
 				for i := range mdl.offsets {
@@ -253,6 +259,9 @@ type staticShader struct {
 	ModelMatrix       gl.Uniform   `gl:"modelMatrix[]"`
 	Texture           gl.Uniform   `gl:"textures"`
 	ColorMul          gl.Uniform   `gl:"colorMul[]"`
+	Lighting          gl.Uniform   `gl:"lighting"`
+	LightLevel        gl.Uniform   `gl:"lightLevel"`
+	SkyOffset         gl.Uniform   `gl:"skyOffset"`
 }
 
 func init() {
@@ -266,12 +275,18 @@ in int id;
 uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
 uniform mat4 modelMatrix[10];
+uniform float lightLevel;
+uniform float skyOffset;
+uniform vec2 lighting;
 
 out vec4 vColor;
 out vec4 vTextureInfo;
 out vec2 vTextureOffset;
 out float vAtlas;
 out float vID;
+out vec3 vLighting;
+
+#include get_light
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
@@ -282,6 +297,8 @@ void main() {
 	vTextureOffset = aTextureOffset.xy / 16.0;
 	vAtlas = aTextureOffset.z;
 	vID = float(id);
+
+	vLighting = getLight(lighting);
 }
 `)
 	glsl.Register("static_frag", `
@@ -293,6 +310,7 @@ in vec4 vColor;
 in vec4 vTextureInfo;
 in vec2 vTextureOffset;
 in float vAtlas;
+in vec3 vLighting;
 in float vID;
 
 out vec4 fragColor;
@@ -303,6 +321,7 @@ void main() {
 	vec4 col = atlasTexture();
 	if (col.a <= 0.05) discard;
 	col *= vColor;
+	col.rgb *= vLighting;
 	fragColor = col * colorMul[int(vID)];
 }
 `)

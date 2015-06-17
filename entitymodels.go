@@ -314,7 +314,7 @@ func esPlayerModelTick(p *playerModelComponent,
 	model.X, model.Y, model.Z = -float32(x), -float32(y), float32(z)
 	if p.heldModel != nil {
 		p.heldModel.X, p.heldModel.Y, p.heldModel.Z = -float32(x), -float32(y), float32(z)
-		p.heldModel.Colors[0] = model.Colors[0]
+		p.heldModel.BlockLight, p.heldModel.SkyLight = p.model.BlockLight, p.model.SkyLight
 	}
 
 	offMat := mgl32.Translate3D(float32(x), -float32(y), float32(z)).
