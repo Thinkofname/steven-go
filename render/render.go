@@ -212,6 +212,8 @@ sync:
 	transFramebuffer.Bind()
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.ColorBufferBit)
+	gl.ClearBuffer(gl.Color, 0, []float32{0, 0, 0, 1})
+	gl.ClearBuffer(gl.Color, 1, []float32{0, 0, 0, 0})
 	gl.BlendFuncSeparate(gl.OneFactor, gl.OneFactor, gl.ZeroFactor, gl.OneMinusSrcAlpha)
 	for _, chunk := range renderOrder {
 		if chunk.countT > 0 && chunk.bufferT.IsValid() {
