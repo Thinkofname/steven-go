@@ -19,6 +19,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -67,7 +68,9 @@ func get(out *bytes.Buffer, name string) {
 		}
 		out.WriteString(line)
 		out.WriteRune('\n')
-		fmt.Fprintf(out, "#line %d \"%s\"\n", lineNo, name)
+		if os.Getenv("STEVEN_DEBUG") == "true" {
+			fmt.Fprintf(out, "#line %d \"%s\"\n", lineNo, name)
+		}
 	}
 	if err := s.Err(); err != nil {
 		panic(err)
