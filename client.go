@@ -199,7 +199,7 @@ func newClient() {
 			Attach(ui.Bottom, ui.Center),
 	)
 
-	c.itemNameUI = ui.NewFormatted(format.Wrap(&format.TextComponent{}), 0, -16-8-10-16)
+	c.itemNameUI = ui.NewFormatted(format.Wrap(&format.TextComponent{}), 0, -16-8-10-16-20)
 	c.itemNameUI.AttachTo(c.hotbar)
 	c.scene.AddDrawable(c.itemNameUI.Attach(ui.Top, ui.Middle))
 
