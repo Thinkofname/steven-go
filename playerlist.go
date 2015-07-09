@@ -35,6 +35,8 @@ type playerInfo struct {
 
 	skin     render.TextureInfo
 	skinHash string
+	cape     render.TextureInfo
+	capeHash string
 }
 
 type playerListUI struct {
@@ -74,6 +76,9 @@ func (p *playerListUI) free() {
 	for _, pl := range p.info {
 		if pl.skinHash != "" {
 			render.FreeSkin(pl.skinHash)
+		}
+		if pl.capeHash != "" {
+			render.FreeSkin(pl.capeHash)
 		}
 	}
 }

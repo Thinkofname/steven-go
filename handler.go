@@ -502,6 +502,12 @@ func (handler) PlayerListInfo(p *protocol.PlayerInfo) {
 						render.RefSkin(i.skinHash)
 						i.skin = render.Skin(i.skinHash)
 					}
+					url = blob.Textures.Cape.Url
+					if strings.HasPrefix(url, "http://textures.minecraft.net/texture/") {
+						i.capeHash = url[len("http://textures.minecraft.net/texture/"):]
+						render.RefSkin(i.capeHash)
+						i.cape = render.Skin(i.capeHash)
+					}
 				}
 			}
 			if i.skin == nil {

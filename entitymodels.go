@@ -79,6 +79,7 @@ func appendBoxExtra(verts []*render.StaticVertex, x, y, z, w, h, d float32, text
 type playerModelComponent struct {
 	model         *render.StaticModel
 	skin          string
+	cape          string
 	hasHead       bool
 	hasNameTag    bool
 	isFirstPerson bool
@@ -89,7 +90,8 @@ type playerModelComponent struct {
 	manualMove bool
 	walking    bool
 
-	armTime float64
+	armTime  float64
+	capeTime float64
 
 	heldModel *render.StaticModel
 	heldMat   mgl32.Mat4
@@ -144,6 +146,7 @@ const (
 	playerModelLegRight
 	playerModelArmLeft
 	playerModelArmRight
+	playerModelCape
 	playerModelNameTag
 )
 
@@ -156,8 +159,13 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 	}
 	skin := info.skin
 	p.skin = info.skinHash
+	cape := info.cape
+	p.cape = info.capeHash
 	if p.skin != "" {
 		render.RefSkin(p.skin)
+	}
+	if p.cape != "" {
+		render.RefSkin(p.cape)
 	}
 
 	var hverts []*render.StaticVertex
@@ -177,6 +185,18 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 			direction.East:  skin.Sub(16+32, 8, 8, 8),
 			direction.Up:    skin.Sub(8+32, 0, 8, 8),
 			direction.Down:  skin.Sub(16+32, 0, 8, 8),
+		})
+	}
+
+	var cverts []*render.StaticVertex
+	if p.cape != "" {
+		cverts = appendBox(cverts, -5/16.0, -16/16.0, 0, 10/16.0, 16/16.0, 1/16.0, [6]render.TextureInfo{
+			direction.North: cape.Sub(11, 1, 10, 16),
+			direction.South: cape.Sub(1, 1, 10, 16),
+			direction.West:  cape.Sub(0, 1, 1, 16),
+			direction.East:  cape.Sub(21, 1, 1, 16),
+			direction.Up:    cape.Sub(1, 0, 10, 1),
+			direction.Down:  cape.Sub(11, 0, 10, 1),
 		})
 	}
 
@@ -237,6 +257,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		playerModelLegLeft:  lverts[1],
 		playerModelArmRight: lverts[2],
 		playerModelArmLeft:  lverts[3],
+		playerModelCape:     cverts,
 		playerModelNameTag:  nverts,
 	})
 	p.model = model
@@ -291,6 +312,9 @@ func esPlayerModelRemove(p *playerModelComponent) {
 	if p.skin != "" {
 		render.FreeSkin(p.skin)
 	}
+	if p.cape != "" {
+		render.FreeSkin(p.cape)
+	}
 	if p.heldModel != nil {
 		p.heldModel.Free()
 	}
@@ -319,6 +343,24 @@ func esPlayerModelTick(p *playerModelComponent,
 
 	offMat := mgl32.Translate3D(float32(x), -float32(y), float32(z)).
 		Mul4(mgl32.Rotate3DY(math.Pi - float32(r.Yaw())).Mat4())
+
+	if p.cape != "" {
+		if t.stillTime < 5.0 {
+			if p.capeTime < 30 {
+				p.capeTime += Client.delta
+			} else {
+				p.capeTime = 30
+			}
+		} else {
+			if p.capeTime > 0 {
+				p.capeTime -= Client.delta
+			} else {
+				p.capeTime = 0
+			}
+		}
+		p.model.Matrix[playerModelCape] = offMat.Mul4(mgl32.Translate3D(0, -24/16.0, 2/16.0)).
+			Mul4(mgl32.Rotate3DX(float32(p.capeTime)/60.0 + 0.05).Mat4())
+	}
 
 	// TODO This isn't the most optimal way of doing this
 	if p.hasNameTag {
