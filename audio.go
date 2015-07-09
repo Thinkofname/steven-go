@@ -76,6 +76,7 @@ func PlaySound(plugin, name string) {
 	for _, s := range soundList {
 		if s.Status() == audio.StatStopped {
 			s.SetBuffer(sb)
+			s.SetVolume(100.0)
 			s.Play()
 			return
 		}
@@ -83,6 +84,7 @@ func PlaySound(plugin, name string) {
 	s := audio.NewSound()
 	s.SetBuffer(sb)
 	s.Play()
+	s.SetVolume(100.0)
 	soundList = append(soundList, s)
 }
 

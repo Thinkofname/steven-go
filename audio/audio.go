@@ -64,6 +64,10 @@ func (s Sound) SetBuffer(sb SoundBuffer) {
 	C.sfSound_setBuffer(s.internal, sb.internal)
 }
 
+func (s Sound) SetVolume(v float64) {
+	C.sfSound_setVolume(s.internal, (C.float)(v))
+}
+
 func (s Sound) Status() Status {
 	return Status(C.sfSound_getStatus(s.internal))
 }
