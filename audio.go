@@ -148,12 +148,18 @@ func downloadAssets() {
 				panic(err)
 			}
 			defer f.Close()
-			io.Copy(f, resp.Body)
+			n, err := io.Copy(f, resp.Body)
+			if err != nil {
+				panic(err)
+			}
+			if n != int64(v.Size) {
+				panic(fmt.Sprintf("Got: %d, Wanted: %d for %s", n, v.Size, fmt.Sprintf(assetResourceURL, path)))
+			}
 			console.Text("Downloaded: %s", loc)
 		}()
 		os.Rename(loc+".tmp", loc)
 	}
 }
 func hashPath(hash string) string {
-	return filepath.Join(hash[:2], hash)
+	return hash[:2] + "/" + hash
 }
