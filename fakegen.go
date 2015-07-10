@@ -29,9 +29,29 @@ func fakeGen() {
 	render.Camera.X = 0.5
 	render.Camera.Z = 0.5
 	render.Camera.Y = 70
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
+	liquid := Blocks.Water
+	top := Blocks.Grass
+	mid := Blocks.Dirt
+	bot := Blocks.Stone
+	ra := r.Intn(3)
+	if ra == 1 {
+		liquid = Blocks.Lava
+		render.LightLevel = 0.9
+		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 52/255.0, 8/255.0, 8/255.0
+		top = Blocks.Netherrack
+		mid = Blocks.Netherrack
+		bot = Blocks.SoulSand
+	} else if ra == 2 {
+		liquid = Blocks.Air
+		render.LightLevel = 0.8
+		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 23/255.0, 0, 23/255.0
+		top = Blocks.EndStone
+		mid = Blocks.EndStone
+		bot = Blocks.EndStone
+	}
 	go func() {
-		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		randGrid := make([]int, (fakeGenDistance*2+1)*(fakeGenDistance*2+1))
 		for i := range randGrid {
 			randGrid[i] = r.Intn(10) + 54
@@ -52,26 +72,6 @@ func fakeGen() {
 			t := tl*((15-float64(x))/15.0) + tr*(float64(x)/15.0)
 			b := bl*((15-float64(x))/15.0) + br*(float64(x)/15.0)
 			return int(t*((15-float64(z))/15.0) + b*(float64(z)/15.0))
-		}
-		liquid := Blocks.Water
-		top := Blocks.Grass
-		mid := Blocks.Dirt
-		bot := Blocks.Stone
-		ra := r.Intn(3)
-		if ra == 1 {
-			liquid = Blocks.Lava
-			render.LightLevel = 0.9
-			render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 52/255.0, 8/255.0, 8/255.0
-			top = Blocks.Netherrack
-			mid = Blocks.Netherrack
-			bot = Blocks.SoulSand
-		} else if ra == 2 {
-			liquid = Blocks.Air
-			render.LightLevel = 0.8
-			render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 23/255.0, 0, 23/255.0
-			top = Blocks.EndStone
-			mid = Blocks.EndStone
-			bot = Blocks.EndStone
 		}
 
 		for cx := -fakeGenDistance; cx <= fakeGenDistance; cx++ {

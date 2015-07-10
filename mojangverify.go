@@ -43,12 +43,14 @@ var (
 func init() {
 	if _, err := os.Stat(authlibKeyPath); os.IsNotExist(err) {
 		authlibLock.Lock()
-		go func() {
-			getAuthlib()
-			parseAuthlibKey()
-			hasAuthlib = true
-			authlibLock.Unlock()
-		}()
+		syncChan <- func() {
+			go func() {
+				getAuthlib()
+				parseAuthlibKey()
+				hasAuthlib = true
+				authlibLock.Unlock()
+			}()
+		}
 	} else {
 		parseAuthlibKey()
 		hasAuthlib = true
@@ -105,6 +107,7 @@ func getAuthlib() {
 	}
 	defer os.Remove(target + ".tmp")
 	defer f.Close()
+
 	size, err := io.Copy(f, resp.Body)
 	if err != nil {
 		panic(err)

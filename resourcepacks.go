@@ -32,30 +32,16 @@ that are currently enabled.
 `)
 
 func initResources() {
-	var progressBar *ui.Image
-	var progressText *ui.Text
+	var pBar *progressBar
 	resource.Init(func(progress float64, done bool) {
-		fmt.Printf("Progress: %0.2f %t\n", progress, done)
 		if !done {
-			if progressBar == nil {
-				progressBar = ui.NewImage(render.GetTexture("solid"), 0, 0, 854, 21, 0, 0, 1, 1, 0, 125, 0)
-				ui.AddDrawable(progressBar.Attach(ui.Top, ui.Left))
-				progressText = ui.NewText("", 1, 1, 255, 255, 255)
-				ui.AddDrawable(progressText.Attach(ui.Top, ui.Left))
+			if pBar == nil {
+				pBar = newProgressBar()
 			}
-			progressText.Update(fmt.Sprintf("Downloading: %d/100", int(100*progress)))
-			width, _ := window.GetFramebufferSize()
-			sw := 854 / float64(width)
-			if ui.DrawMode == ui.Unscaled {
-				sw = ui.Scale
-				progressBar.SetWidth((854 / sw) * progress)
-			} else {
-				progressBar.SetWidth(float64(width) * progress)
-			}
+			pBar.update(progress, fmt.Sprintf("Downloading textures: %v/100", int(100*progress)))
 		} else {
-			if progressBar != nil {
-				progressBar.Remove()
-				progressText.Remove()
+			if pBar != nil {
+				pBar.remove()
 			}
 			reloadResources()
 		}
