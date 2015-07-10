@@ -109,6 +109,7 @@ func init() {
 }
 
 func getAssetIndex() {
+	console.Text("Getting asset index")
 	defLocation := "./resources"
 	resp, err := http.Get(fmt.Sprintf(assetIndexURL, assetsVersion))
 	if err != nil {
@@ -125,6 +126,7 @@ func getAssetIndex() {
 	}
 	defer f.Close()
 	json.NewEncoder(f).Encode(assets)
+	console.Text("Got asset index for %s", assetsVersion)
 }
 
 func downloadAssets() {
