@@ -41,7 +41,7 @@ func checkInit() {
 	if w != nil {
 		return
 	}
-	f, err := os.Create("steven-log.txt")
+	f, err := os.Create("steven.log")
 	if err != nil {
 		panic(err)
 	}

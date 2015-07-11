@@ -15,8 +15,6 @@
 package steven
 
 import (
-	"io"
-	"log"
 	"os"
 	"runtime"
 
@@ -30,13 +28,6 @@ var window *glfw.Window
 
 func init() {
 	runtime.LockOSThread()
-
-	f, err := os.Create("steven.log")
-	if err != nil {
-		panic(err)
-	}
-	log.SetOutput(io.MultiWriter(f, os.Stdout))
-	log.SetFlags(log.Lshortfile | log.Ltime)
 }
 
 var (
