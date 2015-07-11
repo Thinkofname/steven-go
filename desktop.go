@@ -31,7 +31,7 @@ var window *glfw.Window
 func init() {
 	runtime.LockOSThread()
 
-	f, err := os.Create("steven-log.txt")
+	f, err := os.Create("steven.log")
 	if err != nil {
 		panic(err)
 	}
