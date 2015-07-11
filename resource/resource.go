@@ -27,7 +27,7 @@ import (
 	"sync"
 
 	"github.com/thinkofdeath/steven/console"
-	"github.com/thinkofdeath/steven/resource/internal"
+	"github.com/thinkofdeath/steven/resource/builtin"
 )
 
 const (
@@ -183,10 +183,10 @@ func fromInternal() {
 		name:  "$internal",
 		files: map[string]opener{},
 	}
-	for _, name := range internal.AssetNames() {
+	for _, name := range builtin.AssetNames() {
 		name := name
 		p.files[name] = func() (io.ReadCloser, error) {
-			data, err := internal.Asset(name)
+			data, err := builtin.Asset(name)
 			return dummyCloser{bytes.NewReader(data)}, err
 		}
 	}

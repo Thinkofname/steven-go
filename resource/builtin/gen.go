@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package internal
+package builtin
 
 //go:generate go-bindata -pkg internal -nomemcopy -o assets.go -prefix files files/...
 //go:generate gofmt -w -s assets.go
