@@ -572,7 +572,6 @@ func (handler) WindowItem(p *protocol.WindowSetSlot) {
 }
 
 func (handler) PlaySound(p *protocol.SoundEffect) {
-	console.Text("Playing %+v", p)
 	PlaySoundAt(p.Name, float64(p.Volume), float64(p.Pitch)/63, mgl32.Vec3{
 		float32(p.X) / 8,
 		float32(p.Y) / 8,
