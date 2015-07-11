@@ -55,6 +55,9 @@ the mouse. Higher values means faster rotation.
 
 func init() {
 	renderVSync.Callback(func() {
+		if glfw.GetCurrentContext() == nil {
+			return
+		}
 		if renderVSync.Value() {
 			glfw.SwapInterval(1)
 		} else {
