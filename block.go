@@ -69,6 +69,10 @@ type Block interface {
 	String() string
 	NameLocaleKey() string
 
+	StepSound() string
+	DigSound() string
+	BreakSound() string
+
 	CreateBlockEntity() BlockEntity
 
 	init(name string)
@@ -119,6 +123,10 @@ func (b *baseBlock) init(name string) {
 	b.renderable = true
 	b.hardness = 1.0
 }
+
+func (b *baseBlock) StepSound() string  { return "step.stone" }
+func (b *baseBlock) DigSound() string   { return "step.stone" }
+func (b *baseBlock) BreakSound() string { return "dig.stone" }
 
 func (b *baseBlock) NameLocaleKey() string {
 	return fmt.Sprintf("tile.%s.name", b.name)

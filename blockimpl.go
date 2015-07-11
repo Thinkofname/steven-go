@@ -100,6 +100,10 @@ type blockGrass struct {
 	Snowy bool `state:"snowy"`
 }
 
+func (b *blockGrass) StepSound() string  { return "step.grass" }
+func (b *blockGrass) DigSound() string   { return "step.grass" }
+func (b *blockGrass) BreakSound() string { return "dig.grass" }
+
 func (b *blockGrass) UpdateState(x, y, z int) Block {
 	if bl := chunkMap.Block(x, y+1, z); bl.Is(Blocks.Snow) || bl.Is(Blocks.SnowLayer) {
 		return b.Set("snowy", true)

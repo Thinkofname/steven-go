@@ -21,6 +21,8 @@ import (
 // #cgo LDFLAGS: -lcsfml-audio
 // #include <SFML/Audio/SoundBuffer.h>
 // #include <SFML/Audio/Sound.h>
+// #include <SFML/Audio/Listener.h>
+// #include <SFML/System/Vector3.h>
 // #include <stdlib.h>
 import "C"
 
@@ -68,10 +70,58 @@ func (s Sound) SetVolume(v float64) {
 	C.sfSound_setVolume(s.internal, (C.float)(v))
 }
 
+func (s Sound) SetPitch(v float64) {
+	C.sfSound_setPitch(s.internal, C.float(v))
+}
+
 func (s Sound) Status() Status {
 	return Status(C.sfSound_getStatus(s.internal))
 }
 
+func (s Sound) SetRelative(rel bool) {
+	if rel {
+		C.sfSound_setRelativeToListener(s.internal, C.sfBool(1))
+	} else {
+		C.sfSound_setRelativeToListener(s.internal, C.sfBool(0))
+	}
+}
+
+func (s Sound) SetPosition(x, y, z float32) {
+	C.sfSound_setPosition(s.internal, C.sfVector3f{
+		C.float(x),
+		C.float(y),
+		C.float(z),
+	})
+}
+
+func (s Sound) SetMinDistance(dist float64) {
+	C.sfSound_setMinDistance(s.internal, C.float(dist))
+}
+
+func (s Sound) SetAttenuation(att float64) {
+	C.sfSound_setAttenuation(s.internal, C.float(att))
+}
+
 func (s Sound) Free() {
 	C.sfSound_destroy(s.internal)
+}
+
+func SetListenerPosition(x, y, z float32) {
+	C.sfListener_setPosition(C.sfVector3f{
+		C.float(x),
+		C.float(y),
+		C.float(z),
+	})
+}
+
+func SetListenerDirection(x, y, z float32) {
+	C.sfListener_setDirection(C.sfVector3f{
+		C.float(x),
+		C.float(y),
+		C.float(z),
+	})
+}
+
+func SetGlobalVolume(vol float64) {
+	C.sfListener_setGlobalVolume(C.float(vol))
 }

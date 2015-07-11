@@ -23,6 +23,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/audio"
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/resource"
@@ -47,15 +48,23 @@ const (
 	sndMusic   soundCategory = "music"
 )
 
+func PlaySoundAt(name string, vol, pitch float64, v mgl32.Vec3) {
+	snd, ok := soundInfo[name]
+	if !ok {
+		return
+	}
+	playSoundInternal(snd.Sounds[soundRandom.Intn(len(snd.Sounds))], vol, pitch, true, v)
+}
+
 func PlaySound(name string) {
 	snd, ok := soundInfo[name]
 	if !ok {
 		return
 	}
-	playSoundInternal(snd.Sounds[soundRandom.Intn(len(snd.Sounds))])
+	playSoundInternal(snd.Sounds[soundRandom.Intn(len(snd.Sounds))], 1, 1, false, mgl32.Vec3{})
 }
 
-func playSoundInternal(snd sound) {
+func playSoundInternal(snd sound, vol, pitch float64, rel bool, pos mgl32.Vec3) {
 	name := snd.Name
 	key := pluginKey{"minecraft", name}
 	sb, ok := loadedSounds[key]
@@ -82,19 +91,31 @@ func playSoundInternal(snd sound) {
 		sb = audio.NewSoundBufferData(data)
 		loadedSounds[key] = sb
 	}
-	for _, s := range soundList {
-		if s.Status() == audio.StatStopped {
-			s.SetBuffer(sb)
-			s.SetVolume(snd.Volume * 100.0)
-			s.Play()
-			return
+	var s audio.Sound
+	n := true
+	for _, sn := range soundList {
+		if sn.Status() == audio.StatStopped {
+			s = sn
+			n = false
+			break
 		}
 	}
-	s := audio.NewSound()
+	if n {
+		s = audio.NewSound()
+		soundList = append(soundList, s)
+	}
 	s.SetBuffer(sb)
 	s.Play()
-	s.SetVolume(snd.Volume * 100.0)
-	soundList = append(soundList, s)
+	s.SetVolume(snd.Volume * vol * 100.0)
+	s.SetMinDistance(5)
+	s.SetAttenuation(0.008)
+	s.SetPitch(pitch)
+	if rel {
+		s.SetRelative(true)
+		s.SetPosition(pos.X(), pos.Y(), pos.Z())
+	} else {
+		s.SetRelative(false)
+	}
 }
 
 type soundData struct {

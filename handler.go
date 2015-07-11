@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol"
@@ -568,6 +569,15 @@ func (handler) WindowItem(p *protocol.WindowSetSlot) {
 	}
 	inv.Items[p.Slot] = ItemStackFromProtocol(p.ItemStack)
 	inv.Update()
+}
+
+func (handler) PlaySound(p *protocol.SoundEffect) {
+	console.Text("Playing %+v", p)
+	PlaySoundAt(p.Name, float64(p.Volume), float64(p.Pitch)/63, mgl32.Vec3{
+		float32(p.X) / 8,
+		float32(p.Y) / 8,
+		float32(p.Z) / 8,
+	})
 }
 
 func (h handler) PluginMessage(p *protocol.PluginMessageClientbound) {

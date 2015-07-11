@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/thinkofdeath/steven/audio"
 	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
@@ -84,6 +85,7 @@ type ClientState struct {
 	KeyState                 [6]bool
 	OnGround, didTouchGround bool
 	isLeftDown               bool
+	stepTimer                float64
 
 	GameMode  gameMode
 	HardCore  bool
@@ -392,6 +394,22 @@ func (c *ClientState) renderTick(delta float64) {
 	c.entity.SetTargetPitch(-c.Pitch - math.Pi)
 	c.entity.walking = c.X != lx || c.Y != ly || c.Z != lz
 
+	audio.SetListenerPosition(float32(c.X), float32(c.Y+playerHeight), float32(c.Z))
+	view := c.viewVector()
+	audio.SetListenerDirection(view.X(), view.Y(), view.Z())
+	audio.SetGlobalVolume(100)
+
+	if c.entity.walking {
+		c.stepTimer += delta
+		if c.stepTimer > 20 {
+			c.stepTimer -= 20
+			b := chunkMap.Block(int(c.X), int(c.Y-0.3), int(c.Z))
+			if !b.Is(Blocks.Air) {
+				PlaySound(b.StepSound())
+			}
+		}
+	}
+
 	//  Highlights the target block
 	c.highlightTarget()
 
@@ -447,6 +465,7 @@ func (c *ClientState) tickItemName() {
 }
 
 func (c *ClientState) armTick() {
+	pos, b, face, _ := c.targetBlock()
 	if c.isLeftDown {
 		c.swingTimer -= c.delta
 		if c.swingTimer < 0 {
@@ -461,10 +480,9 @@ func (c *ClientState) armTick() {
 				})
 				return
 			}
+			PlaySound(b.DigSound())
 		}
-	}
-	pos, b, face, _ := c.targetBlock()
-	if c.isLeftDown {
+
 		if b != c.currentBreakingBlock || pos != c.currentBreakingPos {
 			c.currentBreakingBlock = Blocks.Air.Base
 			c.network.Write(&protocol.PlayerDigging{
@@ -503,6 +521,7 @@ func (c *ClientState) armTick() {
 				chunkMap.SetBlock(Blocks.Air.Base, pos.X, pos.Y, pos.Z)
 				chunkMap.UpdateBlock(pos.X, pos.Y, pos.Z)
 				c.killBreakEntity()
+				PlaySound(b.BreakSound())
 			} else {
 				stage := int(9 - math.Min(9, 10*(c.breakTime/c.maxBreakTime)))
 				if stage != c.breakEntity.(BlockBreakComponent).Stage() {
