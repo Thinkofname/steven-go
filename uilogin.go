@@ -59,13 +59,13 @@ func newLoginScreen() *loginScreen {
 	label := ui.NewText("Username/Email:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
 	label.AttachTo(ls.user.back)
 	ls.scene.AddDrawable(label)
-	ls.user.back.ClickFunc = func() {
+	ls.user.back.AddClick(func() {
 		if ls.focused != nil {
 			ls.focused.Focused = false
 		}
 		ls.user.Focused = true
 		ls.focused = ls.user
-	}
+	})
 
 	ls.pass = newTextBox(0, 40, 400, 40)
 	ls.pass.back.Attach(ui.Middle, ui.Center)
@@ -73,20 +73,20 @@ func newLoginScreen() *loginScreen {
 	label = ui.NewText("Password:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
 	label.AttachTo(ls.pass.back)
 	ls.scene.AddDrawable(label)
-	ls.pass.back.ClickFunc = func() {
+	ls.pass.back.AddClick(func() {
 		if ls.focused != nil {
 			ls.focused.Focused = false
 		}
 		ls.pass.Focused = true
 		ls.focused = ls.pass
-	}
+	})
 	ls.pass.Password = true
 
 	ls.loginBtn, ls.loginTxt = newButtonText("Login", 0, 100, 400, 40)
 	ls.loginBtn.Attach(ui.Middle, ui.Center)
 	ls.scene.AddDrawable(ls.loginBtn)
 	ls.scene.AddDrawable(ls.loginTxt)
-	ls.loginBtn.ClickFunc = ls.login
+	ls.loginBtn.AddClick(ls.login)
 
 	uiFooter(ls.scene)
 

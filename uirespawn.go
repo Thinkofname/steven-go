@@ -44,15 +44,15 @@ func newRespawnScreen() *respawnScreen {
 	respawn, txt := newButtonText("Respawn", -205, 20, 400, 40)
 	rs.scene.AddDrawable(respawn.Attach(ui.Center, ui.Middle))
 	rs.scene.AddDrawable(txt)
-	respawn.ClickFunc = func() {
+	respawn.AddClick(func() {
 		setScreen(nil)
 		Client.network.Write(&protocol.ClientStatus{ActionID: 0})
-	}
+	})
 
 	disconnect, txt := newButtonText("Disconnect", 205, 20, 400, 40)
 	rs.scene.AddDrawable(disconnect.Attach(ui.Center, ui.Middle))
 	rs.scene.AddDrawable(txt)
-	disconnect.ClickFunc = func() { Client.network.SignalClose(errManualDisconnect) }
+	disconnect.AddClick(func() { Client.network.SignalClose(errManualDisconnect) })
 
 	uiFooter(rs.scene)
 	return rs

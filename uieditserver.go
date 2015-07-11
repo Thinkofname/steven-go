@@ -48,16 +48,16 @@ func newEditServer(index int) *editServer {
 	done, txt := newButtonText("Done", 110, 100, 200, 40)
 	se.scene.AddDrawable(done.Attach(ui.Center, ui.Middle))
 	se.scene.AddDrawable(txt)
-	done.ClickFunc = func() {
+	done.AddClick(func() {
 		se.save()
-	}
+	})
 
 	cancel, txt := newButtonText("Cancel", -110, 100, 200, 40)
 	se.scene.AddDrawable(cancel.Attach(ui.Center, ui.Middle))
 	se.scene.AddDrawable(txt)
-	cancel.ClickFunc = func() {
+	cancel.AddClick(func() {
 		setScreen(newServerList())
-	}
+	})
 
 	se.name = newTextBox(0, -20, 400, 40)
 	se.name.back.Attach(ui.Middle, ui.Center)
@@ -65,13 +65,13 @@ func newEditServer(index int) *editServer {
 	label := ui.NewText("Name:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
 	label.AttachTo(se.name.back)
 	se.scene.AddDrawable(label)
-	se.name.back.ClickFunc = func() {
+	se.name.back.AddClick(func() {
 		if se.focused != nil {
 			se.focused.Focused = false
 		}
 		se.name.Focused = true
 		se.focused = se.name
-	}
+	})
 
 	se.address = newTextBox(0, 40, 400, 40)
 	se.address.back.Attach(ui.Middle, ui.Center)
@@ -79,13 +79,13 @@ func newEditServer(index int) *editServer {
 	label = ui.NewText("Address:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
 	label.AttachTo(se.address.back)
 	se.scene.AddDrawable(label)
-	se.address.back.ClickFunc = func() {
+	se.address.back.AddClick(func() {
 		if se.focused != nil {
 			se.focused.Focused = false
 		}
 		se.address.Focused = true
 		se.focused = se.address
-	}
+	})
 
 	if index != -1 {
 		server := Config.Servers[index]

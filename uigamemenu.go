@@ -40,17 +40,17 @@ func newGameMenu() screen {
 	disconnect, txt := newButtonText("Disconnect", 0, 50, 400, 40)
 	gm.scene.AddDrawable(disconnect.Attach(ui.Center, ui.Middle))
 	gm.scene.AddDrawable(txt)
-	disconnect.ClickFunc = func() { Client.network.SignalClose(errManualDisconnect) }
+	disconnect.AddClick(func() { Client.network.SignalClose(errManualDisconnect) })
 
 	rtg, txt := newButtonText("Return to game", 0, -50, 400, 40)
 	gm.scene.AddDrawable(rtg.Attach(ui.Center, ui.Middle))
 	gm.scene.AddDrawable(txt)
-	rtg.ClickFunc = func() { setScreen(nil) }
+	rtg.AddClick(func() { setScreen(nil) })
 
 	option, txt := newButtonText("Options", 0, 0, 400, 40)
 	gm.scene.AddDrawable(option.Attach(ui.Center, ui.Middle))
 	gm.scene.AddDrawable(txt)
-	option.ClickFunc = func() { setScreen(newOptionMenu(newGameMenu)) }
+	option.AddClick(func() { setScreen(newOptionMenu(newGameMenu)) })
 
 	uiFooter(gm.scene)
 	return gm

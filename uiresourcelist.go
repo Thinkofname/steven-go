@@ -65,14 +65,14 @@ func newResourceList(ret func() screen) screen {
 	refresh, txt := newButtonText("Refresh", 300, -50-15, 100, 30)
 	rl.scene.AddDrawable(refresh.Attach(ui.Center, ui.Middle))
 	rl.scene.AddDrawable(txt)
-	refresh.ClickFunc = rl.redraw
+	refresh.AddClick(rl.redraw)
 
 	done, txt := newButtonText("Done", 200, -50-15, 100, 30)
 	rl.scene.AddDrawable(done.Attach(ui.Center, ui.Middle))
 	rl.scene.AddDrawable(txt)
-	done.ClickFunc = func() {
+	done.AddClick(func() {
 		setScreen(newOptionMenu(rl.ret))
-	}
+	})
 
 	return rl
 }

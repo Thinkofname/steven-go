@@ -89,13 +89,14 @@ func newButtonText(str string, x, y, w, h float64) (*ui.Button, *ui.Text) {
 	btn := ui.NewButton(x, y, w, h)
 	text := ui.NewText(str, 0, 0, 255, 255, 255).Attach(ui.Middle, ui.Center)
 	text.AttachTo(btn)
-	btn.HoverFunc = func(over bool) {
+	btn.AddHover(func(over bool) {
 		if over && !btn.Disabled() {
 			text.SetB(160)
 		} else {
 			text.SetB(255)
 		}
-	}
+	})
+	btn.AddClick(func() { PlaySound("random.click") })
 	return btn, text
 }
 

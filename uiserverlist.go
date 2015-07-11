@@ -67,23 +67,23 @@ func newServerList() screen {
 	refresh, txt := newButtonText("Refresh", 300, -50-15, 100, 30)
 	sl.scene.AddDrawable(refresh.Attach(ui.Center, ui.Middle))
 	sl.scene.AddDrawable(txt)
-	refresh.ClickFunc = sl.redraw
+	refresh.AddClick(sl.redraw)
 
 	add, txt := newButtonText("Add", 200, -50-15, 100, 30)
 	sl.scene.AddDrawable(add.Attach(ui.Center, ui.Middle))
 	sl.scene.AddDrawable(txt)
-	add.ClickFunc = func() {
+	add.AddClick(func() {
 		setScreen(newEditServer(-1))
-	}
+	})
 
 	options := ui.NewButton(5, 25, 40, 40)
 	sl.scene.AddDrawable(options.Attach(ui.Bottom, ui.Right))
 	cog := ui.NewImage(render.GetTexture("steven:gui/cog"), 0, 0, 40, 40, 0, 0, 1, 1, 255, 255, 255)
 	cog.AttachTo(options)
 	sl.scene.AddDrawable(cog.Attach(ui.Center, ui.Middle))
-	options.ClickFunc = func() {
+	options.AddClick(func() {
 		setScreen(newOptionMenu(newServerList))
-	}
+	})
 
 	if disconnectReason.Value != nil {
 		disMsg := ui.NewText("Disconnected", 0, 32, 255, 0, 0).Attach(ui.Top, ui.Center)
@@ -180,6 +180,7 @@ func (sl *serverList) redraw() {
 		s := s
 		go sl.pingServer(s.Address, motd, icon, si.id, ping, players)
 		container.ClickFunc = func() {
+			PlaySound("random.click")
 			sl.connect(s.Address)
 		}
 		container.HoverFunc = func(over bool) {
@@ -197,18 +198,18 @@ func (sl *serverList) redraw() {
 		del.AttachTo(container)
 		sc.AddDrawable(del.Attach(ui.Bottom, ui.Right))
 		sc.AddDrawable(txt)
-		del.ClickFunc = func() {
+		del.AddClick(func() {
 			Config.Servers = append(Config.Servers[:index], Config.Servers[index+1:]...)
 			saveServers()
 			sl.redraw()
-		}
+		})
 		edit, txt := newButtonText("E", 25, 0, 25, 25)
 		edit.AttachTo(container)
 		sc.AddDrawable(edit.Attach(ui.Bottom, ui.Right))
 		sc.AddDrawable(txt)
-		edit.ClickFunc = func() {
+		edit.AddClick(func() {
 			setScreen(newEditServer(index))
-		}
+		})
 	}
 }
 

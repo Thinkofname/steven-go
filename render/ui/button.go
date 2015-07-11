@@ -23,8 +23,8 @@ type Button struct {
 	disabled   bool
 	currentTex render.TextureInfo
 	hovered    bool
-	HoverFunc  func(over bool)
-	ClickFunc  func()
+	hoverFuncs []func(over bool)
+	clickFuncs []func()
 }
 
 // NewButton creates a new Text drawable.
@@ -36,6 +36,16 @@ func NewButton(x, y, w, h float64) *Button {
 			isNew:   true,
 		},
 	}
+}
+
+// AddClick adds a function to be called when the button is clicked
+func (b *Button) AddClick(f func()) {
+	b.clickFuncs = append(b.clickFuncs, f)
+}
+
+// AddHover adds a function to be called when the button is hovered
+func (b *Button) AddHover(f func(over bool)) {
+	b.hoverFuncs = append(b.hoverFuncs, f)
 }
 
 // Attach changes the location where this is attached to.
@@ -80,8 +90,8 @@ func (b *Button) SetDisabled(d bool) {
 }
 
 func (b *Button) Click(r Region, x, y float64) {
-	if b.ClickFunc != nil {
-		b.ClickFunc()
+	for _, f := range b.clickFuncs {
+		f()
 	}
 }
 func (b *Button) Hover(r Region, x, y float64, over bool) {
@@ -89,8 +99,8 @@ func (b *Button) Hover(r Region, x, y float64, over bool) {
 		b.dirty = true
 	}
 	b.hovered = over
-	if b.HoverFunc != nil {
-		b.HoverFunc(over)
+	for _, f := range b.hoverFuncs {
+		f(over)
 	}
 }
 
