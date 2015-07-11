@@ -41,11 +41,7 @@ func checkInit() {
 	if w != nil {
 		return
 	}
-	f, err := os.Create("steven.log")
-	if err != nil {
-		panic(err)
-	}
-	w = io.MultiWriter(f, os.Stdout)
+	w = os.Stdout
 }
 
 // Text appends the passed formatted string plus a new line to

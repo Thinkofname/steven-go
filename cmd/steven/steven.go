@@ -49,7 +49,12 @@ func main() {
 	}
 
 	cmd := exec.Command(os.Args[0], append(os.Args[1:], "--no-fork")...)
-	cmd.Stdout = os.Stdout
+	l, err := os.Create("steven.log")
+	if err != nil {
+		panic(err)
+	}
+	defer l.Close()
+	cmd.Stdout = io.MultiWriter(os.Stdout, l)
 	f, err := os.Create("steven-error.log")
 	if err != nil {
 		panic(err)
