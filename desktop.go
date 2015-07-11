@@ -151,9 +151,6 @@ func onMouseMove(w *glfw.Window, xpos float64, ypos float64) {
 }
 
 func onMouseClick(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mod glfw.ModifierKey) {
-	if action == glfw.Release {
-		PlaySound("minecraft", "random/click")
-	}
 	if currentScreen != nil {
 		if button != glfw.MouseButtonLeft || action == glfw.Repeat {
 			return

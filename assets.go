@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/thinkofdeath/steven/console"
 )
@@ -94,6 +95,7 @@ func downloadAssets() {
 		limiter <- struct{}{}
 	}
 	go func() {
+		var wg sync.WaitGroup
 		for file, v := range assets.Objects {
 			v := v
 			file := file
@@ -104,7 +106,9 @@ func downloadAssets() {
 				continue
 			}
 			<-limiter
+			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				var prog *progressBar
 				wait := make(chan struct{})
 				syncChan <- func() { prog = newProgressBar(); wait <- struct{}{} }
@@ -140,8 +144,10 @@ func downloadAssets() {
 				limiter <- struct{}{}
 			}()
 		}
+		wg.Wait()
 		syncChan <- func() {
 			total.remove()
+			loadSoundData()
 		}
 	}()
 }

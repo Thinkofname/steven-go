@@ -15,9 +15,13 @@
 package steven
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/thinkofdeath/steven/audio"
 	"github.com/thinkofdeath/steven/console"
@@ -27,15 +31,38 @@ import (
 var (
 	loadedSounds = map[pluginKey]audio.SoundBuffer{}
 	soundList    []audio.Sound
+	soundInfo    = map[string]soundData{}
+	soundRandom  = rand.New(rand.NewSource(time.Now().Unix()))
 )
 
-func PlaySound(plugin, name string) {
-	key := pluginKey{plugin, name}
+type soundCategory string
+
+const (
+	sndAmbient soundCategory = "ambient"
+	sndWeather soundCategory = "weather"
+	sndPlayer  soundCategory = "player"
+	sndNeutral soundCategory = "neutral"
+	sndHostile soundCategory = "hostile"
+	sndBlock   soundCategory = "block"
+	sndMusic   soundCategory = "music"
+)
+
+func PlaySound(name string) {
+	snd, ok := soundInfo[name]
+	if !ok {
+		return
+	}
+	playSoundInternal(snd.Sounds[soundRandom.Intn(len(snd.Sounds))])
+}
+
+func playSoundInternal(snd sound) {
+	name := snd.Name
+	key := pluginKey{"minecraft", name}
 	sb, ok := loadedSounds[key]
 	if !ok {
-		f, err := resource.Open(plugin, "sounds/"+name+".ogg")
+		f, err := resource.Open("minecraft", "sounds/"+name+".ogg")
 		if err != nil {
-			v, ok := assets.Objects[fmt.Sprintf("%s/sounds/%s.ogg", plugin, name)]
+			v, ok := assets.Objects[fmt.Sprintf("minecraft/sounds/%s.ogg", name)]
 			if !ok {
 				console.Text("Missing sound %s", key)
 				return
@@ -58,7 +85,7 @@ func PlaySound(plugin, name string) {
 	for _, s := range soundList {
 		if s.Status() == audio.StatStopped {
 			s.SetBuffer(sb)
-			s.SetVolume(100.0)
+			s.SetVolume(snd.Volume * 100.0)
 			s.Play()
 			return
 		}
@@ -66,6 +93,62 @@ func PlaySound(plugin, name string) {
 	s := audio.NewSound()
 	s.SetBuffer(sb)
 	s.Play()
-	s.SetVolume(100.0)
+	s.SetVolume(snd.Volume * 100.0)
 	soundList = append(soundList, s)
+}
+
+type soundData struct {
+	Category soundCategory
+	Sounds   []sound
+}
+
+type sound struct {
+	Name   string
+	Stream bool
+	Volume float64
+}
+
+func (s *sound) UnmarshalJSON(b []byte) error {
+	type js struct {
+		Name   string
+		Stream bool
+		Volume *float64
+	}
+	s.Volume = 1
+	if b[0] == '"' {
+		return json.Unmarshal(b, &s.Name)
+	}
+	var val js
+	err := json.Unmarshal(b, &val)
+	s.Name = val.Name
+	s.Stream = val.Stream
+	if val.Volume != nil {
+		s.Volume = *val.Volume
+	}
+	return err
+}
+
+func loadSoundData() {
+	v := assets.Objects["minecraft/sounds.json"]
+	loc := fmt.Sprintf("./resources/%s", hashPath(v.Hash))
+	f, err := os.Open(loc)
+	if err != nil {
+		panic(err)
+	}
+	snds, _ := resource.OpenAll("minecraft", "sounds.json")
+	snds = append([]io.ReadCloser{f}, snds...)
+	for _, s := range snds {
+		func() {
+			defer s.Close()
+			data := map[string]soundData{}
+			err := json.NewDecoder(s).Decode(&data)
+			if err != nil {
+				panic(err)
+			}
+			for k, v := range data {
+				soundInfo[k] = v
+			}
+		}()
+	}
+
 }
