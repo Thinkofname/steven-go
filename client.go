@@ -213,6 +213,25 @@ func newClient() {
 	c.initEntity(false)
 }
 
+func (c *ClientState) playMusic() {
+	if !connected {
+		return
+	}
+	StopAllMusic()
+	if c.GameMode == gmCreative {
+		PlaySoundCallback("music.game.creative", c.playMusic)
+		return
+	}
+	switch c.WorldType {
+	case wtOverworld:
+		PlaySoundCallback("music.game", c.playMusic)
+	case wtNether:
+		PlaySoundCallback("music.game.nether", c.playMusic)
+	case wtEnd:
+		PlaySoundCallback("music.game.end", c.playMusic)
+	}
+}
+
 type clientEntity struct {
 	positionComponent
 	rotationComponent
@@ -239,6 +258,8 @@ func (c *ClientState) updateWorldType(wt worldType) {
 		render.SkyOffset = 0.0
 		render.ClearColour.R, render.ClearColour.G, render.ClearColour.B = 23/255.0, 0, 23/255.0
 	}
+
+	c.playMusic()
 }
 
 func (c *ClientState) updateSky() {

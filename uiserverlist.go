@@ -100,6 +100,15 @@ func newServerList() screen {
 
 func (sl *serverList) init() {
 	window.SetScrollCallback(sl.onScroll)
+	sl.playMusic()
+}
+
+func (sl *serverList) playMusic() {
+	if currentScreen != sl {
+		return
+	}
+	StopAllMusic()
+	PlaySoundCallback("music.menu", sl.playMusic)
 }
 
 func (sl *serverList) onScroll(w *glfw.Window, xoff float64, yoff float64) {

@@ -15,6 +15,9 @@
 package audio
 
 import (
+	"io"
+	"io/ioutil"
+	"os"
 	"unsafe"
 )
 
@@ -22,7 +25,9 @@ import (
 // #include <SFML/Audio/SoundBuffer.h>
 // #include <SFML/Audio/Sound.h>
 // #include <SFML/Audio/Listener.h>
+// #include <SFML/Audio/Music.h>
 // #include <SFML/System/Vector3.h>
+// #include <SFML/System/InputStream.h>
 // #include <stdlib.h>
 import "C"
 
@@ -31,7 +36,9 @@ type SoundBuffer struct {
 }
 
 func NewSoundBuffer(file string) SoundBuffer {
-	return SoundBuffer{C.sfSoundBuffer_createFromFile(C.CString(file))}
+	str := C.CString(file)
+	defer C.free(unsafe.Pointer(str))
+	return SoundBuffer{C.sfSoundBuffer_createFromFile(str)}
 }
 
 func NewSoundBufferData(data []byte) SoundBuffer {
@@ -124,4 +131,63 @@ func SetListenerDirection(x, y, z float32) {
 
 func SetGlobalVolume(vol float64) {
 	C.sfListener_setGlobalVolume(C.float(vol))
+}
+
+type Music struct {
+	internal *C.sfMusic
+	f        string
+}
+
+// NewMusic creates a new music object from the reader
+// Note: this will close the Reader if closable
+func NewMusic(r io.Reader) Music {
+	if c, ok := r.(io.Closer); ok {
+		defer c.Close()
+	}
+	m := Music{}
+	f, ok := r.(*os.File)
+	if !ok {
+		var err error
+		f, err = ioutil.TempFile("", "stream_")
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		_, err = io.Copy(f, r)
+		if err != nil {
+			panic(err)
+		}
+		m.f = f.Name()
+	}
+	str := C.CString(f.Name())
+	defer C.free(unsafe.Pointer(str))
+	m.internal = C.sfMusic_createFromFile(str)
+	return m
+}
+
+func (m Music) Play() {
+	C.sfMusic_play(m.internal)
+}
+
+func (m Music) Stop() {
+	C.sfMusic_stop(m.internal)
+}
+
+func (m Music) SetVolume(v float64) {
+	C.sfMusic_setVolume(m.internal, (C.float)(v))
+}
+
+func (m Music) SetPitch(v float64) {
+	C.sfMusic_setPitch(m.internal, C.float(v))
+}
+
+func (m Music) Status() Status {
+	return Status(C.sfMusic_getStatus(m.internal))
+}
+
+func (m Music) Free() {
+	C.sfMusic_destroy(m.internal)
+	if m.f != "" {
+		os.Remove(m.f)
+	}
 }

@@ -104,8 +104,8 @@ func getProfile() mojang.Profile {
 
 func connect(server string) {
 	setScreen(nil)
-	initClient()
 	connected = true
+	initClient()
 	disconnectReason.Value = nil
 	Client.network.Connect(getProfile(), server)
 }
@@ -227,6 +227,8 @@ handle:
 	}
 	con.tick(delta)
 	ui.Draw(width, height, delta)
+
+	tickAudio()
 
 	render.Draw(width, height, delta)
 	chunks := sortedChunks()
