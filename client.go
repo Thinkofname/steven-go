@@ -266,17 +266,34 @@ func (c *ClientState) updateSky() {
 	if c.WorldType != wtOverworld {
 		return
 	}
-	time := (c.WorldTime - 6000) / 12000
-	if time > 1 {
-		time = 2 - time
-	} else if time < 0 {
-		time = -time
-	}
-	render.SkyOffset = 1.0 - float32(time)
-	timeO := 1.0 - float32(time)*0.9
+	render.SkyOffset = c.calculateSky()
+	timeO := float32(render.SkyOffset) * 0.9
 	render.ClearColour.R = (122.0 / 255.0) * timeO
 	render.ClearColour.G = (165.0 / 255.0) * timeO
 	render.ClearColour.B = (247.0 / 255.0) * timeO
+}
+
+func (c *ClientState) calculateSky() float32 {
+	c.WorldTime = math.Mod(c.WorldTime, 24000)
+	offset := (1.0+c.WorldTime)/24000.0 - 0.25
+	if offset < 0 {
+		offset += 1
+	} else if offset > 1 {
+		offset -= 1
+	}
+
+	prevO := offset
+	offset = 1.0 - ((math.Cos(offset*math.Pi) + 1.0) / 2.0)
+	offset = prevO + (offset-prevO)/3
+
+	offset = 1.0 - (math.Cos(offset*math.Pi*2)*2 + 0.2)
+	if offset > 1 {
+		offset = 1
+	} else if offset < 0 {
+		offset = 0
+	}
+	offset = 1 - offset
+	return float32(offset*0.8 + 0.2)
 }
 
 func (c *ClientState) initEntity(head bool) {

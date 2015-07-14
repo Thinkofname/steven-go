@@ -29,30 +29,31 @@ vec4 atlasTexture() {
 `)
 	glsl.Register("get_light", `
 vec3 getLight(vec2 light) {
-	vec2 li = pow(vec2(lightLevel), 15.0 - light) * 15.0 + 1.0;
+	vec2 li = pow(vec2(lightLevel), 15.0 - light);
+	float skyTint = skyOffset * 0.95 + 0.05;
 	float bl = li.x;
-	float sk = li.y;
+	float sk = li.y * skyTint;
 
-	float br = (0.879552 * pow(bl, 2.0) + 0.871148 * bl + 32.9821);
-	float bg = (1.22181 * pow(bl, 2.0) - 4.78113 * bl + 36.7125);
-	float bb = (1.67612 * pow(bl, 2.0) - 12.9764 * bl + 48.8321);
+	float skyRed = sk * (skyOffset * 0.65 + 0.35);
+	float skyGreen = sk * (skyOffset * 0.65 + 0.35);
+	float blockGreen = bl * ((bl * 0.6 + 0.4) * 0.6 + 0.4);
+	float blockBlue = bl * (bl * bl * 0.6 + 0.4);
 
-	float sr = (0.131653 * pow(sk, 2.0) - 0.761625 * sk + 35.0393);
-	float sg = (0.136555 * pow(sk, 2.0) - 0.853782 * sk + 29.6143);
-	float sb = (0.327311 * pow(sk, 2.0) - 1.62017 * sk + 28.0929);
-	float srl = (0.996148 * pow(sk, 2) - 4.19629 * sk + 51.4036);
-	float sgl = (1.03904 * pow(sk, 2) - 4.81516 * sk + 47.0911);
-	float sbl = (1.076164 * pow(sk, 2) - 5.36376 * sk + 43.9089);
+	vec3 col = vec3(
+		skyRed + bl,
+		skyGreen + blockGreen,
+		sk + blockBlue
+	);
 
-	sr = srl * skyOffset + sr * (1.0 - skyOffset);
-	sg = sgl * skyOffset + sg * (1.0 - skyOffset);
-	sb = sbl * skyOffset + sb * (1.0 - skyOffset);
+	col = col * 0.96 + 0.03;
 
-	return clamp(vec3(
-		sqrt((br*br + sr*sr) / 2) / 255.0,
-		sqrt((bg*bg + sg*sg) / 2) / 255.0,
-		sqrt((bb*bb + sb*sb) / 2) / 255.0
-	), 0.0, 1.0);
+	float gamma = 0.0;
+	vec3 invCol = 1.0 - col;
+	invCol = 1.0 - invCol * invCol * invCol * invCol;
+	col = col * (1.0 - gamma) + invCol * gamma;
+	col = col * 0.96 + 0.03;
+
+	return clamp(col, 0.0, 1.0);
 }	
 `)
 }

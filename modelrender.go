@@ -375,12 +375,12 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 	skyLight := 0
 	count := 0
 
-	dbl := int8(sblockLight) - 4
+	dbl := int8(sblockLight) - 8
 	if dbl < 0 {
 		dbl = 0
 	}
 	sblockLight = byte(dbl)
-	dsl := int8(sskyLight) - 4
+	dsl := int8(sskyLight) - 8
 	if dsl < 0 {
 		dsl = 0
 	}
