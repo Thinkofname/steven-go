@@ -17,6 +17,7 @@ package steven
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"math/rand"
 	"runtime"
@@ -39,43 +40,25 @@ type uiLogo struct {
 }
 
 var (
-	logoTextures = []string{
-		"blocks/cobblestone",
-		"blocks/netherrack",
-		"blocks/dirt",
-		"blocks/planks_oak",
-		"blocks/brick",
-		"blocks/snow",
-		"blocks/sand",
-		"blocks/gravel",
-		"blocks/hardened_clay",
-		"blocks/clay",
-		"blocks/bedrock",
-		"blocks/obsidian",
-		"blocks/end_stone",
-		"blocks/stone_andesite",
-		"blocks/dirt_podzol_top",
-		"blocks/portal",
-		"blocks/prismarine_rough",
-		"blocks/soul_sand",
-		"blocks/lava_still",
-		"blocks/hay_block_top",
-		"blocks/log_acacia",
-		"blocks/red_sandstone_carved",
-	}
 	r                         = rand.New(rand.NewSource(time.Now().UnixNano()))
-	logoTexture               = logoTextures[r.Intn(len(logoTextures))]
-	logoTargetTexture         = logoTextures[r.Intn(len(logoTextures))]
+	logoTexture               = "blocks/cobblestone"
+	logoTargetTexture         = "blocks/cobblestone"
 	logoText                  string
 	logoTextTimer             float64
 	logoLayers                [2][]*ui.Image
 	logoTimer, logoTransTimer float64
+	stevenLogo                string
 )
 
 func (u *uiLogo) init(scene *scene.Type) {
 	if logoText == "" {
 		nextLogoText()
 	}
+	if logoTexture == "" {
+		nextLogoTexture()
+		logoTexture = logoTargetTexture
+	}
+	readStevenLogo()
 	u.scene = scene
 	row := 0
 	tex, tex2 := render.GetTexture(logoTexture), render.GetTexture(logoTargetTexture)
@@ -153,8 +136,9 @@ func (u *uiLogo) tick(delta float64) {
 	} else if logoTransTimer < 0 {
 		logoTransTimer = 120
 		logoTimer = r.Float64() * 60 * 30
+		readStevenLogo()
 		logoTexture = logoTargetTexture
-		logoTargetTexture = logoTextures[r.Intn(len(logoTextures))]
+		nextLogoTexture()
 		nextLogoText()
 		u.text.Update(logoText)
 		width, _ := u.text.Size()
@@ -226,21 +210,28 @@ var stevenLogoLines = []string{
 	fmt.Sprintf("Splash generated at %d", time.Now().Unix()),
 }
 
-const stevenLogo = `
-   SSSSSSSSSSSSSSS          tttt                                                                                             
- SS:::::::::::::::S      ttt:::t                                                                                             
-S:::::SSSSSS::::::S      t:::::t                                                                                             
-S:::::S     SSSSSSS      t:::::t                                                                                             
-S:::::S            ttttttt:::::ttttttt        eeeeeeeeeeee    vvvvvvv           vvvvvvv    eeeeeeeeeeee    nnnn  nnnnnnnn    
-S:::::S            t:::::::::::::::::t      ee::::::::::::ee   v:::::v         v:::::v   ee::::::::::::ee  n:::nn::::::::nn  
- S::::SSSS         t:::::::::::::::::t     e::::::eeeee:::::ee  v:::::v       v:::::v   e::::::eeeee:::::een::::::::::::::nn 
-  SS::::::SSSSS    tttttt:::::::tttttt    e::::::e     e:::::e   v:::::v     v:::::v   e::::::e     e:::::enn:::::::::::::::n
-    SSS::::::::SS        t:::::t          e:::::::eeeee::::::e    v:::::v   v:::::v    e:::::::eeeee::::::e  n:::::nnnn:::::n
-       SSSSSS::::S       t:::::t          e:::::::::::::::::e      v:::::v v:::::v     e:::::::::::::::::e   n::::n    n::::n
-            S:::::S      t:::::t          e::::::eeeeeeeeeee        v:::::v:::::v      e::::::eeeeeeeeeee    n::::n    n::::n
-            S:::::S      t:::::t    tttttte:::::::e                  v:::::::::v       e:::::::e             n::::n    n::::n
-SSSSSSS     S:::::S      t::::::tttt:::::te::::::::e                  v:::::::v        e::::::::e            n::::n    n::::n
-S::::::SSSSSS:::::S      tt::::::::::::::t e::::::::eeeeeeee           v:::::v          e::::::::eeeeeeee    n::::n    n::::n
-S:::::::::::::::SS         tt:::::::::::tt  ee:::::::::::::e            v:::v            ee:::::::::::::e    n::::n    n::::n
- SSSSSSSSSSSSSSS             ttttttttttt      eeeeeeeeeeeeee             vvv               eeeeeeeeeeeeee    nnnnnn    nnnnnn                                         
-`
+func readStevenLogo() {
+	r, _ := resource.Open("steven", "logo/logo.txt")
+	defer r.Close()
+	data, _ := ioutil.ReadAll(r)
+	stevenLogo = string(data)
+}
+
+func nextLogoTexture() {
+	var textures []string
+	rs, _ := resource.OpenAll("steven", "logo/textures.txt")
+	for _, r := range rs {
+		func() {
+			defer r.Close()
+			s := bufio.NewScanner(r)
+			for s.Scan() {
+				texture := s.Text()
+				textures = append(textures, texture)
+			}
+		}()
+	}
+
+	if len(textures) > 0 {
+		logoTargetTexture = textures[r.Intn(len(textures))]
+	}
+}
