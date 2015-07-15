@@ -14,7 +14,10 @@
 
 package steven
 
-import "github.com/thinkofdeath/steven/type/direction"
+import (
+	"github.com/go-gl/mathgl/mgl32"
+	"github.com/thinkofdeath/steven/type/direction"
+)
 
 type Position struct {
 	X, Y, Z int
@@ -30,4 +33,8 @@ func (p Position) ShiftDir(d direction.Type) Position {
 
 func (p Position) Get() (int, int, int) {
 	return p.X, p.Y, p.Z
+}
+
+func (p Position) Vec() mgl32.Vec3 {
+	return mgl32.Vec3{float32(p.X), float32(p.Y), float32(p.Z)}
 }

@@ -443,7 +443,12 @@ func (c *ClientState) renderTick(delta float64) {
 			c.stepTimer -= 20
 			b := chunkMap.Block(int(c.X), int(c.Y-0.3), int(c.Z))
 			if !b.Is(Blocks.Air) {
-				PlaySound(b.StepSound())
+				name, vol, pitch := b.StepSound()
+				PlaySoundAt(name, vol, pitch, mgl32.Vec3{
+					float32(c.X),
+					float32(c.Y),
+					float32(c.Z),
+				})
 			}
 		}
 	}
@@ -518,7 +523,10 @@ func (c *ClientState) armTick() {
 				})
 				return
 			}
-			PlaySound(b.DigSound())
+			if !b.Is(Blocks.Air) {
+				name, vol, pitch := b.DigSound()
+				PlaySoundAt(name, vol, pitch, pos.Vec())
+			}
 		}
 
 		if b != c.currentBreakingBlock || pos != c.currentBreakingPos {
@@ -559,7 +567,8 @@ func (c *ClientState) armTick() {
 				chunkMap.SetBlock(Blocks.Air.Base, pos.X, pos.Y, pos.Z)
 				chunkMap.UpdateBlock(pos.X, pos.Y, pos.Z)
 				c.killBreakEntity()
-				PlaySound(b.BreakSound())
+				name, vol, pitch := b.BreakSound()
+				PlaySoundAt(name, vol, pitch, pos.Vec())
 			} else {
 				stage := int(9 - math.Min(9, 10*(c.breakTime/c.maxBreakTime)))
 				if stage != c.breakEntity.(BlockBreakComponent).Stage() {

@@ -100,9 +100,12 @@ type blockGrass struct {
 	Snowy bool `state:"snowy"`
 }
 
-func (b *blockGrass) StepSound() string  { return "step.grass" }
-func (b *blockGrass) DigSound() string   { return "step.grass" }
-func (b *blockGrass) BreakSound() string { return "dig.grass" }
+func (b *blockGrass) StepSound() (name string, vol, pitch float64) { return "step.grass", 0.5, 1 }
+
+func (b *blockGrass) DigSound() (name string, vol, pitch float64) {
+	return "step.grass", 0.5, 0.5
+}
+func (b *blockGrass) BreakSound() (name string, vol, pitch float64) { return "dig.grass", 0.5, 1 }
 
 func (b *blockGrass) UpdateState(x, y, z int) Block {
 	if bl := chunkMap.Block(x, y+1, z); bl.Is(Blocks.Snow) || bl.Is(Blocks.SnowLayer) {
