@@ -28,7 +28,10 @@ func (b *blockSimple) load(tag reflect.StructTag) {
 	b.cullAgainst = getBool("cullAgainst", true)
 	b.collidable = getBool("collidable", true)
 	b.renderable = getBool("renderable", true)
-	b.hardness, _ = strconv.ParseFloat(tag.Get("hardness"), 64)
+	hardness, err := strconv.ParseFloat(tag.Get("hardness"), 64)
+	if err == nil {
+		b.hardness = hardness
+	}
 	b.translucent = getBool("translucent", false)
 }
 
