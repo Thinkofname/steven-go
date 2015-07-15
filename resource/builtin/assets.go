@@ -109,7 +109,7 @@ func assets_minecraft_textures_font_ascii_png() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindata_file_info{name: "assets/minecraft/textures/font/ascii.png", size: 1566, mode: os.FileMode(436), modTime: time.Unix(1432837142, 0)}
+	info := bindata_file_info{name: "assets/minecraft/textures/font/ascii.png", size: 1566, mode: os.FileMode(436), modTime: time.Unix(1432857113, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
