@@ -16,6 +16,7 @@ package ui
 
 import "github.com/go-gl/glfw/v3.1/glfw"
 
+// focusable is a drawable that can be focsued for keyboard input
 type focusable interface {
 	Drawable
 	setFocused(bool)
@@ -23,6 +24,7 @@ type focusable interface {
 	handleChar(w *glfw.Window, char rune)
 }
 
+// HandleKey passes the input to the focused drawable
 func HandleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	if key == glfw.KeyTab && action == glfw.Release {
 		CycleFocus()
@@ -33,40 +35,52 @@ func HandleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, m
 	}
 }
 
+// HandleChar passes the input to the focused drawable
 func HandleChar(w *glfw.Window, char rune) {
 	if f := getFocused(); f != nil {
 		f.handleChar(w, char)
 	}
 }
 
+// Currently focused drawable
 var focused focusable
 
+// Returns the currently focused drawable or nil
+// Tries to focus an drawable if one isn't currently focused
 func getFocused() focusable {
 	if focused != nil {
+		// Ensure the drawable is focused
 		for _, d := range drawables {
 			if d.Drawable == focused {
 				return d.Drawable.(focusable)
 			}
 		}
 	}
+	// Try to focus another drawable
 	for _, d := range drawables {
 		if f, ok := d.Drawable.(focusable); ok {
 			focus(f)
 			return focused
 		}
 	}
+	// Clear the focus if one isn't found incase this
+	// fell through from the first check
+	focus(nil)
 	return nil
 }
 
+// CycleFocus changes the focus to the next drawable
 func CycleFocus() {
 	pos := 0
 	l := len(drawables)
+	// Find our drawable
 	for i, d := range drawables {
 		if d.Drawable == focused {
 			pos = (i + 1) % l
 			break
 		}
 	}
+	// Make sure we don't loop forever on scenes without focusable drawables
 	max := l
 	for ; max >= 0; max-- {
 		dr := drawables[pos]
@@ -78,10 +92,13 @@ func CycleFocus() {
 	}
 }
 
+// Changes the focused drawable
 func focus(f focusable) {
 	if focused != nil {
 		focused.setFocused(false)
 	}
 	focused = f
-	focused.setFocused(true)
+	if focused != nil {
+		focused.setFocused(true)
+	}
 }
