@@ -22,6 +22,7 @@ import (
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render/gl"
+	"github.com/thinkofdeath/steven/ui"
 )
 
 var window *glfw.Window
@@ -83,6 +84,7 @@ func startWindow() {
 	window.SetCursorPosCallback(onMouseMove)
 	window.SetMouseButtonCallback(onMouseClick)
 	window.SetKeyCallback(onKey)
+	window.SetCharCallback(onChar)
 	window.SetScrollCallback(onScroll)
 	window.SetFocusCallback(onFocus)
 
@@ -184,6 +186,12 @@ var keyStateMap = map[glfw.Key]Key{
 	glfw.KeySpace:       KeyJump,
 }
 
+func onChar(w *glfw.Window, char rune) {
+	if currentScreen != nil {
+		ui.HandleChar(w, char)
+	}
+}
+
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	// Debug override
 	if key == glfw.KeyGraveAccent && action == glfw.Release {
@@ -192,6 +200,7 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 	}
 
 	if currentScreen != nil {
+		ui.HandleKey(w, key, scancode, action, mods)
 		return
 	}
 	if Client.chat.enteringText {

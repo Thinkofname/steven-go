@@ -18,11 +18,10 @@ import (
 	crand "crypto/rand"
 	"encoding/hex"
 
-	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/protocol/mojang"
-	"github.com/thinkofdeath/steven/render/ui"
-	"github.com/thinkofdeath/steven/render/ui/scene"
+	"github.com/thinkofdeath/steven/ui"
+	"github.com/thinkofdeath/steven/ui/scene"
 )
 
 type loginScreen struct {
@@ -30,69 +29,26 @@ type loginScreen struct {
 	scene *scene.Type
 	logo  uiLogo
 
-	user    *textBox
-	pass    *textBox
-	focused *textBox
-
-	loginBtn   *ui.Button
-	loginTxt   *ui.Text
-	loginError *ui.Text
+	User       *ui.TextBox `uiID:"user"`
+	Pass       *ui.TextBox `uiID:"pass"`
+	LoginBtn   *ui.Button  `uiID:"btnLogin"`
+	LoginTxt   *ui.Text    `uiID:"txtLogin"`
+	LoginError *ui.Text    `uiID:"txtError"`
 }
 
 func newLoginScreen() *loginScreen {
-	ls := &loginScreen{
-		scene: scene.New(true),
-	}
+	ls := &loginScreen{}
 	if clientToken.Value() == "" {
 		data := make([]byte, 16)
 		crand.Read(data)
 		clientToken.SetValue(hex.EncodeToString(data))
 	}
 
-	window.SetKeyCallback(ls.handleKey)
-	window.SetCharCallback(ls.handleChar)
+	ls.scene = scene.LoadScene("steven", "login", ls)
 	ls.logo.init(ls.scene)
-
-	ls.user = newTextBox(0, -20, 400, 40)
-	ls.user.back.Attach(ui.Middle, ui.Center)
-	ls.user.add(ls.scene)
-	label := ui.NewText("Username/Email:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
-	label.AttachTo(ls.user.back)
-	ls.scene.AddDrawable(label)
-	ls.user.back.AddClick(func() {
-		if ls.focused != nil {
-			ls.focused.Focused = false
-		}
-		ls.user.Focused = true
-		ls.focused = ls.user
-	})
-
-	ls.pass = newTextBox(0, 40, 400, 40)
-	ls.pass.back.Attach(ui.Middle, ui.Center)
-	ls.pass.add(ls.scene)
-	label = ui.NewText("Password:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
-	label.AttachTo(ls.pass.back)
-	ls.scene.AddDrawable(label)
-	ls.pass.back.AddClick(func() {
-		if ls.focused != nil {
-			ls.focused.Focused = false
-		}
-		ls.pass.Focused = true
-		ls.focused = ls.pass
-	})
-	ls.pass.Password = true
-
-	ls.loginBtn, ls.loginTxt = newButtonText("Login", 0, 100, 400, 40)
-	ls.loginBtn.Attach(ui.Middle, ui.Center)
-	ls.scene.AddDrawable(ls.loginBtn)
-	ls.scene.AddDrawable(ls.loginTxt)
-	ls.loginBtn.AddClick(ls.login)
-
 	uiFooter(ls.scene)
 
-	ls.loginError = ui.NewText("", 0, 150, 255, 50, 50).Attach(ui.Center, ui.Middle)
-	ls.scene.AddDrawable(ls.loginError)
-
+	ls.scene.Show()
 	if getProfile().IsComplete() {
 		ls.refresh()
 	}
@@ -103,12 +59,12 @@ func newLoginScreen() *loginScreen {
 func (ls *loginScreen) postLogin(p mojang.Profile, err error) {
 	if err != nil {
 		if me, ok := err.(mojang.Error); ok {
-			ls.loginError.Update(me.Message)
+			ls.LoginError.Update(me.Message)
 		} else {
-			ls.loginError.Update(err.Error())
+			ls.LoginError.Update(err.Error())
 		}
-		ls.loginBtn.SetDisabled(false)
-		ls.loginTxt.Update("Login")
+		ls.LoginBtn.SetDisabled(false)
+		ls.LoginTxt.Update("Login")
 		return
 	}
 	clientUsername.SetValue(p.Username)
@@ -120,72 +76,29 @@ func (ls *loginScreen) postLogin(p mojang.Profile, err error) {
 }
 
 func (ls *loginScreen) refresh() {
-	ls.loginError.Update("")
-	ls.loginBtn.SetDisabled(true)
-	ls.loginTxt.Update("Logging in...")
+	ls.LoginError.Update("")
+	ls.LoginBtn.SetDisabled(true)
+	ls.LoginTxt.Update("Logging in...")
 	go func() {
 		p, err := mojang.Refresh(getProfile(), clientToken.Value())
 		syncChan <- func() { ls.postLogin(p, err) }
 	}()
 }
 
-func (ls *loginScreen) login() {
-	ls.loginError.Update("")
-	ls.loginBtn.SetDisabled(true)
-	ls.loginTxt.Update("Logging in...")
+func (ls *loginScreen) Login() {
+	ls.LoginError.Update("")
+	ls.LoginBtn.SetDisabled(true)
+	ls.LoginTxt.Update("Logging in...")
 	go func() {
-		p, err := mojang.Login(ls.user.input, ls.pass.input, clientToken.Value())
+		p, err := mojang.Login(ls.User.Value(), ls.Pass.Value(), clientToken.Value())
 		syncChan <- func() { ls.postLogin(p, err) }
 	}()
 }
 
 func (ls *loginScreen) tick(delta float64) {
-	if ls.loginBtn.Disabled() {
-		if ls.focused != nil {
-			ls.focused.Focused = false
-			ls.focused = nil
-		}
-	}
-	ls.user.tick(delta)
-	ls.pass.tick(delta)
 	ls.logo.tick(delta)
-}
-
-func (ls *loginScreen) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-	if ls.focused == nil {
-		return
-	}
-
-	if (key == glfw.KeyEnter || key == glfw.KeyTab) && action == glfw.Release {
-		if ls.focused == ls.user {
-			ls.user.Focused = false
-			ls.focused = ls.pass
-			ls.pass.Focused = true
-		} else if ls.focused == ls.pass {
-			ls.pass.Focused = false
-			ls.focused = nil
-			ls.login()
-		}
-		return
-	}
-
-	if key == glfw.KeyEscape && action == glfw.Release {
-		ls.focused.Focused = false
-		ls.focused = nil
-	}
-
-	ls.focused.handleKey(w, key, scancode, action, mods)
-}
-
-func (ls *loginScreen) handleChar(w *glfw.Window, char rune) {
-	if ls.focused == nil {
-		return
-	}
-	ls.focused.handleChar(w, char)
 }
 
 func (ls *loginScreen) remove() {
 	ls.scene.Hide()
-	window.SetKeyCallback(onKey)
-	window.SetCharCallback(nil)
 }

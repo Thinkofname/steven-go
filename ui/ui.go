@@ -60,6 +60,7 @@ type Drawable interface {
 	Offset() (float64, float64)
 	ShouldDraw() bool
 	AttachedTo() Drawable
+	AttachTo(d Drawable)
 	Attachment() (vAttach, hAttach AttachPoint)
 	Layer() int
 	OnRemove(d Drawable)

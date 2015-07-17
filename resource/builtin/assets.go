@@ -6,6 +6,7 @@
 // files/assets/steven/logo/logo.txt
 // files/assets/steven/logo/textures.txt
 // files/assets/steven/models/block/missing_block.json
+// files/assets/steven/scene/login.xml
 // files/assets/steven/textures/gui/cog.png
 // DO NOT EDIT!
 
@@ -89,7 +90,7 @@ func assetsMinecraftTextsSplashesTxt() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/minecraft/texts/splashes.txt", size: 1626, mode: os.FileMode(420), modTime: time.Unix(1436968049, 0)}
+	info := bindataFileInfo{name: "assets/minecraft/texts/splashes.txt", size: 1626, mode: os.FileMode(436), modTime: time.Unix(1432374943, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -109,7 +110,7 @@ func assetsMinecraftTexturesFontAsciiPng() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/minecraft/textures/font/ascii.png", size: 1566, mode: os.FileMode(420), modTime: time.Unix(1436968049, 0)}
+	info := bindataFileInfo{name: "assets/minecraft/textures/font/ascii.png", size: 1566, mode: os.FileMode(436), modTime: time.Unix(1432857113, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -129,7 +130,7 @@ func assetsStevenBlockstatesMissing_blockJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/steven/blockstates/missing_block.json", size: 75, mode: os.FileMode(420), modTime: time.Unix(1436968049, 0)}
+	info := bindataFileInfo{name: "assets/steven/blockstates/missing_block.json", size: 75, mode: os.FileMode(436), modTime: time.Unix(1432490704, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -149,7 +150,7 @@ func assetsStevenLogoLogoTxt() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/steven/logo/logo.txt", size: 2016, mode: os.FileMode(420), modTime: time.Unix(1436973061, 0)}
+	info := bindataFileInfo{name: "assets/steven/logo/logo.txt", size: 2016, mode: os.FileMode(436), modTime: time.Unix(1436979243, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -169,7 +170,7 @@ func assetsStevenLogoTexturesTxt() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/steven/logo/textures.txt", size: 383, mode: os.FileMode(420), modTime: time.Unix(1436973063, 0)}
+	info := bindataFileInfo{name: "assets/steven/logo/textures.txt", size: 383, mode: os.FileMode(436), modTime: time.Unix(1436979243, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -189,7 +190,27 @@ func assetsStevenModelsBlockMissing_blockJson() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/steven/models/block/missing_block.json", size: 604, mode: os.FileMode(420), modTime: time.Unix(1436968049, 0)}
+	info := bindataFileInfo{name: "assets/steven/models/block/missing_block.json", size: 604, mode: os.FileMode(436), modTime: time.Unix(1432491461, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _assetsStevenSceneLoginXml = "\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\x9c\x92\xc1\x4e\xc3\x30\x0c\x86\xcf\xdd\x53\x44\xbe\x8f\x6e\xd3\x2a\x21\xd4\xf4\xb6\x1b\x07\x2e\x3c\x40\xd3\x46\x6d\x44\x9b\xa0\xc4\x61\xe5\xed\xb1\x95\x88\x22\x40\x14\xed\x64\xbb\xb1\x7f\x7f\xb6\x5b\x87\x4e\x5b\xdd\xec\x8a\x5a\x45\x44\x67\xc5\x22\xe1\x00\xe2\x5d\xc2\xf1\x40\xf6\x6a\x7a\x1c\x25\x9c\xd9\x1f\xb5\x19\x46\xe4\x80\xfc\x76\x32\x83\x95\x40\xc5\xa8\x3d\x88\xb7\x1c\xcf\xa6\xef\x27\x0d\xa2\x9b\x4c\xf7\x22\xe1\xee\xd1\x0d\xc6\x82\x30\xbd\x04\x85\x36\x45\xd4\xac\xa8\x51\x2f\xc8\x55\x51\x4b\xc8\x49\x5b\x9a\x2c\x82\x0b\xa6\xec\x92\x91\xcb\xc4\x4c\xee\x2e\x2b\xe6\x9c\x8b\xf7\x8e\x14\xd6\x59\x2a\xb2\x5e\xc2\xa9\xaa\x40\x0c\x12\x38\x54\xc9\x6c\x74\x2d\x57\x71\xe5\x96\x55\x71\x7f\x22\x7b\xf3\x7a\x18\x33\x06\x7a\xf9\xb1\x8b\x67\xfa\x6a\xdb\x59\x97\x97\xb9\x35\xd3\xc3\x97\x19\xf6\xc7\xfb\x3c\x75\x86\x69\x7e\xe3\x3a\xff\x71\x34\xea\x55\xfc\x87\xec\xb5\x0d\x21\x65\xb3\x77\x75\x9e\x97\xea\x23\xbd\x86\xa8\x66\x83\x9f\x77\x6d\x8a\xef\xf8\x4f\xb9\x60\x03\xbc\x2e\xd3\x6f\xf7\x11\x00\x00\xff\xff\xc1\x31\xe5\xdc\x7e\x02\x00\x00"
+
+func assetsStevenSceneLoginXmlBytes() ([]byte, error) {
+	return bindataRead(
+		_assetsStevenSceneLoginXml,
+		"assets/steven/scene/login.xml",
+	)
+}
+
+func assetsStevenSceneLoginXml() (*asset, error) {
+	bytes, err := assetsStevenSceneLoginXmlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "assets/steven/scene/login.xml", size: 638, mode: os.FileMode(436), modTime: time.Unix(1437138442, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -209,7 +230,7 @@ func assetsStevenTexturesGuiCogPng() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "assets/steven/textures/gui/cog.png", size: 288, mode: os.FileMode(420), modTime: time.Unix(1436968049, 0)}
+	info := bindataFileInfo{name: "assets/steven/textures/gui/cog.png", size: 288, mode: os.FileMode(436), modTime: time.Unix(1432387105, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -272,6 +293,7 @@ var _bindata = map[string]func() (*asset, error){
 	"assets/steven/logo/logo.txt":                   assetsStevenLogoLogoTxt,
 	"assets/steven/logo/textures.txt":               assetsStevenLogoTexturesTxt,
 	"assets/steven/models/block/missing_block.json": assetsStevenModelsBlockMissing_blockJson,
+	"assets/steven/scene/login.xml":                 assetsStevenSceneLoginXml,
 	"assets/steven/textures/gui/cog.png":            assetsStevenTexturesGuiCogPng,
 }
 
@@ -339,6 +361,9 @@ var _bintree = &bintree{nil, map[string]*bintree{
 				"block": {nil, map[string]*bintree{
 					"missing_block.json": {assetsStevenModelsBlockMissing_blockJson, map[string]*bintree{}},
 				}},
+			}},
+			"scene": {nil, map[string]*bintree{
+				"login.xml": {assetsStevenSceneLoginXml, map[string]*bintree{}},
 			}},
 			"textures": {nil, map[string]*bintree{
 				"gui": {nil, map[string]*bintree{

@@ -18,7 +18,7 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/render/ui"
+	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/type/direction"
 )
 

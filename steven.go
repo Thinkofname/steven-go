@@ -25,7 +25,7 @@ import (
 	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/render/ui"
+	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/resource"
 )
 
@@ -117,6 +117,7 @@ func start() {
 
 	initClient()
 	fakeGen()
+
 	if skipLogin {
 		setScreen(newServerList())
 		console.ExecConf("autoexec.cfg")

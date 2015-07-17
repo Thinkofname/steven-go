@@ -19,7 +19,7 @@ import (
 	"io"
 
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/render/ui"
+	"github.com/thinkofdeath/steven/ui"
 )
 
 var progressBars []*progressBar

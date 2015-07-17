@@ -26,8 +26,8 @@ import (
 
 	"github.com/thinkofdeath/steven/native"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/render/ui"
-	"github.com/thinkofdeath/steven/render/ui/scene"
+	"github.com/thinkofdeath/steven/ui"
+	"github.com/thinkofdeath/steven/ui/scene"
 	"github.com/thinkofdeath/steven/resource"
 )
 

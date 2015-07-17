@@ -17,8 +17,8 @@ package steven
 import (
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/render/ui"
-	"github.com/thinkofdeath/steven/render/ui/scene"
+	"github.com/thinkofdeath/steven/ui"
+	"github.com/thinkofdeath/steven/ui/scene"
 )
 
 type respawnScreen struct {

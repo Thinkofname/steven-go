@@ -27,7 +27,7 @@ type Button struct {
 	clickFuncs []func()
 }
 
-// NewButton creates a new Text drawable.
+// NewButton creates a new Button drawable.
 func NewButton(x, y, w, h float64) *Button {
 	return &Button{
 		x: x, y: y, w: w, h: h,

@@ -19,8 +19,8 @@ import (
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/render/ui"
-	"github.com/thinkofdeath/steven/render/ui/scene"
+	"github.com/thinkofdeath/steven/ui"
+	"github.com/thinkofdeath/steven/ui/scene"
 )
 
 var con consoleScreen
