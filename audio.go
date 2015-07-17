@@ -26,6 +26,7 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/thinkofdeath/steven/audio"
 	"github.com/thinkofdeath/steven/console"
+	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/resource"
 )
 
@@ -124,6 +125,13 @@ func playSoundInternal(snd sound, vol, pitch float64, rel bool, pos mgl32.Vec3, 
 		}
 	}
 	if n {
+		if len(soundList) >= 100 {
+			console.Component(
+				format.Build("WARN: Skipping playing sound due to limit").
+					Color(format.Yellow).Create(),
+			)
+			return
+		}
 		s = audio.NewSound()
 		soundList = append(soundList, s)
 	}
