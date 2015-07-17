@@ -26,9 +26,9 @@ import (
 
 	"github.com/thinkofdeath/steven/native"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/resource"
 	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/ui/scene"
-	"github.com/thinkofdeath/steven/resource"
 )
 
 type uiLogo struct {

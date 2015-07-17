@@ -25,8 +25,8 @@ import (
 	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol/mojang"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/resource"
+	"github.com/thinkofdeath/steven/ui"
 )
 
 var (

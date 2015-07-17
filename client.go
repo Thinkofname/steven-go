@@ -25,10 +25,10 @@ import (
 	"github.com/thinkofdeath/steven/format"
 	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/ui"
-	"github.com/thinkofdeath/steven/ui/scene"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/vmath"
+	"github.com/thinkofdeath/steven/ui"
+	"github.com/thinkofdeath/steven/ui/scene"
 )
 
 const (
