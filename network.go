@@ -15,6 +15,7 @@
 package steven
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/thinkofdeath/steven/console"
@@ -93,8 +94,12 @@ func (n *networkManager) Connect(profile mojang.Profile, server string) {
 			case *protocol.LoginSuccess:
 				n.conn.State = protocol.Play
 				break preLogin
+			case *protocol.LoginDisconnect:
+				n.SignalClose(errors.New(packet.Reason.String()))
+				return
 			default:
 				n.SignalClose(fmt.Errorf("unhandled packet %T", packet))
+				return
 			}
 		}
 

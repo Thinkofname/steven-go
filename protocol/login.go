@@ -50,9 +50,10 @@ func (c *Conn) LoginToServer(profile mojang.Profile) (err error) {
 	if packet, err = c.ReadPacket(); err != nil {
 		return
 	}
-	req, ok := packet.(*EncryptionRequest)
-	if !ok {
-		return fmt.Errorf("unexpected packet %#v", packet)
+
+	req, err := checkLoginPacket(c, packet)
+	if err != nil {
+		return err
 	}
 	var p interface{}
 	if p, err = x509.ParsePKIXPublicKey(req.PublicKey); err != nil {
@@ -90,4 +91,24 @@ func (c *Conn) LoginToServer(profile mojang.Profile) (err error) {
 
 	err = c.EnableEncryption(key)
 	return
+}
+
+func checkLoginPacket(c *Conn, p Packet) (*EncryptionRequest, error) {
+	switch p := p.(type) {
+	case *EncryptionRequest:
+		return p, nil
+	case *LoginDisconnect:
+		return nil, errors.New(p.Reason.String())
+	case *LoginSuccess:
+		return nil, errors.New("server is in offline mode which is currently unsupported")
+	case *SetInitialCompression:
+		c.SetCompression(int(p.Threshold))
+		p2, err := c.ReadPacket()
+		if err != nil {
+			return nil, err
+		}
+		return checkLoginPacket(c, p2)
+	default:
+		return nil, fmt.Errorf("unexpected packet %#v", p)
+	}
 }
