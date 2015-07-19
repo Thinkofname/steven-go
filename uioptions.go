@@ -68,20 +68,29 @@ func newOptionMenu(ret func() screen) *optionMenu {
 	fov.Value = (float64(render.FOV.Value()) - 60) / 119.0
 	fov.update()
 
+	vol, vtxt := newButtonText("Volume", -160, -100, 300, 40)
+	om.scene.AddDrawable(vol.Attach(ui.Center, ui.Middle))
+	om.scene.AddDrawable(vtxt)
+	vol.AddClick(func() {
+		setScreen(newVolumeMenu(om.ret))
+	})
+
 	vsync, vtxt := newButtonText("", -160, -50, 300, 40)
 	om.scene.AddDrawable(vsync.Attach(ui.Center, ui.Middle))
 	om.scene.AddDrawable(vtxt)
-	f := func() {
+	vsync.AddClick(func() {
 		renderVSync.SetValue(!renderVSync.Value())
 		if renderVSync.Value() {
 			vtxt.Update("VSync: Enabled")
 		} else {
 			vtxt.Update("VSync: Disabled")
 		}
+	})
+	if renderVSync.Value() {
+		vtxt.Update("VSync: Enabled")
+	} else {
+		vtxt.Update("VSync: Disabled")
 	}
-	vsync.AddClick(f)
-	renderVSync.SetValue(!renderVSync.Value())
-	f()
 
 	mouseS := newSlider(160, -50, 300, 40)
 	mouseS.back.Attach(ui.Center, ui.Middle)
@@ -118,13 +127,11 @@ func newOptionMenu(ret func() screen) *optionMenu {
 	uiS, utxt := newButtonText("", -160, 0, 300, 40)
 	om.scene.AddDrawable(uiS.Attach(ui.Center, ui.Middle))
 	om.scene.AddDrawable(utxt)
-	f = func() {
+	uiS.AddClick(func() {
 		uiScale.SetValue(scales[(curScale()+1)%len(scales)])
 		utxt.Update(fmt.Sprintf("UI Scale: %s", uiScale.Value()))
-	}
-	uiS.AddClick(f)
-	uiScale.SetValue(scales[(len(scales)+curScale()-1)%len(scales)])
-	f()
+	})
+	utxt.Update(fmt.Sprintf("UI Scale: %s", uiScale.Value()))
 
 	return om
 }

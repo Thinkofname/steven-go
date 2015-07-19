@@ -30,19 +30,6 @@ import (
 	"github.com/thinkofdeath/steven/resource"
 )
 
-var (
-	loadedSounds = map[pluginKey]audio.SoundBuffer{}
-	soundList    []audio.Sound
-	soundInfo    = map[string]soundData{}
-	soundRandom  = rand.New(rand.NewSource(time.Now().Unix()))
-	currentMusic []music
-)
-
-type music struct {
-	audio.Music
-	cb func()
-}
-
 type soundCategory string
 
 const (
@@ -53,14 +40,72 @@ const (
 	sndHostile soundCategory = "hostile"
 	sndBlock   soundCategory = "block"
 	sndMusic   soundCategory = "music"
+	sndRecord  soundCategory = "record"
+
+	genericSoundDoc = `
+mu_vol_%[1]s controls the volume of sounds with the type of %[1]s.
+The value should be between 0 and 100.
+`
 )
+
+var (
+	loadedSounds = map[pluginKey]audio.SoundBuffer{}
+	soundList    []audio.Sound
+	soundInfo    = map[string]soundData{}
+	soundRandom  = rand.New(rand.NewSource(time.Now().Unix()))
+	currentMusic []music
+
+	muVolMaster = console.NewIntVar("mu_vol_master", 100, console.Serializable, console.Mutable).
+			Doc(`
+mu_vol_master controls the master volume. This value effects
+all types of sounds. The value should be between 0 and 100.
+`)
+	volVars = map[soundCategory]*console.IntVar{}
+
+	soundCategories = []soundCategory{
+		sndMusic,
+		sndRecord,
+		sndWeather,
+		sndBlock,
+		sndHostile,
+		sndNeutral,
+		sndPlayer,
+		sndAmbient,
+	}
+)
+
+func init() {
+	for _, ty := range soundCategories {
+		volVars[ty] = console.NewIntVar("mu_vol_"+string(ty), 100, console.Serializable, console.Mutable).
+			Doc(fmt.Sprintf(genericSoundDoc, ty)).Callback(refreshSound)
+	}
+	muVolMaster.Callback(refreshSound)
+}
+
+type music struct {
+	audio.Music
+	cat soundCategory
+	vol float64
+	cb  func()
+}
+
+func refreshSound() {
+	for _, m := range currentMusic {
+		vol := m.vol
+		vol *= float64(muVolMaster.Value()) / 100
+		if v, ok := volVars[m.cat]; ok {
+			vol *= float64(v.Value()) / 100
+		}
+		m.SetVolume(vol)
+	}
+}
 
 func PlaySoundAt(name string, vol, pitch float64, v mgl32.Vec3) {
 	snd, ok := soundInfo[name]
 	if !ok {
 		return
 	}
-	playSoundInternal(snd.Sounds[soundRandom.Intn(len(snd.Sounds))], vol, pitch, true, v, nil)
+	playSoundInternal(snd.Category, snd.Sounds[soundRandom.Intn(len(snd.Sounds))], vol, pitch, true, v, nil)
 }
 
 func PlaySound(name string) {
@@ -68,7 +113,7 @@ func PlaySound(name string) {
 	if !ok {
 		return
 	}
-	playSoundInternal(snd.Sounds[soundRandom.Intn(len(snd.Sounds))], 1, 1, false, mgl32.Vec3{}, nil)
+	playSoundInternal(snd.Category, snd.Sounds[soundRandom.Intn(len(snd.Sounds))], 1, 1, false, mgl32.Vec3{}, nil)
 }
 
 // note: callback only valid for streams
@@ -77,10 +122,22 @@ func PlaySoundCallback(name string, cb func()) {
 	if !ok {
 		return
 	}
-	playSoundInternal(snd.Sounds[soundRandom.Intn(len(snd.Sounds))], 1, 1, false, mgl32.Vec3{}, cb)
+	playSoundInternal(snd.Category, snd.Sounds[soundRandom.Intn(len(snd.Sounds))], 1, 1, false, mgl32.Vec3{}, cb)
 }
 
-func playSoundInternal(snd sound, vol, pitch float64, rel bool, pos mgl32.Vec3, cb func()) {
+func playSoundInternal(cat soundCategory, snd sound, vol, pitch float64, rel bool, pos mgl32.Vec3, cb func()) {
+	vol *= snd.Volume * 100
+	baseVol := vol
+	vol *= float64(muVolMaster.Value()) / 100
+	if v, ok := volVars[cat]; ok {
+		vol *= float64(v.Value()) / 100
+	}
+	if vol <= 0 {
+		if cb != nil {
+			go func() { syncChan <- cb }()
+		}
+		return
+	}
 	name := snd.Name
 	key := pluginKey{"minecraft", name}
 	sb, ok := loadedSounds[key]
@@ -90,21 +147,27 @@ func playSoundInternal(snd sound, vol, pitch float64, rel bool, pos mgl32.Vec3, 
 			v, ok := assets.Objects[fmt.Sprintf("minecraft/sounds/%s.ogg", name)]
 			if !ok {
 				console.Text("Missing sound %s", key)
+				if cb != nil {
+					cb()
+				}
 				return
 			}
 			loc := fmt.Sprintf("./resources/%s", hashPath(v.Hash))
 			f, err = os.Open(loc)
 			if err != nil {
 				console.Text("Missing sound %s", key)
+				if cb != nil {
+					cb()
+				}
 				return
 			}
 		}
 		if snd.Stream {
 			m := audio.NewMusic(f)
-			m.SetVolume(snd.Volume * vol * 100.0)
+			m.SetVolume(vol)
 			m.SetPitch(pitch)
 			m.Play()
-			currentMusic = append(currentMusic, music{Music: m, cb: cb})
+			currentMusic = append(currentMusic, music{Music: m, cb: cb, cat: cat, vol: baseVol})
 			return
 		}
 		defer f.Close()
@@ -136,7 +199,7 @@ func playSoundInternal(snd sound, vol, pitch float64, rel bool, pos mgl32.Vec3, 
 		soundList = append(soundList, s)
 	}
 	s.SetBuffer(sb)
-	s.SetVolume(snd.Volume * vol * 100.0)
+	s.SetVolume(vol)
 	s.SetMinDistance(5)
 	s.SetAttenuation(0.008)
 	s.SetPitch(pitch)
