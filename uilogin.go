@@ -29,23 +29,51 @@ type loginScreen struct {
 	scene *scene.Type
 	logo  uiLogo
 
-	User       *ui.TextBox `uiID:"user"`
-	Pass       *ui.TextBox `uiID:"pass"`
-	LoginBtn   *ui.Button  `uiID:"btnLogin"`
-	LoginTxt   *ui.Text    `uiID:"txtLogin"`
-	LoginError *ui.Text    `uiID:"txtError"`
+	User       *ui.TextBox
+	Pass       *ui.TextBox
+	LoginBtn   *ui.Button
+	LoginTxt   *ui.Text
+	LoginError *ui.Text
 }
 
 func newLoginScreen() *loginScreen {
-	ls := &loginScreen{}
+	ls := &loginScreen{
+		scene: scene.New(false),
+	}
 	if clientToken.Value() == "" {
 		data := make([]byte, 16)
 		crand.Read(data)
 		clientToken.SetValue(hex.EncodeToString(data))
 	}
 
-	ls.scene = scene.LoadScene("steven", "login", ls)
 	ls.logo.init(ls.scene)
+
+	ls.LoginBtn, ls.LoginTxt = newButtonText("Login", 0, 100, 400, 40)
+	ls.scene.AddDrawable(ls.LoginBtn.Attach(ui.Middle, ui.Center))
+	ls.scene.AddDrawable(ls.LoginTxt)
+	ls.LoginBtn.AddClick(ls.Login)
+
+	ls.LoginError = ui.NewText("", 0, 150, 255, 50, 50).Attach(ui.Middle, ui.Center)
+	ls.scene.AddDrawable(ls.LoginError)
+
+	{
+		ls.User = ui.NewTextBox(0, -20, 400, 40).Attach(ui.Middle, ui.Center)
+		ls.scene.AddDrawable(ls.User)
+		label := ui.NewText("Username/Email:", 0, -18, 255, 255, 255)
+		label.AttachTo(ls.User)
+		ls.scene.AddDrawable(label)
+	}
+
+	{
+		ls.Pass = ui.NewTextBox(0, 40, 400, 40).Attach(ui.Middle, ui.Center)
+		ls.Pass.SubmitFunc = ls.Login
+		ls.Pass.SetPassword(true)
+		ls.scene.AddDrawable(ls.Pass)
+		label := ui.NewText("Password:", 0, -18, 255, 255, 255)
+		label.AttachTo(ls.Pass)
+		ls.scene.AddDrawable(label)
+	}
+
 	uiFooter(ls.scene)
 
 	ls.scene.Show()

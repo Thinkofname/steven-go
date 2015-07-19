@@ -97,7 +97,8 @@ func (t *TextBox) SetPassword(p bool) {
 
 // Update updates the string drawn by this drawable.
 func (t *TextBox) Update(val string) {
-	t.text.Update(val)
+	t.input = val
+	t.text.Update(t.value())
 }
 
 func (t *TextBox) tick(delta float64) {

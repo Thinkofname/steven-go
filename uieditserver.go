@@ -15,7 +15,6 @@
 package steven
 
 import (
-	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/ui/scene"
 )
@@ -25,9 +24,8 @@ type editServer struct {
 	scene *scene.Type
 	logo  uiLogo
 
-	name    *textBox
-	address *textBox
-	focused *textBox
+	name    *ui.TextBox
+	address *ui.TextBox
 
 	index int
 }
@@ -38,9 +36,6 @@ func newEditServer(index int) *editServer {
 		index: index,
 	}
 
-	// For the text boxes
-	window.SetKeyCallback(se.handleKey)
-	window.SetCharCallback(se.handleChar)
 	se.logo.init(se.scene)
 
 	uiFooter(se.scene)
@@ -59,40 +54,22 @@ func newEditServer(index int) *editServer {
 		setScreen(newServerList())
 	})
 
-	se.name = newTextBox(0, -20, 400, 40)
-	se.name.back.Attach(ui.Middle, ui.Center)
-	se.name.add(se.scene)
+	se.name = ui.NewTextBox(0, -20, 400, 40)
+	se.scene.AddDrawable(se.name.Attach(ui.Middle, ui.Center))
 	label := ui.NewText("Name:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
-	label.AttachTo(se.name.back)
+	label.AttachTo(se.name)
 	se.scene.AddDrawable(label)
-	se.name.back.AddClick(func() {
-		if se.focused != nil {
-			se.focused.Focused = false
-		}
-		se.name.Focused = true
-		se.focused = se.name
-	})
 
-	se.address = newTextBox(0, 40, 400, 40)
-	se.address.back.Attach(ui.Middle, ui.Center)
-	se.address.add(se.scene)
+	se.address = ui.NewTextBox(0, 40, 400, 40)
+	se.scene.AddDrawable(se.address.Attach(ui.Middle, ui.Center))
 	label = ui.NewText("Address:", 0, -18, 255, 255, 255).Attach(ui.Top, ui.Left)
-	label.AttachTo(se.address.back)
+	label.AttachTo(se.address)
 	se.scene.AddDrawable(label)
-	se.address.back.AddClick(func() {
-		if se.focused != nil {
-			se.focused.Focused = false
-		}
-		se.address.Focused = true
-		se.focused = se.address
-	})
 
 	if index != -1 {
 		server := Config.Servers[index]
-		se.name.input = server.Name
-		se.name.text.Update(se.name.input)
-		se.address.input = server.Address
-		se.address.text.Update(se.address.input)
+		se.name.Update(server.Name)
+		se.address.Update(server.Address)
 	}
 
 	return se
@@ -101,12 +78,12 @@ func newEditServer(index int) *editServer {
 func (se *editServer) save() {
 	if se.index == -1 {
 		Config.Servers = append(Config.Servers, ConfigServer{
-			Name:    se.name.input,
-			Address: se.address.input,
+			Name:    se.name.Value(),
+			Address: se.address.Value(),
 		})
 	} else {
-		Config.Servers[se.index].Name = se.name.input
-		Config.Servers[se.index].Address = se.address.input
+		Config.Servers[se.index].Name = se.name.Value()
+		Config.Servers[se.index].Address = se.address.Value()
 	}
 	saveServers()
 	setScreen(newServerList())
@@ -114,45 +91,8 @@ func (se *editServer) save() {
 
 func (se *editServer) tick(delta float64) {
 	se.logo.tick(delta)
-	se.name.tick(delta)
-	se.address.tick(delta)
-}
-
-func (se *editServer) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-	if se.focused == nil {
-		return
-	}
-
-	if (key == glfw.KeyEnter || key == glfw.KeyTab) && action == glfw.Release {
-		if se.focused == se.name {
-			se.name.Focused = false
-			se.focused = se.address
-			se.address.Focused = true
-		} else if se.focused == se.address {
-			se.address.Focused = false
-			se.focused = nil
-			se.save()
-		}
-		return
-	}
-
-	if key == glfw.KeyEscape && action == glfw.Release {
-		se.focused.Focused = false
-		se.focused = nil
-	}
-
-	se.focused.handleKey(w, key, scancode, action, mods)
-}
-
-func (se *editServer) handleChar(w *glfw.Window, char rune) {
-	if se.focused == nil {
-		return
-	}
-	se.focused.handleChar(w, char)
 }
 
 func (se *editServer) remove() {
 	se.scene.Hide()
-	window.SetKeyCallback(onKey)
-	window.SetCharCallback(nil)
 }

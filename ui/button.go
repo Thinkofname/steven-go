@@ -27,15 +27,22 @@ type Button struct {
 	clickFuncs []func()
 }
 
+// ClickSound is the method that will be added to all buttons to play a click sound
+var ClickSound func()
+
 // NewButton creates a new Button drawable.
 func NewButton(x, y, w, h float64) *Button {
-	return &Button{
+	b := &Button{
 		x: x, y: y, w: w, h: h,
 		baseElement: baseElement{
 			visible: true,
 			isNew:   true,
 		},
 	}
+	if ClickSound != nil {
+		b.AddClick(ClickSound)
+	}
+	return b
 }
 
 // AddClick adds a function to be called when the button is clicked

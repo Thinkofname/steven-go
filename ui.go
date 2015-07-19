@@ -16,9 +16,7 @@ package steven
 
 import (
 	"math"
-	"strings"
 
-	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/console"
 	"github.com/thinkofdeath/steven/ui"
 	"github.com/thinkofdeath/steven/ui/scene"
@@ -45,7 +43,7 @@ func init() {
 	uiScale.Callback(func() {
 		setUIScale()
 	})
-	scene.ClickSound = func() {
+	ui.ClickSound = func() {
 		PlaySound("random.click")
 	}
 }
@@ -99,76 +97,7 @@ func newButtonText(str string, x, y, w, h float64) (*ui.Button, *ui.Text) {
 			text.SetB(255)
 		}
 	})
-	btn.AddClick(func() { PlaySound("random.click") })
 	return btn, text
-}
-
-type textBox struct {
-	back       *ui.Button
-	text       *ui.Text
-	Password   bool
-	Focused    bool
-	wasFocused bool
-	input      string
-	cursorTick float64
-}
-
-func newTextBox(x, y, w, h float64) *textBox {
-	btn := ui.NewButton(x, y, w, h)
-	btn.SetDisabled(true)
-	text := ui.NewText("", 5, 0, 255, 255, 255).Attach(ui.Middle, ui.Left)
-	text.AttachTo(btn)
-	return &textBox{
-		back: btn,
-		text: text,
-	}
-}
-
-func (t *textBox) value() string {
-	if t.Password {
-		return strings.Repeat("*", len(t.input))
-	}
-	return t.input
-}
-
-func (t *textBox) add(s *scene.Type) {
-	s.AddDrawable(t.back)
-	s.AddDrawable(t.text)
-}
-
-func (t *textBox) handleKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-	if key == glfw.KeyBackspace && action != glfw.Release {
-		if len(t.input) > 0 {
-			t.input = t.input[:len(t.input)-1]
-			t.text.Update(t.value())
-		}
-	}
-}
-
-func (t *textBox) handleChar(w *glfw.Window, char rune) {
-	t.input += string(char)
-	t.text.Update(t.value())
-}
-
-func (t *textBox) tick(delta float64) {
-	if !t.Focused {
-		if t.wasFocused {
-			t.wasFocused = t.Focused
-			t.text.Update(t.value())
-		}
-		return
-	}
-	t.wasFocused = true
-	t.cursorTick += delta
-	if int(t.cursorTick/30)%2 == 0 {
-		t.text.Update(t.value() + "|")
-	} else {
-		t.text.Update(t.value())
-	}
-	// Lazy way of preventing rounding errors buiding up over time
-	if t.cursorTick > 0xFFFFFF {
-		t.cursorTick = 0
-	}
 }
 
 type slider struct {
