@@ -577,17 +577,6 @@ func (handler) WindowItem(p *protocol.WindowSetSlot) {
 	inv.Update()
 }
 
-func (handler) ConfirmTransaction(p *protocol.ConfirmTransaction) {
-	Client.network.Write(&protocol.ConfirmTransactionServerbound{
-		ID:           p.ID,
-		ActionNumber: p.ActionNumber,
-		Accepted:     p.Accepted,
-	})
-	if p.ActionNumber == 42 {
-		invScreen.blocked = false
-	}
-}
-
 func (handler) PlaySound(p *protocol.SoundEffect) {
 	PlaySoundAt(p.Name, float64(p.Volume), float64(p.Pitch)/63, mgl32.Vec3{
 		float32(p.X) / 8,

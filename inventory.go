@@ -98,8 +98,6 @@ type inventoryScreen struct {
 	cursorIcon     *ui.Container
 	lastMX, lastMY float64
 	scene          *scene.Type
-
-	blocked bool
 }
 
 func (i *inventoryScreen) init() {
@@ -122,9 +120,6 @@ func (i *inventoryScreen) hover(x, y float64, w, h int) {
 	ui.Hover(x, y, w, h)
 }
 func (i *inventoryScreen) click(down bool, x, y float64, w, h int) {
-	if i.blocked {
-		return
-	}
 	if down {
 		if i.activeSlot != -1 {
 			item := Client.activeInventory.Items[i.activeSlot]
@@ -138,7 +133,6 @@ func (i *inventoryScreen) click(down bool, x, y float64, w, h int) {
 				ClickedItem:  ItemStackToProtocol(nil),
 			})
 			i.setCursor(item)
-			i.blocked = true
 		} else if !i.inWindow {
 			Client.network.Write(&protocol.ClickWindow{
 				ID:           byte(Client.activeInventory.ID),
@@ -149,7 +143,6 @@ func (i *inventoryScreen) click(down bool, x, y float64, w, h int) {
 				ClickedItem:  ItemStackToProtocol(nil),
 			})
 			i.setCursor(nil)
-			i.blocked = true
 		}
 		return
 	}
