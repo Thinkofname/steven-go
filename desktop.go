@@ -240,6 +240,15 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 		} else if action == glfw.Release {
 			Client.playerList.set(false)
 		}
+	case glfw.KeyE:
+		if action == glfw.Release {
+			wasPlayer := Client.activeInventory == Client.playerInventory
+			closeInventory()
+			if wasPlayer {
+				return
+			}
+			openInventory(Client.playerInventory)
+		}
 	case glfw.KeyT:
 		state := w.GetKey(glfw.KeyF3)
 		if action == glfw.Release && state == glfw.Press {

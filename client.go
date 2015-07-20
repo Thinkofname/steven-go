@@ -128,6 +128,7 @@ type ClientState struct {
 	entities   clientEntities
 
 	playerInventory *Inventory
+	activeInventory *Inventory
 	hotbarScene     *scene.Type
 
 	currentBreakingBlock    Block
@@ -149,7 +150,7 @@ func newClient() {
 		scene: scene.New(true),
 	}
 	Client = c
-	c.playerInventory = NewInventory(InvPlayer, 45)
+	c.playerInventory = NewInventory(InvPlayer, 0, 45)
 	c.hotbarScene = scene.New(true)
 	c.network.init()
 	c.currentBreakingBlock = Blocks.Air.Base

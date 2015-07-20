@@ -543,6 +543,9 @@ func (handler) WindowItems(p *protocol.WindowItems) {
 	if p.ID == 0 {
 		inv = Client.playerInventory
 	}
+	if inv = Client.activeInventory; inv == nil || inv.ID != int(p.ID) {
+		inv = nil
+	}
 	if inv == nil {
 		return
 	}
@@ -564,11 +567,25 @@ func (handler) WindowItem(p *protocol.WindowSetSlot) {
 	if inv == nil {
 		return
 	}
+	if p.Slot == -999 {
+		invScreen.setCursor(ItemStackFromProtocol(p.ItemStack))
+	}
 	if p.Slot >= int16(len(inv.Items)) {
 		return
 	}
 	inv.Items[p.Slot] = ItemStackFromProtocol(p.ItemStack)
 	inv.Update()
+}
+
+func (handler) ConfirmTransaction(p *protocol.ConfirmTransaction) {
+	Client.network.Write(&protocol.ConfirmTransactionServerbound{
+		ID:           p.ID,
+		ActionNumber: p.ActionNumber,
+		Accepted:     p.Accepted,
+	})
+	if p.ActionNumber == 42 {
+		invScreen.blocked = false
+	}
 }
 
 func (handler) PlaySound(p *protocol.SoundEffect) {

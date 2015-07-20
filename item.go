@@ -22,6 +22,10 @@ import (
 type ItemStack struct {
 	Type  ItemType
 	Count int
+
+	rawID     int16
+	rawDamage int16
+	rawTag    *nbt.Compound
 }
 
 func ItemStackFromProtocol(p protocol.ItemStack) *ItemStack {
@@ -30,14 +34,28 @@ func ItemStackFromProtocol(p protocol.ItemStack) *ItemStack {
 		return nil
 	}
 	i := &ItemStack{
-		Type:  it,
-		Count: int(p.Count),
+		Type:      it,
+		Count:     int(p.Count),
+		rawID:     p.ID,
+		rawDamage: p.Damage,
+		rawTag:    p.NBT,
 	}
 	i.Type.ParseDamage(p.Damage)
 	if p.NBT != nil {
 		i.Type.ParseTag(p.NBT)
 	}
 	return i
+}
+func ItemStackToProtocol(i *ItemStack) protocol.ItemStack {
+	if i == nil {
+		return protocol.ItemStack{ID: -1}
+	}
+	return protocol.ItemStack{
+		ID:     i.rawID,
+		Count:  byte(i.Count),
+		Damage: i.rawDamage,
+		NBT:    i.rawTag,
+	}
 }
 
 type ItemType interface {
