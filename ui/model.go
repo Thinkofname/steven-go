@@ -87,7 +87,7 @@ func (m *Model) Draw(r Region, delta float64) {
 			dy /= scaledHeight
 			data = appendShort(data, int16(math.Floor((dx*float64(lastWidth))+0.5)))
 			data = appendShort(data, int16(math.Floor((dy*float64(lastHeight))+0.5)))
-			data = appendShort(data, 256*int16(m.layer)+int16(256*vZ))
+			data = appendShort(data, 256*int16(m.Layer())+int16(256*vZ))
 			data = appendShort(data, 0)
 			data = appendUnsignedShort(data, v.TX)
 			data = appendUnsignedShort(data, v.TY)
