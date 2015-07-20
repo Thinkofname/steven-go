@@ -173,16 +173,16 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]render.TextureInfo{
 			direction.North: skin.Sub(8, 8, 8, 8),
 			direction.South: skin.Sub(24, 8, 8, 8),
-			direction.West:  skin.Sub(0, 8, 8, 8),
-			direction.East:  skin.Sub(16, 8, 8, 8),
+			direction.East:  skin.Sub(0, 8, 8, 8),
+			direction.West:  skin.Sub(16, 8, 8, 8),
 			direction.Up:    skin.Sub(8, 0, 8, 8),
 			direction.Down:  skin.Sub(16, 0, 8, 8),
 		})
 		hverts = appendBox(hverts, -4.2/16.0, -.2/16.0, -4.2/16.0, 8.4/16.0, 8.4/16.0, 8.4/16.0, [6]render.TextureInfo{
 			direction.North: skin.Sub(8+32, 8, 8, 8),
 			direction.South: skin.Sub(24+32, 8, 8, 8),
-			direction.West:  skin.Sub(0+32, 8, 8, 8),
-			direction.East:  skin.Sub(16+32, 8, 8, 8),
+			direction.East:  skin.Sub(0+32, 8, 8, 8),
+			direction.West:  skin.Sub(16+32, 8, 8, 8),
 			direction.Up:    skin.Sub(8+32, 0, 8, 8),
 			direction.Down:  skin.Sub(16+32, 0, 8, 8),
 		})
