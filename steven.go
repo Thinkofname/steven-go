@@ -231,6 +231,8 @@ handle:
 
 	tickAudio()
 
+	tickClouds(delta)
+
 	render.Draw(width, height, delta)
 	chunks := sortedChunks()
 

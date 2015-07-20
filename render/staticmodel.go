@@ -73,7 +73,7 @@ type StaticModel struct {
 	counts  []int32
 	offsets []uintptr
 
-	all []*StaticVertex
+	Verts []*StaticVertex
 
 	c *staticCollection
 }
@@ -120,15 +120,19 @@ func newStaticModel(parts [][]*StaticVertex, c *staticCollection) *StaticModel {
 		}
 		all = append(all, p...)
 	}
-	model.all = all
+	model.Verts = all
 	model.data()
 
 	c.models = append(c.models, model)
 	return model
 }
 
+func (sm *StaticModel) Refresh() {
+	sm.data()
+}
+
 func (sm *StaticModel) data() {
-	verts := sm.all
+	verts := sm.Verts
 	sm.array.Bind()
 	sm.count = (len(verts) / 4) * 6
 	if staticState.maxIndex < sm.count {
