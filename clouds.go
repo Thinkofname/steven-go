@@ -93,6 +93,9 @@ func tickClouds(delta float64) {
 			c.Z = float32(math.Floor((Client.Z-float64(y*12))/12)*12) + float32(math.Mod(cloudOffset/500.0, 1)*12)
 			c.Radius = 20
 			c.Matrix[0] = mgl32.Translate3D(-c.X, c.Y, c.Z)
+			c.Colors[0][3] = float32(math.Max(math.Min(
+				math.Min(1.0-(math.Abs(float64(c.Z)-Client.Z)/12-11), 1.0-(math.Abs(float64(-c.X)-Client.X)/12-11)),
+				1.0), 0.0))
 			c.SkyLight = 15
 		}
 	}
