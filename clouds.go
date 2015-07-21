@@ -72,7 +72,7 @@ func tickClouds(delta float64) {
 		clouds = make([]*cloud, 25*25)
 		for i := range clouds {
 			tex := render.GetTexture("environment/clouds")
-			data := appendBox(nil, -5, -2, -5, 10, 4, 10, [6]render.TextureInfo{tex, tex, tex, tex, tex, tex})
+			data := appendBox(nil, -6, -2, -6, 12, 4, 12, [6]render.TextureInfo{tex, tex, tex, tex, tex, tex})
 			clouds[i] = &cloud{StaticModel: render.NewStaticModel([][]*render.StaticVertex{data})}
 			clouds[i].Colors[0] = [4]float32{1.0, 1.0, 1.0, 1.0}
 		}
@@ -84,8 +84,8 @@ func tickClouds(delta float64) {
 	for x := -12; x <= 12; x++ {
 		for y := -12; y <= 12; y++ {
 			fx, fy := float64(x)/256.0, float64(y)/256.0
-			fx += -math.Floor(Client.X/10.0) / 256.0
-			fy += -math.Floor(Client.Z/10.0) / 256.0
+			fx += -math.Floor(Client.X/12.0) / 256.0
+			fy += -math.Floor(Client.Z/12.0) / 256.0
 			fy += cloudOffset / 500.0 / 256
 			c := getCloud(
 				math.Mod(1+math.Mod(fx, 1), 1),
@@ -95,8 +95,8 @@ func tickClouds(delta float64) {
 				continue
 			}
 			c.Y = -128
-			c.X = -float32(math.Floor((Client.X-float64(x*10))/10) * 10)
-			c.Z = float32(math.Floor((Client.Z-float64(y*10))/10)*10) + float32(math.Mod(cloudOffset/500.0, 1)*10)
+			c.X = -float32(math.Floor((Client.X-float64(x*12))/12) * 12)
+			c.Z = float32(math.Floor((Client.Z-float64(y*12))/12)*12) + float32(math.Mod(cloudOffset/500.0, 1)*12)
 			c.Radius = 20
 			c.Matrix[0] = mgl32.Translate3D(-c.X, c.Y, c.Z)
 			c.SkyLight = 15
