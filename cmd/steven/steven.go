@@ -18,14 +18,11 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"runtime"
 
 	"github.com/thinkofdeath/steven"
 )
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
-
 	// Can't use flags as we need to support a weird flag
 	// format
 	var username, uuid, accessToken string
