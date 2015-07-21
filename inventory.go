@@ -130,7 +130,7 @@ func (i *inventoryScreen) click(down bool, x, y float64, w, h int) {
 				Button:       0,
 				Mode:         0,
 				ActionNumber: 42,
-				ClickedItem:  ItemStackToProtocol(nil),
+				ClickedItem:  ItemStackToProtocol(item),
 			})
 			i.setCursor(item)
 		} else if !i.inWindow {
