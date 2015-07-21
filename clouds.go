@@ -28,7 +28,6 @@ import (
 
 var (
 	cloudOffset float64
-	cloudIndex  int
 	clouds      []*cloud
 	cloudImage  *image.NRGBA
 )
@@ -36,7 +35,9 @@ var (
 type cloud struct {
 	*render.StaticModel
 
-	x, y int
+	used     bool
+	prevUsed bool
+	x, y     int
 }
 
 func tickClouds(delta float64) {
@@ -68,16 +69,9 @@ func tickClouds(delta float64) {
 		png.Encode(&buf, cloudImage)
 		ioutil.WriteFile("test.png", buf.Bytes(), 0777)
 	}
-	if clouds == nil {
-		clouds = make([]*cloud, 25*25)
-		for i := range clouds {
-			tex := render.GetTexture("environment/clouds")
-			data := appendBox(nil, -6, -2, -6, 12, 4, 12, [6]render.TextureInfo{tex, tex, tex, tex, tex, tex})
-			clouds[i] = &cloud{StaticModel: render.NewStaticModel([][]*render.StaticVertex{data})}
-			clouds[i].Colors[0] = [4]float32{1.0, 1.0, 1.0, 1.0}
-		}
+	for _, c := range clouds {
+		c.used = false
 	}
-	cloudIndex = 0
 
 	cloudOffset += delta
 
@@ -103,12 +97,14 @@ func tickClouds(delta float64) {
 		}
 	}
 
-	for i := cloudIndex; i < len(clouds); i++ {
-		c := clouds[i]
-		c.X = 0
-		c.Z = 0
-		c.Y = 9999
-		c.Radius = 0.01
+	for _, c := range clouds {
+		c.prevUsed = c.used
+		if !c.used {
+			c.X = 0
+			c.Z = 0
+			c.Y = 9999
+			c.Radius = 0.01
+		}
 	}
 }
 
@@ -131,8 +127,40 @@ check:
 	if !ok {
 		return nil
 	}
-	c := clouds[cloudIndex]
-	cloudIndex++
+
+	var c *cloud
+	for _, cl := range clouds {
+		if cl.used {
+			continue
+		}
+		// Find a existing match
+		if cl.x == px && cl.y == py {
+			c = cl
+			break
+		}
+		// Keep a reference to the last unused one
+		// incase we need a fallback
+		if !cl.prevUsed {
+			c = cl
+		}
+	}
+	if c == nil {
+		// Have to steal an existing one or create a new one
+		for _, cl := range clouds {
+			if !cl.used {
+				c = cl
+				break
+			}
+		}
+		if c == nil {
+			tex := render.GetTexture("environment/clouds")
+			data := appendBox(nil, -6, -2, -6, 12, 4, 12, [6]render.TextureInfo{tex, tex, tex, tex, tex, tex})
+			c = &cloud{StaticModel: render.NewStaticModel([][]*render.StaticVertex{data})}
+			c.Colors[0] = [4]float32{1.0, 1.0, 1.0, 1.0}
+			clouds = append(clouds, c)
+		}
+	}
+
 	if c.x != px || c.y != py {
 		tex := render.RelativeTexture(render.GetTexture("environment/clouds"), 256, 256).
 			Sub(px, py, 1, 1)
@@ -143,5 +171,6 @@ check:
 		c.x = px
 		c.y = py
 	}
+	c.used = true
 	return c
 }
