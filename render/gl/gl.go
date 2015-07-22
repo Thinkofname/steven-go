@@ -80,6 +80,8 @@ const (
 	LineStrip DrawType = gl.LINE_STRIP
 	// Lines treats each set of 2 vertices as a line
 	Lines DrawType = gl.LINES
+	// Points treats each vertex as a point
+	Points DrawType = gl.POINTS
 )
 
 // Func is a function to be preformed on two values.

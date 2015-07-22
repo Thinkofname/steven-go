@@ -134,7 +134,7 @@ func (r *relativeTexture) Sub(x, y, w, h int) TextureInfo {
 
 // GetTexture returns the related TextureInfo for the requested texture.
 // If the texture isn't found a placeholder is returned instead.
-// The plugin prefix of 'minecraft:' is defualt
+// The plugin prefix of 'minecraft:' is default
 func GetTexture(name string) TextureInfo {
 	textureLock.RLock()
 	defer textureLock.RUnlock()

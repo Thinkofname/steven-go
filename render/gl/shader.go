@@ -30,6 +30,7 @@ type ShaderType uint32
 const (
 	VertexShader   ShaderType = gl.VERTEX_SHADER
 	FragmentShader ShaderType = gl.FRAGMENT_SHADER
+	GeometryShader ShaderType = gl.GEOMETRY_SHADER
 )
 
 // ShaderParameter is a parameter that can set or read from a

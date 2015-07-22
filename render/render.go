@@ -89,6 +89,7 @@ func Start() {
 	initUI()
 	initLineDraw()
 	initStatic()
+	clouds.init()
 
 	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
 
@@ -190,6 +191,7 @@ sync:
 
 	drawLines()
 	drawStatic()
+	clouds.tick(delta)
 
 	chunkProgramT.Use()
 	shaderChunkT.PerspectiveMatrix.Matrix4(&perspectiveMatrix)

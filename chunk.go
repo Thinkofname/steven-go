@@ -95,6 +95,16 @@ func (w world) SetBlock(b Block, x, y, z int) {
 	}
 }
 
+func (w world) HighestBlockAt(x, z int) int {
+	cx := x >> 4
+	cz := z >> 4
+	chunk := w[chunkPosition{cx, cz}]
+	if chunk == nil {
+		return 0
+	}
+	return chunk.highestBlock(x&0xF, z&0xF)
+}
+
 func (w world) dirty(x, y, z int) {
 	cx := x >> 4
 	cz := z >> 4
@@ -175,6 +185,8 @@ type chunk struct {
 	Entities []Entity
 	Sections [16]*chunkSection
 	Biomes   [16 * 16]byte
+
+	heightmap [16 * 16]byte
 }
 
 func (c *chunk) addEntity(e Entity) {
@@ -186,6 +198,27 @@ func (c *chunk) removeEntity(e Entity) {
 		if o == e {
 			c.Entities = append(c.Entities[:i], c.Entities[i+1:]...)
 			return
+		}
+	}
+}
+
+func (c *chunk) highestBlock(x, z int) int {
+	return int(c.heightmap[z<<4|x])
+}
+
+func (c *chunk) calcHeightmap() {
+	for x := 0; x < 16; x++ {
+		for z := 0; z < 16; z++ {
+			c.calcHeightmapAt(x, z)
+		}
+	}
+}
+
+func (c *chunk) calcHeightmapAt(x, z int) {
+	for y := 255; y >= 0; y-- {
+		if !c.block(x, y, z).Is(Blocks.Air) {
+			c.heightmap[z<<4|x] = byte(y)
+			break
 		}
 	}
 }
@@ -229,6 +262,10 @@ func (c *chunk) setBlock(b Block, x, y, z int) {
 		sec.BlockEntities[pos] = be
 		be.SetPosition(pos)
 		Client.entities.container.AddEntity(be)
+	}
+
+	if y == c.highestBlock(x, z) {
+		c.calcHeightmapAt(x, z)
 	}
 
 	var maxB, maxS int8
@@ -523,6 +560,8 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 		copy(c.Biomes[:], data[offset:])
 		offset += len(c.Biomes)
 	}
+
+	c.calcHeightmap()
 
 	syncChan <- func() {
 		render.AllocateColumn(c.X, c.Z)

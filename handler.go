@@ -152,7 +152,11 @@ func (handler) ChunkData(c *protocol.ChunkData) {
 	}
 	pos := chunkPosition{int(c.ChunkX), int(c.ChunkZ)}
 	loadingChunks[pos] = nil
-	go loadChunk(pos.X, pos.Z, c.Data, c.BitMask, Client.WorldType == wtOverworld, c.New)
+	if c.New {
+		go loadChunk(pos.X, pos.Z, c.Data, c.BitMask, Client.WorldType == wtOverworld, true)
+	} else {
+		loadChunk(pos.X, pos.Z, c.Data, c.BitMask, Client.WorldType == wtOverworld, false)
+	}
 }
 
 func (handler) ChunkDataBulk(c *protocol.ChunkDataBulk) {
