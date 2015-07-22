@@ -215,8 +215,9 @@ func (c *chunk) calcHeightmap() {
 }
 
 func (c *chunk) calcHeightmapAt(x, z int) {
+	c.heightmap[z<<4|x] = 0
 	for y := 255; y >= 0; y-- {
-		if !c.block(x, y, z).Is(Blocks.Air) {
+		if c.block(x, y, z).ShouldCullAgainst() {
 			c.heightmap[z<<4|x] = byte(y)
 			break
 		}
@@ -264,7 +265,7 @@ func (c *chunk) setBlock(b Block, x, y, z int) {
 		Client.entities.container.AddEntity(be)
 	}
 
-	if y == c.highestBlock(x, z) {
+	if y >= c.highestBlock(x, z) {
 		c.calcHeightmapAt(x, z)
 	}
 
