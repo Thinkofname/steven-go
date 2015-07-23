@@ -182,7 +182,7 @@ in vec3 vLighting[];
 out vec3 fLighting;
 out vec4 fColor;
 
-void output(vec3 base, vec3 off, float color) {	
+void setVertex(vec3 base, vec3 off, float color) {	
 	gl_Position = perspectiveMatrix * cameraMatrix * vec4(base + off*vec3(1.0,-1.0,1.0), 1.0);
 	fColor = vec4(color, color, color, 1.0);
 	fLighting = vLighting[0];
@@ -200,52 +200,52 @@ void main() {
 	if (!isSolid(texP)) return;
 	
 	// Top
-	output(base, vec3(0.0, 1.0, 0.0), 1.0);
-	output(base, vec3(1.0, 1.0, 0.0), 1.0);
-	output(base, vec3(0.0, 1.0, 1.0), 1.0);
-	output(base, vec3(1.0, 1.0, 1.0), 1.0);
+	setVertex(base, vec3(0.0, 1.0, 0.0), 1.0);
+	setVertex(base, vec3(1.0, 1.0, 0.0), 1.0);
+	setVertex(base, vec3(0.0, 1.0, 1.0), 1.0);
+	setVertex(base, vec3(1.0, 1.0, 1.0), 1.0);
 	EndPrimitive();	
 	
 	// Bottom
-	output(base, vec3(0.0, 0.0, 0.0), 0.7);
-	output(base, vec3(0.0, 0.0, 1.0), 0.7);
-	output(base, vec3(1.0, 0.0, 0.0), 0.7);
-	output(base, vec3(1.0, 0.0, 1.0), 0.7);
+	setVertex(base, vec3(0.0, 0.0, 0.0), 0.7);
+	setVertex(base, vec3(0.0, 0.0, 1.0), 0.7);
+	setVertex(base, vec3(1.0, 0.0, 0.0), 0.7);
+	setVertex(base, vec3(1.0, 0.0, 1.0), 0.7);
 	EndPrimitive();	
 	
 	if (!isSolid(texP + ivec2(-1, 0))) {
 		// -X
-		output(base, vec3(0.0, 0.0, 0.0), 0.8);
-		output(base, vec3(0.0, 1.0, 0.0), 0.8);
-		output(base, vec3(0.0, 0.0, 1.0), 0.8);
-		output(base, vec3(0.0, 1.0, 1.0), 0.8);
+		setVertex(base, vec3(0.0, 0.0, 0.0), 0.8);
+		setVertex(base, vec3(0.0, 1.0, 0.0), 0.8);
+		setVertex(base, vec3(0.0, 0.0, 1.0), 0.8);
+		setVertex(base, vec3(0.0, 1.0, 1.0), 0.8);
 		EndPrimitive();
 	}	
 	
 	if (!isSolid(texP + ivec2(1, 0))) {
 		// +X
-		output(base, vec3(1.0, 0.0, 0.0), 0.8);
-		output(base, vec3(1.0, 0.0, 1.0), 0.8);
-		output(base, vec3(1.0, 1.0, 0.0), 0.8);
-		output(base, vec3(1.0, 1.0, 1.0), 0.8);
+		setVertex(base, vec3(1.0, 0.0, 0.0), 0.8);
+		setVertex(base, vec3(1.0, 0.0, 1.0), 0.8);
+		setVertex(base, vec3(1.0, 1.0, 0.0), 0.8);
+		setVertex(base, vec3(1.0, 1.0, 1.0), 0.8);
 		EndPrimitive();
 	}
 	
 	if (!isSolid(texP + ivec2(0, 1))) {
 		// -Z
-		output(base, vec3(0.0, 0.0, 1.0), 0.8);
-		output(base, vec3(0.0, 1.0, 1.0), 0.8);
-		output(base, vec3(1.0, 0.0, 1.0), 0.8);
-		output(base, vec3(1.0, 1.0, 1.0), 0.8);
+		setVertex(base, vec3(0.0, 0.0, 1.0), 0.8);
+		setVertex(base, vec3(0.0, 1.0, 1.0), 0.8);
+		setVertex(base, vec3(1.0, 0.0, 1.0), 0.8);
+		setVertex(base, vec3(1.0, 1.0, 1.0), 0.8);
 		EndPrimitive();
 	}
 	
 	if (!isSolid(texP + ivec2(0, -1))) {
 		// +Z
-		output(base, vec3(0.0, 0.0, 0.0), 0.8);
-		output(base, vec3(1.0, 0.0, 0.0), 0.8);
-		output(base, vec3(0.0, 1.0, 0.0), 0.8);
-		output(base, vec3(1.0, 1.0, 0.0), 0.8);
+		setVertex(base, vec3(0.0, 0.0, 0.0), 0.8);
+		setVertex(base, vec3(1.0, 0.0, 0.0), 0.8);
+		setVertex(base, vec3(0.0, 1.0, 0.0), 0.8);
+		setVertex(base, vec3(1.0, 1.0, 0.0), 0.8);
 		EndPrimitive();
 	}
 }
