@@ -216,9 +216,13 @@ func (c *chunk) calcHeightmap() {
 
 func (c *chunk) calcHeightmapAt(x, z int) {
 	c.heightmap[z<<4|x] = 0
+	cd := render.CloudData()
+	cdi := ((c.X<<4 + x) & 0x1FF) + ((c.Z<<4+z)&0x1FF)*512
+	cd[cdi] = 0
 	for y := 255; y >= 0; y-- {
-		if c.block(x, y, z).ShouldCullAgainst() {
+		if !c.block(x, y, z).Is(Blocks.Air) {
 			c.heightmap[z<<4|x] = byte(y)
+			cd[cdi] = byte(y)
 			break
 		}
 	}

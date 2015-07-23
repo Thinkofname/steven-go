@@ -125,5 +125,4 @@ func reloadResources() {
 	render.RefreshStaticModels()
 	console.Text("Reloading inventory")
 	Client.playerInventory.Update()
-	cloudImage = nil
 }

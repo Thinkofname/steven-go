@@ -14,21 +14,7 @@
 
 package steven
 
-import (
-	"image"
-	"image/png"
-	"math"
-
-	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/resource"
-)
-
-var (
-	cloudOffset float64
-	cloudImage  *image.Gray
-
-	cloudLastX, cloudLastZ int = math.MaxInt32, math.MaxInt32
-)
+import "github.com/thinkofdeath/steven/render"
 
 func tickClouds(delta float64) {
 	if Client != nil && Client.WorldType != wtOverworld {
@@ -36,47 +22,4 @@ func tickClouds(delta float64) {
 		return
 	}
 	render.DrawClouds = true
-	if cloudImage == nil {
-		f, err := resource.Open("steven", "textures/environment/clouds.png")
-		if err != nil {
-			panic(err)
-		} else {
-			defer f.Close()
-			img, err := png.Decode(f)
-			if err != nil {
-				panic(err)
-			}
-			cloudImage = img.(*image.Gray)
-		}
-	}
-	cloudOffset += delta
-	data := render.CloudData()
-	cx, cz := int(render.Camera.X), int(render.Camera.Z)
-
-	clx, clz := pmod(cx, 512), pmod(cz+int(cloudOffset/60.0), 512)
-	if clx == cloudLastX && clz == cloudLastZ {
-		return
-	}
-	cloudLastX, cloudLastZ = clx, clz
-
-	for x := 0; x < 360; x++ {
-		for z := 0; z < 360; z++ {
-			col := cloudImage.Pix[cloudImage.PixOffset(
-				(clx+x)%512,
-				(clz+z)%512,
-			)]
-			h := chunkMap.HighestBlockAt(cx+(x-160), cz+(z-160))
-
-			data[x+z*512] = 0
-			if h < 127 {
-				if int(col)+h > 250 {
-					data[x+z*512] = 0xFF
-				}
-			}
-		}
-	}
-}
-
-func pmod(x, y int) int {
-	return (y + (x % y)) % y
 }

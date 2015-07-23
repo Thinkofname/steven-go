@@ -22,7 +22,9 @@ import (
 	"github.com/thinkofdeath/steven/render/glsl"
 )
 
-var clouds cloudState
+var clouds = cloudState{
+	data: make([]byte, 512*512),
+}
 var DrawClouds = true
 
 type cloudState struct {
@@ -34,7 +36,9 @@ type cloudState struct {
 
 	texture gl.Texture
 	data    []byte
+	dirty   bool
 
+	offset    float64
 	numPoints int
 }
 
@@ -45,10 +49,15 @@ type cloudShader struct {
 	LightLevel        gl.Uniform   `gl:"lightLevel"`
 	SkyOffset         gl.Uniform   `gl:"skyOffset"`
 	Offset            gl.Uniform   `gl:"offset"`
+	TextureInfo       gl.Uniform   `gl:"textureInfo"`
+	Atlas             gl.Uniform   `gl:"atlas"`
+	Textures          gl.Uniform   `gl:"textures"`
 	CloudMap          gl.Uniform   `gl:"cloudMap"`
+	CloudOffset       gl.Uniform   `gl:"cloudOffset"`
 }
 
 func CloudData() []byte {
+	clouds.dirty = true
 	return clouds.data
 }
 
@@ -123,7 +132,6 @@ func (c *cloudState) init() {
 
 	c.buffer.Data(data.Data(), gl.StaticDraw)
 
-	c.data = make([]byte, 512*512)
 	c.texture = gl.CreateTexture()
 	c.texture.Bind(gl.Texture2D)
 	c.texture.Image2D(0, 512, 512, gl.Red, gl.UnsignedByte, c.data)
@@ -135,17 +143,34 @@ func (c *cloudState) tick(delta float64) {
 	if !DrawClouds {
 		return
 	}
+	c.offset += delta
+	tex := GetTexture("steven:environment/clouds")
+	r := tex.Rect()
+
 	c.program.Use()
 	c.shader.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
 	c.shader.CameraMatrix.Matrix4(&cameraMatrix)
 	c.shader.SkyOffset.Float(SkyOffset)
 	c.shader.LightLevel.Float(LightLevel)
 	c.shader.Offset.Float3(float32(int(Camera.X)), 0, float32(int(Camera.Z)))
+	c.shader.TextureInfo.Float4(
+		float32(r.X),
+		float32(r.Y),
+		float32(r.Width),
+		float32(r.Height),
+	)
+	c.shader.Atlas.Float(float32(tex.Atlas()))
+	c.shader.CloudOffset.Float(float32(int(c.offset / 15.0)))
 
-	gl.ActiveTexture(0)
+	c.shader.Textures.Int(0)
+
+	gl.ActiveTexture(1)
 	c.texture.Bind(gl.Texture2D)
-	c.texture.SubImage2D(0, 0, 0, 512, 512, gl.Red, gl.UnsignedByte, c.data)
-	c.shader.CloudMap.Int(0)
+	if c.dirty {
+		c.texture.SubImage2D(0, 0, 0, 512, 512, gl.Red, gl.UnsignedByte, c.data)
+		c.dirty = false
+	}
+	c.shader.CloudMap.Int(1)
 	c.array.Bind()
 	gl.DrawArrays(gl.Points, 0, c.numPoints)
 }
@@ -175,6 +200,11 @@ layout(triangle_strip, max_vertices = 24) out;
 uniform mat4 perspectiveMatrix;
 uniform mat4 cameraMatrix;
 uniform vec3 offset;
+uniform float cloudOffset;
+
+uniform vec4 textureInfo;
+uniform float atlas;
+uniform sampler2DArray textures;
 uniform sampler2D cloudMap;
 
 in vec3 vLighting[];
@@ -189,15 +219,28 @@ void setVertex(vec3 base, vec3 off, float color) {
 	EmitVertex();
 }
 
+const float invAtlasSize = 1.0 / `+atlasSizeStr+`;
+vec4 atlasTexture(vec2 tPos) {
+	tPos.y += cloudOffset;
+	tPos = mod(tPos, textureInfo.zw);
+	tPos += textureInfo.xy;
+	tPos *= invAtlasSize;
+	return texture(textures, vec3(tPos, atlas));
+}
+
+ivec2 texP, heightP;
+
 bool isSolid(ivec2 pos) {
-	return texelFetch(cloudMap, pos, 0).r > 0.5;	
+	float height = texelFetch(cloudMap, ivec2(mod(heightP + pos, 512)), 0).r;
+	if (height >= 127.0/255.0) return false;
+	return atlasTexture(vec2(texP + pos)).r + height > (250.0 / 255.0);
 }
 
 void main() {
 	vec3 base = floor(offset) + gl_in[0].gl_Position.xyz;
-	ivec2 texP = ivec2(gl_in[0].gl_Position.xz + 160.0);
-	
-	if (!isSolid(texP)) return;
+	texP = ivec2(gl_in[0].gl_Position.xz + 160.0 + offset.xz);
+	heightP = ivec2(mod(base.xz, 512));
+	if (!isSolid(ivec2(0))) return;
 	
 	// Top
 	setVertex(base, vec3(0.0, 1.0, 0.0), 1.0);
@@ -213,7 +256,7 @@ void main() {
 	setVertex(base, vec3(1.0, 0.0, 1.0), 0.7);
 	EndPrimitive();	
 	
-	if (!isSolid(texP + ivec2(-1, 0))) {
+	if (!isSolid(ivec2(-1, 0))) {
 		// -X
 		setVertex(base, vec3(0.0, 0.0, 0.0), 0.8);
 		setVertex(base, vec3(0.0, 1.0, 0.0), 0.8);
@@ -222,7 +265,7 @@ void main() {
 		EndPrimitive();
 	}	
 	
-	if (!isSolid(texP + ivec2(1, 0))) {
+	if (!isSolid(ivec2(1, 0))) {
 		// +X
 		setVertex(base, vec3(1.0, 0.0, 0.0), 0.8);
 		setVertex(base, vec3(1.0, 0.0, 1.0), 0.8);
@@ -231,7 +274,7 @@ void main() {
 		EndPrimitive();
 	}
 	
-	if (!isSolid(texP + ivec2(0, 1))) {
+	if (!isSolid(ivec2(0, 1))) {
 		// -Z
 		setVertex(base, vec3(0.0, 0.0, 1.0), 0.8);
 		setVertex(base, vec3(0.0, 1.0, 1.0), 0.8);
@@ -240,7 +283,7 @@ void main() {
 		EndPrimitive();
 	}
 	
-	if (!isSolid(texP + ivec2(0, -1))) {
+	if (!isSolid(ivec2(0, -1))) {
 		// +Z
 		setVertex(base, vec3(0.0, 0.0, 0.0), 0.8);
 		setVertex(base, vec3(1.0, 0.0, 0.0), 0.8);
