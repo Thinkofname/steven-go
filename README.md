@@ -22,6 +22,8 @@ go get github.com/thinkofdeath/steven/cmd/steven
 
 To update, run `go get` with the `-u` option.
 
+Requires `csfml` libraries and headers to build.
+
 ## What works
 
 * Connecting to servers
