@@ -343,6 +343,9 @@ func (bf *blockFace) init(data *jsBlockFace) {
 		bf.uv = [4]float64{math.NaN(), 0, 0, 0}
 	}
 	bf.texture = data.Texture
+	if !strings.HasPrefix(bf.texture, "#") {
+		bf.texture = "#" + bf.texture
+	}
 	bf.cullFace = direction.FromString(data.CullFace)
 	bf.rotation = data.Rotation
 	bf.tintIndex = -1
