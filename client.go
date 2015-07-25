@@ -87,11 +87,13 @@ type ClientState struct {
 	isLeftDown               bool
 	stepTimer                float64
 
-	GameMode  gameMode
-	HardCore  bool
-	WorldType worldType
-	WorldTime float64
-	TickTime  bool
+	GameMode gameMode
+	HardCore bool
+
+	setInitialTime             bool
+	WorldType                  worldType
+	WorldTime, TargetWorldTime float64
+	TickTime                   bool
 
 	Bounds vmath.AABB
 
@@ -468,7 +470,8 @@ func (c *ClientState) renderTick(delta float64) {
 	c.copyToCamera()
 
 	if c.TickTime {
-		c.WorldTime += delta
+		c.TargetWorldTime += delta / 3.0
+		c.WorldTime += (c.TargetWorldTime - c.WorldTime) * (1.5 / 60.0) * delta
 	}
 	c.updateSky()
 }

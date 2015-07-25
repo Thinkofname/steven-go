@@ -87,12 +87,16 @@ func (handler) Respawn(r *protocol.Respawn) {
 }
 
 func (handler) TimeUpdate(p *protocol.TimeUpdate) {
-	Client.WorldTime = float64(p.TimeOfDay % 24000)
-	if Client.WorldTime < 0 {
-		Client.WorldTime = -Client.WorldTime
+	Client.TargetWorldTime = float64(p.TimeOfDay % 24000)
+	if Client.TargetWorldTime < 0 {
+		Client.TargetWorldTime = -Client.TargetWorldTime
 		Client.TickTime = false
 	} else {
 		Client.TickTime = true
+	}
+	if !Client.setInitialTime {
+		Client.WorldTime = Client.TargetWorldTime
+		Client.setInitialTime = true
 	}
 }
 
