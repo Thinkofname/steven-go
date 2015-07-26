@@ -121,6 +121,8 @@ var lockMouse bool
 
 func onFocus(w *glfw.Window, focused bool) {
 	if !focused {
+		lockMouse = false
+		window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
 		for i := range Client.KeyState {
 			Client.KeyState[i] = false
 		}
