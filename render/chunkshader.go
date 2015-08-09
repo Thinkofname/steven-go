@@ -66,7 +66,7 @@ void main() {
 	vAtlas = aTextureOffset.z;
 
 	vLighting = getLight(aLighting / (4000.0));
-}	
+}
 `)
 	glsl.Register("chunk_frag", `
 uniform sampler2DArray textures;
@@ -93,14 +93,14 @@ void main() {
 	#endif
 	col *= vec4(vColor, 1.0);
 	col.rgb *= vLighting;
-	
+
 	#ifndef alpha
 	fragColor = col;
 	#else
 	float z = gl_FragCoord.z;
-	float al = col.a;	
-    float weight = pow(alpha + 0.01f, 4.0f) +
-                   max(0.01f, min(3000.0f, 0.3f / (0.00001f + pow(abs(z) / 800.0f, 4.0f))));
+	float al = col.a;
+	float weight = pow(al + 0.01f, 4.0f) +
+			  	   max(0.01f, min(3000.0f, 0.3f / (0.00001f + pow(abs(z) / 800.0f, 4.0f))));
 	accum = vec4(col.rgb * al * weight, al);
 	revealage = weight * al;
 	#endif
