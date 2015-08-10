@@ -277,7 +277,6 @@ func (c *ClientState) updateSky() {
 }
 
 func (c *ClientState) calculateSky() float32 {
-	c.WorldTime = math.Mod(c.WorldTime, 24000)
 	offset := (1.0+c.WorldTime)/24000.0 - 0.25
 	if offset < 0 {
 		offset += 1
@@ -471,7 +470,15 @@ func (c *ClientState) renderTick(delta float64) {
 
 	if c.TickTime {
 		c.TargetWorldTime += delta / 3.0
-		c.WorldTime += (c.TargetWorldTime - c.WorldTime) * (1.5 / 60.0) * delta
+		c.TargetWorldTime = math.Mod(24000+c.TargetWorldTime, 24000)
+		diff := (c.TargetWorldTime - c.WorldTime)
+		if diff < -12000 {
+			diff = 24000 + diff
+		} else if diff > 12000 {
+			diff = diff - 24000
+		}
+		c.WorldTime += diff * (1.5 / 60.0) * delta
+		c.WorldTime = math.Mod(24000+c.WorldTime, 24000)
 	}
 	c.updateSky()
 }
