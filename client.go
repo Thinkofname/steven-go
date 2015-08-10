@@ -664,8 +664,8 @@ func (c *ClientState) MouseAction(button glfw.MouseButton, down bool) {
 			return
 		}
 		if c.playerInventory.Items[c.currentHotbarSlot+invPlayerHotbarOffset] != nil {
-			c.network.Write(&protocol.PlayerBlockPlacement{
-				Face: 0xFF,
+			c.network.Write(&protocol.UseItem{
+				Hand: 0,
 			})
 		}
 
@@ -677,7 +677,7 @@ func (c *ClientState) MouseAction(button glfw.MouseButton, down bool) {
 		c.network.Write(&protocol.ArmSwing{})
 		c.network.Write(&protocol.PlayerBlockPlacement{
 			Location: protocol.NewPosition(pos.X, pos.Y, pos.Z),
-			Face:     directionToProtocol(face),
+			Face:     protocol.VarInt(directionToProtocol(face)),
 			CursorX:  byte(cur.X() * 16),
 			CursorY:  byte(cur.Y() * 16),
 			CursorZ:  byte(cur.Z() * 16),

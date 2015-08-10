@@ -165,13 +165,10 @@ func (t *TimeUpdate) read(rr io.Reader) (err error) {
 
 func (e *EntityEquipment) id() int { return 4 }
 func (e *EntityEquipment) write(ww io.Writer) (err error) {
-	var tmp [2]byte
 	if err = WriteVarInt(ww, e.EntityID); err != nil {
 		return
 	}
-	tmp[0] = byte(e.Slot >> 8)
-	tmp[1] = byte(e.Slot >> 0)
-	if _, err = ww.Write(tmp[:2]); err != nil {
+	if err = WriteVarInt(ww, e.Slot); err != nil {
 		return
 	}
 	if err = e.Item.Serialize(ww); err != nil {
@@ -180,14 +177,12 @@ func (e *EntityEquipment) write(ww io.Writer) (err error) {
 	return
 }
 func (e *EntityEquipment) read(rr io.Reader) (err error) {
-	var tmp [2]byte
 	if e.EntityID, err = ReadVarInt(rr); err != nil {
 		return
 	}
-	if _, err = rr.Read(tmp[:2]); err != nil {
+	if e.Slot, err = ReadVarInt(rr); err != nil {
 		return
 	}
-	e.Slot = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
 	if err = e.Item.Deserialize(rr); err != nil {
 		return
 	}
@@ -517,11 +512,6 @@ func (s *SpawnPlayer) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:1]); err != nil {
 		return
 	}
-	tmp[0] = byte(s.CurrentItem >> 8)
-	tmp[1] = byte(s.CurrentItem >> 0)
-	if _, err = ww.Write(tmp[:2]); err != nil {
-		return
-	}
 	if err = writeMetadata(ww, s.Metadata); err != nil {
 		return
 	}
@@ -555,10 +545,6 @@ func (s *SpawnPlayer) read(rr io.Reader) (err error) {
 		return
 	}
 	s.Pitch = int8((uint8(tmp[0]) << 0))
-	if _, err = rr.Read(tmp[:2]); err != nil {
-		return
-	}
-	s.CurrentItem = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
 	if s.Metadata, err = readMetadata(rr); err != nil {
 		return
 	}
@@ -589,6 +575,9 @@ func (s *SpawnObject) id() int { return 14 }
 func (s *SpawnObject) write(ww io.Writer) (err error) {
 	var tmp [4]byte
 	if err = WriteVarInt(ww, s.EntityID); err != nil {
+		return
+	}
+	if err = s.UUID.Serialize(ww); err != nil {
 		return
 	}
 	tmp[0] = byte(s.Type >> 0)
@@ -631,28 +620,29 @@ func (s *SpawnObject) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:4]); err != nil {
 		return
 	}
-	if s.Data != 0 {
-		tmp[0] = byte(s.VelocityX >> 8)
-		tmp[1] = byte(s.VelocityX >> 0)
-		if _, err = ww.Write(tmp[:2]); err != nil {
-			return
-		}
-		tmp[0] = byte(s.VelocityY >> 8)
-		tmp[1] = byte(s.VelocityY >> 0)
-		if _, err = ww.Write(tmp[:2]); err != nil {
-			return
-		}
-		tmp[0] = byte(s.VelocityZ >> 8)
-		tmp[1] = byte(s.VelocityZ >> 0)
-		if _, err = ww.Write(tmp[:2]); err != nil {
-			return
-		}
+	tmp[0] = byte(s.VelocityX >> 8)
+	tmp[1] = byte(s.VelocityX >> 0)
+	if _, err = ww.Write(tmp[:2]); err != nil {
+		return
+	}
+	tmp[0] = byte(s.VelocityY >> 8)
+	tmp[1] = byte(s.VelocityY >> 0)
+	if _, err = ww.Write(tmp[:2]); err != nil {
+		return
+	}
+	tmp[0] = byte(s.VelocityZ >> 8)
+	tmp[1] = byte(s.VelocityZ >> 0)
+	if _, err = ww.Write(tmp[:2]); err != nil {
+		return
 	}
 	return
 }
 func (s *SpawnObject) read(rr io.Reader) (err error) {
 	var tmp [4]byte
 	if s.EntityID, err = ReadVarInt(rr); err != nil {
+		return
+	}
+	if err = s.UUID.Deserialize(rr); err != nil {
 		return
 	}
 	if _, err = rr.Read(tmp[:1]); err != nil {
@@ -683,20 +673,18 @@ func (s *SpawnObject) read(rr io.Reader) (err error) {
 		return
 	}
 	s.Data = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
-	if s.Data != 0 {
-		if _, err = rr.Read(tmp[:2]); err != nil {
-			return
-		}
-		s.VelocityX = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
-		if _, err = rr.Read(tmp[:2]); err != nil {
-			return
-		}
-		s.VelocityY = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
-		if _, err = rr.Read(tmp[:2]); err != nil {
-			return
-		}
-		s.VelocityZ = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
+	if _, err = rr.Read(tmp[:2]); err != nil {
+		return
 	}
+	s.VelocityX = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
+	if _, err = rr.Read(tmp[:2]); err != nil {
+		return
+	}
+	s.VelocityY = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
+	if _, err = rr.Read(tmp[:2]); err != nil {
+		return
+	}
+	s.VelocityZ = int16((uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8))
 	return
 }
 
@@ -704,6 +692,9 @@ func (s *SpawnMob) id() int { return 15 }
 func (s *SpawnMob) write(ww io.Writer) (err error) {
 	var tmp [4]byte
 	if err = WriteVarInt(ww, s.EntityID); err != nil {
+		return
+	}
+	if err = s.UUID.Serialize(ww); err != nil {
 		return
 	}
 	tmp[0] = byte(s.Type >> 0)
@@ -766,6 +757,9 @@ func (s *SpawnMob) write(ww io.Writer) (err error) {
 func (s *SpawnMob) read(rr io.Reader) (err error) {
 	var tmp [4]byte
 	if s.EntityID, err = ReadVarInt(rr); err != nil {
+		return
+	}
+	if err = s.UUID.Deserialize(rr); err != nil {
 		return
 	}
 	if _, err = rr.Read(tmp[:1]); err != nil {
@@ -3441,7 +3435,12 @@ func (c *CombatEvent) write(ww io.Writer) (err error) {
 		}
 	}
 	if c.Event == 2 {
-		if err = WriteString(ww, c.Message); err != nil {
+		var tmp0 []byte
+		if tmp0, err = json.Marshal(&c.Message); err != nil {
+			return
+		}
+		tmp1 := string(tmp0)
+		if err = WriteString(ww, tmp1); err != nil {
 			return
 		}
 	}
@@ -3469,7 +3468,11 @@ func (c *CombatEvent) read(rr io.Reader) (err error) {
 		c.EntityID = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
 	}
 	if c.Event == 2 {
-		if c.Message, err = ReadString(rr); err != nil {
+		var tmp0 string
+		if tmp0, err = ReadString(rr); err != nil {
+			return err
+		}
+		if err = json.Unmarshal([]byte(tmp0), &c.Message); err != nil {
 			return
 		}
 	}
@@ -3793,22 +3796,89 @@ func (r *ResourcePackSend) read(rr io.Reader) (err error) {
 	return
 }
 
-func (u *UpdateEntityNBT) id() int { return 73 }
-func (u *UpdateEntityNBT) write(ww io.Writer) (err error) {
-	if err = WriteVarInt(ww, u.EntityID); err != nil {
+func (b *BossBar) id() int { return 73 }
+func (b *BossBar) write(ww io.Writer) (err error) {
+	var tmp [4]byte
+	if err = b.UUID.Serialize(ww); err != nil {
 		return
 	}
-	if err = WriteNBT(ww, u.Tag); err != nil {
+	if err = WriteVarInt(ww, b.Action); err != nil {
 		return
+	}
+	if b.Action == 0 || b.Action == 3 {
+		var tmp0 []byte
+		if tmp0, err = json.Marshal(&b.Title); err != nil {
+			return
+		}
+		tmp1 := string(tmp0)
+		if err = WriteString(ww, tmp1); err != nil {
+			return
+		}
+	}
+	if b.Action == 0 || b.Action == 2 {
+		tmp2 := math.Float32bits(b.Health)
+		tmp[0] = byte(tmp2 >> 24)
+		tmp[1] = byte(tmp2 >> 16)
+		tmp[2] = byte(tmp2 >> 8)
+		tmp[3] = byte(tmp2 >> 0)
+		if _, err = ww.Write(tmp[:4]); err != nil {
+			return
+		}
+	}
+	if b.Action == 0 || b.Action == 4 {
+		if err = WriteVarInt(ww, b.Color); err != nil {
+			return
+		}
+		if err = WriteVarInt(ww, b.Style); err != nil {
+			return
+		}
+	}
+	if b.Action == 0 || b.Action == 5 {
+		tmp[0] = byte(b.Flags >> 0)
+		if _, err = ww.Write(tmp[:1]); err != nil {
+			return
+		}
 	}
 	return
 }
-func (u *UpdateEntityNBT) read(rr io.Reader) (err error) {
-	if u.EntityID, err = ReadVarInt(rr); err != nil {
+func (b *BossBar) read(rr io.Reader) (err error) {
+	var tmp [4]byte
+	if err = b.UUID.Deserialize(rr); err != nil {
 		return
 	}
-	if u.Tag, err = ReadNBT(rr); err != nil {
+	if b.Action, err = ReadVarInt(rr); err != nil {
 		return
+	}
+	if b.Action == 0 || b.Action == 3 {
+		var tmp0 string
+		if tmp0, err = ReadString(rr); err != nil {
+			return err
+		}
+		if err = json.Unmarshal([]byte(tmp0), &b.Title); err != nil {
+			return
+		}
+	}
+	if b.Action == 0 || b.Action == 2 {
+		var tmp1 uint32
+		if _, err = rr.Read(tmp[:4]); err != nil {
+			return
+		}
+		tmp1 = (uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24)
+		b.Health = math.Float32frombits(tmp1)
+	}
+	if b.Action == 0 || b.Action == 4 {
+		if b.Color, err = ReadVarInt(rr); err != nil {
+			return
+		}
+		if b.Style, err = ReadVarInt(rr); err != nil {
+			return
+		}
+	}
+	if b.Action == 0 || b.Action == 5 {
+		if _, err = rr.Read(tmp[:1]); err != nil {
+			return
+		}
+		b.Flags = (byte(tmp[0]) << 0)
 	}
 	return
 }
@@ -3887,5 +3957,5 @@ func init() {
 	packetCreator[Play][clientbound][70] = func() Packet { return &SetCompression{} }
 	packetCreator[Play][clientbound][71] = func() Packet { return &PlayerListHeaderFooter{} }
 	packetCreator[Play][clientbound][72] = func() Packet { return &ResourcePackSend{} }
-	packetCreator[Play][clientbound][73] = func() Packet { return &UpdateEntityNBT{} }
+	packetCreator[Play][clientbound][73] = func() Packet { return &BossBar{} }
 }

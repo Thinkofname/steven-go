@@ -4,7 +4,6 @@
 package protocol
 
 import (
-	"encoding/json"
 	"io"
 	"io/ioutil"
 	"math"
@@ -73,6 +72,11 @@ func (u *UseEntity) write(ww io.Writer) (err error) {
 			return
 		}
 	}
+	if u.Type == 0 || u.Type == 2 {
+		if err = WriteVarInt(ww, u.Hand); err != nil {
+			return
+		}
+	}
 	return
 }
 func (u *UseEntity) read(rr io.Reader) (err error) {
@@ -102,6 +106,11 @@ func (u *UseEntity) read(rr io.Reader) (err error) {
 		}
 		tmp2 = (uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24)
 		u.TargetZ = math.Float32frombits(tmp2)
+	}
+	if u.Type == 0 || u.Type == 2 {
+		if u.Hand, err = ReadVarInt(rr); err != nil {
+			return
+		}
 	}
 	return
 }
@@ -373,7 +382,21 @@ func (p *PlayerDigging) read(rr io.Reader) (err error) {
 	return
 }
 
-func (p *PlayerBlockPlacement) id() int { return 8 }
+func (u *UseItem) id() int { return 8 }
+func (u *UseItem) write(ww io.Writer) (err error) {
+	if err = WriteVarInt(ww, u.Hand); err != nil {
+		return
+	}
+	return
+}
+func (u *UseItem) read(rr io.Reader) (err error) {
+	if u.Hand, err = ReadVarInt(rr); err != nil {
+		return
+	}
+	return
+}
+
+func (p *PlayerBlockPlacement) id() int { return 9 }
 func (p *PlayerBlockPlacement) write(ww io.Writer) (err error) {
 	var tmp [8]byte
 	tmp[0] = byte(p.Location >> 56)
@@ -387,11 +410,10 @@ func (p *PlayerBlockPlacement) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:8]); err != nil {
 		return
 	}
-	tmp[0] = byte(p.Face >> 0)
-	if _, err = ww.Write(tmp[:1]); err != nil {
+	if err = WriteVarInt(ww, p.Face); err != nil {
 		return
 	}
-	if err = p.HeldItem.Serialize(ww); err != nil {
+	if err = WriteVarInt(ww, p.Hand); err != nil {
 		return
 	}
 	tmp[0] = byte(p.CursorX >> 0)
@@ -414,11 +436,10 @@ func (p *PlayerBlockPlacement) read(rr io.Reader) (err error) {
 		return
 	}
 	p.Location = (Position(tmp[7]) << 0) | (Position(tmp[6]) << 8) | (Position(tmp[5]) << 16) | (Position(tmp[4]) << 24) | (Position(tmp[3]) << 32) | (Position(tmp[2]) << 40) | (Position(tmp[1]) << 48) | (Position(tmp[0]) << 56)
-	if _, err = rr.Read(tmp[:1]); err != nil {
+	if p.Face, err = ReadVarInt(rr); err != nil {
 		return
 	}
-	p.Face = (byte(tmp[0]) << 0)
-	if err = p.HeldItem.Deserialize(rr); err != nil {
+	if p.Hand, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	if _, err = rr.Read(tmp[:1]); err != nil {
@@ -436,7 +457,7 @@ func (p *PlayerBlockPlacement) read(rr io.Reader) (err error) {
 	return
 }
 
-func (h *HeldItemChange) id() int { return 9 }
+func (h *HeldItemChange) id() int { return 10 }
 func (h *HeldItemChange) write(ww io.Writer) (err error) {
 	var tmp [2]byte
 	tmp[0] = byte(h.Slot >> 8)
@@ -455,15 +476,21 @@ func (h *HeldItemChange) read(rr io.Reader) (err error) {
 	return
 }
 
-func (a *ArmSwing) id() int { return 10 }
+func (a *ArmSwing) id() int { return 11 }
 func (a *ArmSwing) write(ww io.Writer) (err error) {
+	if err = WriteVarInt(ww, a.Hand); err != nil {
+		return
+	}
 	return
 }
 func (a *ArmSwing) read(rr io.Reader) (err error) {
+	if a.Hand, err = ReadVarInt(rr); err != nil {
+		return
+	}
 	return
 }
 
-func (p *PlayerAction) id() int { return 11 }
+func (p *PlayerAction) id() int { return 12 }
 func (p *PlayerAction) write(ww io.Writer) (err error) {
 	if err = WriteVarInt(ww, p.EntityID); err != nil {
 		return
@@ -489,7 +516,7 @@ func (p *PlayerAction) read(rr io.Reader) (err error) {
 	return
 }
 
-func (s *SteerVehicle) id() int { return 12 }
+func (s *SteerVehicle) id() int { return 13 }
 func (s *SteerVehicle) write(ww io.Writer) (err error) {
 	var tmp [4]byte
 	tmp0 := math.Float32bits(s.Sideways)
@@ -535,7 +562,7 @@ func (s *SteerVehicle) read(rr io.Reader) (err error) {
 	return
 }
 
-func (c *CloseWindow) id() int { return 13 }
+func (c *CloseWindow) id() int { return 14 }
 func (c *CloseWindow) write(ww io.Writer) (err error) {
 	var tmp [1]byte
 	tmp[0] = byte(c.ID >> 0)
@@ -553,7 +580,7 @@ func (c *CloseWindow) read(rr io.Reader) (err error) {
 	return
 }
 
-func (c *ClickWindow) id() int { return 14 }
+func (c *ClickWindow) id() int { return 15 }
 func (c *ClickWindow) write(ww io.Writer) (err error) {
 	var tmp [2]byte
 	tmp[0] = byte(c.ID >> 0)
@@ -611,7 +638,7 @@ func (c *ClickWindow) read(rr io.Reader) (err error) {
 	return
 }
 
-func (c *ConfirmTransactionServerbound) id() int { return 15 }
+func (c *ConfirmTransactionServerbound) id() int { return 16 }
 func (c *ConfirmTransactionServerbound) write(ww io.Writer) (err error) {
 	var tmp [2]byte
 	tmp[0] = byte(c.ID >> 0)
@@ -644,7 +671,7 @@ func (c *ConfirmTransactionServerbound) read(rr io.Reader) (err error) {
 	return
 }
 
-func (c *CreativeInventoryAction) id() int { return 16 }
+func (c *CreativeInventoryAction) id() int { return 17 }
 func (c *CreativeInventoryAction) write(ww io.Writer) (err error) {
 	var tmp [2]byte
 	tmp[0] = byte(c.Slot >> 8)
@@ -669,7 +696,7 @@ func (c *CreativeInventoryAction) read(rr io.Reader) (err error) {
 	return
 }
 
-func (e *EnchantItem) id() int { return 17 }
+func (e *EnchantItem) id() int { return 18 }
 func (e *EnchantItem) write(ww io.Writer) (err error) {
 	var tmp [1]byte
 	tmp[0] = byte(e.ID >> 0)
@@ -695,7 +722,7 @@ func (e *EnchantItem) read(rr io.Reader) (err error) {
 	return
 }
 
-func (s *SetSign) id() int { return 18 }
+func (s *SetSign) id() int { return 19 }
 func (s *SetSign) write(ww io.Writer) (err error) {
 	var tmp [8]byte
 	tmp[0] = byte(s.Location >> 56)
@@ -709,36 +736,16 @@ func (s *SetSign) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:8]); err != nil {
 		return
 	}
-	var tmp0 []byte
-	if tmp0, err = json.Marshal(&s.Line1); err != nil {
+	if err = WriteString(ww, s.Line1); err != nil {
 		return
 	}
-	tmp1 := string(tmp0)
-	if err = WriteString(ww, tmp1); err != nil {
+	if err = WriteString(ww, s.Line2); err != nil {
 		return
 	}
-	var tmp2 []byte
-	if tmp2, err = json.Marshal(&s.Line2); err != nil {
+	if err = WriteString(ww, s.Line3); err != nil {
 		return
 	}
-	tmp3 := string(tmp2)
-	if err = WriteString(ww, tmp3); err != nil {
-		return
-	}
-	var tmp4 []byte
-	if tmp4, err = json.Marshal(&s.Line3); err != nil {
-		return
-	}
-	tmp5 := string(tmp4)
-	if err = WriteString(ww, tmp5); err != nil {
-		return
-	}
-	var tmp6 []byte
-	if tmp6, err = json.Marshal(&s.Line4); err != nil {
-		return
-	}
-	tmp7 := string(tmp6)
-	if err = WriteString(ww, tmp7); err != nil {
+	if err = WriteString(ww, s.Line4); err != nil {
 		return
 	}
 	return
@@ -749,38 +756,22 @@ func (s *SetSign) read(rr io.Reader) (err error) {
 		return
 	}
 	s.Location = (Position(tmp[7]) << 0) | (Position(tmp[6]) << 8) | (Position(tmp[5]) << 16) | (Position(tmp[4]) << 24) | (Position(tmp[3]) << 32) | (Position(tmp[2]) << 40) | (Position(tmp[1]) << 48) | (Position(tmp[0]) << 56)
-	var tmp0 string
-	if tmp0, err = ReadString(rr); err != nil {
-		return err
-	}
-	if err = json.Unmarshal([]byte(tmp0), &s.Line1); err != nil {
+	if s.Line1, err = ReadString(rr); err != nil {
 		return
 	}
-	var tmp1 string
-	if tmp1, err = ReadString(rr); err != nil {
-		return err
-	}
-	if err = json.Unmarshal([]byte(tmp1), &s.Line2); err != nil {
+	if s.Line2, err = ReadString(rr); err != nil {
 		return
 	}
-	var tmp2 string
-	if tmp2, err = ReadString(rr); err != nil {
-		return err
-	}
-	if err = json.Unmarshal([]byte(tmp2), &s.Line3); err != nil {
+	if s.Line3, err = ReadString(rr); err != nil {
 		return
 	}
-	var tmp3 string
-	if tmp3, err = ReadString(rr); err != nil {
-		return err
-	}
-	if err = json.Unmarshal([]byte(tmp3), &s.Line4); err != nil {
+	if s.Line4, err = ReadString(rr); err != nil {
 		return
 	}
 	return
 }
 
-func (c *ClientAbilities) id() int { return 19 }
+func (c *ClientAbilities) id() int { return 20 }
 func (c *ClientAbilities) write(ww io.Writer) (err error) {
 	var tmp [4]byte
 	tmp[0] = byte(c.Flags >> 0)
@@ -826,7 +817,7 @@ func (c *ClientAbilities) read(rr io.Reader) (err error) {
 	return
 }
 
-func (t *TabComplete) id() int { return 20 }
+func (t *TabComplete) id() int { return 21 }
 func (t *TabComplete) write(ww io.Writer) (err error) {
 	var tmp [8]byte
 	if err = WriteString(ww, t.Text); err != nil {
@@ -867,7 +858,7 @@ func (t *TabComplete) read(rr io.Reader) (err error) {
 	return
 }
 
-func (c *ClientSettings) id() int { return 21 }
+func (c *ClientSettings) id() int { return 22 }
 func (c *ClientSettings) write(ww io.Writer) (err error) {
 	var tmp [1]byte
 	if err = WriteString(ww, c.Locale); err != nil {
@@ -886,6 +877,9 @@ func (c *ClientSettings) write(ww io.Writer) (err error) {
 	}
 	tmp[0] = byte(c.DisplayedSkinParts >> 0)
 	if _, err = ww.Write(tmp[:1]); err != nil {
+		return
+	}
+	if err = WriteVarInt(ww, c.MainHand); err != nil {
 		return
 	}
 	return
@@ -910,10 +904,13 @@ func (c *ClientSettings) read(rr io.Reader) (err error) {
 		return
 	}
 	c.DisplayedSkinParts = (byte(tmp[0]) << 0)
+	if c.MainHand, err = ReadVarInt(rr); err != nil {
+		return
+	}
 	return
 }
 
-func (c *ClientStatus) id() int { return 22 }
+func (c *ClientStatus) id() int { return 23 }
 func (c *ClientStatus) write(ww io.Writer) (err error) {
 	if err = WriteVarInt(ww, c.ActionID); err != nil {
 		return
@@ -927,7 +924,7 @@ func (c *ClientStatus) read(rr io.Reader) (err error) {
 	return
 }
 
-func (p *PluginMessageServerbound) id() int { return 23 }
+func (p *PluginMessageServerbound) id() int { return 24 }
 func (p *PluginMessageServerbound) write(ww io.Writer) (err error) {
 	if err = WriteString(ww, p.Channel); err != nil {
 		return
@@ -947,7 +944,7 @@ func (p *PluginMessageServerbound) read(rr io.Reader) (err error) {
 	return
 }
 
-func (s *SpectateTeleport) id() int { return 24 }
+func (s *SpectateTeleport) id() int { return 25 }
 func (s *SpectateTeleport) write(ww io.Writer) (err error) {
 	if err = s.Target.Serialize(ww); err != nil {
 		return
@@ -970,21 +967,22 @@ func init() {
 	packetCreator[Play][serverbound][5] = func() Packet { return &PlayerLook{} }
 	packetCreator[Play][serverbound][6] = func() Packet { return &PlayerPositionLook{} }
 	packetCreator[Play][serverbound][7] = func() Packet { return &PlayerDigging{} }
-	packetCreator[Play][serverbound][8] = func() Packet { return &PlayerBlockPlacement{} }
-	packetCreator[Play][serverbound][9] = func() Packet { return &HeldItemChange{} }
-	packetCreator[Play][serverbound][10] = func() Packet { return &ArmSwing{} }
-	packetCreator[Play][serverbound][11] = func() Packet { return &PlayerAction{} }
-	packetCreator[Play][serverbound][12] = func() Packet { return &SteerVehicle{} }
-	packetCreator[Play][serverbound][13] = func() Packet { return &CloseWindow{} }
-	packetCreator[Play][serverbound][14] = func() Packet { return &ClickWindow{} }
-	packetCreator[Play][serverbound][15] = func() Packet { return &ConfirmTransactionServerbound{} }
-	packetCreator[Play][serverbound][16] = func() Packet { return &CreativeInventoryAction{} }
-	packetCreator[Play][serverbound][17] = func() Packet { return &EnchantItem{} }
-	packetCreator[Play][serverbound][18] = func() Packet { return &SetSign{} }
-	packetCreator[Play][serverbound][19] = func() Packet { return &ClientAbilities{} }
-	packetCreator[Play][serverbound][20] = func() Packet { return &TabComplete{} }
-	packetCreator[Play][serverbound][21] = func() Packet { return &ClientSettings{} }
-	packetCreator[Play][serverbound][22] = func() Packet { return &ClientStatus{} }
-	packetCreator[Play][serverbound][23] = func() Packet { return &PluginMessageServerbound{} }
-	packetCreator[Play][serverbound][24] = func() Packet { return &SpectateTeleport{} }
+	packetCreator[Play][serverbound][8] = func() Packet { return &UseItem{} }
+	packetCreator[Play][serverbound][9] = func() Packet { return &PlayerBlockPlacement{} }
+	packetCreator[Play][serverbound][10] = func() Packet { return &HeldItemChange{} }
+	packetCreator[Play][serverbound][11] = func() Packet { return &ArmSwing{} }
+	packetCreator[Play][serverbound][12] = func() Packet { return &PlayerAction{} }
+	packetCreator[Play][serverbound][13] = func() Packet { return &SteerVehicle{} }
+	packetCreator[Play][serverbound][14] = func() Packet { return &CloseWindow{} }
+	packetCreator[Play][serverbound][15] = func() Packet { return &ClickWindow{} }
+	packetCreator[Play][serverbound][16] = func() Packet { return &ConfirmTransactionServerbound{} }
+	packetCreator[Play][serverbound][17] = func() Packet { return &CreativeInventoryAction{} }
+	packetCreator[Play][serverbound][18] = func() Packet { return &EnchantItem{} }
+	packetCreator[Play][serverbound][19] = func() Packet { return &SetSign{} }
+	packetCreator[Play][serverbound][20] = func() Packet { return &ClientAbilities{} }
+	packetCreator[Play][serverbound][21] = func() Packet { return &TabComplete{} }
+	packetCreator[Play][serverbound][22] = func() Packet { return &ClientSettings{} }
+	packetCreator[Play][serverbound][23] = func() Packet { return &ClientStatus{} }
+	packetCreator[Play][serverbound][24] = func() Packet { return &PluginMessageServerbound{} }
+	packetCreator[Play][serverbound][25] = func() Packet { return &SpectateTeleport{} }
 }

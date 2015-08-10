@@ -82,7 +82,7 @@ type TimeUpdate struct {
 // This is a Minecraft packet
 type EntityEquipment struct {
 	EntityID VarInt
-	Slot     int16
+	Slot     VarInt
 	Item     ItemStack `as:"raw"`
 }
 
@@ -153,12 +153,11 @@ type Animation struct {
 //
 // This is a Minecraft packetC
 type SpawnPlayer struct {
-	EntityID    VarInt
-	UUID        UUID `as:"raw"`
-	X, Y, Z     int32
-	Yaw, Pitch  int8
-	CurrentItem int16
-	Metadata    Metadata
+	EntityID   VarInt
+	UUID       UUID `as:"raw"`
+	X, Y, Z    int32
+	Yaw, Pitch int8
+	Metadata   Metadata
 }
 
 // CollectItem causes the collected item to fly towards the collector. This
@@ -177,11 +176,12 @@ type CollectItem struct {
 // This is a Minecraft packetE
 type SpawnObject struct {
 	EntityID                        VarInt
+	UUID                            UUID `as:"raw"`
 	Type                            byte
 	X, Y, Z                         int32
 	Pitch, Yaw                      int8
 	Data                            int32
-	VelocityX, VelocityY, VelocityZ int16 `if:".Data != 0"`
+	VelocityX, VelocityY, VelocityZ int16
 }
 
 // SpawnMob is used to spawn a living entity into the world when it is in
@@ -190,6 +190,7 @@ type SpawnObject struct {
 // This is a Minecraft packetF
 type SpawnMob struct {
 	EntityID                        VarInt
+	UUID                            UUID `as:"raw"`
 	Type                            byte
 	X, Y, Z                         int32
 	Yaw, Pitch                      int8
@@ -762,10 +763,10 @@ type ServerDifficulty struct {
 // This is a Minecraft packet
 type CombatEvent struct {
 	Event    VarInt
-	Duration VarInt `if:".Event == 1"`
-	PlayerID VarInt `if:".Event == 2"`
-	EntityID int32  `if:".Event == 1 .Event == 2"`
-	Message  string `if:".Event == 2"`
+	Duration VarInt              `if:".Event == 1"`
+	PlayerID VarInt              `if:".Event == 2"`
+	EntityID int32               `if:".Event == 1 .Event == 2"`
+	Message  format.AnyComponent `as:"json" if:".Event == 2"`
 }
 
 // Camera causes the client to spectate the entity with the passed id.
@@ -827,10 +828,17 @@ type ResourcePackSend struct {
 	Hash string
 }
 
-// UpdateEntityNBT updates the nbt tag for an entity.
+// BossBar displays and/or changes a boss bar that is displayed on the
+// top of the client's screen. This is normally used for bosses such as
+// the ender dragon or the wither.
 //
 // This is a Minecraft packet
-type UpdateEntityNBT struct {
-	EntityID VarInt
-	Tag      *nbt.Compound
+type BossBar struct {
+	UUID   UUID `as:"raw"`
+	Action VarInt
+	Title  format.AnyComponent `as:"json" if:".Action == 0 .Action == 3"`
+	Health float32             `if:".Action == 0 .Action == 2"`
+	Color  VarInt              `if:".Action == 0 .Action == 4"`
+	Style  VarInt              `if:".Action == 0 .Action == 4"`
+	Flags  byte                `if:".Action == 0 .Action == 5"`
 }

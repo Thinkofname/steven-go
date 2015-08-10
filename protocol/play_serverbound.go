@@ -16,10 +16,6 @@
 
 package protocol
 
-import (
-	"github.com/thinkofdeath/steven/format"
-)
-
 // KeepAliveServerbound is sent by a client as a response to a
 // KeepAliveClientbound. If the client doesn't reply the server
 // may disconnect the client.
@@ -47,6 +43,7 @@ type UseEntity struct {
 	TargetX  float32 `if:".Type==2"`
 	TargetY  float32 `if:".Type==2"`
 	TargetZ  float32 `if:".Type==2"`
+	Hand     VarInt  `if:".Type==0 .Type==2"`
 }
 
 // Player is used to update whether the player is on the ground or not.
@@ -92,13 +89,20 @@ type PlayerDigging struct {
 	Face     byte
 }
 
+// UseItem is sent when the client tries to use an item.
+//
+// This is a Minecraft packet
+type UseItem struct {
+	Hand VarInt
+}
+
 // PlayerBlockPlacement is sent when the client tries to place a block.
 //
 // This is a Minecraft packet
 type PlayerBlockPlacement struct {
 	Location                  Position
-	Face                      byte
-	HeldItem                  ItemStack `as:"raw"`
+	Face                      VarInt
+	Hand                      VarInt
 	CursorX, CursorY, CursorZ byte
 }
 
@@ -115,6 +119,7 @@ type HeldItemChange struct {
 //
 // This is a Minecraft packetA
 type ArmSwing struct {
+	Hand VarInt
 }
 
 // PlayerAction is sent when a player preforms various actions.
@@ -186,10 +191,10 @@ type EnchantItem struct {
 // This is a Minecraft packet
 type SetSign struct {
 	Location Position
-	Line1    format.AnyComponent `as:"json"`
-	Line2    format.AnyComponent `as:"json"`
-	Line3    format.AnyComponent `as:"json"`
-	Line4    format.AnyComponent `as:"json"`
+	Line1    string
+	Line2    string
+	Line3    string
+	Line4    string
 }
 
 // ClientAbilities is used to modify the players current abilities.
@@ -221,6 +226,7 @@ type ClientSettings struct {
 	ChatMode           byte
 	ChatColors         bool
 	DisplayedSkinParts byte
+	MainHand           VarInt
 }
 
 // ClientStatus is sent to update the client's status
