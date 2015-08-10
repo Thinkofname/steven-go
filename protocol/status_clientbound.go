@@ -38,7 +38,7 @@ package protocol
 //         "favicon": "data:image/png;base64,<data>"
 //     }
 //
-// Currently the packet id is: 0x00
+// This is a Minecraft packet
 type StatusResponse struct {
 	Status StatusReply `as:"json"`
 }
@@ -47,7 +47,7 @@ type StatusResponse struct {
 // The Time field should be exactly the same as the
 // one sent by the client.
 //
-// Currently the packet id is: 0x01
+// This is a Minecraft packet
 type StatusPong struct {
 	Time int64
 }

@@ -32,7 +32,7 @@ package protocol
 // any system for custom information to be transfered
 // by the client to the server until after login.
 //
-// Currently the packet id is: 0x00
+// This is a Minecraft packet
 type Handshake struct {
 	// The protocol version of the connecting client
 	ProtocolVersion VarInt

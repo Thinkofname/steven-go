@@ -26,7 +26,7 @@ import (
 // The client should reply with the KeepAliveServerbound
 // packet setting ID to the same as this one.
 //
-// Currently the packet id is: 0x00
+// This is a Minecraft packet
 type KeepAliveClientbound struct {
 	ID VarInt
 }
@@ -34,7 +34,7 @@ type KeepAliveClientbound struct {
 // JoinGame is sent after completing the login process. This
 // sets the initial state for the client.
 //
-// Currently the packet id is: 0x01
+// This is a Minecraft packet
 type JoinGame struct {
 	// The entity id the client will be referenced by
 	EntityID int32
@@ -57,7 +57,7 @@ type JoinGame struct {
 // or just a system message. The Type field controls the location the
 // message is displayed at and when the message is displayed.
 //
-// Currently the packet id is: 0x02
+// This is a Minecraft packet
 type ServerMessage struct {
 	Message format.AnyComponent `as:"json"`
 	// 0 - Chat message, 1 - System message, 2 - Action bar message
@@ -69,7 +69,7 @@ type ServerMessage struct {
 // but if the server or client has issues keeping up this can fall out of sync
 // so it is a good idea to sent this now and again
 //
-// Currently the packet id is: 0x03
+// This is a Minecraft packet
 type TimeUpdate struct {
 	WorldAge  int64
 	TimeOfDay int64
@@ -79,7 +79,7 @@ type TimeUpdate struct {
 // or armor. Slot 0 is the held item and slots 1 to 4 are boots, leggings
 // chestplate and helmet respectively.
 //
-// Currently the packet id is: 0x04
+// This is a Minecraft packet
 type EntityEquipment struct {
 	EntityID VarInt
 	Slot     int16
@@ -89,14 +89,14 @@ type EntityEquipment struct {
 // SpawnPosition is sent to change the player's current spawn point. Currently
 // only used by the client for the compass.
 //
-// Currently the packet id is: 0x05
+// This is a Minecraft packet
 type SpawnPosition struct {
 	Location Position
 }
 
 // UpdateHealth is sent by the server to update the player's health and food.
 //
-// Currently the packet id is: 0x06
+// This is a Minecraft packet
 type UpdateHealth struct {
 	Health         float32
 	Food           VarInt
@@ -105,7 +105,7 @@ type UpdateHealth struct {
 
 // Respawn is sent to respawn the player after death or when they move worlds.
 //
-// Currently the packet id is: 0x07
+// This is a Minecraft packet
 type Respawn struct {
 	Dimension  int32
 	Difficulty byte
@@ -117,7 +117,7 @@ type Respawn struct {
 // to reply to the server with the same positions as contained in this packet
 // otherwise will reject future packets.
 //
-// Currently the packet id is: 0x08
+// This is a Minecraft packet
 type TeleportPlayer struct {
 	X, Y, Z    float64
 	Yaw, Pitch float32
@@ -126,14 +126,14 @@ type TeleportPlayer struct {
 
 // SetCurrentHotbarSlot changes the player's currently selected hotbar item.
 //
-// Currently the packet id is: 0x09
+// This is a Minecraft packet
 type SetCurrentHotbarSlot struct {
 	Slot byte
 }
 
 // EntityUsedBed is sent by the server when a player goes to bed.
 //
-// Currently the packet id is: 0x0A
+// This is a Minecraft packetA
 type EntityUsedBed struct {
 	EntityID VarInt
 	Location Position
@@ -141,7 +141,7 @@ type EntityUsedBed struct {
 
 // Animation is sent by the server to play an animation on a specific entity.
 //
-// Currently the packet id is: 0x0B
+// This is a Minecraft packetB
 type Animation struct {
 	EntityID    VarInt
 	AnimationID byte
@@ -151,7 +151,7 @@ type Animation struct {
 // This packet alone isn't enough to display the player as the skin and username
 // information is in the player information packet.
 //
-// Currently the packet id is: 0x0C
+// This is a Minecraft packetC
 type SpawnPlayer struct {
 	EntityID    VarInt
 	UUID        UUID `as:"raw"`
@@ -164,7 +164,7 @@ type SpawnPlayer struct {
 // CollectItem causes the collected item to fly towards the collector. This
 // does not destroy the entity.
 //
-// Currently the packet id is: 0x0D
+// This is a Minecraft packetD
 type CollectItem struct {
 	CollectedEntityID VarInt
 	CollectorEntityID VarInt
@@ -174,7 +174,7 @@ type CollectItem struct {
 // is in range of the client. Velocity is only sent if the Data field is
 // non-zero.
 //
-// Currently the packet id is: 0x0E
+// This is a Minecraft packetE
 type SpawnObject struct {
 	EntityID                        VarInt
 	Type                            byte
@@ -187,7 +187,7 @@ type SpawnObject struct {
 // SpawnMob is used to spawn a living entity into the world when it is in
 // range of the client.
 //
-// Currently the packet id is: 0x0F
+// This is a Minecraft packetF
 type SpawnMob struct {
 	EntityID                        VarInt
 	Type                            byte
@@ -201,7 +201,7 @@ type SpawnMob struct {
 // SpawnPainting spawns a painting into the world when it is in range of
 // the client. The title effects the size and the texture of the painting.
 //
-// Currently the packet id is: 0x10
+// This is a Minecraft packet
 type SpawnPainting struct {
 	EntityID  VarInt
 	Title     string
@@ -213,7 +213,7 @@ type SpawnPainting struct {
 // it is in range of the client. The count controls the amount of experience
 // gained when collected.
 //
-// Currently the packet id is: 0x11
+// This is a Minecraft packet
 type SpawnExperienceOrb struct {
 	EntityID VarInt
 	X, Y, Z  int32
@@ -223,7 +223,7 @@ type SpawnExperienceOrb struct {
 // EntityVelocity sets the velocity of an entity in 1/8000 of a block
 // per a tick.
 //
-// Currently the packet id is: 0x12
+// This is a Minecraft packet
 type EntityVelocity struct {
 	EntityID                        VarInt
 	VelocityX, VelocityY, VelocityZ int16
@@ -231,21 +231,21 @@ type EntityVelocity struct {
 
 // EntityDestroy destroys the entities with the ids in the provided slice.
 //
-// Currently the packet id is: 0x13
+// This is a Minecraft packet
 type EntityDestroy struct {
 	EntityIDs []VarInt `length:"VarInt"`
 }
 
 // Entity does nothing. It is a result of subclassing used in Minecraft.
 //
-// Currently the packet id is: 0x14
+// This is a Minecraft packet
 type Entity struct {
 	EntityID VarInt
 }
 
 // EntityMove moves the entity with the id by the offsets provided.
 //
-// Currently the packet id is: 0x15
+// This is a Minecraft packet
 type EntityMove struct {
 	EntityID               VarInt
 	DeltaX, DeltaY, DeltaZ int8
@@ -254,7 +254,7 @@ type EntityMove struct {
 
 // EntityLook rotates the entity to the new angles provided.
 //
-// Currently the packet id is: 0x16
+// This is a Minecraft packet
 type EntityLook struct {
 	EntityID   VarInt
 	Yaw, Pitch int8
@@ -263,7 +263,7 @@ type EntityLook struct {
 
 // EntityLookAndMove is a combination of EntityMove and EntityLook.
 //
-// Currently the packet id is: 0x17
+// This is a Minecraft packet
 type EntityLookAndMove struct {
 	EntityID               VarInt
 	DeltaX, DeltaY, DeltaZ int8
@@ -274,7 +274,7 @@ type EntityLookAndMove struct {
 // EntityTeleport teleports the entity to the target location. This is
 // sent if the entity moves further than EntityMove allows.
 //
-// Currently the packet id is: 0x18
+// This is a Minecraft packet
 type EntityTeleport struct {
 	EntityID   VarInt
 	X, Y, Z    int32
@@ -284,7 +284,7 @@ type EntityTeleport struct {
 
 // EntityHeadLook rotates an entity's head to the new angle.
 //
-// Currently the packet id is: 0x19
+// This is a Minecraft packet
 type EntityHeadLook struct {
 	EntityID VarInt
 	HeadYaw  int8
@@ -293,7 +293,7 @@ type EntityHeadLook struct {
 // EntityAction causes an entity to preform an action based on the passed
 // id.
 //
-// Currently the packet id is: 0x1A
+// This is a Minecraft packetA
 type EntityAction struct {
 	EntityID int32
 	ActionID byte
@@ -302,7 +302,7 @@ type EntityAction struct {
 // EntityAttach attaches to entities together, either by mounting or leashing.
 // -1 can be used at the EntityID to deattach.
 //
-// Currently the packet id is: 0x1B
+// This is a Minecraft packetB
 type EntityAttach struct {
 	EntityID int32
 	Vehicle  int32
@@ -311,7 +311,7 @@ type EntityAttach struct {
 
 // EntityMetadata updates the metadata for an entity.
 //
-// Currently the packet id is: 0x1C
+// This is a Minecraft packetC
 type EntityMetadata struct {
 	EntityID VarInt
 	Metadata Metadata
@@ -319,7 +319,7 @@ type EntityMetadata struct {
 
 // EntityEffect applies a status effect to an entity for a given duration.
 //
-// Currently the packet id is: 0x1D
+// This is a Minecraft packetD
 type EntityEffect struct {
 	EntityID      VarInt
 	EffectID      int8
@@ -330,7 +330,7 @@ type EntityEffect struct {
 
 // EntityRemoveEffect removes an effect from an entity.
 //
-// Currently the packet id is: 0x1E
+// This is a Minecraft packetE
 type EntityRemoveEffect struct {
 	EntityID VarInt
 	EffectID int8
@@ -338,7 +338,7 @@ type EntityRemoveEffect struct {
 
 // SetExperience updates the experience bar on the client.
 //
-// Currently the packet id is: 0x1F
+// This is a Minecraft packetF
 type SetExperience struct {
 	ExperienceBar   float32
 	Level           VarInt
@@ -347,7 +347,7 @@ type SetExperience struct {
 
 // EntityProperties updates the properties for an entity.
 //
-// Currently the packet id is: 0x20
+// This is a Minecraft packet
 type EntityProperties struct {
 	EntityID   VarInt
 	Properties []EntityProperty `length:"int32"`
@@ -372,7 +372,7 @@ type PropertyModifier struct {
 // ChunkData sends or updates a single chunk on the client. If New is set
 // then biome data should be sent too.
 //
-// Currently the packet id is: 0x21
+// This is a Minecraft packet
 type ChunkData struct {
 	ChunkX, ChunkZ int32
 	New            bool
@@ -382,7 +382,7 @@ type ChunkData struct {
 
 // MultiBlockChange is used to update a batch of blocks in a single packet.
 //
-// Currently the packet id is: 0x22
+// This is a Minecraft packet
 type MultiBlockChange struct {
 	ChunkX, ChunkZ int32
 	Records        []BlockChangeRecord `length:"VarInt"`
@@ -397,7 +397,7 @@ type BlockChangeRecord struct {
 
 // BlockChange is used to update a single block on the client.
 //
-// Currently the packet id is: 0x23
+// This is a Minecraft packet
 type BlockChange struct {
 	Location Position
 	BlockID  VarInt
@@ -405,7 +405,7 @@ type BlockChange struct {
 
 // BlockAction triggers different actions depending on the target block.
 //
-// Currently the packet id is: 0x24
+// This is a Minecraft packet
 type BlockAction struct {
 	Location  Position
 	Byte1     byte
@@ -416,7 +416,7 @@ type BlockAction struct {
 // BlockBreakAnimation is used to create and update the block breaking
 // animation played when a player starts digging a block.
 //
-// Currently the packet id is: 0x25
+// This is a Minecraft packet
 type BlockBreakAnimation struct {
 	EntityID VarInt
 	Location Position
@@ -426,7 +426,7 @@ type BlockBreakAnimation struct {
 // ChunkDataBulk is like the ChunkData packet but allows for multiple chunks
 // at once.
 //
-// Currently the packet id is: 0x26
+// This is a Minecraft packet
 type ChunkDataBulk struct {
 	SkyLight bool
 	Meta     []ChunkMeta `length:"VarInt"`
@@ -442,7 +442,7 @@ type ChunkMeta struct {
 // Explosion is sent when an explosion is triggered (tnt, creeper etc).
 // This plays the effect and removes the effected blocks.
 //
-// Currently the packet id is: 0x27
+// This is a Minecraft packet
 type Explosion struct {
 	X, Y, Z                         float32
 	Radius                          float32
@@ -459,7 +459,7 @@ type ExplosionRecord struct {
 // volume (of sounds) being relative to the player's position unless
 // DisableRelative is set to true.
 //
-// Currently the packet id is: 0x28
+// This is a Minecraft packet
 type Effect struct {
 	EffectID        int32
 	Location        Position
@@ -469,7 +469,7 @@ type Effect struct {
 
 // SoundEffect plays the named sound at the target location.
 //
-// Currently the packet id is: 0x29
+// This is a Minecraft packet
 type SoundEffect struct {
 	Name    string
 	X, Y, Z int32
@@ -480,7 +480,7 @@ type SoundEffect struct {
 // Particle spawns particles at the target location with the various
 // modifiers. Data's length depends on the particle ID.
 //
-// Currently the packet id is: 0x2A
+// This is a Minecraft packetA
 type Particle struct {
 	ParticleID                int32
 	LongDistance              bool
@@ -504,7 +504,7 @@ func particleDataLength(p *Particle) int {
 // ChangeGameState is used to modify the game's state like gamemode or
 // weather.
 //
-// Currently the packet id is: 0x2B
+// This is a Minecraft packetB
 type ChangeGameState struct {
 	Reason byte
 	Value  float32
@@ -513,7 +513,7 @@ type ChangeGameState struct {
 // SpawnGlobalEntity spawns an entity which is visible from anywhere in the
 // world. Currently only used for lightning.
 //
-// Currently the packet id is: 0x2C
+// This is a Minecraft packetC
 type SpawnGlobalEntity struct {
 	EntityID VarInt
 	Type     byte
@@ -524,7 +524,7 @@ type SpawnGlobalEntity struct {
 // type. The ID is used to reference the instance of the window in
 // other packets.
 //
-// Currently the packet id is: 0x2D
+// This is a Minecraft packetD
 type WindowOpen struct {
 	ID        byte
 	Type      string
@@ -536,14 +536,14 @@ type WindowOpen struct {
 // WindowClose forces the client to close the window with the given id,
 // e.g. a chest getting destroyed.
 //
-// Currently the packet id is: 0x2E
+// This is a Minecraft packetE
 type WindowClose struct {
 	ID byte
 }
 
 // WindowSetSlot changes an itemstack in one of the slots in a window.
 //
-// Currently the packet id is: 0x2F
+// This is a Minecraft packetF
 type WindowSetSlot struct {
 	ID        byte
 	Slot      int16
@@ -552,7 +552,7 @@ type WindowSetSlot struct {
 
 // WindowItems sets every item in a window.
 //
-// Currently the packet id is: 0x30
+// This is a Minecraft packet
 type WindowItems struct {
 	ID    byte
 	Items []ItemStack `length:"int16" as:"raw"`
@@ -561,7 +561,7 @@ type WindowItems struct {
 // WindowProperty changes the value of a property of a window. Properties
 // vary depending on the window type.
 //
-// Currently the packet id is: 0x31
+// This is a Minecraft packet
 type WindowProperty struct {
 	ID       byte
 	Property int16
@@ -571,7 +571,7 @@ type WindowProperty struct {
 // ConfirmTransaction notifies the client whether a transaction was successful
 // or failed (e.g. due to lag).
 //
-// Currently the packet id is: 0x32
+// This is a Minecraft packet
 type ConfirmTransaction struct {
 	ID           byte
 	ActionNumber int16
@@ -580,7 +580,7 @@ type ConfirmTransaction struct {
 
 // UpdateSign sets or changes the text on a sign.
 //
-// Currently the packet id is: 0x33
+// This is a Minecraft packet
 type UpdateSign struct {
 	Location Position
 	Line1    format.AnyComponent `as:"json"`
@@ -591,7 +591,7 @@ type UpdateSign struct {
 
 // Maps updates a single map's contents
 //
-// Currently the packet id is: 0x34
+// This is a Minecraft packet
 type Maps struct {
 	ItemDamage VarInt
 	Scale      int8
@@ -612,7 +612,7 @@ type MapIcon struct {
 // UpdateBlockEntity updates the nbt tag of a block entity in the
 // world.
 //
-// Currently the packet id is: 0x35
+// This is a Minecraft packet
 type UpdateBlockEntity struct {
 	Location Position
 	Action   byte
@@ -622,14 +622,14 @@ type UpdateBlockEntity struct {
 // SignEditorOpen causes the client to open the editor for a sign so that
 // it can write to it. Only sent in vanilla when the player places a sign.
 //
-// Currently the packet id is: 0x36
+// This is a Minecraft packet
 type SignEditorOpen struct {
 	Location Position
 }
 
 // Statistics is used to update the statistics screen for the client.
 //
-// Currently the packet id is: 0x37
+// This is a Minecraft packet
 type Statistics struct {
 	Statistics []Statistic `length:"VarInt"`
 }
@@ -643,7 +643,7 @@ type Statistic struct {
 // PlayerInfo is sent by the server for every player connected to the server
 // to provide skin and username information as well as ping and gamemode info.
 //
-// Currently the packet id is: 0x38
+// This is a Minecraft packet
 type PlayerInfo struct {
 	Action  VarInt
 	Players []PlayerDetail `length:"VarInt"`
@@ -671,7 +671,7 @@ type PlayerProperty struct {
 // PlayerAbilities is used to modify the players current abilities. Flying,
 // creative, god mode etc.
 //
-// Currently the packet id is: 0x39
+// This is a Minecraft packet
 type PlayerAbilities struct {
 	Flags        byte
 	FlyingSpeed  float32
@@ -682,14 +682,14 @@ type PlayerAbilities struct {
 // The matches should be possible completions for the command/chat the
 // player sent.
 //
-// Currently the packet id is: 0x3A
+// This is a Minecraft packetA
 type TabCompleteReply struct {
 	Matches []string `length:"VarInt"`
 }
 
 // ScoreboardObjective creates/updates a scoreboard objective.
 //
-// Currently the packet id is: 0x3B
+// This is a Minecraft packetB
 type ScoreboardObjective struct {
 	Name  string
 	Mode  byte
@@ -700,7 +700,7 @@ type ScoreboardObjective struct {
 // UpdateScore is used to update or remove an item from a scoreboard
 // objective.
 //
-// Currently the packet id is: 0x3C
+// This is a Minecraft packetC
 type UpdateScore struct {
 	Name       string
 	Action     byte
@@ -710,7 +710,7 @@ type UpdateScore struct {
 
 // ScoreboardDisplay is used to set the display position of a scoreboard.
 //
-// Currently the packet id is: 0x3D
+// This is a Minecraft packetD
 type ScoreboardDisplay struct {
 	Position byte
 	Name     string
@@ -718,7 +718,7 @@ type ScoreboardDisplay struct {
 
 // Teams creates and updates teams
 //
-// Currently the packet id is: 0x3E
+// This is a Minecraft packetE
 type Teams struct {
 	Name              string
 	Mode              byte
@@ -735,7 +735,7 @@ type Teams struct {
 // and server. This is mainly for plugins/mods but vanilla has a few channels
 // registered too.
 //
-// Currently the packet id is: 0x3F
+// This is a Minecraft packetF
 type PluginMessageClientbound struct {
 	Channel string
 	Data    []byte `length:"remaining"`
@@ -743,7 +743,7 @@ type PluginMessageClientbound struct {
 
 // Disconnect causes the client to disconnect displaying the passed reason.
 //
-// Currently the packet id is: 0x40
+// This is a Minecraft packet
 type Disconnect struct {
 	Reason format.AnyComponent `as:"json"`
 }
@@ -751,7 +751,7 @@ type Disconnect struct {
 // ServerDifficulty changes the displayed difficulty in the client's menu
 // as well as some ui changes for hardcore.
 //
-// Currently the packet id is: 0x41
+// This is a Minecraft packet
 type ServerDifficulty struct {
 	Difficulty byte
 }
@@ -759,7 +759,7 @@ type ServerDifficulty struct {
 // CombatEvent is used for... you know, I never checked. I have no
 // clue.
 //
-// Currently the packet id is: 0x42
+// This is a Minecraft packet
 type CombatEvent struct {
 	Event    VarInt
 	Duration VarInt `if:".Event == 1"`
@@ -771,14 +771,14 @@ type CombatEvent struct {
 // Camera causes the client to spectate the entity with the passed id.
 // Use the player's id to de-spectate.
 //
-// Currently the packet id is: 0x43
+// This is a Minecraft packet
 type Camera struct {
 	TargetID VarInt
 }
 
 // WorldBorder configures the world's border.
 //
-// Currently the packet id is: 0x44
+// This is a Minecraft packet
 type WorldBorder struct {
 	Action         VarInt
 	OldRadius      float64 `if:".Action == 3 .Action == 1"`
@@ -792,7 +792,7 @@ type WorldBorder struct {
 
 // Title configures an on-screen title.
 //
-// Currently the packet id is: 0x45
+// This is a Minecraft packet
 type Title struct {
 	Action   VarInt
 	Title    format.AnyComponent `as:"json" if:".Action == 0"`
@@ -804,14 +804,14 @@ type Title struct {
 
 // SetCompression updates the compression threshold.
 //
-// Currently the packet id is: 0x46
+// This is a Minecraft packet
 type SetCompression struct {
 	Threshold VarInt
 }
 
 // PlayerListHeaderFooter updates the header/footer of the player list.
 //
-// Currently the packet id is: 0x47
+// This is a Minecraft packet
 type PlayerListHeaderFooter struct {
 	Header format.AnyComponent `as:"json"`
 	Footer format.AnyComponent `as:"json"`
@@ -821,7 +821,7 @@ type PlayerListHeaderFooter struct {
 // resource packet and download it if its missing. Once the resource pack
 // is obtained the client will use it.
 //
-// Currently the packet id is: 0x48
+// This is a Minecraft packet
 type ResourcePackSend struct {
 	URL  string
 	Hash string
@@ -829,7 +829,7 @@ type ResourcePackSend struct {
 
 // UpdateEntityNBT updates the nbt tag for an entity.
 //
-// Currently the packet id is: 0x49
+// This is a Minecraft packet
 type UpdateEntityNBT struct {
 	EntityID VarInt
 	Tag      *nbt.Compound

@@ -24,7 +24,7 @@ import (
 // authenticating the player during login or the general server
 // issues (e.g. too many players).
 //
-// Currently the packet id is: 0x00
+// This is a Minecraft packet
 type LoginDisconnect struct {
 	Reason format.AnyComponent `as:"json"`
 }
@@ -33,7 +33,7 @@ type LoginDisconnect struct {
 // online mode. If it is not sent then its assumed the server is
 // in offline mode.
 //
-// Currently the packet id is: 0x01
+// This is a Minecraft packet
 type EncryptionRequest struct {
 	// Generally empty, left in from legacy auth
 	// but is still used by the client if provided
@@ -49,7 +49,7 @@ type EncryptionRequest struct {
 // authenicates with the session servers (online mode) or straight
 // after LoginStart (offline mode).
 //
-// Currently the packet id is: 0x02
+// This is a Minecraft packet
 type LoginSuccess struct {
 	// String encoding of a uuid (with hyphens)
 	UUID     string
@@ -59,7 +59,7 @@ type LoginSuccess struct {
 // SetInitialCompression sets the compression threshold during the
 // login state.
 //
-// Currently the packet id is: 0x03
+// This is a Minecraft packet
 type SetInitialCompression struct {
 	// Threshold where a packet should be sent compressed
 	Threshold VarInt

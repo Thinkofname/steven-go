@@ -24,13 +24,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
 const (
-	idSearchString = "Currently the packet id is: 0x"
-	searchString   = "This is a packet"
+	packetSearchString = "This is a Minecraft packet"
+	searchString       = "This is a packet"
 )
 
 var (
@@ -40,6 +39,8 @@ var (
 	structs = map[string]*ast.TypeSpec{}
 	packets []packet
 	imports = map[string]struct{}{}
+
+	packetCount int
 )
 
 type packet struct {
@@ -92,7 +93,7 @@ func main() {
 				continue
 			}
 			doc := decl.Doc.Text()
-			pos := strings.Index(doc, idSearchString)
+			pos := strings.Index(doc, packetSearchString)
 			noId := false
 			if pos == -1 {
 				pos = strings.Index(doc, searchString)
@@ -104,10 +105,8 @@ func main() {
 
 			var packetID int64 = -1
 			if !noId {
-				packetID, err = strconv.ParseInt(strings.TrimSpace(doc[pos+len(idSearchString):]), 16, 32)
-				if err != nil {
-					panic(err)
-				}
+				packetID = int64(packetCount)
+				packetCount++
 			}
 			packets = append(packets, packet{
 				id:   int(packetID),

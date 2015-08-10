@@ -21,7 +21,7 @@ package protocol
 // to signal the server to send a StatusResponse to the
 // client
 //
-// Currently the packet id is: 0x00
+// This is a Minecraft packet
 type StatusRequest struct {
 }
 
@@ -30,7 +30,7 @@ type StatusRequest struct {
 // the ping until the time of recieving a pong to measure
 // the latency between the client and the server.
 //
-// Currently the packet id is: 0x01
+// This is a Minecraft packet
 type StatusPing struct {
 	// The time when the ping was sent
 	Time int64

@@ -20,7 +20,7 @@ package protocol
 // state. The passed username is used by the server to authenticate
 // the player in online mode.
 //
-// Currently the packet id is: 0x00
+// This is a Minecraft packet
 type LoginStart struct {
 	Username string
 }
@@ -29,7 +29,7 @@ type LoginStart struct {
 // packets following this one must be encrypted with AES/CFB8
 // encryption.
 //
-// Currently the packet id is: 0x01
+// This is a Minecraft packet
 type EncryptionResponse struct {
 	// The key for the AES/CFB8 cipher encrypted with the
 	// public key

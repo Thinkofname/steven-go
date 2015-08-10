@@ -24,7 +24,7 @@ import (
 // KeepAliveClientbound. If the client doesn't reply the server
 // may disconnect the client.
 //
-// Currently the packet id is: 0x00
+// This is a Minecraft packet
 type KeepAliveServerbound struct {
 	ID VarInt
 }
@@ -32,7 +32,7 @@ type KeepAliveServerbound struct {
 // ChatMessage is sent by the client when it sends a chat message or
 // executes a command (prefixed by '/').
 //
-// Currently the packet id is: 0x01
+// This is a Minecraft packet
 type ChatMessage struct {
 	Message string
 }
@@ -40,7 +40,7 @@ type ChatMessage struct {
 // UseEntity is sent when the user interacts (right clicks) or attacks
 // (left clicks) an entity.
 //
-// Currently the packet id is: 0x02
+// This is a Minecraft packet
 type UseEntity struct {
 	TargetID VarInt
 	Type     VarInt
@@ -51,14 +51,14 @@ type UseEntity struct {
 
 // Player is used to update whether the player is on the ground or not.
 //
-// Currently the packet id is: 0x03
+// This is a Minecraft packet
 type Player struct {
 	OnGround bool
 }
 
 // PlayerPosition is used to update the player's position.
 //
-// Currently the packet id is: 0x04
+// This is a Minecraft packet
 type PlayerPosition struct {
 	X, Y, Z  float64
 	OnGround bool
@@ -66,7 +66,7 @@ type PlayerPosition struct {
 
 // PlayerLook is used to update the player's rotation.
 //
-// Currently the packet id is: 0x05
+// This is a Minecraft packet
 type PlayerLook struct {
 	Yaw, Pitch float32
 	OnGround   bool
@@ -75,7 +75,7 @@ type PlayerLook struct {
 // PlayerPositionLook is a combination of PlayerPosition and
 // PlayerLook.
 //
-// Currently the packet id is: 0x06
+// This is a Minecraft packet
 type PlayerPositionLook struct {
 	X, Y, Z    float64
 	Yaw, Pitch float32
@@ -85,7 +85,7 @@ type PlayerPositionLook struct {
 // PlayerDigging is sent when the client starts/stops digging a block.
 // It also can be sent for droppping items and eating/shooting.
 //
-// Currently the packet id is: 0x07
+// This is a Minecraft packet
 type PlayerDigging struct {
 	Status   byte
 	Location Position
@@ -94,7 +94,7 @@ type PlayerDigging struct {
 
 // PlayerBlockPlacement is sent when the client tries to place a block.
 //
-// Currently the packet id is: 0x08
+// This is a Minecraft packet
 type PlayerBlockPlacement struct {
 	Location                  Position
 	Face                      byte
@@ -105,7 +105,7 @@ type PlayerBlockPlacement struct {
 // HeldItemChange is sent when the player changes the currently active
 // hotbar slot.
 //
-// Currently the packet id is: 0x09
+// This is a Minecraft packet
 type HeldItemChange struct {
 	Slot int16
 }
@@ -113,13 +113,13 @@ type HeldItemChange struct {
 // ArmSwing is sent by the client when the player left clicks (to swing their
 // arm).
 //
-// Currently the packet id is: 0x0A
+// This is a Minecraft packetA
 type ArmSwing struct {
 }
 
 // PlayerAction is sent when a player preforms various actions.
 //
-// Currently the packet id is: 0x0B
+// This is a Minecraft packetB
 type PlayerAction struct {
 	EntityID  VarInt
 	ActionID  VarInt
@@ -129,7 +129,7 @@ type PlayerAction struct {
 // SteerVehicle is sent by the client when steers or preforms an action
 // on a vehicle.
 //
-// Currently the packet id is: 0x0C
+// This is a Minecraft packetC
 type SteerVehicle struct {
 	Sideways float32
 	Forward  float32
@@ -138,14 +138,14 @@ type SteerVehicle struct {
 
 // CloseWindow is sent when the client closes a window.
 //
-// Currently the packet id is: 0x0D
+// This is a Minecraft packetD
 type CloseWindow struct {
 	ID byte
 }
 
 // ClickWindow is sent when the client clicks in a window.
 //
-// Currently the packet id is: 0x0E
+// This is a Minecraft packetE
 type ClickWindow struct {
 	ID           byte
 	Slot         int16
@@ -157,7 +157,7 @@ type ClickWindow struct {
 
 // ConfirmTransactionServerbound is a reply to ConfirmTransaction.
 //
-// Currently the packet id is: 0x0F
+// This is a Minecraft packetF
 type ConfirmTransactionServerbound struct {
 	ID           byte
 	ActionNumber int16
@@ -167,7 +167,7 @@ type ConfirmTransactionServerbound struct {
 // CreativeInventoryAction is sent when the client clicks in the creative
 // inventory. This is used to spawn items in creative.
 //
-// Currently the packet id is: 0x10
+// This is a Minecraft packet
 type CreativeInventoryAction struct {
 	Slot        int16
 	ClickedItem ItemStack `as:"raw"`
@@ -175,7 +175,7 @@ type CreativeInventoryAction struct {
 
 // EnchantItem is sent when the client enchants an item.
 //
-// Currently the packet id is: 0x11
+// This is a Minecraft packet
 type EnchantItem struct {
 	ID          byte
 	Enchantment byte
@@ -183,7 +183,7 @@ type EnchantItem struct {
 
 // SetSign sets the text on a sign after placing it.
 //
-// Currently the packet id is: 0x12
+// This is a Minecraft packet
 type SetSign struct {
 	Location Position
 	Line1    format.AnyComponent `as:"json"`
@@ -195,7 +195,7 @@ type SetSign struct {
 // ClientAbilities is used to modify the players current abilities.
 // Currently flying is the only one
 //
-// Currently the packet id is: 0x13
+// This is a Minecraft packet
 type ClientAbilities struct {
 	Flags        byte
 	FlyingSpeed  float32
@@ -205,7 +205,7 @@ type ClientAbilities struct {
 // TabComplete is sent by the client when the client presses tab in
 // the chat box.
 //
-// Currently the packet id is: 0x14
+// This is a Minecraft packet
 type TabComplete struct {
 	Text      string
 	HasTarget bool
@@ -214,7 +214,7 @@ type TabComplete struct {
 
 // ClientSettings is sent by the client to update its current settings.
 //
-// Currently the packet id is: 0x15
+// This is a Minecraft packet
 type ClientSettings struct {
 	Locale             string
 	ViewDistance       byte
@@ -225,7 +225,7 @@ type ClientSettings struct {
 
 // ClientStatus is sent to update the client's status
 //
-// Currently the packet id is: 0x16
+// This is a Minecraft packet
 type ClientStatus struct {
 	ActionID VarInt
 }
@@ -234,7 +234,7 @@ type ClientStatus struct {
 // and server. This is mainly for plugins/mods but vanilla has a few channels
 // registered too.
 //
-// Currently the packet id is: 0x17
+// This is a Minecraft packet
 type PluginMessageServerbound struct {
 	Channel string
 	Data    []byte `length:"remaining"`
@@ -242,7 +242,7 @@ type PluginMessageServerbound struct {
 
 // SpectateTeleport is sent by clients in spectator mode to teleport to a player.
 //
-// Currently the packet id is: 0x18
+// This is a Minecraft packet
 type SpectateTeleport struct {
 	Target UUID `as:"raw"`
 }
