@@ -109,9 +109,9 @@ func onScroll(w *glfw.Window, xoff float64, yoff float64) {
 		Client.currentHotbarSlot--
 	}
 	if Client.currentHotbarSlot < 0 {
-		Client.currentHotbarSlot = 0
-	} else if Client.currentHotbarSlot > 8 {
 		Client.currentHotbarSlot = 8
+	} else if Client.currentHotbarSlot > 8 {
+		Client.currentHotbarSlot = 0
 	}
 
 	Client.network.Write(&protocol.HeldItemChange{Slot: int16(Client.currentHotbarSlot)})
