@@ -40,7 +40,7 @@ refresh rate.
 `)
 	mouseSensitivity = console.NewIntVar("cl_mouse_speed", 8000, console.Mutable, console.Serializable).
 				Doc(`
-cl_mouse_speed controls how fast you rotate when moving 
+cl_mouse_speed controls how fast you rotate when moving
 the mouse. Higher values means faster rotation.
 `)
 )
@@ -212,6 +212,11 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 
 	if k, ok := keyStateMap[key]; action != glfw.Repeat && ok {
 		Client.KeyState[k] = action == glfw.Press
+	}
+	if key >= glfw.Key0 && key <= glfw.Key9 && action == glfw.Press {
+		slot := int((8 + (key - glfw.Key0)) % 9)
+		Client.currentHotbarSlot = slot
+		Client.network.Write(&protocol.HeldItemChange{Slot: int16(Client.currentHotbarSlot)})
 	}
 	switch key {
 	case glfw.KeyEscape:
