@@ -160,7 +160,7 @@ func (c *cloudState) tick(delta float64) {
 		float32(r.Height),
 	)
 	c.shader.Atlas.Float(float32(tex.Atlas()))
-	c.shader.CloudOffset.Float(float32(int(c.offset / 15.0)))
+	c.shader.CloudOffset.Float(float32(c.offset / 60.0))
 
 	c.shader.Textures.Int(0)
 
@@ -176,7 +176,7 @@ func (c *cloudState) tick(delta float64) {
 }
 
 func init() {
-	glsl.Register("cloud_vertex", `	
+	glsl.Register("cloud_vertex", `
 in vec3 aPosition;
 
 uniform float lightLevel;
@@ -212,16 +212,17 @@ in vec3 vLighting[];
 out vec3 fLighting;
 out vec4 fColor;
 
-void setVertex(vec3 base, vec3 off, float color) {	
+void setVertex(vec3 base, vec3 off, float color) {
 	gl_Position = perspectiveMatrix * cameraMatrix * vec4(base + off*vec3(1.0,-1.0,1.0), 1.0);
 	fColor = vec4(color, color, color, 1.0);
 	fLighting = vLighting[0];
 	EmitVertex();
 }
 
+float coffset = cloudOffset;
 const float invAtlasSize = 1.0 / `+atlasSizeStr+`;
 vec4 atlasTexture(vec2 tPos) {
-	tPos.y += cloudOffset;
+	tPos.y += floor(coffset);
 	tPos = mod(tPos, textureInfo.zw);
 	tPos += textureInfo.xy;
 	tPos *= invAtlasSize;
@@ -236,59 +237,81 @@ bool isSolid(ivec2 pos) {
 	return atlasTexture(vec2(texP + pos)).r + height > (250.0 / 255.0);
 }
 
+bool isFutureSolid(ivec2 pos) {
+	// Sneak a peak into the future
+	coffset += 1.0;
+	bool ret = isSolid(pos);
+	coffset -= 1.0;
+	return ret;
+}
+
 void main() {
 	vec3 base = floor(offset) + gl_in[0].gl_Position.xyz;
 	texP = ivec2(gl_in[0].gl_Position.xz + 160.0 + offset.xz);
 	heightP = ivec2(mod(base.xz, 512));
 	if (!isSolid(ivec2(0))) return;
-	
+
+	float backOffset = 1.0 - fract(cloudOffset);
+	float frontOffset = -fract(cloudOffset);
+	if (!isFutureSolid(ivec2(0, -1))) {
+		frontOffset = 0.0;
+	}
+
 	// Top
-	setVertex(base, vec3(0.0, 1.0, 0.0), 1.0);
-	setVertex(base, vec3(1.0, 1.0, 0.0), 1.0);
-	setVertex(base, vec3(0.0, 1.0, 1.0), 1.0);
-	setVertex(base, vec3(1.0, 1.0, 1.0), 1.0);
-	EndPrimitive();	
-	
+	setVertex(base, vec3(0.0, 1.0, frontOffset), 1.0);
+	setVertex(base, vec3(1.0, 1.0, frontOffset), 1.0);
+	setVertex(base, vec3(0.0, 1.0, backOffset), 1.0);
+	setVertex(base, vec3(1.0, 1.0, backOffset), 1.0);
+	EndPrimitive();
+
 	// Bottom
-	setVertex(base, vec3(0.0, 0.0, 0.0), 0.7);
-	setVertex(base, vec3(0.0, 0.0, 1.0), 0.7);
-	setVertex(base, vec3(1.0, 0.0, 0.0), 0.7);
-	setVertex(base, vec3(1.0, 0.0, 1.0), 0.7);
-	EndPrimitive();	
-	
-	if (!isSolid(ivec2(-1, 0))) {
+	setVertex(base, vec3(0.0, 0.0, frontOffset), 0.7);
+	setVertex(base, vec3(0.0, 0.0, backOffset), 0.7);
+	setVertex(base, vec3(1.0, 0.0, frontOffset), 0.7);
+	setVertex(base, vec3(1.0, 0.0, backOffset), 0.7);
+	EndPrimitive();
+
+	if (!isSolid(ivec2(-1, 0)) || !isFutureSolid(ivec2(-1, -1))) {
+		float sideOffset = backOffset;
+		if (isSolid(ivec2(-1, 1)) && !isFutureSolid(ivec2(-1, 0))) {
+			sideOffset = 1.0;
+		}
 		// -X
-		setVertex(base, vec3(0.0, 0.0, 0.0), 0.8);
-		setVertex(base, vec3(0.0, 1.0, 0.0), 0.8);
-		setVertex(base, vec3(0.0, 0.0, 1.0), 0.8);
-		setVertex(base, vec3(0.0, 1.0, 1.0), 0.8);
+		setVertex(base, vec3(0.0, 0.0, frontOffset), 0.8);
+		setVertex(base, vec3(0.0, 1.0, frontOffset), 0.8);
+		setVertex(base, vec3(0.0, 0.0, sideOffset), 0.8);
+		setVertex(base, vec3(0.0, 1.0, sideOffset), 0.8);
 		EndPrimitive();
-	}	
-	
-	if (!isSolid(ivec2(1, 0))) {
+	}
+
+	if (!isSolid(ivec2(1, 0)) || !isFutureSolid(ivec2(1, -1))) {
+		float sideOffset = backOffset;
+		if (isSolid(ivec2(1, 1)) && !isFutureSolid(ivec2(1, 0))) {
+			sideOffset = 1.0;
+		}
 		// +X
-		setVertex(base, vec3(1.0, 0.0, 0.0), 0.8);
-		setVertex(base, vec3(1.0, 0.0, 1.0), 0.8);
-		setVertex(base, vec3(1.0, 1.0, 0.0), 0.8);
-		setVertex(base, vec3(1.0, 1.0, 1.0), 0.8);
+		setVertex(base, vec3(1.0, 0.0, frontOffset), 0.8);
+		setVertex(base, vec3(1.0, 0.0, sideOffset), 0.8);
+		setVertex(base, vec3(1.0, 1.0, frontOffset), 0.8);
+		setVertex(base, vec3(1.0, 1.0, sideOffset), 0.8);
 		EndPrimitive();
 	}
-	
-	if (!isSolid(ivec2(0, 1))) {
+
+	if (!isSolid(ivec2(0, 1)) || !isFutureSolid(ivec2(0, 0))) {
 		// -Z
-		setVertex(base, vec3(0.0, 0.0, 1.0), 0.8);
-		setVertex(base, vec3(0.0, 1.0, 1.0), 0.8);
-		setVertex(base, vec3(1.0, 0.0, 1.0), 0.8);
-		setVertex(base, vec3(1.0, 1.0, 1.0), 0.8);
+		setVertex(base, vec3(0.0, 0.0, backOffset), 0.8);
+		setVertex(base, vec3(0.0, 1.0, backOffset), 0.8);
+		setVertex(base, vec3(1.0, 0.0, backOffset), 0.8);
+		setVertex(base, vec3(1.0, 1.0, backOffset), 0.8);
 		EndPrimitive();
 	}
-	
-	if (!isSolid(ivec2(0, -1))) {
+
+	if (!isSolid(ivec2(0, -1)) || !isFutureSolid(ivec2(0, -2))) {
 		// +Z
-		setVertex(base, vec3(0.0, 0.0, 0.0), 0.8);
-		setVertex(base, vec3(1.0, 0.0, 0.0), 0.8);
-		setVertex(base, vec3(0.0, 1.0, 0.0), 0.8);
-		setVertex(base, vec3(1.0, 1.0, 0.0), 0.8);
+		setVertex(base, vec3(0.0, 0.0, frontOffset), 0.8);
+		setVertex(base, vec3(1.0, 0.0, frontOffset), 0.8);
+		setVertex(base, vec3(0.0, 1.0, frontOffset), 0.8);
+		setVertex(base, vec3(1.0, 1.0, frontOffset), 0.8);
 		EndPrimitive();
 	}
 }
