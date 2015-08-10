@@ -186,8 +186,13 @@ func (sl *serverList) redraw() {
 		motd := ui.NewFormattedWidth(format.Wrap(msg), 90+10, 5+18, 700-(90+10+5)).Attach(ui.Top, ui.Left)
 		motd.AttachTo(container)
 		sc.AddDrawable(motd)
+
+		msg = &format.TextComponent{Text: ""}
+		version := ui.NewFormattedWidth(format.Wrap(msg), 90+10, 5, 700-(90+10+5)).Attach(ui.Bottom, ui.Left)
+		version.AttachTo(container)
+		sc.AddDrawable(version)
 		s := s
-		go sl.pingServer(s.Address, motd, icon, si.id, ping, players)
+		go sl.pingServer(s.Address, motd, version, icon, si.id, ping, players)
 		container.ClickFunc = func() {
 			PlaySound("random.click")
 			sl.connect(s.Address)
@@ -222,7 +227,7 @@ func (sl *serverList) redraw() {
 	}
 }
 
-func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
+func (sl *serverList) pingServer(addr string, motd, version *ui.Formatted,
 	icon *ui.Image, id string, ping *ui.Image, players *ui.Text) {
 	conn, err := protocol.Dial(addr)
 	if err != nil {
@@ -260,7 +265,20 @@ func (sl *serverList) pingServer(addr string, motd *ui.Formatted,
 		}
 		ping.SetTextureY(y)
 
-		players.Update(fmt.Sprintf("%d/%d", resp.Players.Online, resp.Players.Max))
+		if resp.Version.Protocol == protocol.SupportedProtocolVersion {
+			players.SetG(255)
+			players.SetB(255)
+			players.Update(fmt.Sprintf("%d/%d", resp.Players.Online, resp.Players.Max))
+		} else {
+			players.SetG(85)
+			players.SetB(85)
+			players.Update(fmt.Sprintf("Out of date %d/%d", resp.Players.Online, resp.Players.Max))
+		}
+		txt := &format.TextComponent{Text: resp.Version.Name}
+		txt.Color = format.Yellow
+		ver := format.Wrap(txt)
+		format.ConvertLegacy(ver)
+		version.Update(ver)
 
 		desc := resp.Description
 		format.ConvertLegacy(desc)
