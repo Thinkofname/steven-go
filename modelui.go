@@ -41,9 +41,7 @@ func getModel(name string) *model {
 }
 
 func modelToUI(mdl *model, block Block) *ui.Model {
-	mat := mgl32.Rotate3DX(math.Pi / 6).Mat4().
-		Mul4(mgl32.Rotate3DY(math.Pi/4 + math.Pi).Mat4()).
-		Mul4(mgl32.Scale3D(0.65, 0.65, 0.65))
+	mat := mgl32.Ident4()
 
 	if gui, ok := mdl.display["gui"]; ok {
 		if gui.Scale != nil {
@@ -61,9 +59,9 @@ func modelToUI(mdl *model, block Block) *ui.Model {
 			))
 		}
 		if gui.Rotation != nil {
-			mat = mat.Mul4(mgl32.Rotate3DY(float32(gui.Rotation[1]/180) * math.Pi).Mat4())
 			mat = mat.Mul4(mgl32.Rotate3DX(float32(gui.Rotation[0]/180) * math.Pi).Mat4())
 			mat = mat.Mul4(mgl32.Rotate3DZ(float32(gui.Rotation[2]/180) * math.Pi).Mat4())
+			mat = mat.Mul4(mgl32.Rotate3DY(float32(gui.Rotation[1]/180) * math.Pi).Mat4())
 		}
 	}
 

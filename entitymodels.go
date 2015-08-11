@@ -119,7 +119,7 @@ func (p *playerModelComponent) SetCurrentItem(item *ItemStack) {
 	if bt, ok := item.Type.(*blockItem); ok {
 		blk = bt.block
 	}
-	mode := "thirdperson"
+	mode := "thirdperson_righthand"
 
 	var out []*render.StaticVertex
 	if mdl.builtIn == builtInGenerated {
@@ -412,7 +412,6 @@ func esPlayerModelTick(p *playerModelComponent,
 			Mul4(mgl32.Rotate3DZ(float32(math.Cos(iTime)*0.06) - 0.06).Mat4()).
 			Mul4(mgl32.Rotate3DX(float32(math.Sin(iTime)*0.06) - float32((7.5-math.Abs(p.armTime-7.5))/7.5)).Mat4()).
 			Mul4(mgl32.Translate3D(0, 11/16.0, -4/16.0)).
-			Mul4(mgl32.Rotate3DX(math.Pi - 0.30).Mat4()).
 			Mul4(p.heldMat)
 	}
 

@@ -39,16 +39,18 @@ func staticModelFromItem(mdl *model, block Block, mode string) (out []*render.St
 		if gui.Translation != nil {
 			mat = mat.Mul4(mgl32.Translate3D(
 				float32(gui.Translation[0]/32),
-				float32(-gui.Translation[1]/32),
-				float32(-gui.Translation[2]/32),
+				float32(gui.Translation[1]/32),
+				float32(gui.Translation[2]/32),
 			))
 		}
 		if gui.Rotation != nil {
-			mat = mat.Mul4(mgl32.Rotate3DY(math.Pi + float32(gui.Rotation[1]/180)*math.Pi).Mat4())
 			mat = mat.Mul4(mgl32.Rotate3DX(float32(gui.Rotation[0]/180) * math.Pi).Mat4())
-			mat = mat.Mul4(mgl32.Rotate3DZ(float32(-gui.Rotation[2]/180) * math.Pi).Mat4())
+			mat = mat.Mul4(mgl32.Rotate3DZ(float32(gui.Rotation[2]/180) * math.Pi).Mat4())
+			mat = mat.Mul4(mgl32.Rotate3DY(float32(gui.Rotation[1]/180) * math.Pi).Mat4())
 		}
 	}
+	mat = mat.Mul4(mgl32.Rotate3DZ(-math.Pi / 4).Mat4())
+	mat = mat.Mul4(mgl32.Rotate3DX(-math.Pi / 4).Mat4())
 
 	p := precomputeModel(mdl)
 	for fi := range p.faces {
@@ -103,17 +105,10 @@ func staticModelFromItem(mdl *model, block Block, mode string) (out []*render.St
 }
 
 func genStaticModelFromItem(mdl *model, block Block, mode string) (out []*render.StaticVertex, mat mgl32.Mat4) {
-	if mode == "thirdperson" {
-		mat = mgl32.Translate3D(0, 0, 2/16.0).
-			Mul4(mgl32.Rotate3DY(math.Pi).Mat4()).
-			Mul4(mgl32.Rotate3DZ(math.Pi).Mat4())
-	} else {
-		mat = mgl32.Translate3D(0, -8/16.0, 0).
-			Mul4(mgl32.Rotate3DX(math.Pi).Mat4()).
-			Mul4(mgl32.Rotate3DY(math.Pi).Mat4()).
-			Mul4(mgl32.Rotate3DZ(-0.6).Mat4()).
-			Mul4(mgl32.Scale3D(1.1, 1.1, 1.1))
-	}
+	mat = mgl32.Rotate3DZ(math.Pi).Mat4().
+		Mul4(mgl32.Rotate3DY(math.Pi / 2).Mat4()).
+		Mul4(mgl32.Rotate3DZ(-math.Pi / 2).Mat4())
+
 	if gui, ok := mdl.display[mode]; ok {
 		if gui.Scale != nil {
 			mat = mat.Mul4(mgl32.Scale3D(
@@ -125,16 +120,18 @@ func genStaticModelFromItem(mdl *model, block Block, mode string) (out []*render
 		if gui.Translation != nil {
 			mat = mat.Mul4(mgl32.Translate3D(
 				float32(gui.Translation[0]/32),
-				float32(-gui.Translation[1]/32),
-				float32(-gui.Translation[2]/32),
+				float32(gui.Translation[1]/32),
+				float32(gui.Translation[2]/32),
 			))
 		}
 		if gui.Rotation != nil {
+			mat = mat.Mul4(mgl32.Rotate3DX(math.Pi + float32(gui.Rotation[0]/180)*math.Pi).Mat4())
+			mat = mat.Mul4(mgl32.Rotate3DZ(math.Pi + float32(gui.Rotation[2]/180)*math.Pi).Mat4())
 			mat = mat.Mul4(mgl32.Rotate3DY(float32(gui.Rotation[1]/180) * math.Pi).Mat4())
-			mat = mat.Mul4(mgl32.Rotate3DX(float32(gui.Rotation[0]/180) * math.Pi).Mat4())
-			mat = mat.Mul4(mgl32.Rotate3DZ(float32(gui.Rotation[2]/180) * math.Pi).Mat4())
 		}
 	}
+	mat = mat.Mul4(mgl32.Rotate3DY(math.Pi / 2).Mat4())
+	mat = mat.Mul4(mgl32.Translate3D(-1/16.0, 0, 0))
 
 	tex := render.GetTexture("solid")
 	rect := tex.Rect()
