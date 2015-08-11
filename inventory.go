@@ -318,7 +318,7 @@ func createItemIcon(item *ItemStack, scene *scene.Type, x, y float64) *ui.Contai
 		}
 		u := modelToUI(mdl, blk)
 		u.AttachTo(container)
-		scene.AddDrawable(u.Attach(ui.Top, ui.Center))
+		scene.AddDrawable(u.Attach(ui.Top, ui.Left))
 	}
 	if dam, ok := item.Type.(ItemDamagable); ok && dam.Damage() > 0 {
 		val := 1.0 - (float64(dam.Damage()) / float64(dam.MaxDamage()))
