@@ -318,16 +318,22 @@ func createItemIcon(item *ItemStack, scene *scene.Type, x, y float64) *ui.Contai
 		}
 		u := modelToUI(mdl, blk)
 		u.AttachTo(container)
-		scene.AddDrawable(u.Attach(ui.Top, ui.Left))
+		scene.AddDrawable(u.Attach(ui.Top, ui.Center))
 	}
 	if dam, ok := item.Type.(ItemDamagable); ok && dam.Damage() > 0 {
 		val := 1.0 - (float64(dam.Damage()) / float64(dam.MaxDamage()))
-		bar := ui.NewImage(render.GetTexture("solid"), 0, 0, 32*val, 2, 0, 0, 1, 1,
+		barShadow := ui.NewImage(render.GetTexture("solid"), 0, 2, 28, 4, 0, 0, 1, 1,
+			0, 0, 0,
+		)
+		barShadow.SetLayer(2)
+		barShadow.AttachTo(container)
+		scene.AddDrawable(barShadow.Attach(ui.Bottom, ui.Center))
+		bar := ui.NewImage(render.GetTexture("solid"), 0, 0, 28*val, 2, 0, 0, 1, 1,
 			int(255*(1.0-val)), int(255*val), 0,
 		)
 		bar.SetLayer(2)
-		bar.AttachTo(container)
-		scene.AddDrawable(bar.Attach(ui.Bottom, ui.Left))
+		bar.AttachTo(barShadow)
+		scene.AddDrawable(bar.Attach(ui.Top, ui.Left))
 	}
 	if item.Count > 1 {
 		txt := ui.NewText(fmt.Sprint(item.Count), -2, -2, 255, 255, 255).
