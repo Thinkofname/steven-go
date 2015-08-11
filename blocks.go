@@ -220,6 +220,19 @@ var Blocks = struct {
 	JungleDoor                 *BlockSet `type:"door"`
 	AcaciaDoor                 *BlockSet `type:"door"`
 	DarkOakDoor                *BlockSet `type:"door"`
+	EndRod                     *BlockSet
+	ChorusPlant                *BlockSet
+	ChorusFlower               *BlockSet
+	PurpurBlock                *BlockSet
+	PurpurPillar               *BlockSet
+	PurpurStairs               *BlockSet `type:"stairs"`
+	PurpurDoubleSlab           *BlockSet `type:"slabDoubleSeamless" variant:"purpur"`
+	PurpurSlab                 *BlockSet `type:"slab" variant:"purpur"`
+	EndBricks                  *BlockSet
+	Beetroots                  *BlockSet
+	GrassPath                  *BlockSet `cullAgainst:"false"`
+	EndGateway                 *BlockSet
+	StructureBlock             *BlockSet
 
 	MissingBlock *BlockSet `mc:"steven:missing_block"`
 }{}

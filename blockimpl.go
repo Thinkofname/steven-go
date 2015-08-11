@@ -1340,6 +1340,7 @@ const (
 	slabJungle
 	slabAcacia
 	slabDarkOak
+	slabDefault
 )
 
 func (s slabVariant) String() string {
@@ -1374,6 +1375,8 @@ func (s slabVariant) String() string {
 		return "acacia"
 	case slabDarkOak:
 		return "dark_oak"
+	case slabDefault:
+		return "default"
 	}
 	return fmt.Sprintf("slabVariant(%d)", s)
 }
@@ -1398,6 +1401,8 @@ func (b *blockSlab) TypeRange() (int, int) {
 		return 8, 8
 	case "wood":
 		return 9, 14
+	case "purpur":
+		return 15, 15
 	}
 	panic("invalid type " + b.Type)
 }
@@ -1496,6 +1501,8 @@ func (b *blockSlabDoubleSeamless) TypeRange() (int, int) {
 		return 8, 8
 	case "wood":
 		return 9, 14
+	case "purpur":
+		return 15, 15
 	}
 	panic("invalid type " + b.Type)
 }
