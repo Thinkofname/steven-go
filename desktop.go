@@ -17,6 +17,7 @@ package steven
 import (
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/thinkofdeath/steven/console"
@@ -177,6 +178,8 @@ const (
 	KeyRight
 	KeySprint
 	KeyJump
+	KeySneak
+	keyCount
 )
 
 var keyStateMap = map[glfw.Key]Key{
@@ -186,6 +189,7 @@ var keyStateMap = map[glfw.Key]Key{
 	glfw.KeyD:           KeyRight,
 	glfw.KeyLeftControl: KeySprint,
 	glfw.KeySpace:       KeyJump,
+	glfw.KeyLeftShift:   KeySneak,
 }
 
 func onChar(w *glfw.Window, char rune) {
@@ -193,6 +197,8 @@ func onChar(w *glfw.Window, char rune) {
 		ui.HandleChar(w, char)
 	}
 }
+
+var lastJumpPress = time.Now()
 
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 	// Debug override
@@ -208,6 +214,15 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 	if Client.chat.enteringText {
 		Client.chat.handleKey(w, key, scancode, action, mods)
 		return
+	}
+
+	// For creative flying
+	if Client.GameMode.Fly() && keyStateMap[key] == KeyJump && action == glfw.Press {
+		now := time.Now()
+		if now.Sub(lastJumpPress) < 500*time.Millisecond {
+			Client.isFlying = !Client.isFlying
+		}
+		lastJumpPress = now
 	}
 
 	if k, ok := keyStateMap[key]; action != glfw.Repeat && ok {

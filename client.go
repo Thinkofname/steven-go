@@ -82,12 +82,13 @@ type ClientState struct {
 	Hunger float64
 
 	VSpeed                   float64
-	KeyState                 [6]bool
+	KeyState                 [keyCount]bool
 	OnGround, didTouchGround bool
 	isLeftDown               bool
 	stepTimer                float64
 
 	GameMode gameMode
+	isFlying bool
 	HardCore bool
 
 	setInitialTime             bool
@@ -334,14 +335,13 @@ func (c *ClientState) renderTick(delta float64) {
 	c.LX, c.LY, c.LZ = c.X, c.Y, c.Z
 	lx, ly, lz := c.X, c.Y, c.Z
 
-	if c.GameMode.Fly() {
-		c.X += forward * math.Cos(yaw) * -math.Cos(c.Pitch) * delta * 0.2
-		c.Z -= forward * math.Sin(yaw) * -math.Cos(c.Pitch) * delta * 0.2
-		c.Y -= forward * math.Sin(c.Pitch) * delta * 0.2
-	} else if chunkMap[chunkPosition{int(math.Floor(c.X)) >> 4, int(math.Floor(c.Z)) >> 4}] != nil {
+	if chunkMap[chunkPosition{int(math.Floor(c.X)) >> 4, int(math.Floor(c.Z)) >> 4}] != nil {
 		speed := 4.317 / 60.0
 		if c.KeyState[KeySprint] {
 			speed = 5.612 / 60.0
+		}
+		if c.isFlying {
+			speed *= 2.5
 		}
 		if _, ok := chunkMap.Block(int(math.Floor(c.X)), int(math.Floor(c.Y)), int(math.Floor(c.Z))).(*blockLiquid); ok {
 			speed = 2.20 / 60.0
@@ -353,15 +353,25 @@ func (c *ClientState) renderTick(delta float64) {
 					c.VSpeed = -0.05
 				}
 			}
-		} else if !c.OnGround {
+		} else if !c.OnGround && !c.isFlying {
 			c.VSpeed -= 0.01 * delta
 			if c.VSpeed < -0.3 {
 				c.VSpeed = -0.3
 			}
 		} else if c.KeyState[KeyJump] {
-			c.VSpeed = 0.15
+			if c.isFlying {
+				c.Y += speed * delta
+			} else {
+				c.VSpeed = 0.15
+			}
 		} else {
 			c.VSpeed = 0
+		}
+		if c.KeyState[KeySneak] {
+			if c.isFlying {
+				c.Y -= speed * delta
+			}
+			// TODO: Sneak animation
 		}
 		c.X += forward * math.Cos(yaw) * delta * speed
 		c.Z -= forward * math.Sin(yaw) * delta * speed
