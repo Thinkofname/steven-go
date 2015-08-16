@@ -78,6 +78,7 @@ func Dial(address string) (*Conn, error) {
 				//It's online, let's use it!
 				address = fmt.Sprintf("%s:%d", srvs[0].Target, srvs[0].Port)
 			} 
+			conn.Close()
 		} else {
 			// Fallback to the default port
 			address = address + ":25565"
