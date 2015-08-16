@@ -63,34 +63,47 @@ type Conn struct {
 // connecting using the returned address. If the lookup
 // fails then the port is assumed to be 25565.
 func Dial(address string) (*Conn, error) {
+	var toTry []string
 	if !strings.ContainsRune(address, ':') {
 		// Attempt a srv lookup first (like vanilla)
 		_, srvs, err := net.LookupSRV("minecraft", "tcp", address)
 		if err == nil && len(srvs) > 0 {
-			address = fmt.Sprintf("%s:%d", srvs[0].Target, srvs[0].Port)
-		} else {
-			// Fallback to the default port
-			address = address + ":25565"
+			for _, srv := range srvs {
+				toTry = append(toTry, fmt.Sprintf("%s:%d", srv.Target, srv.Port))
+			}
 		}
+		toTry = append(toTry, address+":25565")
+	} else {
+		toTry = append(toTry, address)
 	}
-	parts := strings.SplitN(address, ":", 2)
-	port, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return nil, err
+	lastErr := errors.New("Unable to connect to server")
+	for _, address := range toTry {
+		host, portStr, err := net.SplitHostPort(address)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		port, err := strconv.Atoi(portStr)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		c, err := net.DialTimeout("tcp", address, 10*time.Second)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+		return &Conn{
+			r:                    c,
+			w:                    c,
+			net:                  c,
+			direction:            serverbound,
+			host:                 host,
+			port:                 uint16(port),
+			compressionThreshold: -1,
+		}, nil
 	}
-	c, err := net.DialTimeout("tcp", address, 30*time.Second)
-	if err != nil {
-		return nil, err
-	}
-	return &Conn{
-		r:                    c,
-		w:                    c,
-		net:                  c,
-		direction:            serverbound,
-		host:                 parts[0],
-		port:                 uint16(port),
-		compressionThreshold: -1,
-	}, nil
+	return nil, lastErr
 }
 
 // WritePacket serializes the packet to the underlying
