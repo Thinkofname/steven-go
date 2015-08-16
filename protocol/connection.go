@@ -67,7 +67,18 @@ func Dial(address string) (*Conn, error) {
 		// Attempt a srv lookup first (like vanilla)
 		_, srvs, err := net.LookupSRV("minecraft", "tcp", address)
 		if err == nil && len(srvs) > 0 {
-			address = fmt.Sprintf("%s:%d", srvs[0].Target, srvs[0].Port)
+			//Combine SRV data in another variable to allow a seperate test
+			addr := fmt.Sprintf("%s:%d", srvs[0].Target, srvs[0].Port)
+			//Test to see if it's online
+			conn, err := net.DialTimeout("tcp", addr, 2*time.Second)
+			if err != nil {
+				//Not online, use normal A record
+				address = address + ":25565"
+			} else {
+				//It's online, let's use it!
+				address = fmt.Sprintf("%s:%d", srvs[0].Target, srvs[0].Port)
+			} 
+			conn.Close()
 		} else {
 			// Fallback to the default port
 			address = address + ":25565"
