@@ -164,11 +164,16 @@ func parseBlockRuleList(rules map[string]interface{}) func(bs *BlockSet, block B
 					return false
 				}
 			} else {
-				target := vv.String()
-				if _, ok := f.Interface().(fmt.Stringer); !ok {
-					panic(st.name + " for " + bs.stringify(block))
+				match := false
+				for _, target := range strings.Split(vv.String(), "|") {
+					if _, ok := f.Interface().(fmt.Stringer); !ok {
+						panic(st.name + " for " + bs.stringify(block))
+					}
+					if f.Interface().(fmt.Stringer).String() == target {
+						match = true
+					}
 				}
-				if f.Interface().(fmt.Stringer).String() != target {
+				if !match {
 					return false
 				}
 			}

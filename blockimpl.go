@@ -2076,7 +2076,7 @@ func (r redstoneConnection) String() string {
 	case rcNone:
 		return "none"
 	case rcSide:
-		return "side|up"
+		return "side"
 	case rcUp:
 		return "up"
 	}
