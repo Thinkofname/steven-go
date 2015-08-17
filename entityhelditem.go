@@ -53,8 +53,7 @@ func staticModelFromItem(mdl *model, block Block, mode string) (out []*render.St
 	mat = mat.Mul4(mgl32.Rotate3DX(-math.Pi / 4).Mat4())
 
 	p := precomputeModel(mdl)
-	for fi := range p.faces {
-		f := p.faces[len(p.faces)-1-fi]
+	for _, f := range p.faces {
 		var cr, cg, cb byte
 		cr = 255
 		cg = 255

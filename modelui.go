@@ -68,8 +68,7 @@ func modelToUI(mdl *model, block Block) *ui.Model {
 	var verts []*ui.ModelVertex
 
 	p := precomputeModel(mdl)
-	for fi := range p.faces {
-		f := p.faces[len(p.faces)-1-fi]
+	for _, f := range p.faces {
 		var cr, cg, cb byte
 		cr = 255
 		cg = 255
