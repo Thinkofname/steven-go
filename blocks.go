@@ -197,7 +197,7 @@ var Blocks = struct {
 	HardenedClay               *BlockSet
 	CoalBlock                  *BlockSet
 	PackedIce                  *BlockSet
-	DoublePlant                *BlockSet
+	DoublePlant                *BlockSet `type:"doublePlant"`
 	StandingBanner             *BlockSet
 	WallBanner                 *BlockSet
 	DaylightDetectorInverted   *BlockSet

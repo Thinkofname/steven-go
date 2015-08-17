@@ -2320,3 +2320,104 @@ func (b *blockSnowLayer) ModelVariant() string {
 func (b *blockSnowLayer) toData() int {
 	return b.Layers - 1
 }
+
+// Double plant
+
+type doublePlantVariant int
+
+const (
+	dpvSunflower doublePlantVariant = iota
+	dpvSyringa
+	dpvDoubleGrass
+	dpvDoubleFern
+	dpvDoubleRose
+	dpvPaeonia
+)
+
+func (d doublePlantVariant) String() string {
+	switch d {
+	case dpvSunflower:
+		return "sunflower"
+	case dpvSyringa:
+		return "syringa"
+	case dpvDoubleGrass:
+		return "double_grass"
+	case dpvDoubleFern:
+		return "double_fern"
+	case dpvDoubleRose:
+		return "double_rose"
+	case dpvPaeonia:
+		return "paeonia"
+	}
+	return fmt.Sprintf("doublePlantVariant(%d)", d)
+}
+
+type doublePlantHalf int
+
+const (
+	dpUpper doublePlantHalf = iota
+	dpLower
+)
+
+func (d doublePlantHalf) String() string {
+	switch d {
+	case dpUpper:
+		return "upper"
+	case dpLower:
+		return "lower"
+	}
+	return fmt.Sprintf("doublePlantHalf(%d)", d)
+}
+
+type blockDoublePlant struct {
+	baseBlock
+
+	Half    doublePlantHalf    `state:"half,0-1"`
+	Variant doublePlantVariant `state:"variant,0-5"`
+	Facing  direction.Type     `state:"facing,2-5"`
+}
+
+func (b *blockDoublePlant) load(tag reflect.StructTag) {
+	b.cullAgainst = false
+	b.collidable = false
+}
+
+func (b *blockDoublePlant) UpdateState(x, y, z int) Block {
+	if b.Half == dpUpper {
+		o := chunkMap.Block(x, y-1, z)
+		if op, ok := o.(*blockDoublePlant); ok {
+			return b.Set("variant", op.Variant)
+		}
+	} else if b.Half == dpLower {
+		o := chunkMap.Block(x, y+1, z)
+		if op, ok := o.(*blockDoublePlant); ok {
+			return b.Set("facing", op.Facing)
+		}
+	}
+	return b
+}
+
+func (b *blockDoublePlant) ModelName() string {
+	return b.Variant.String()
+}
+
+func (b *blockDoublePlant) ModelVariant() string {
+	return fmt.Sprintf("half=%s", b.Half)
+}
+
+func (b *blockDoublePlant) TintImage() *image.NRGBA {
+	return grassBiomeColors
+}
+
+func (b *blockDoublePlant) toData() int {
+	if b.Half == dpUpper {
+		if b.Variant != dpvSunflower {
+			return -1
+		}
+		return 8 | int(b.Facing)
+	}
+	if b.Facing != direction.East {
+		return -1
+	}
+	return int(b.Variant)
+}
