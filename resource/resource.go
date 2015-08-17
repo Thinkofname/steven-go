@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	ResourcesVersion = "15w32c"
+	ResourcesVersion = "15w33c"
 	vanillaURL       = "https://s3.amazonaws.com/Minecraft.Download/versions/%[1]s/%[1]s.jar"
 )
 
