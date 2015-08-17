@@ -467,6 +467,12 @@ func initBlocks() {
 					)
 					continue
 				}
+				if variants := model.matchPart(bs, b); variants != nil {
+					br.FieldByName("BlockVariants").Set(
+						reflect.ValueOf(variants),
+					)
+					continue
+				}
 				console.Text("Missing block variant (%s) for %s", b.ModelVariant(), b)
 			} else {
 				console.Text("Missing block model for %s", b)
@@ -496,6 +502,12 @@ func reinitBlocks() {
 
 			if model := findStateModel(b.Plugin(), b.ModelName()); model != nil {
 				if variants := model.variant(b.ModelVariant()); variants != nil {
+					br.FieldByName("BlockVariants").Set(
+						reflect.ValueOf(variants),
+					)
+					continue
+				}
+				if variants := model.matchPart(bs, b); variants != nil {
 					br.FieldByName("BlockVariants").Set(
 						reflect.ValueOf(variants),
 					)

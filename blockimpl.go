@@ -547,10 +547,6 @@ func (b *blockFence) UpdateState(x, y, z int) Block {
 	return block
 }
 
-func (b *blockFence) ModelVariant() string {
-	return fmt.Sprintf("east=%t,north=%t,south=%t,west=%t", b.East, b.North, b.South, b.West)
-}
-
 func (b *blockFence) toData() int {
 	if !b.North && !b.South && !b.East && !b.West {
 		return 0
@@ -644,7 +640,7 @@ func (b *blockWall) load(tag reflect.StructTag) {
 }
 
 func (b *blockWall) UpdateState(x, y, z int) Block {
-	var block Block = b
+	var block Block = b.Set("up", false)
 	for _, d := range direction.Values {
 		if d == direction.Down {
 			continue
@@ -659,15 +655,21 @@ func (b *blockWall) UpdateState(x, y, z int) Block {
 			block = block.Set(d.String(), false)
 		}
 	}
+	b = block.(*blockWall)
+	if !b.Up {
+		if b.North && b.South && (!b.West || !b.East) {
+			block = block.Set("up", false)
+		} else if b.East && b.West && (!b.North || !b.South) {
+			block = block.Set("up", false)
+		} else {
+			block = block.Set("up", true)
+		}
+	}
 	return block
 }
 
 func (b *blockWall) ModelName() string {
 	return b.Variant.String() + "_wall"
-}
-
-func (b *blockWall) ModelVariant() string {
-	return fmt.Sprintf("east=%t,north=%t,south=%t,up=%t,west=%t", b.East, b.North, b.South, b.Up, b.West)
 }
 
 func (b *blockWall) toData() int {
@@ -2024,7 +2026,7 @@ type blockFire struct {
 	Age   int  `state:"age,0-15"`
 	Alt   bool `state:"alt"`
 	Flip  bool `state:"flip"`
-	Upper int  `state:"upper,0-2"`
+	Up    bool `state:"up"`
 	North bool `state:"north"`
 	South bool `state:"south"`
 	East  bool `state:"east"`
@@ -2042,28 +2044,17 @@ func (b *blockFire) UpdateState(x, y, z int) Block {
 	if !bl.ShouldCullAgainst() && !burnableBlocks[bl.BlockSet()] {
 		alt := (x+y+z)&1 == 1
 		flip := (x/2+y/2+z/2)&1 == 1
-		upper := 0
-		if burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.Up).Get()).BlockSet()] {
-			if alt {
-				upper = 1
-			} else {
-				upper = 2
-			}
-		}
+		up := burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.Up).Get()).BlockSet()]
 		return b.
 			Set("north", burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.North).Get()).BlockSet()]).
 			Set("south", burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.South).Get()).BlockSet()]).
 			Set("east", burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.East).Get()).BlockSet()]).
 			Set("west", burnableBlocks[chunkMap.Block(pos.ShiftDir(direction.West).Get()).BlockSet()]).
-			Set("upper", upper).
+			Set("up", up).
 			Set("flip", flip).
 			Set("alt", alt)
 	}
 	return Blocks.Fire.Base.Set("age", b.Age)
-}
-
-func (b *blockFire) ModelVariant() string {
-	return fmt.Sprintf("alt=%t,east=%t,flip=%t,north=%t,south=%t,upper=%d,west=%t", b.Alt, b.East, b.Flip, b.North, b.South, b.Upper, b.West)
 }
 
 func (b *blockFire) toData() int {
@@ -2085,7 +2076,7 @@ func (r redstoneConnection) String() string {
 	case rcNone:
 		return "none"
 	case rcSide:
-		return "side"
+		return "side|up"
 	case rcUp:
 		return "up"
 	}
@@ -2130,10 +2121,6 @@ func (b *blockRedstone) check(dir direction.Type, pos Position) redstoneConnecti
 		return rcSide
 	}
 	return rcNone
-}
-
-func (b *blockRedstone) ModelVariant() string {
-	return fmt.Sprintf("east=%s,north=%s,south=%s,west=%s", b.East, b.North, b.South, b.West)
 }
 
 func (b *blockRedstone) TintColor() (byte, byte, byte) {

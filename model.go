@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/rand"
+	"reflect"
 	"strings"
 
 	realjson "encoding/json"
@@ -36,7 +37,13 @@ var (
 )
 
 type blockStateModel struct {
-	variants map[string]blockVariants
+	variants  map[string]blockVariants
+	multipart []*blockPart
+}
+
+type blockPart struct {
+	When  func(bs *BlockSet, block Block) bool
+	Apply blockVariants
 }
 
 type blockVariants []*processedModel
@@ -58,8 +65,13 @@ func findStateModel(plugin, name string) *blockStateModel {
 }
 
 func loadStateModel(key pluginKey) *blockStateModel {
+	type partCase struct {
+		When  map[string]interface{}
+		Apply realjson.RawMessage
+	}
 	type jsType struct {
-		Variants map[string]realjson.RawMessage
+		Variants  map[string]realjson.RawMessage
+		Multipart []partCase
 	}
 
 	var data jsType
@@ -68,34 +80,126 @@ func loadStateModel(key pluginKey) *blockStateModel {
 		console.Text("Error loading state %s: %s", key.Name, err)
 		return nil
 	}
-	bs := &blockStateModel{
-		variants: map[string]blockVariants{},
-	}
-	variants := data.Variants
-	for k, v := range variants {
-		var models blockVariants
-		switch v[0] {
-		case '[':
-			var list []realjson.RawMessage
-			json.Unmarshal(v, &list)
-			for _, vv := range list {
-				mdl := parseBlockStateVariant(key.Plugin, vv)
-				if mdl != nil {
-					models = append(models, precomputeModel(mdl))
-				}
-			}
-		default:
-			mdl := parseBlockStateVariant(key.Plugin, v)
-			if mdl != nil {
-				models = append(models, precomputeModel(mdl))
-			}
+	bs := &blockStateModel{}
+	if data.Variants != nil {
+		bs.variants = map[string]blockVariants{}
+		for k, v := range data.Variants {
+			models := parseModelList(key, v)
+			bs.variants[k] = models
 		}
-		bs.variants[k] = models
+	}
+	if data.Multipart != nil {
+		for _, part := range data.Multipart {
+			p := &blockPart{}
+			bs.multipart = append(bs.multipart, p)
+			if part.When == nil {
+				p.When = func(bs *BlockSet, block Block) bool { return true }
+			} else if or, ok := part.When["OR"].([]interface{}); ok {
+				var checks []func(bs *BlockSet, block Block) bool
+				for _, rules := range or {
+					checks = append(checks, parseBlockRuleList(rules.(map[string]interface{})))
+				}
+				p.When = func(bs *BlockSet, block Block) bool {
+					for _, rule := range checks {
+						if rule(bs, block) {
+							return true
+						}
+					}
+					return false
+				}
+			} else {
+				p.When = parseBlockRuleList(part.When)
+			}
+			p.Apply = parseModelList(key, part.Apply)
+		}
 	}
 	return bs
 }
 
+func parseModelList(key pluginKey, v realjson.RawMessage) blockVariants {
+	var models blockVariants
+	switch v[0] {
+	case '[':
+		var list []realjson.RawMessage
+		json.Unmarshal(v, &list)
+		for _, vv := range list {
+			mdl := parseBlockStateVariant(key.Plugin, vv)
+			if mdl != nil {
+				models = append(models, precomputeModel(mdl))
+			}
+		}
+	default:
+		mdl := parseBlockStateVariant(key.Plugin, v)
+		if mdl != nil {
+			models = append(models, precomputeModel(mdl))
+		}
+	}
+	return models
+}
+
+func parseBlockRuleList(rules map[string]interface{}) func(bs *BlockSet, block Block) bool {
+	return func(bs *BlockSet, block Block) bool {
+		b := reflect.ValueOf(block).Elem()
+		for k, v := range rules {
+			var st state
+			for _, s := range bs.states {
+				if s.name == k {
+					st = s
+					break
+				}
+			}
+			if st.name == "" {
+				fmt.Println("missing state " + k + " for " + bs.stringify(block))
+				return false
+			}
+			f := b.FieldByIndex(st.field.Index)
+			vv := reflect.ValueOf(v)
+			// Work around for stupid
+			if vv.Interface() == "true" || vv.Interface() == "false" {
+				vv = reflect.ValueOf(vv.Interface() == "true")
+			}
+			if vv.Kind() != reflect.String {
+				vv = vv.Convert(f.Type())
+				if vv.Interface() != f.Interface() {
+					return false
+				}
+			} else {
+				target := vv.String()
+				if _, ok := f.Interface().(fmt.Stringer); !ok {
+					panic(st.name + " for " + bs.stringify(block))
+				}
+				if f.Interface().(fmt.Stringer).String() != target {
+					return false
+				}
+			}
+		}
+		return true
+	}
+}
+
+func (bs *blockStateModel) matchPart(bbs *BlockSet, block Block) blockVariants {
+	var matches blockVariants
+	for _, part := range bs.multipart {
+		if part.When(bbs, block) {
+			matches = append(matches, part.Apply...)
+		}
+	}
+	if len(matches) > 0 {
+		out := &processedModel{}
+		for _, mdl := range matches {
+			out.ambientOcclusion = mdl.ambientOcclusion
+			out.weight = mdl.weight
+			out.faces = append(out.faces, mdl.faces...)
+		}
+		return blockVariants{out}
+	}
+	return nil
+}
+
 func (bs *blockStateModel) variant(key string) blockVariants {
+	if bs.variants == nil {
+		return nil
+	}
 	return bs.variants[key]
 }
 
