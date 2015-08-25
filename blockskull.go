@@ -42,11 +42,11 @@ type skullComponent struct {
 	Facing    direction.Type
 	Owner     string
 	OwnerSkin render.TextureInfo
-	model     *render.StaticModel
+	model     *render.Model
 	position  Position
 }
 
-func (s *skullComponent) Model() *render.StaticModel {
+func (s *skullComponent) Model() *render.Model {
 	return s.model
 }
 
@@ -152,7 +152,7 @@ func (s *skullComponent) create() {
 		}
 	}
 
-	var hverts []*render.StaticVertex
+	var hverts []*render.ModelVertex
 	// Base layer
 	hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]render.TextureInfo{
 		direction.North: skin.Sub(8, 8, 8, 8),
@@ -172,7 +172,7 @@ func (s *skullComponent) create() {
 		direction.Down:  skin.Sub(16+32, 0, 8, 8),
 	})
 
-	s.model = render.NewStaticModel([][]*render.StaticVertex{
+	s.model = render.NewModel([][]*render.ModelVertex{
 		hverts,
 	})
 	model := s.model

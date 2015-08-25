@@ -122,7 +122,7 @@ func reloadResources() {
 		}
 	}
 	console.Text("Rebuilding static models")
-	render.RefreshStaticModels()
+	render.RefreshModels()
 	console.Text("Reloading inventory")
 	Client.playerInventory.Update()
 }

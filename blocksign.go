@@ -23,7 +23,7 @@ import (
 )
 
 type signComponent struct {
-	model *render.StaticModel
+	model *render.Model
 
 	lines    [4]format.AnyComponent
 	position Position
@@ -37,7 +37,7 @@ type SignComponent interface {
 	Update(lines [4]format.AnyComponent)
 }
 
-func (s *signComponent) Model() *render.StaticModel {
+func (s *signComponent) Model() *render.Model {
 	return s.model
 }
 
@@ -57,7 +57,7 @@ func (s *signComponent) create() {
 	const yS = (6.0 / 16.0) / 4.0
 	const xS = yS / 16.0
 
-	var verts []*render.StaticVertex
+	var verts []*render.ModelVertex
 	for i, line := range s.lines {
 		if line.Value == nil {
 			continue
@@ -87,7 +87,7 @@ func (s *signComponent) create() {
 				}
 
 				for _, v := range faceVertices[direction.North].verts {
-					vert := &render.StaticVertex{
+					vert := &render.ModelVertex{
 						X:        float32(v.X)*float32(s*xS) - float32(offset+s*xS) + float32(f.Width*xS*0.5),
 						Y:        float32(v.Y)*yS - yS*float32(i-1),
 						Z:        -.6 / 16.0,
@@ -134,7 +134,7 @@ func (s *signComponent) create() {
 			direction.South: log.Sub(0, 0, 2, 12),
 		})
 	}
-	s.model = render.NewStaticModel([][]*render.StaticVertex{
+	s.model = render.NewModel([][]*render.ModelVertex{
 		verts,
 	})
 	s.model.Radius = 2

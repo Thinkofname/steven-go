@@ -21,31 +21,30 @@ import (
 	"github.com/thinkofdeath/steven/render/glsl"
 )
 
-// Really static is a bad name for this but i'm
-// too lazy to think of a better one
-
-var staticState = struct {
-	models         []*staticCollection
-	baseCollection *staticCollection
+var modelState = struct {
+	models         []*ModelCollection
+	baseCollection *ModelCollection
 	indexBuffer    gl.Buffer
 	indexType      gl.Type
 	maxIndex       int
 }{}
 
-type staticCollection struct {
+type ModelCollection struct {
 	program gl.Program
-	shader  *staticShader
-	models  []*StaticModel
+	shader  *modelShader
+	models  []*Model
+
+	blendS, blendD gl.Factor
 }
 
-type StaticVertex struct {
+type ModelVertex struct {
 	X, Y, Z            float32
 	Texture            TextureInfo
 	TextureX, TextureY float64
 	R, G, B, A         byte
 	id                 byte
 }
-type staticVertexInternal struct {
+type modelVertexInternal struct {
 	X, Y, Z                    float32
 	TX, TY, TW, TH             uint16
 	TOffsetX, TOffsetY, TAtlas int16
@@ -55,9 +54,9 @@ type staticVertexInternal struct {
 	Pad1, Pad2, Pad3           byte
 }
 
-var staticFunc, staticTypes = builder.Struct(&staticVertexInternal{})
+var modelfunc, modelTypes = builder.Struct(&modelVertexInternal{})
 
-type StaticModel struct {
+type Model struct {
 	// For culling only
 	X, Y, Z float32
 	Radius  float32
@@ -73,17 +72,17 @@ type StaticModel struct {
 	counts  []int32
 	offsets []uintptr
 
-	Verts []*StaticVertex
+	Verts []*ModelVertex
 
-	c *staticCollection
+	c *ModelCollection
 }
 
-func NewStaticModel(parts [][]*StaticVertex) *StaticModel {
-	return newStaticModel(parts, staticState.baseCollection)
+func NewModel(parts [][]*ModelVertex) *Model {
+	return NewModelCollection(parts, modelState.baseCollection)
 }
 
-func newStaticModel(parts [][]*StaticVertex, c *staticCollection) *StaticModel {
-	model := &StaticModel{
+func NewModelCollection(parts [][]*ModelVertex, c *ModelCollection) *Model {
+	model := &Model{
 		c:          c,
 		BlockLight: 1.0,
 		SkyLight:   1.0,
@@ -91,7 +90,7 @@ func newStaticModel(parts [][]*StaticVertex, c *staticCollection) *StaticModel {
 
 	model.array = gl.CreateVertexArray()
 	model.array.Bind()
-	staticState.indexBuffer.Bind(gl.ElementArrayBuffer)
+	modelState.indexBuffer.Bind(gl.ElementArrayBuffer)
 	model.buffer = gl.CreateBuffer()
 	model.buffer.Bind(gl.ArrayBuffer)
 	c.shader.Position.Enable()
@@ -109,7 +108,7 @@ func newStaticModel(parts [][]*StaticVertex, c *staticCollection) *StaticModel {
 	model.Colors = make([][4]float32, len(parts))
 	model.counts = make([]int32, len(parts))
 	model.offsets = make([]uintptr, len(parts))
-	var all []*StaticVertex
+	var all []*ModelVertex
 	for i, p := range parts {
 		model.Matrix[i] = mgl32.Ident4()
 		model.Colors[i] = [4]float32{1.0, 1.0, 1.0, 1.0}
@@ -127,23 +126,23 @@ func newStaticModel(parts [][]*StaticVertex, c *staticCollection) *StaticModel {
 	return model
 }
 
-func (sm *StaticModel) Refresh() {
-	sm.data()
+func (m *Model) Refresh() {
+	m.data()
 }
 
-func (sm *StaticModel) data() {
-	verts := sm.Verts
-	sm.array.Bind()
-	sm.count = (len(verts) / 4) * 6
-	if staticState.maxIndex < sm.count {
+func (m *Model) data() {
+	verts := m.Verts
+	m.array.Bind()
+	m.count = (len(verts) / 4) * 6
+	if modelState.maxIndex < m.count {
 		var data []byte
-		data, staticState.indexType = genElementBuffer(sm.count)
-		staticState.indexBuffer.Bind(gl.ElementArrayBuffer)
-		staticState.indexBuffer.Data(data, gl.DynamicDraw)
-		staticState.maxIndex = sm.count
+		data, modelState.indexType = genElementBuffer(m.count)
+		modelState.indexBuffer.Bind(gl.ElementArrayBuffer)
+		modelState.indexBuffer.Data(data, gl.DynamicDraw)
+		modelState.maxIndex = m.count
 	}
-	buf := builder.New(staticTypes...)
-	in := staticVertexInternal{}
+	buf := builder.New(modelTypes...)
+	in := modelVertexInternal{}
 	for _, v := range verts {
 		in.X = v.X
 		in.Y = v.Y
@@ -161,58 +160,74 @@ func (sm *StaticModel) data() {
 		in.B = v.B
 		in.A = v.A
 		in.ID = v.id
-		staticFunc(buf, &in)
+		modelfunc(buf, &in)
 	}
-	sm.buffer.Bind(gl.ArrayBuffer)
+	m.buffer.Bind(gl.ArrayBuffer)
 	data := buf.Data()
-	if len(data) < sm.bufferSize {
-		gb := sm.buffer.Map(gl.WriteOnly, sm.bufferSize)
+	if len(data) < m.bufferSize {
+		gb := m.buffer.Map(gl.WriteOnly, m.bufferSize)
 		copy(gb, data)
-		sm.buffer.Unmap()
+		m.buffer.Unmap()
 	} else {
-		sm.buffer.Data(data, gl.DynamicDraw)
-		sm.bufferSize = len(data)
+		m.buffer.Data(data, gl.DynamicDraw)
+		m.bufferSize = len(data)
 	}
 }
 
-func (sm *StaticModel) Free() {
-	sm.array.Delete()
-	sm.buffer.Delete()
-	c := sm.c
+func (m *Model) Free() {
+	m.array.Delete()
+	m.buffer.Delete()
+	c := m.c
 	for i, s := range c.models {
-		if s == sm {
+		if s == m {
 			c.models = append(c.models[:i], c.models[i+1:]...)
 			return
 		}
 	}
 }
 
-func RefreshStaticModels() {
-	for _, c := range staticState.models {
+func RefreshModels() {
+	for _, c := range modelState.models {
 		for _, mdl := range c.models {
 			mdl.data()
 		}
 	}
 }
 
-func initStatic() {
-	c := &staticCollection{}
-	c.program = CreateProgram(glsl.Get("static_vertex"), glsl.Get("static_frag"))
-	c.shader = &staticShader{}
+var (
+	SunModels *ModelCollection
+)
+
+func initModels() {
+	c := &ModelCollection{
+		blendS: gl.SrcAlpha,
+		blendD: gl.OneMinusSrcAlpha,
+	}
+	c.program = CreateProgram(glsl.Get("model_vertex"), glsl.Get("model_frag"))
+	c.shader = &modelShader{}
 	InitStruct(c.shader, c.program)
 
-	staticState.baseCollection = c
-	staticState.models = append(staticState.models, c)
+	modelState.baseCollection = c
+	modelState.models = append(modelState.models, c)
 
-	staticState.indexBuffer = gl.CreateBuffer()
+	SunModels = &ModelCollection{
+		blendS: gl.SrcAlpha,
+		blendD: gl.OneFactor,
+	}
+	SunModels.program = CreateProgram(glsl.Get("sun_vertex"), glsl.Get("sun_frag"))
+	SunModels.shader = &modelShader{}
+	InitStruct(SunModels.shader, SunModels.program)
+	modelState.models = append(modelState.models, SunModels)
+
+	modelState.indexBuffer = gl.CreateBuffer()
 }
 
-func drawStatic() {
-	if len(staticState.models) == 0 {
+func drawModels() {
+	if len(modelState.models) == 0 {
 		return
 	}
 	m := 4
-	if staticState.indexType == gl.UnsignedShort {
+	if modelState.indexType == gl.UnsignedShort {
 		m = 2
 	}
 
@@ -220,13 +235,14 @@ func drawStatic() {
 
 	offsetBuf := make([]uintptr, 10)
 
-	for _, c := range staticState.models {
+	for _, c := range modelState.models {
 		c.program.Use()
 		c.shader.Texture.Int(0)
 		c.shader.PerspectiveMatrix.Matrix4(&perspectiveMatrix)
 		c.shader.CameraMatrix.Matrix4(&cameraMatrix)
 		c.shader.SkyOffset.Float(SkyOffset)
 		c.shader.LightLevel.Float(LightLevel)
+		gl.BlendFunc(c.blendS, c.blendD)
 		for _, mdl := range c.models {
 			if mdl.Radius != 0 && !frustum.IsSphereInside(mdl.X, mdl.Y, mdl.Z, mdl.Radius) {
 				continue
@@ -240,11 +256,11 @@ func drawStatic() {
 				}
 				c.shader.ModelMatrix.Matrix4Multi(mdl.Matrix)
 				c.shader.ColorMul.FloatMutliRaw(mdl.Colors, len(mdl.Colors))
-				gl.MultiDrawElements(gl.Triangles, mdl.counts, staticState.indexType, offsetBuf[:len(mdl.offsets)])
+				gl.MultiDrawElements(gl.Triangles, mdl.counts, modelState.indexType, offsetBuf[:len(mdl.offsets)])
 			} else {
 				c.shader.ModelMatrix.Matrix4Multi(mdl.Matrix)
 				c.shader.ColorMul.FloatMutliRaw(mdl.Colors, len(mdl.Colors))
-				gl.DrawElements(gl.Triangles, int(mdl.counts[0]), staticState.indexType, int(mdl.offsets[0])*m)
+				gl.DrawElements(gl.Triangles, int(mdl.counts[0]), modelState.indexType, int(mdl.offsets[0])*m)
 			}
 		}
 	}
@@ -252,7 +268,7 @@ func drawStatic() {
 	gl.Disable(gl.Blend)
 }
 
-type staticShader struct {
+type modelShader struct {
 	Position          gl.Attribute `gl:"aPosition"`
 	TextureInfo       gl.Attribute `gl:"aTextureInfo"`
 	TextureOffset     gl.Attribute `gl:"aTextureOffset"`
@@ -269,7 +285,7 @@ type staticShader struct {
 }
 
 func init() {
-	glsl.Register("static_vertex", `
+	glsl.Register("model_vertex", `
 in vec3 aPosition;
 in vec4 aTextureInfo;
 in ivec3 aTextureOffset;
@@ -305,7 +321,7 @@ void main() {
 	vLighting = getLight(lighting);
 }
 `)
-	glsl.Register("static_frag", `
+	glsl.Register("model_frag", `
 
 uniform sampler2DArray textures;
 uniform vec4 colorMul[10];

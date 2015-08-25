@@ -26,7 +26,7 @@ import (
 	"github.com/thinkofdeath/steven/world/biome"
 )
 
-func staticModelFromItem(mdl *model, block Block, mode string) (out []*render.StaticVertex, mat mgl32.Mat4) {
+func staticModelFromItem(mdl *model, block Block, mode string) (out []*render.ModelVertex, mat mgl32.Mat4) {
 	mat = mgl32.Ident4()
 	if gui, ok := mdl.display[mode]; ok {
 		if gui.Scale != nil {
@@ -85,7 +85,7 @@ func staticModelFromItem(mdl *model, block Block, mode string) (out []*render.St
 			vX, vY, vZ := vert.X, vert.Y, vert.Z
 			tex := f.verticesTexture[i]
 			rect := tex.Rect()
-			vert := &render.StaticVertex{
+			vert := &render.ModelVertex{
 				X:        vX - 0.5,
 				Y:        vY - 0.5,
 				Z:        vZ - 0.5,
@@ -103,7 +103,7 @@ func staticModelFromItem(mdl *model, block Block, mode string) (out []*render.St
 	return
 }
 
-func genStaticModelFromItem(mdl *model, block Block, mode string) (out []*render.StaticVertex, mat mgl32.Mat4) {
+func genStaticModelFromItem(mdl *model, block Block, mode string) (out []*render.ModelVertex, mat mgl32.Mat4) {
 	mat = mgl32.Rotate3DZ(math.Pi).Mat4().
 		Mul4(mgl32.Rotate3DY(math.Pi / 2).Mat4()).
 		Mul4(mgl32.Rotate3DZ(-math.Pi / 2).Mat4())
@@ -197,7 +197,7 @@ func genStaticModelFromItem(mdl *model, block Block, mode string) (out []*render
 
 				for _, vert := range f.verts {
 					vX, vY, vZ := float32(vert.X), float32(vert.Y), float32(vert.Z)
-					vert := &render.StaticVertex{
+					vert := &render.ModelVertex{
 						Y:        vY*sy - 0.5 + sy*float32(y),
 						X:        vX*sx - 0.5 + sx*float32(x),
 						Z:        (vZ - 0.5) * (1.0 / 16.0),

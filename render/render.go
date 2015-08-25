@@ -88,7 +88,7 @@ func Start() {
 
 	initUI()
 	initLineDraw()
-	initStatic()
+	initModels()
 	clouds.init()
 
 	gl.BlendFunc(gl.SrcAlpha, gl.OneMinusSrcAlpha)
@@ -190,7 +190,7 @@ sync:
 	renderBuffer(nearestBuffer, chunkPos, direction.Invalid)
 
 	drawLines()
-	drawStatic()
+	drawModels()
 	clouds.tick(delta)
 
 	chunkProgramT.Use()

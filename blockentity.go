@@ -32,7 +32,7 @@ func init() {
 
 // updates the Colors of the model to fake lighting
 func lightBlockModel(m interface {
-	Model() *render.StaticModel
+	Model() *render.Model
 }, be BlockEntity) {
 	model := m.Model()
 	bp := be.Position()
@@ -77,12 +77,12 @@ type BlockNBTComponent interface {
 type blockBreakComponent struct {
 	blockComponent
 	stage int
-	model *render.StaticModel
+	model *render.Model
 }
 
-func (b *blockBreakComponent) SetStage(stage int)         { b.stage = stage }
-func (b *blockBreakComponent) Stage() int                 { return b.stage }
-func (b *blockBreakComponent) Model() *render.StaticModel { return b.model }
+func (b *blockBreakComponent) SetStage(stage int)   { b.stage = stage }
+func (b *blockBreakComponent) Stage() int           { return b.stage }
+func (b *blockBreakComponent) Model() *render.Model { return b.model }
 func (b *blockBreakComponent) Update() {
 	if b.model != nil {
 		b.model.Free()
@@ -90,7 +90,7 @@ func (b *blockBreakComponent) Update() {
 	bounds := chunkMap.Block(b.Location.X, b.Location.Y, b.Location.Z).CollisionBounds()
 	tex := render.GetTexture(fmt.Sprintf("blocks/destroy_stage_%d", b.stage))
 
-	var verts []*render.StaticVertex
+	var verts []*render.ModelVertex
 	for _, bo := range bounds {
 		// Slightly bigger than the block to prevent clipping
 		bo = bo.Grow(0.01, 0.01, 0.01)
@@ -101,7 +101,7 @@ func (b *blockBreakComponent) Update() {
 				tex, tex, tex, tex, tex, tex,
 			})
 	}
-	b.model = render.NewStaticModel([][]*render.StaticVertex{verts})
+	b.model = render.NewModel([][]*render.ModelVertex{verts})
 
 	b.model.Matrix[0] = mgl32.Translate3D(
 		float32(b.Location.X),

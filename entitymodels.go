@@ -33,7 +33,7 @@ func init() {
 	addSystem(entitysys.Remove, esModelRemove)
 }
 
-func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures [6]render.TextureInfo) []*render.StaticVertex {
+func appendBox(verts []*render.ModelVertex, x, y, z, w, h, d float32, textures [6]render.TextureInfo) []*render.ModelVertex {
 	return appendBoxExtra(verts, x, y, z, w, h, d, textures, [6][2]float64{
 		{1.0, 1.0},
 		{1.0, 1.0},
@@ -43,7 +43,7 @@ func appendBox(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures 
 		{1.0, 1.0},
 	})
 }
-func appendBoxExtra(verts []*render.StaticVertex, x, y, z, w, h, d float32, textures [6]render.TextureInfo, extra [6][2]float64) []*render.StaticVertex {
+func appendBoxExtra(verts []*render.ModelVertex, x, y, z, w, h, d float32, textures [6]render.TextureInfo, extra [6][2]float64) []*render.ModelVertex {
 	for i, face := range faceVertices {
 		tex := textures[i]
 		if tex == nil {
@@ -56,7 +56,7 @@ func appendBoxExtra(verts []*render.StaticVertex, x, y, z, w, h, d float32, text
 				gg = byte(255 * 0.8)
 				bb = byte(255 * 0.8)
 			}
-			vert := &render.StaticVertex{
+			vert := &render.ModelVertex{
 				X:        float32(v.X)*w + x,
 				Y:        float32(v.Y)*h + y,
 				Z:        float32(v.Z)*d + z,
@@ -77,7 +77,7 @@ func appendBoxExtra(verts []*render.StaticVertex, x, y, z, w, h, d float32, text
 // Player
 
 type playerModelComponent struct {
-	model         *render.StaticModel
+	model         *render.Model
 	skin          string
 	cape          string
 	hasHead       bool
@@ -93,11 +93,11 @@ type playerModelComponent struct {
 	armTime  float64
 	capeTime float64
 
-	heldModel *render.StaticModel
+	heldModel *render.Model
 	heldMat   mgl32.Mat4
 }
 
-func (p *playerModelComponent) Model() *render.StaticModel { return p.model }
+func (p *playerModelComponent) Model() *render.Model { return p.model }
 
 func (p *playerModelComponent) SwingArm() {
 	p.armTime = 15
@@ -121,14 +121,14 @@ func (p *playerModelComponent) SetCurrentItem(item *ItemStack) {
 	}
 	mode := "thirdperson_righthand"
 
-	var out []*render.StaticVertex
+	var out []*render.ModelVertex
 	if mdl.builtIn == builtInGenerated {
 		out, p.heldMat = genStaticModelFromItem(mdl, blk, mode)
 	} else if mdl.builtIn == builtInFalse {
 		out, p.heldMat = staticModelFromItem(mdl, blk, mode)
 	}
 
-	p.heldModel = render.NewStaticModel([][]*render.StaticVertex{
+	p.heldModel = render.NewModel([][]*render.ModelVertex{
 		out,
 	})
 	p.heldModel.Radius = 3
@@ -168,7 +168,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		render.RefSkin(p.cape)
 	}
 
-	var hverts []*render.StaticVertex
+	var hverts []*render.ModelVertex
 	if p.hasHead {
 		hverts = appendBox(hverts, -4/16.0, 0, -4/16.0, 8/16.0, 8/16.0, 8/16.0, [6]render.TextureInfo{
 			direction.North: skin.Sub(8, 8, 8, 8),
@@ -188,7 +188,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		})
 	}
 
-	var cverts []*render.StaticVertex
+	var cverts []*render.ModelVertex
 	if p.cape != "" {
 		cverts = appendBox(cverts, -5/16.0, -16/16.0, 0, 10/16.0, 16/16.0, 1/16.0, [6]render.TextureInfo{
 			direction.North: cape.Sub(11, 1, 10, 16),
@@ -217,7 +217,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		direction.Down:  skin.Sub(28, 16+16, 8, 4),
 	})
 
-	var lverts [4][]*render.StaticVertex
+	var lverts [4][]*render.ModelVertex
 
 	for i, off := range [][4]int{
 		{0, 16, 0, 32},
@@ -245,12 +245,12 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 		})
 	}
 
-	var nverts []*render.StaticVertex
+	var nverts []*render.ModelVertex
 	if p.hasNameTag {
 		nverts = createNameTag(info.name)
 	}
 
-	model := render.NewStaticModel([][]*render.StaticVertex{
+	model := render.NewModel([][]*render.ModelVertex{
 		playerModelHead:     hverts,
 		playerModelBody:     bverts,
 		playerModelLegRight: lverts[0],
@@ -264,7 +264,7 @@ func esPlayerModelAdd(p *playerModelComponent, pl PlayerComponent) {
 	model.Radius = 3
 }
 
-func createNameTag(name string) (verts []*render.StaticVertex) {
+func createNameTag(name string) (verts []*render.ModelVertex) {
 	width := render.SizeOfString(name) + 4
 	offset := -(width/2)*0.01 + (2 * 0.01)
 	for _, r := range name {
@@ -274,7 +274,7 @@ func createNameTag(name string) (verts []*render.StaticVertex) {
 		}
 		s := render.SizeOfCharacter(r)
 		for _, v := range faceVertices[direction.North].verts {
-			vert := &render.StaticVertex{
+			vert := &render.ModelVertex{
 				X:        float32(v.X)*float32(s*0.01) - float32(offset+s*0.01) - 0.01,
 				Y:        float32(v.Y)*0.16 - 0.08 - 0.01,
 				Z:        0.05,
@@ -289,7 +289,7 @@ func createNameTag(name string) (verts []*render.StaticVertex) {
 			verts = append(verts, vert)
 		}
 		for _, v := range faceVertices[direction.North].verts {
-			vert := &render.StaticVertex{
+			vert := &render.ModelVertex{
 				X:        float32(v.X)*float32(s*0.01) - float32(offset+s*0.01),
 				Y:        float32(v.Y)*0.16 - 0.08,
 				Z:        0,
@@ -321,7 +321,7 @@ func esPlayerModelRemove(p *playerModelComponent) {
 }
 
 func esModelRemove(p interface {
-	Model() *render.StaticModel
+	Model() *render.Model
 }) {
 	if p.Model() != nil {
 		p.Model().Free()

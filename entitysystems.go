@@ -48,7 +48,7 @@ func esDrawOutline(p PositionComponent, s SizeComponent, d DebugComponent) {
 
 // updates the Colors of the model to fake lighting
 func esLightModel(p PositionComponent, s SizeComponent, m interface {
-	Model() *render.StaticModel
+	Model() *render.Model
 }) {
 	if m.Model() == nil {
 		return
