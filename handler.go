@@ -87,6 +87,7 @@ func (handler) Respawn(r *protocol.Respawn) {
 }
 
 func (handler) TimeUpdate(p *protocol.TimeUpdate) {
+	Client.WorldAge = p.TimeOfDay
 	Client.TargetWorldTime = float64(p.TimeOfDay % 24000)
 	if Client.TargetWorldTime < 0 {
 		Client.TargetWorldTime = -Client.TargetWorldTime
@@ -600,7 +601,7 @@ func (h handler) PluginMessage(p *protocol.PluginMessageClientbound) {
 var serverBrand = console.NewStringVar("sv_brand", "unknown").Doc(`
 sv_brand shows the last sent MC|Brand packet from the server.
 This identifies the make of the server like vanilla, spigot, forge
-etc. 
+etc.
 `)
 
 func (h handler) ServerBrand(b *pmMinecraftBrand) {

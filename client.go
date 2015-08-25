@@ -93,6 +93,7 @@ type ClientState struct {
 
 	setInitialTime             bool
 	WorldType                  worldType
+	WorldAge                   int64
 	WorldTime, TargetWorldTime float64
 	TickTime                   bool
 
