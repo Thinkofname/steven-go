@@ -107,12 +107,24 @@ func AllocateChunkBuffer(x, y, z int) *ChunkBuffer {
 
 func ensureElementBuffer(size int) {
 	if elementBufferSize < size {
+		size = nearestPow2(size)
 		data, ty := genElementBuffer(size)
 		elementBufferType = ty
 		elementBuffer.Bind(gl.ElementArrayBuffer)
 		elementBuffer.Data(data, gl.DynamicDraw)
 		elementBufferSize = size
 	}
+}
+
+func nearestPow2(v int) int {
+	v--
+	v |= v >> 1
+	v |= v >> 2
+	v |= v >> 4
+	v |= v >> 8
+	v |= v >> 16
+	v++
+	return v
 }
 
 func genElementBuffer(size int) ([]byte, gl.Type) {
