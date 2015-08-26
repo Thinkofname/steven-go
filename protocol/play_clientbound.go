@@ -377,7 +377,7 @@ type PropertyModifier struct {
 type ChunkData struct {
 	ChunkX, ChunkZ int32
 	New            bool
-	BitMask        uint16
+	BitMask        int32
 	Data           []byte `length:"VarInt" nolimit:"true"`
 }
 
@@ -429,15 +429,11 @@ type BlockBreakAnimation struct {
 //
 // This is a Minecraft packet
 type ChunkDataBulk struct {
-	SkyLight bool
-	Meta     []ChunkMeta `length:"VarInt"`
-	Data     []byte      `length:"remaining"`
-}
-
-// ChunkMeta is used in ChunkDataBulk. See ChunkData for details.
-type ChunkMeta struct {
-	ChunkX, ChunkZ int32
-	BitMask        uint16
+	SkyLight     bool
+	ChunkX       []int32 `length:"VarInt"`
+	ChunkZ       []int32 `length:"VarInt"`
+	ChunkBitmask []int32 `length:"VarInt"`
+	Data         []byte  `length:"remaining"`
 }
 
 // Explosion is sent when an explosion is triggered (tnt, creeper etc).
@@ -594,14 +590,15 @@ type UpdateSign struct {
 //
 // This is a Minecraft packet
 type Maps struct {
-	ItemDamage VarInt
-	Scale      int8
-	Icons      []MapIcon `length:"VarInt"`
-	Columns    byte
-	Rows       byte   `if:".Columns>0"`
-	X          byte   `if:".Columns>0"`
-	Z          byte   `if:".Columns>0"`
-	Data       []byte `if:".Columns>0" length:"VarInt"`
+	ItemDamage       VarInt
+	Scale            int8
+	TrackingPosition bool
+	Icons            []MapIcon `length:"VarInt"`
+	Columns          byte
+	Rows             byte   `if:".Columns>0"`
+	X                byte   `if:".Columns>0"`
+	Z                byte   `if:".Columns>0"`
+	Data             []byte `if:".Columns>0" length:"VarInt"`
 }
 
 // MapIcon is used by Maps
@@ -841,4 +838,12 @@ type BossBar struct {
 	Color  VarInt              `if:".Action == 0 .Action == 4"`
 	Style  VarInt              `if:".Action == 0 .Action == 4"`
 	Flags  byte                `if:".Action == 0 .Action == 5"`
+}
+
+// SetCooldown disables a set item (by id) for the set number of ticks
+//
+// This is a Minecraft packet
+type SetCooldown struct {
+	ItemID VarInt
+	Ticks  VarInt
 }

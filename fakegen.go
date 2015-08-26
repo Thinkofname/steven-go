@@ -15,12 +15,10 @@
 package steven
 
 import (
-	"encoding/binary"
 	"math/rand"
 	"time"
 
 	"github.com/thinkofdeath/steven/render"
-	"github.com/thinkofdeath/steven/type/nibble"
 )
 
 var fakeGenDistance = 7
@@ -76,30 +74,35 @@ func fakeGen() {
 
 		for cx := -fakeGenDistance; cx <= fakeGenDistance; cx++ {
 			for cz := -fakeGenDistance; cz <= fakeGenDistance; cz++ {
-				mask := uint16(0xF)
-				data := make([]byte, 16*16*16*3*4+256)
+				c := &chunk{
+					chunkPosition: chunkPosition{
+						X: cx, Z: cz,
+					},
+				}
+
 				for i := 0; i < 4; i++ {
+					cs := newChunkSection(c, i)
+					c.Sections[i] = cs
 					for y := 0; y < 16; y++ {
 						for z := 0; z < 16; z++ {
 							for x := 0; x < 16; x++ {
 								height := smooth(cx, cz, x, y, z)
-								idx := 16 * 16 * 16 * 2 * i
-								idx += (x | (z << 4) | (y << 8)) * 2
 								ry := y + i<<4
-								var val uint16
+								var block Block
+								cs.SkyLight.Set(x|(z<<4)|(y<<8), byte(0))
 								switch {
 								case ry <= height-5:
-									val = uint16(bot.ID << 4)
+									block = bot.Base
 								case ry <= height-1:
-									val = uint16(mid.ID << 4)
+									block = mid.Base
 								case ry == height:
-									val = uint16(top.ID << 4)
+									block = top.Base
 								default:
 									level := 0xF
 									if ry >= 60 {
-										val = (0 << 4)
+										block = Blocks.Air.Base
 									} else {
-										val = uint16(liquid.ID << 4)
+										block = liquid.Base
 										if liquid == Blocks.Water {
 											level = 13 - (60-ry)*2
 										}
@@ -109,15 +112,15 @@ func fakeGen() {
 									}
 									sky := (16*16*16*2 + 16*16*8) * 4
 									sky += 16 * 16 * 8 * i
-									nibble.Array(data[sky:]).Set(x|(z<<4)|(y<<8), byte(level))
+									cs.SkyLight.Set(x|(z<<4)|(y<<8), byte(level))
 								}
-								binary.LittleEndian.PutUint16(data[idx:], val)
+								cs.Blocks[x|(z<<4)|(y<<8)] = block.SID()
 							}
 						}
 					}
 				}
-				cx, cz := cx, cz
-				loadChunk(cx, cz, data, mask, true, true)
+				c.calcHeightmap()
+				syncChan <- c.postLoad
 			}
 		}
 	}()

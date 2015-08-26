@@ -15,12 +15,15 @@
 package steven
 
 import (
+	"bytes"
 	"encoding/binary"
 	"math"
 	"sort"
 	"sync"
 
+	"github.com/thinkofdeath/steven/protocol"
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/type/bit"
 	"github.com/thinkofdeath/steven/type/direction"
 	"github.com/thinkofdeath/steven/type/nibble"
 	"github.com/thinkofdeath/steven/type/vmath"
@@ -497,7 +500,7 @@ func (cs *chunkSection) setSkyLight(l byte, x, y, z int) {
 	cs.SkyLight.Set((y<<8)|(z<<4)|x, l)
 }
 
-func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
+func loadChunk(x, z int, data *bytes.Reader, mask int32, sky, isNew bool) {
 	var c *chunk
 	if isNew {
 		c = &chunk{
@@ -510,7 +513,7 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 			X: x, Z: z,
 		}]
 		if c == nil {
-			return 0
+			return
 		}
 	}
 
@@ -521,147 +524,149 @@ func loadChunk(x, z int, data []byte, mask uint16, sky, isNew bool) int {
 		if c.Sections[i] == nil {
 			c.Sections[i] = newChunkSection(c, i)
 		}
-	}
-	offset := 0
-	for i, section := range c.Sections {
-		if section == nil || mask&(1<<uint(i)) == 0 {
-			continue
+		cs := c.Sections[i]
+
+		count, _ := protocol.ReadVarInt(data)
+		blockMap := map[int]int{}
+		for i := 0; i < int(count); i++ {
+			bID, _ := protocol.ReadVarInt(data)
+			iID, _ := protocol.ReadVarInt(data)
+			blockMap[int(iID)] = int(bID)
 		}
 
-		for i := 0; i < 16*16*16; i++ {
-			block := GetBlockByCombinedID(binary.LittleEndian.Uint16(data[offset:]))
-			section.Blocks[i] = block.SID()
+		bitSize, _ := protocol.ReadVarInt(data)
+		length, _ := protocol.ReadVarInt(data)
+		bits := make([]uint64, length)
+		binary.Read(data, binary.BigEndian, &bits)
+
+		m := bit.NewMapFromRaw(bits, int(bitSize))
+		for i := 0; i < 4096; i++ {
+			val := m.Get(i)
+			bID, ok := blockMap[val]
+			if !ok {
+				panic("Missing block")
+			}
+			block := GetBlockByCombinedID(uint16(bID))
+			cs.Blocks[i] = block.SID()
 			if be := block.CreateBlockEntity(); be != nil {
 				pos := Position{X: i & 0xF, Z: (i >> 4) & 0xF, Y: i >> 8}
-				pos = pos.Shift(x<<4, section.Y<<4, z<<4)
+				pos = pos.Shift(x<<4, cs.Y<<4, z<<4)
 				be.SetPosition(pos)
-				section.BlockEntities[pos] = be
+				cs.BlockEntities[pos] = be
 			}
-			offset += 2
 		}
-	}
-	for i, section := range c.Sections {
-		if section == nil || mask&(1<<uint(i)) == 0 {
-			continue
-		}
-		copy(section.BlockLight, data[offset:])
-		offset += len(section.BlockLight)
-	}
-	for i, section := range c.Sections {
-		if section == nil || mask&(1<<uint(i)) == 0 {
-			continue
-		}
+
+		data.Read(cs.BlockLight)
 		if sky {
-			copy(section.SkyLight, data[offset:])
-			offset += len(section.BlockLight)
+			data.Read(cs.SkyLight)
 		} else {
-			for i := range section.SkyLight {
-				section.SkyLight[i] = 0x00
+			for i := range cs.SkyLight {
+				cs.SkyLight[i] = 0x00
 			}
 		}
+
 	}
 
 	if isNew {
-		copy(c.Biomes[:], data[offset:])
-		offset += len(c.Biomes)
+		data.Read(c.Biomes[:])
 	}
 
 	c.calcHeightmap()
 
-	syncChan <- func() {
-		render.AllocateColumn(c.X, c.Z)
-		// Allocate the render buffers sync
-		for y, section := range c.Sections {
-			if section != nil && section.Buffer == nil {
-				section.Buffer = render.AllocateChunkBuffer(c.X, y, c.Z)
-			}
+	syncChan <- c.postLoad
+}
+
+func (c *chunk) postLoad() {
+	render.AllocateColumn(c.X, c.Z)
+	// Allocate the render buffers sync
+	for y, section := range c.Sections {
+		if section != nil && section.Buffer == nil {
+			section.Buffer = render.AllocateChunkBuffer(c.X, y, c.Z)
+		}
+	}
+
+	chunkMap[c.chunkPosition] = c
+	for _, section := range c.Sections {
+		if section == nil {
+			continue
+		}
+		for _, be := range section.BlockEntities {
+			Client.entities.container.AddEntity(be)
 		}
 
-		chunkMap[c.chunkPosition] = c
-		for _, section := range c.Sections {
-			if section == nil {
-				continue
-			}
-			for _, be := range section.BlockEntities {
-				Client.entities.container.AddEntity(be)
-			}
-
-			cx := c.X << 4
-			cy := section.Y << 4
-			cz := c.Z << 4
-			for y := 0; y < 16; y++ {
-				for z := 0; z < 16; z++ {
-					for x := 0; x < 16; x++ {
-						section.setBlock(
-							section.block(x, y, z).UpdateState(cx+x, cy+y, cz+z),
-							x, y, z,
-						)
-					}
+		cx := c.X << 4
+		cy := section.Y << 4
+		cz := c.Z << 4
+		for y := 0; y < 16; y++ {
+			for z := 0; z < 16; z++ {
+				for x := 0; x < 16; x++ {
+					section.setBlock(
+						section.block(x, y, z).UpdateState(cx+x, cy+y, cz+z),
+						x, y, z,
+					)
 				}
 			}
 		}
+	}
 
-		self := c
-		for xx := -1; xx <= 1; xx++ {
-			for zz := -1; zz <= 1; zz++ {
-				c := chunkMap[chunkPosition{x + xx, z + zz}]
-				if c != nil && c != self {
-					for _, section := range c.Sections {
-						if section == nil {
-							continue
-						}
-						cx, cy, cz := c.X<<4, section.Y<<4, c.Z<<4
-						for y := 0; y < 16; y++ {
-							if !(xx != 0 && zz != 0) {
-								// Row/Col
-								for i := 0; i < 16; i++ {
-									var bx, bz int
-									if xx != 0 {
-										bz = i
-										if xx == -1 {
-											bx = 15
-										}
-									} else {
-										bx = i
-										if zz == -1 {
-											bz = 15
-										}
-									}
-									section.setBlock(
-										section.block(bx, y, bz).UpdateState(cx+bx, cy+y, cz+bz),
-										bx, y, bz,
-									)
-								}
-							} else {
-								// Just the corner
+	self := c
+	for xx := -1; xx <= 1; xx++ {
+		for zz := -1; zz <= 1; zz++ {
+			c := chunkMap[chunkPosition{c.X + xx, c.Z + zz}]
+			if c != nil && c != self {
+				for _, section := range c.Sections {
+					if section == nil {
+						continue
+					}
+					cx, cy, cz := c.X<<4, section.Y<<4, c.Z<<4
+					for y := 0; y < 16; y++ {
+						if !(xx != 0 && zz != 0) {
+							// Row/Col
+							for i := 0; i < 16; i++ {
 								var bx, bz int
-								if xx == -1 {
-									bx = 15
-								}
-								if zz == -1 {
-									bz = 15
+								if xx != 0 {
+									bz = i
+									if xx == -1 {
+										bx = 15
+									}
+								} else {
+									bx = i
+									if zz == -1 {
+										bz = 15
+									}
 								}
 								section.setBlock(
 									section.block(bx, y, bz).UpdateState(cx+bx, cy+y, cz+bz),
 									bx, y, bz,
 								)
 							}
+						} else {
+							// Just the corner
+							var bx, bz int
+							if xx == -1 {
+								bx = 15
+							}
+							if zz == -1 {
+								bz = 15
+							}
+							section.setBlock(
+								section.block(bx, y, bz).UpdateState(cx+bx, cy+y, cz+bz),
+								bx, y, bz,
+							)
 						}
-						section.dirty = true
 					}
+					section.dirty = true
 				}
 			}
 		}
-
-		// Execute pending tasks
-		toLoad := loadingChunks[c.chunkPosition]
-		delete(loadingChunks, c.chunkPosition)
-		for _, f := range toLoad {
-			f()
-		}
 	}
 
-	return offset
+	// Execute pending tasks
+	toLoad := loadingChunks[c.chunkPosition]
+	delete(loadingChunks, c.chunkPosition)
+	for _, f := range toLoad {
+		f()
+	}
 }
 
 func sortedChunks() []*chunk {

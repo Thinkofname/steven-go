@@ -157,23 +157,24 @@ func (handler) ChunkData(c *protocol.ChunkData) {
 	}
 	pos := chunkPosition{int(c.ChunkX), int(c.ChunkZ)}
 	loadingChunks[pos] = nil
+
+	data := bytes.NewReader(c.Data)
 	if c.New {
-		go loadChunk(pos.X, pos.Z, c.Data, c.BitMask, Client.WorldType == wtOverworld, true)
+		go loadChunk(pos.X, pos.Z, data, c.BitMask, Client.WorldType == wtOverworld, true)
 	} else {
-		loadChunk(pos.X, pos.Z, c.Data, c.BitMask, Client.WorldType == wtOverworld, false)
+		loadChunk(pos.X, pos.Z, data, c.BitMask, Client.WorldType == wtOverworld, false)
 	}
 }
 
 func (handler) ChunkDataBulk(c *protocol.ChunkDataBulk) {
-	for _, meta := range c.Meta {
-		pos := chunkPosition{int(meta.ChunkX), int(meta.ChunkZ)}
+	for i := range c.ChunkX {
+		pos := chunkPosition{int(c.ChunkX[i]), int(c.ChunkZ[i])}
 		loadingChunks[pos] = nil
 	}
 	go func() {
-		offset := 0
-		data := c.Data
-		for _, meta := range c.Meta {
-			offset += loadChunk(int(meta.ChunkX), int(meta.ChunkZ), data[offset:], meta.BitMask, c.SkyLight, true)
+		data := bytes.NewReader(c.Data)
+		for i := range c.ChunkX {
+			loadChunk(int(c.ChunkX[i]), int(c.ChunkZ[i]), data, c.ChunkBitmask[i], c.SkyLight, true)
 		}
 	}()
 }

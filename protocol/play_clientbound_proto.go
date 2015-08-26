@@ -1565,9 +1565,11 @@ func (c *ChunkData) write(ww io.Writer) (err error) {
 	if err = WriteBool(ww, c.New); err != nil {
 		return
 	}
-	tmp[0] = byte(c.BitMask >> 8)
-	tmp[1] = byte(c.BitMask >> 0)
-	if _, err = ww.Write(tmp[:2]); err != nil {
+	tmp[0] = byte(c.BitMask >> 24)
+	tmp[1] = byte(c.BitMask >> 16)
+	tmp[2] = byte(c.BitMask >> 8)
+	tmp[3] = byte(c.BitMask >> 0)
+	if _, err = ww.Write(tmp[:4]); err != nil {
 		return
 	}
 	if err = WriteVarInt(ww, VarInt(len(c.Data))); err != nil {
@@ -1591,10 +1593,10 @@ func (c *ChunkData) read(rr io.Reader) (err error) {
 	if c.New, err = ReadBool(rr); err != nil {
 		return
 	}
-	if _, err = rr.Read(tmp[:2]); err != nil {
+	if _, err = rr.Read(tmp[:4]); err != nil {
 		return
 	}
-	c.BitMask = (uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8)
+	c.BitMask = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
 	var tmp0 VarInt
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
@@ -1804,27 +1806,39 @@ func (c *ChunkDataBulk) write(ww io.Writer) (err error) {
 	if err = WriteBool(ww, c.SkyLight); err != nil {
 		return
 	}
-	if err = WriteVarInt(ww, VarInt(len(c.Meta))); err != nil {
+	if err = WriteVarInt(ww, VarInt(len(c.ChunkX))); err != nil {
 		return
 	}
-	for tmp0 := range c.Meta {
-		tmp[0] = byte(c.Meta[tmp0].ChunkX >> 24)
-		tmp[1] = byte(c.Meta[tmp0].ChunkX >> 16)
-		tmp[2] = byte(c.Meta[tmp0].ChunkX >> 8)
-		tmp[3] = byte(c.Meta[tmp0].ChunkX >> 0)
+	for tmp0 := range c.ChunkX {
+		tmp[0] = byte(c.ChunkX[tmp0] >> 24)
+		tmp[1] = byte(c.ChunkX[tmp0] >> 16)
+		tmp[2] = byte(c.ChunkX[tmp0] >> 8)
+		tmp[3] = byte(c.ChunkX[tmp0] >> 0)
 		if _, err = ww.Write(tmp[:4]); err != nil {
 			return
 		}
-		tmp[0] = byte(c.Meta[tmp0].ChunkZ >> 24)
-		tmp[1] = byte(c.Meta[tmp0].ChunkZ >> 16)
-		tmp[2] = byte(c.Meta[tmp0].ChunkZ >> 8)
-		tmp[3] = byte(c.Meta[tmp0].ChunkZ >> 0)
+	}
+	if err = WriteVarInt(ww, VarInt(len(c.ChunkZ))); err != nil {
+		return
+	}
+	for tmp1 := range c.ChunkZ {
+		tmp[0] = byte(c.ChunkZ[tmp1] >> 24)
+		tmp[1] = byte(c.ChunkZ[tmp1] >> 16)
+		tmp[2] = byte(c.ChunkZ[tmp1] >> 8)
+		tmp[3] = byte(c.ChunkZ[tmp1] >> 0)
 		if _, err = ww.Write(tmp[:4]); err != nil {
 			return
 		}
-		tmp[0] = byte(c.Meta[tmp0].BitMask >> 8)
-		tmp[1] = byte(c.Meta[tmp0].BitMask >> 0)
-		if _, err = ww.Write(tmp[:2]); err != nil {
+	}
+	if err = WriteVarInt(ww, VarInt(len(c.ChunkBitmask))); err != nil {
+		return
+	}
+	for tmp2 := range c.ChunkBitmask {
+		tmp[0] = byte(c.ChunkBitmask[tmp2] >> 24)
+		tmp[1] = byte(c.ChunkBitmask[tmp2] >> 16)
+		tmp[2] = byte(c.ChunkBitmask[tmp2] >> 8)
+		tmp[3] = byte(c.ChunkBitmask[tmp2] >> 0)
+		if _, err = ww.Write(tmp[:4]); err != nil {
 			return
 		}
 	}
@@ -1848,20 +1862,46 @@ func (c *ChunkDataBulk) read(rr io.Reader) (err error) {
 	if tmp0 < 0 {
 		return fmt.Errorf("negative array size: %d < 0", tmp0)
 	}
-	c.Meta = make([]ChunkMeta, tmp0)
-	for tmp1 := range c.Meta {
+	c.ChunkX = make([]int32, tmp0)
+	for tmp1 := range c.ChunkX {
 		if _, err = rr.Read(tmp[:4]); err != nil {
 			return
 		}
-		c.Meta[tmp1].ChunkX = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
+		c.ChunkX[tmp1] = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
+	}
+	var tmp2 VarInt
+	if tmp2, err = ReadVarInt(rr); err != nil {
+		return
+	}
+	if tmp2 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp2, math.MaxInt16)
+	}
+	if tmp2 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp2)
+	}
+	c.ChunkZ = make([]int32, tmp2)
+	for tmp3 := range c.ChunkZ {
 		if _, err = rr.Read(tmp[:4]); err != nil {
 			return
 		}
-		c.Meta[tmp1].ChunkZ = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
-		if _, err = rr.Read(tmp[:2]); err != nil {
+		c.ChunkZ[tmp3] = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
+	}
+	var tmp4 VarInt
+	if tmp4, err = ReadVarInt(rr); err != nil {
+		return
+	}
+	if tmp4 > math.MaxInt16 {
+		return fmt.Errorf("array larger than max value: %d > %d", tmp4, math.MaxInt16)
+	}
+	if tmp4 < 0 {
+		return fmt.Errorf("negative array size: %d < 0", tmp4)
+	}
+	c.ChunkBitmask = make([]int32, tmp4)
+	for tmp5 := range c.ChunkBitmask {
+		if _, err = rr.Read(tmp[:4]); err != nil {
 			return
 		}
-		c.Meta[tmp1].BitMask = (uint16(tmp[1]) << 0) | (uint16(tmp[0]) << 8)
+		c.ChunkBitmask[tmp5] = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
 	}
 	if c.Data, err = ioutil.ReadAll(rr); err != nil {
 		return
@@ -2713,6 +2753,9 @@ func (m *Maps) write(ww io.Writer) (err error) {
 	if _, err = ww.Write(tmp[:1]); err != nil {
 		return
 	}
+	if err = WriteBool(ww, m.TrackingPosition); err != nil {
+		return
+	}
 	if err = WriteVarInt(ww, VarInt(len(m.Icons))); err != nil {
 		return
 	}
@@ -2765,6 +2808,9 @@ func (m *Maps) read(rr io.Reader) (err error) {
 		return
 	}
 	m.Scale = int8((uint8(tmp[0]) << 0))
+	if m.TrackingPosition, err = ReadBool(rr); err != nil {
+		return
+	}
 	var tmp0 VarInt
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return
@@ -3883,6 +3929,26 @@ func (b *BossBar) read(rr io.Reader) (err error) {
 	return
 }
 
+func (s *SetCooldown) id() int { return 74 }
+func (s *SetCooldown) write(ww io.Writer) (err error) {
+	if err = WriteVarInt(ww, s.ItemID); err != nil {
+		return
+	}
+	if err = WriteVarInt(ww, s.Ticks); err != nil {
+		return
+	}
+	return
+}
+func (s *SetCooldown) read(rr io.Reader) (err error) {
+	if s.ItemID, err = ReadVarInt(rr); err != nil {
+		return
+	}
+	if s.Ticks, err = ReadVarInt(rr); err != nil {
+		return
+	}
+	return
+}
+
 func init() {
 	packetCreator[Play][clientbound][0] = func() Packet { return &KeepAliveClientbound{} }
 	packetCreator[Play][clientbound][1] = func() Packet { return &JoinGame{} }
@@ -3958,4 +4024,5 @@ func init() {
 	packetCreator[Play][clientbound][71] = func() Packet { return &PlayerListHeaderFooter{} }
 	packetCreator[Play][clientbound][72] = func() Packet { return &ResourcePackSend{} }
 	packetCreator[Play][clientbound][73] = func() Packet { return &BossBar{} }
+	packetCreator[Play][clientbound][74] = func() Packet { return &SetCooldown{} }
 }
