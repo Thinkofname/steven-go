@@ -547,9 +547,9 @@ func loadChunk(x, z int, data *bytes.Reader, mask int32, sky, isNew bool) {
 				panic("Missing block")
 			}
 			block := GetBlockByCombinedID(uint16(bID))
-			cs.Blocks[i] = block.SID()
+			pos := Position{X: i & 0xF, Z: (i >> 4) & 0xF, Y: i >> 8}
+			cs.setBlock(block, pos.X, pos.Y, pos.Z)
 			if be := block.CreateBlockEntity(); be != nil {
-				pos := Position{X: i & 0xF, Z: (i >> 4) & 0xF, Y: i >> 8}
 				pos = pos.Shift(x<<4, cs.Y<<4, z<<4)
 				be.SetPosition(pos)
 				cs.BlockEntities[pos] = be

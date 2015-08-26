@@ -89,7 +89,7 @@ func fakeGen() {
 								height := smooth(cx, cz, x, y, z)
 								ry := y + i<<4
 								var block Block
-								cs.SkyLight.Set(x|(z<<4)|(y<<8), byte(0))
+								cs.setSkyLight(0, x, y, z)
 								switch {
 								case ry <= height-5:
 									block = bot.Base
@@ -112,9 +112,9 @@ func fakeGen() {
 									}
 									sky := (16*16*16*2 + 16*16*8) * 4
 									sky += 16 * 16 * 8 * i
-									cs.SkyLight.Set(x|(z<<4)|(y<<8), byte(level))
+									cs.setSkyLight(byte(level), x, y, z)
 								}
-								cs.Blocks[x|(z<<4)|(y<<8)] = block.SID()
+								cs.setBlock(block, x, y, z)
 							}
 						}
 					}
