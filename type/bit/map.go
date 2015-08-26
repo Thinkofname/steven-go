@@ -14,42 +14,53 @@
 
 package bit
 
+import "fmt"
+
 type Map struct {
-	bits []uint64
-	size int
-	mask int
+	bits    []uint64
+	BitSize int
+	Length  int
 }
 
 func NewMap(l, size int) *Map {
 	return &Map{
-		size: size,
-		bits: make([]uint64, (l*size)/64),
+		BitSize: size,
+		bits:    make([]uint64, (l*size)/64),
+		Length:  l,
 	}
 }
 
 func NewMapFromRaw(bits []uint64, size int) *Map {
-	mask := 1
-	for i := 1; i < size; i++ {
-		mask <<= 1
-	}
 	return &Map{
-		size: size,
-		bits: bits,
+		BitSize: size,
+		bits:    bits,
+		Length:  (len(bits) * 64) / size,
 	}
 }
 
+func (m *Map) ResizeBits(size int) *Map {
+	n := NewMap(m.Length, size)
+	for i := 0; i < m.Length; i++ {
+		n.Set(i, m.Get(i))
+	}
+	return n
+}
+
 func (m *Map) Set(i, val int) {
-	i *= m.size
+	if val < 0 || val >= (int(1)<<uint(m.BitSize)) {
+		panic(fmt.Sprintf("invalid value %d %d", val, m.BitSize))
+	}
+	i *= m.BitSize
 	pos := i / 64
-	mask := (uint64(1) << uint(m.size)) - 1
+	mask := (uint64(1) << uint(m.BitSize)) - 1
 	i %= 64
 	m.bits[pos] = (m.bits[pos] & ^(mask << uint64(i))) | (uint64(val) << uint64(i))
 }
 
 func (m *Map) Get(i int) int {
-	i *= m.size
+	i *= m.BitSize
 	pos := i / 64
-	mask := (uint64(1) << uint(m.size)) - 1
+	mask := (uint64(1) << uint(m.BitSize)) - 1
 	i %= 64
 	return int((m.bits[pos] >> uint64(i)) & mask)
 }
