@@ -441,7 +441,11 @@ type chunkSection struct {
 	chunk *chunk
 	Y     int
 
-	Blocks     [16 * 16 * 16]uint16
+	Blocks      *bit.Map
+	nextBlockID int
+	blockMap    []*csBlockInfo
+	revBlockMap map[Block]int
+
 	BlockLight nibble.Array
 	SkyLight   nibble.Array
 
@@ -451,6 +455,11 @@ type chunkSection struct {
 
 	dirty    bool
 	building bool
+}
+
+type csBlockInfo struct {
+	block Block
+	count int
 }
 
 var fullBrightLight = nibble.New(16 * 16 * 16)
@@ -469,19 +478,56 @@ func newChunkSection(c *chunk, y int) *chunkSection {
 	cs.dirty = false
 	cs.building = false
 	cs.BlockEntities = map[Position]BlockEntity{}
-	for i := range cs.Blocks {
-		cs.Blocks[i] = Blocks.Air.Blocks[0].SID()
+
+	cs.Blocks = bit.NewMap(4096, 4)
+	cs.blockMap = []*csBlockInfo{
+		{block: Blocks.Air.Base, count: -1},
 	}
+	cs.revBlockMap = map[Block]int{}
+	cs.nextBlockID = 1
+
 	copy(cs.SkyLight, fullBrightLight)
 	return cs
 }
 
 func (cs *chunkSection) block(x, y, z int) Block {
-	return allBlocks[cs.Blocks[(y<<8)|(z<<4)|x]]
+	idx := cs.Blocks.Get((y << 8) | (z << 4) | x)
+	return cs.blockMap[idx].block
 }
 
 func (cs *chunkSection) setBlock(b Block, x, y, z int) {
-	cs.Blocks[(y<<8)|(z<<4)|x] = b.SID()
+	old := cs.block(x, y, z)
+	if old == b {
+		return
+	}
+	// Remove the old block
+	idx := cs.revBlockMap[old]
+	info := cs.blockMap[idx]
+	info.count--
+	if info.count <= 0 && info.block != Blocks.Air.Base {
+		cs.blockMap[idx] = nil
+		delete(cs.revBlockMap, old)
+		cs.nextBlockID = idx
+	}
+
+	idx, ok := cs.revBlockMap[b]
+	if !ok {
+		for cs.nextBlockID < len(cs.blockMap) && cs.blockMap[cs.nextBlockID] != nil {
+			cs.nextBlockID++
+		}
+		if len(cs.blockMap) <= cs.nextBlockID {
+			cs.blockMap = append(cs.blockMap, nil)
+		}
+		if cs.nextBlockID >= 1<<uint(cs.Blocks.BitSize) {
+			cs.Blocks = cs.Blocks.ResizeBits(cs.Blocks.BitSize << 1)
+		}
+		cs.blockMap[cs.nextBlockID] = &csBlockInfo{block: b}
+		cs.revBlockMap[b] = cs.nextBlockID
+		idx = cs.nextBlockID
+		cs.nextBlockID++
+	}
+	cs.blockMap[idx].count++
+	cs.Blocks.Set((y<<8)|(z<<4)|x, idx)
 	cs.dirty = true
 }
 
