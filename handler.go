@@ -146,15 +146,6 @@ func (handler) Teleport(t *protocol.TeleportPlayer) {
 var loadingChunks = map[chunkPosition][]func(){}
 
 func (handler) ChunkData(c *protocol.ChunkData) {
-	if c.BitMask == 0 && c.New {
-		pos := chunkPosition{int(c.ChunkX), int(c.ChunkZ)}
-		c, ok := chunkMap[pos]
-		if ok {
-			c.free()
-			delete(chunkMap, pos)
-		}
-		return
-	}
 	pos := chunkPosition{int(c.ChunkX), int(c.ChunkZ)}
 	loadingChunks[pos] = nil
 
@@ -166,17 +157,13 @@ func (handler) ChunkData(c *protocol.ChunkData) {
 	}
 }
 
-func (handler) ChunkDataBulk(c *protocol.ChunkDataBulk) {
-	for i := range c.ChunkX {
-		pos := chunkPosition{int(c.ChunkX[i]), int(c.ChunkZ[i])}
-		loadingChunks[pos] = nil
-	}
-	go func() {
-		data := bytes.NewReader(c.Data)
-		for i := range c.ChunkX {
-			loadChunk(int(c.ChunkX[i]), int(c.ChunkZ[i]), data, c.ChunkBitmask[i], c.SkyLight, true)
-		}
-	}()
+func (handler) ChunkUnload(p *protocol.ChunkUnload) {
+	pos := chunkPosition{int(p.X), int(p.Z)}
+	c, ok := chunkMap[pos]
+	if ok {
+		c.free()
+		delete(chunkMap, pos)
+	} 
 }
 
 func protocolPosToChunkPos(p protocol.Position) chunkPosition {

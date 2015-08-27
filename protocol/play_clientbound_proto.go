@@ -1611,7 +1611,39 @@ func (c *ChunkData) read(rr io.Reader) (err error) {
 	return
 }
 
-func (m *MultiBlockChange) id() int { return 34 }
+func (c *ChunkUnload) id() int { return 34 }
+func (c *ChunkUnload) write(ww io.Writer) (err error) {
+	var tmp [4]byte
+	tmp[0] = byte(c.X >> 24)
+	tmp[1] = byte(c.X >> 16)
+	tmp[2] = byte(c.X >> 8)
+	tmp[3] = byte(c.X >> 0)
+	if _, err = ww.Write(tmp[:4]); err != nil {
+		return
+	}
+	tmp[0] = byte(c.Z >> 24)
+	tmp[1] = byte(c.Z >> 16)
+	tmp[2] = byte(c.Z >> 8)
+	tmp[3] = byte(c.Z >> 0)
+	if _, err = ww.Write(tmp[:4]); err != nil {
+		return
+	}
+	return
+}
+func (c *ChunkUnload) read(rr io.Reader) (err error) {
+	var tmp [4]byte
+	if _, err = rr.Read(tmp[:4]); err != nil {
+		return
+	}
+	c.X = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
+	if _, err = rr.Read(tmp[:4]); err != nil {
+		return
+	}
+	c.Z = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
+	return
+}
+
+func (m *MultiBlockChange) id() int { return 35 }
 func (m *MultiBlockChange) write(ww io.Writer) (err error) {
 	var tmp [4]byte
 	tmp[0] = byte(m.ChunkX >> 24)
@@ -1683,7 +1715,7 @@ func (m *MultiBlockChange) read(rr io.Reader) (err error) {
 	return
 }
 
-func (b *BlockChange) id() int { return 35 }
+func (b *BlockChange) id() int { return 36 }
 func (b *BlockChange) write(ww io.Writer) (err error) {
 	var tmp [8]byte
 	tmp[0] = byte(b.Location >> 56)
@@ -1714,7 +1746,7 @@ func (b *BlockChange) read(rr io.Reader) (err error) {
 	return
 }
 
-func (b *BlockAction) id() int { return 36 }
+func (b *BlockAction) id() int { return 37 }
 func (b *BlockAction) write(ww io.Writer) (err error) {
 	var tmp [8]byte
 	tmp[0] = byte(b.Location >> 56)
@@ -1761,7 +1793,7 @@ func (b *BlockAction) read(rr io.Reader) (err error) {
 	return
 }
 
-func (b *BlockBreakAnimation) id() int { return 37 }
+func (b *BlockBreakAnimation) id() int { return 38 }
 func (b *BlockBreakAnimation) write(ww io.Writer) (err error) {
 	var tmp [8]byte
 	if err = WriteVarInt(ww, b.EntityID); err != nil {
@@ -1797,115 +1829,6 @@ func (b *BlockBreakAnimation) read(rr io.Reader) (err error) {
 		return
 	}
 	b.Stage = int8((uint8(tmp[0]) << 0))
-	return
-}
-
-func (c *ChunkDataBulk) id() int { return 38 }
-func (c *ChunkDataBulk) write(ww io.Writer) (err error) {
-	var tmp [4]byte
-	if err = WriteBool(ww, c.SkyLight); err != nil {
-		return
-	}
-	if err = WriteVarInt(ww, VarInt(len(c.ChunkX))); err != nil {
-		return
-	}
-	for tmp0 := range c.ChunkX {
-		tmp[0] = byte(c.ChunkX[tmp0] >> 24)
-		tmp[1] = byte(c.ChunkX[tmp0] >> 16)
-		tmp[2] = byte(c.ChunkX[tmp0] >> 8)
-		tmp[3] = byte(c.ChunkX[tmp0] >> 0)
-		if _, err = ww.Write(tmp[:4]); err != nil {
-			return
-		}
-	}
-	if err = WriteVarInt(ww, VarInt(len(c.ChunkZ))); err != nil {
-		return
-	}
-	for tmp1 := range c.ChunkZ {
-		tmp[0] = byte(c.ChunkZ[tmp1] >> 24)
-		tmp[1] = byte(c.ChunkZ[tmp1] >> 16)
-		tmp[2] = byte(c.ChunkZ[tmp1] >> 8)
-		tmp[3] = byte(c.ChunkZ[tmp1] >> 0)
-		if _, err = ww.Write(tmp[:4]); err != nil {
-			return
-		}
-	}
-	if err = WriteVarInt(ww, VarInt(len(c.ChunkBitmask))); err != nil {
-		return
-	}
-	for tmp2 := range c.ChunkBitmask {
-		tmp[0] = byte(c.ChunkBitmask[tmp2] >> 24)
-		tmp[1] = byte(c.ChunkBitmask[tmp2] >> 16)
-		tmp[2] = byte(c.ChunkBitmask[tmp2] >> 8)
-		tmp[3] = byte(c.ChunkBitmask[tmp2] >> 0)
-		if _, err = ww.Write(tmp[:4]); err != nil {
-			return
-		}
-	}
-	if _, err = ww.Write(c.Data); err != nil {
-		return
-	}
-	return
-}
-func (c *ChunkDataBulk) read(rr io.Reader) (err error) {
-	var tmp [4]byte
-	if c.SkyLight, err = ReadBool(rr); err != nil {
-		return
-	}
-	var tmp0 VarInt
-	if tmp0, err = ReadVarInt(rr); err != nil {
-		return
-	}
-	if tmp0 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp0, math.MaxInt16)
-	}
-	if tmp0 < 0 {
-		return fmt.Errorf("negative array size: %d < 0", tmp0)
-	}
-	c.ChunkX = make([]int32, tmp0)
-	for tmp1 := range c.ChunkX {
-		if _, err = rr.Read(tmp[:4]); err != nil {
-			return
-		}
-		c.ChunkX[tmp1] = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
-	}
-	var tmp2 VarInt
-	if tmp2, err = ReadVarInt(rr); err != nil {
-		return
-	}
-	if tmp2 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp2, math.MaxInt16)
-	}
-	if tmp2 < 0 {
-		return fmt.Errorf("negative array size: %d < 0", tmp2)
-	}
-	c.ChunkZ = make([]int32, tmp2)
-	for tmp3 := range c.ChunkZ {
-		if _, err = rr.Read(tmp[:4]); err != nil {
-			return
-		}
-		c.ChunkZ[tmp3] = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
-	}
-	var tmp4 VarInt
-	if tmp4, err = ReadVarInt(rr); err != nil {
-		return
-	}
-	if tmp4 > math.MaxInt16 {
-		return fmt.Errorf("array larger than max value: %d > %d", tmp4, math.MaxInt16)
-	}
-	if tmp4 < 0 {
-		return fmt.Errorf("negative array size: %d < 0", tmp4)
-	}
-	c.ChunkBitmask = make([]int32, tmp4)
-	for tmp5 := range c.ChunkBitmask {
-		if _, err = rr.Read(tmp[:4]); err != nil {
-			return
-		}
-		c.ChunkBitmask[tmp5] = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
-	}
-	if c.Data, err = ioutil.ReadAll(rr); err != nil {
-		return
-	}
 	return
 }
 
@@ -3984,11 +3907,11 @@ func init() {
 	packetCreator[Play][clientbound][31] = func() Packet { return &SetExperience{} }
 	packetCreator[Play][clientbound][32] = func() Packet { return &EntityProperties{} }
 	packetCreator[Play][clientbound][33] = func() Packet { return &ChunkData{} }
-	packetCreator[Play][clientbound][34] = func() Packet { return &MultiBlockChange{} }
-	packetCreator[Play][clientbound][35] = func() Packet { return &BlockChange{} }
-	packetCreator[Play][clientbound][36] = func() Packet { return &BlockAction{} }
-	packetCreator[Play][clientbound][37] = func() Packet { return &BlockBreakAnimation{} }
-	packetCreator[Play][clientbound][38] = func() Packet { return &ChunkDataBulk{} }
+	packetCreator[Play][clientbound][34] = func() Packet { return &ChunkUnload{} }
+	packetCreator[Play][clientbound][35] = func() Packet { return &MultiBlockChange{} }
+	packetCreator[Play][clientbound][36] = func() Packet { return &BlockChange{} }
+	packetCreator[Play][clientbound][37] = func() Packet { return &BlockAction{} }
+	packetCreator[Play][clientbound][38] = func() Packet { return &BlockBreakAnimation{} }
 	packetCreator[Play][clientbound][39] = func() Packet { return &Explosion{} }
 	packetCreator[Play][clientbound][40] = func() Packet { return &Effect{} }
 	packetCreator[Play][clientbound][41] = func() Packet { return &SoundEffect{} }

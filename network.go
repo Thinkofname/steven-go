@@ -63,7 +63,7 @@ func (n *networkManager) Connect(profile mojang.Profile, server string) {
 				}
 				if logLevel < 3 {
 					switch packet.(type) {
-					case *protocol.ChunkData, *protocol.ChunkDataBulk:
+					case *protocol.ChunkData:
 						return
 					}
 				}

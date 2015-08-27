@@ -381,6 +381,15 @@ type ChunkData struct {
 	Data           []byte `length:"VarInt" nolimit:"true"`
 }
 
+// ChunkUnload tells the client to unload the chunk at the specified
+// position.
+//
+// This is a Minecraft packet
+type ChunkUnload struct {
+	X int32
+	Z int32
+}
+
 // MultiBlockChange is used to update a batch of blocks in a single packet.
 //
 // This is a Minecraft packet
@@ -422,18 +431,6 @@ type BlockBreakAnimation struct {
 	EntityID VarInt
 	Location Position
 	Stage    int8
-}
-
-// ChunkDataBulk is like the ChunkData packet but allows for multiple chunks
-// at once.
-//
-// This is a Minecraft packet
-type ChunkDataBulk struct {
-	SkyLight     bool
-	ChunkX       []int32 `length:"VarInt"`
-	ChunkZ       []int32 `length:"VarInt"`
-	ChunkBitmask []int32 `length:"VarInt"`
-	Data         []byte  `length:"remaining"`
 }
 
 // Explosion is sent when an explosion is triggered (tnt, creeper etc).
