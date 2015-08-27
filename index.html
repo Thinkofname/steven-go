@@ -1,0 +1,27 @@
+---
+layout: default
+---
+
+<div class="jumbotron cover-bar">
+  <div class="container">
+	<h1 class="title">Steven - Minecraft Client</h1>
+	<br/><br/>
+	<p><a class="btn btn-primary btn-lg" href="#" role="button">Download</a></p>
+  </div>
+</div>
+
+
+<div class="container">
+  <h1>Updates</h1>
+
+  <ul>
+	{% for post in site.posts limit:3 %}
+	  <li>
+		<h2 class="post-title">{{ post.title }}</h2>
+  		<p class="post-time">{{ post.date | date: "%b %-d, %Y" }}</p>
+		{{ post.excerpt }}
+		<a class="btn btn-secondary" href="{{ post.url | prepend: site.baseurl }}">Continue reading</a>
+	  </li>
+	{% endfor %}
+  </ul>
+</div>

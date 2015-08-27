@@ -1,0 +1,13 @@
+# Site settings
+title: Steven
+email: thinkofdeath@spigotmc.org
+description: >
+  Steven is a custom Minecraft client coded from scratch
+  in Go.
+baseurl: ""
+url: "https://steven.thinkofdeath.uk"
+twitter_username: thinkofdeath
+github_username:  thinkofdeath
+
+# Build settings
+markdown: kramdown

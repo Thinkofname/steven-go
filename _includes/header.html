@@ -1,0 +1,15 @@
+<header>
+    <nav class="navbar navbar-inverse navbar-static-top">
+        <a class="navbar-brand" href="{{ site.baseurl }}/">{{ site.title }}</a>
+
+        <ul class="nav nav-pills">
+            {% for page in site.pages %}
+                {% if page.title %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+</header>

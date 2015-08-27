@@ -1,0 +1,33 @@
+---
+---
+
+body {
+    background-color: #333;
+    color: #ddd;
+}
+
+.cover-bar {
+    background-image: url('../images/titlecover.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+h1.title {
+    color: #ECECEC;
+    text-shadow: 0 0 15px #111;
+}
+
+nav.navbar {
+    background-color: #222;
+    box-shadow: 0 5px 5px 1px #000;
+}
+
+.post-title {
+    margin-bottom: 0;
+}
+
+p.post-time {
+    margin-top: 0;
+    color: #999;
+    font-size: 0.8em;
+}

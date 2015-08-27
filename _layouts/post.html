@@ -1,0 +1,17 @@
+---
+layout: default
+---
+
+<div class="jumbotron cover-bar">
+  <div class="container">
+	<h1 class="title">{{ page.title }} - Steven</h1>
+  </div>
+</div>
+
+<div class="container">
+    <p class="post-time">{{ page.date | date: "%b %-d, %Y" }}{% if page.author %} • {{ page.author }}{% endif %}{% if page.meta %} • {{ page.meta }}{% endif %}</p>
+
+  <article class="post-content">
+    {{ content }}
+  </article>
+</div>
