@@ -163,7 +163,7 @@ func (handler) ChunkUnload(p *protocol.ChunkUnload) {
 	if ok {
 		c.free()
 		delete(chunkMap, pos)
-	} 
+	}
 }
 
 func protocolPosToChunkPos(p protocol.Position) chunkPosition {
