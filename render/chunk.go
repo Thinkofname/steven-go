@@ -31,6 +31,8 @@ var (
 
 // ChunkBuffer is a renderable chunk section
 type ChunkBuffer struct {
+	Rendered bool
+
 	position
 	invalid bool
 

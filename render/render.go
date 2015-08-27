@@ -286,6 +286,7 @@ itQueue:
 		req.chunk.renderedOn = frameID
 		renderOrder = append(renderOrder, req.chunk)
 
+		req.chunk.Rendered = true
 		if req.chunk.count != 0 && req.chunk.buffer.IsValid() {
 			shaderChunk.Offset.Int3(req.chunk.X, req.chunk.Y, req.chunk.Z)
 

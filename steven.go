@@ -40,7 +40,7 @@ cl_username is the username that the client will use to connect
 to servers.
 `)
 	clientUUID = console.NewStringVar("cl_uuid", "", console.Serializable).Doc(`
-cl_uuid is the uuid of the client. This is unique to a player 
+cl_uuid is the uuid of the client. This is unique to a player
 unlike their username.
 `)
 	clientAccessToken = console.NewStringVar("auth_token", "", console.Serializable).Doc(`
@@ -253,7 +253,7 @@ dirtyClean:
 			if freeBuilders <= 0 {
 				break dirtyClean
 			}
-			if s.dirty && !s.building {
+			if s.dirty && !s.building && s.Buffer.Rendered {
 				freeBuilders--
 				s.dirty = false
 				s.building = true
