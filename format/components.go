@@ -16,6 +16,7 @@ package format
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 )
@@ -240,6 +241,12 @@ func (c Color) Color() (r, g, b int) {
 		return 255, 255, 85
 	case White:
 		return 255, 255, 255
+	}
+	if len(c) == 7 && c[0] == '#' {
+		ret, err := hex.DecodeString(string(c[1:]))
+		if err == nil {
+			return int(ret[0]), int(ret[1]), int(ret[2])
+		}
 	}
 	return 255, 255, 255
 }
