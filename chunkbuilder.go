@@ -115,6 +115,7 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 		render.Sync(func() {
 			if cs.Buffer != nil {
 				var data, dataT []byte
+				// Nasty unsafe hack for performance
 				if len(bO) > 0 {
 					size := len(bO) * int(unsafe.Sizeof(bO[0]))
 					data = (*[1 << 28]byte)(unsafe.Pointer(&bO[0]))[:size]
