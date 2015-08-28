@@ -350,10 +350,11 @@ func calculateBiome(bs *blocksSnapshot, x, z int, img *image.NRGBA) (byte, byte,
 			biome := bs.biome(x+xx, z+zz)
 			ix := biome.ColorIndex & 0xFF
 			iy := biome.ColorIndex >> 8
-			col := img.NRGBAAt(ix, iy)
-			r += int(col.R)
-			g += int(col.G)
-			b += int(col.B)
+
+			offset := img.PixOffset(ix, iy)
+			r += int(img.Pix[offset])
+			g += int(img.Pix[offset+1])
+			b += int(img.Pix[offset+2])
 			count++
 		}
 	}
@@ -386,32 +387,33 @@ func calculateLight(bs *blocksSnapshot, origX, origY, origZ int,
 	}
 	sskyLight = byte(dsl)
 
-	dx, dy, dz := face.Offset()
-	for ox := -1; ox <= 0; ox++ {
-		for oy := -1; oy <= 0; oy++ {
-			for oz := -1; oz <= 0; oz++ {
-				lx := round(x + float64(ox)*0.6 + float64(dx)*0.6)
-				ly := round(y + float64(oy)*0.6 + float64(dy)*0.6)
-				lz := round(z + float64(oz)*0.6 + float64(dz)*0.6)
-				bl := int(bs.blockLight(lx, ly, lz))
-				sl := int(bs.skyLight(lx, ly, lz))
+	ddx, ddy, ddz := face.Offset()
+	dx, dy, dz := float64(ddx)*0.6, float64(ddy)*0.6, float64(ddz)*0.6
+	for ox := -0.6; ox <= 0.0; ox += 0.6 {
+		for oy := -0.6; oy <= 0.0; oy += 0.6 {
+			for oz := -0.6; oz <= 0.0; oz += 0.6 {
+				lx := round(x + ox + dx)
+				ly := round(y + oy + dy)
+				lz := round(z + oz + dz)
+				bl := bs.blockLight(lx, ly, lz)
+				sl := bs.skyLight(lx, ly, lz)
 				if force && !bs.block(lx, ly, lz).Is(Blocks.Air) {
-					bl = int(sblockLight)
-					sl = int(sskyLight)
+					bl = sblockLight
+					sl = sskyLight
 				}
 				if sl == 0 && bl == 0 {
-					bl = int(sblockLight)
-					sl = int(sskyLight)
+					bl = sblockLight
+					sl = sskyLight
 				}
-				blockLight += bl
-				skyLight += sl
+				blockLight += int(bl)
+				skyLight += int(sl)
 				count++
 			}
 		}
 
 	}
 
-	return uint16((float64(blockLight) / float64(count)) * 4000), uint16((float64(skyLight) / float64(count)) * 4000)
+	return uint16((blockLight * 4000) / count), uint16((skyLight * 4000) / count)
 }
 
 func round(f float64) int {

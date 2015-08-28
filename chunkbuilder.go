@@ -90,7 +90,7 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 						} else {
 							bO = l.renderLiquid(bs, x, y, z, bO, bI)
 						}
-						r.Int() // See the comment above for air
+						r.Int() // See the comment above for non-renderable blocks
 						continue
 					}
 

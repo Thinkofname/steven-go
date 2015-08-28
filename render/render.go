@@ -269,21 +269,21 @@ func renderBuffer(ch *ChunkBuffer, po position, fr direction.Type) {
 		return
 	}
 	rQueue.Append(renderRequest{ch, po, fr})
-itQueue:
+
 	for !rQueue.Empty() {
 		req := rQueue.Take()
 		if req.chunk.renderedOn == frameID {
-			continue itQueue
+			continue
 		}
+		req.chunk.renderedOn = frameID
+
 		aabb := vmath.NewAABB(
 			-float32((req.pos.X<<4)+16), -float32((req.pos.Y<<4)+16), float32((req.pos.Z<<4)),
 			-float32((req.pos.X<<4)), -float32((req.pos.Y<<4)), float32((req.pos.Z<<4)+16),
 		).Grow(1, 1, 1)
 		if !frustum.IsAABBInside(aabb) {
-			req.chunk.renderedOn = frameID
-			continue itQueue
+			continue
 		}
-		req.chunk.renderedOn = frameID
 		renderOrder = append(renderOrder, req.chunk)
 
 		req.chunk.Rendered = true

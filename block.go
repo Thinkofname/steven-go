@@ -57,7 +57,7 @@ type Block interface {
 	Renderable() bool
 	ModelName() string
 	ModelVariant() string
-	Models() blockVariants
+	Models() *blockVariants
 	ForceShade() bool
 	ShouldCullAgainst() bool
 	TintImage() *image.NRGBA
@@ -91,7 +91,7 @@ type baseBlock struct {
 	Index         int
 	StevenID      uint16
 	cullAgainst   bool
-	BlockVariants blockVariants
+	BlockVariants *blockVariants
 	translucent   bool
 	collidable    bool
 	renderable    bool
@@ -169,7 +169,7 @@ func (b *baseBlock) Renderable() bool {
 	return b.renderable
 }
 
-func (b *baseBlock) Models() blockVariants {
+func (b *baseBlock) Models() *blockVariants {
 	return b.BlockVariants
 }
 

@@ -21,6 +21,7 @@ import (
 	"math/rand"
 	"reflect"
 	"strings"
+	"sync"
 
 	realjson "encoding/json"
 
@@ -37,16 +38,20 @@ var (
 )
 
 type blockStateModel struct {
-	variants  map[string]blockVariants
+	variants  map[string]*blockVariants
 	multipart []*blockPart
 }
 
 type blockPart struct {
 	When  func(bs *BlockSet, block Block) bool
-	Apply blockVariants
+	Apply *blockVariants
 }
 
-type blockVariants []*processedModel
+type blockVariants struct {
+	models      []*processedModel
+	totalWeight int
+	init        sync.Once
+}
 
 func findStateModel(plugin, name string) *blockStateModel {
 	key := pluginKey{plugin, name}
@@ -82,10 +87,9 @@ func loadStateModel(key pluginKey) *blockStateModel {
 	}
 	bs := &blockStateModel{}
 	if data.Variants != nil {
-		bs.variants = map[string]blockVariants{}
+		bs.variants = map[string]*blockVariants{}
 		for k, v := range data.Variants {
-			models := parseModelList(key, v)
-			bs.variants[k] = models
+			bs.variants[k] = parseModelList(key, v)
 		}
 	}
 	if data.Multipart != nil {
@@ -116,8 +120,8 @@ func loadStateModel(key pluginKey) *blockStateModel {
 	return bs
 }
 
-func parseModelList(key pluginKey, v realjson.RawMessage) blockVariants {
-	var models blockVariants
+func parseModelList(key pluginKey, v realjson.RawMessage) *blockVariants {
+	models := &blockVariants{}
 	switch v[0] {
 	case '[':
 		var list []realjson.RawMessage
@@ -125,13 +129,13 @@ func parseModelList(key pluginKey, v realjson.RawMessage) blockVariants {
 		for _, vv := range list {
 			mdl := parseBlockStateVariant(key.Plugin, vv)
 			if mdl != nil {
-				models = append(models, precomputeModel(mdl))
+				models.models = append(models.models, precomputeModel(mdl))
 			}
 		}
 	default:
 		mdl := parseBlockStateVariant(key.Plugin, v)
 		if mdl != nil {
-			models = append(models, precomputeModel(mdl))
+			models.models = append(models.models, precomputeModel(mdl))
 		}
 	}
 	return models
@@ -182,46 +186,52 @@ func parseBlockRuleList(rules map[string]interface{}) func(bs *BlockSet, block B
 	}
 }
 
-func (bs *blockStateModel) matchPart(bbs *BlockSet, block Block) blockVariants {
-	var matches blockVariants
+func (bs *blockStateModel) matchPart(bbs *BlockSet, block Block) *blockVariants {
+	matches := &blockVariants{}
 	for _, part := range bs.multipart {
 		if part.When(bbs, block) {
-			matches = append(matches, part.Apply...)
+			matches.models = append(matches.models, part.Apply.models...)
 		}
 	}
-	if len(matches) > 0 {
+	if len(matches.models) > 0 {
 		out := &processedModel{}
-		for _, mdl := range matches {
+		for _, mdl := range matches.models {
 			out.ambientOcclusion = mdl.ambientOcclusion
 			out.weight = mdl.weight
 			out.faces = append(out.faces, mdl.faces...)
 		}
-		return blockVariants{out}
+		return &blockVariants{models: []*processedModel{out}}
 	}
 	return nil
 }
 
-func (bs *blockStateModel) variant(key string) blockVariants {
+func (bs *blockStateModel) variant(key string) *blockVariants {
 	if bs.variants == nil {
 		return nil
 	}
 	return bs.variants[key]
 }
 
-func (bv blockVariants) selectModel(r *rand.Rand) *processedModel {
-	totalW := 0
-	for _, m := range bv {
-		totalW += m.weight
+func (bv *blockVariants) selectModel(r *rand.Rand) *processedModel {
+	// Short cut for common case
+	if len(bv.models) == 1 {
+		return bv.models[0]
 	}
-	i := r.Intn(totalW)
-	offset := 0
-	for _, m := range bv {
-		if i <= offset+m.weight {
+	bv.init.Do(bv.initWeight)
+	i := r.Intn(bv.totalWeight)
+	for _, m := range bv.models {
+		if i <= m.weight {
 			return m
 		}
-		offset += m.weight
+		i -= m.weight
 	}
-	panic("should not be reached")
+	return nil
+}
+
+func (bv *blockVariants) initWeight() {
+	for _, m := range bv.models {
+		bv.totalWeight += m.weight
+	}
 }
 
 type builtInType int
