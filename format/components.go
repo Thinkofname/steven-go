@@ -206,6 +206,44 @@ const (
 	White       Color = "white"
 )
 
+func (c Color) Color() (r, g, b int) {
+	switch c {
+	case Black:
+		return 0, 0, 0
+	case DarkBlue:
+		return 0, 0, 170
+	case DarkGreen:
+		return 0, 170, 0
+	case DarkAqua:
+		return 0, 170, 170
+	case DarkRed:
+		return 170, 0, 0
+	case DarkPurple:
+		return 170, 0, 170
+	case Gold:
+		return 255, 170, 0
+	case Gray:
+		return 170, 170, 170
+	case DarkGray:
+		return 85, 85, 85
+	case Blue:
+		return 85, 85, 255
+	case Green:
+		return 85, 255, 85
+	case Aqua:
+		return 85, 255, 255
+	case Red:
+		return 255, 85, 85
+	case LightPurple:
+		return 255, 85, 255
+	case Yellow:
+		return 255, 255, 85
+	case White:
+		return 255, 255, 255
+	}
+	return 255, 255, 255
+}
+
 // Optional boolean values
 var (
 	vTrue         = true

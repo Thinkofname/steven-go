@@ -207,7 +207,7 @@ func (f *formatState) appendText(text string, color getColorFunc) {
 	for i, r := range text {
 		s := render.SizeOfCharacter(r) + 2
 		if (f.f.MaxWidth > 0 && f.offset+width+s > f.f.MaxWidth) || r == '\n' {
-			rr, gg, bb := colorRGB(color())
+			rr, gg, bb := color().Color()
 			txt := NewText(text[last:i], f.offset, float64(f.lines*18+1), rr, gg, bb)
 			txt.AttachTo(f.f)
 			last = i
@@ -225,7 +225,7 @@ func (f *formatState) appendText(text string, color getColorFunc) {
 		}
 	}
 	if last != len(text) {
-		r, g, b := colorRGB(color())
+		r, g, b := color().Color()
 		txt := NewText(text[last:], f.offset, float64(f.lines*18+1), r, g, b)
 		txt.AttachTo(f.f)
 		f.f.Text = append(f.f.Text, txt)
@@ -248,42 +248,4 @@ func getColor(c *format.Component, parent getColorFunc) getColorFunc {
 		}
 		return format.White
 	}
-}
-
-func colorRGB(c format.Color) (r, g, b int) {
-	switch c {
-	case format.Black:
-		return 0, 0, 0
-	case format.DarkBlue:
-		return 0, 0, 170
-	case format.DarkGreen:
-		return 0, 170, 0
-	case format.DarkAqua:
-		return 0, 170, 170
-	case format.DarkRed:
-		return 170, 0, 0
-	case format.DarkPurple:
-		return 170, 0, 170
-	case format.Gold:
-		return 255, 170, 0
-	case format.Gray:
-		return 170, 170, 170
-	case format.DarkGray:
-		return 85, 85, 85
-	case format.Blue:
-		return 85, 85, 255
-	case format.Green:
-		return 85, 255, 85
-	case format.Aqua:
-		return 85, 255, 255
-	case format.Red:
-		return 255, 85, 85
-	case format.LightPurple:
-		return 255, 85, 255
-	case format.Yellow:
-		return 255, 255, 85
-	case format.White:
-		return 255, 255, 255
-	}
-	return 255, 255, 255
 }
