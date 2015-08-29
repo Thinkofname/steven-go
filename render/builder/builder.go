@@ -95,6 +95,11 @@ func (b *Buffer) Float(f float32) {
 	b.buf.Write(d)
 }
 
+// Write appends the passed bytes to this buffer
+func (b *Buffer) Write(p []byte) {
+	b.buf.Write(p)
+}
+
 // WriteBuffer copies the passed buffer to this buffer
 func (b *Buffer) WriteBuffer(o *Buffer) {
 	o.buf.WriteTo(&b.buf)

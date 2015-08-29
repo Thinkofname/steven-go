@@ -19,6 +19,7 @@ import (
 	"math"
 
 	"github.com/thinkofdeath/steven/render"
+	"github.com/thinkofdeath/steven/render/builder"
 	"github.com/thinkofdeath/steven/type/direction"
 )
 
@@ -288,7 +289,7 @@ func precomputeModel(bm *model) *processedModel {
 	return p
 }
 
-func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf []chunkVertex, indices *int) []chunkVertex {
+func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf *builder.Buffer, indices *int) {
 	this := bs.block(x, y, z)
 	for _, f := range p.faces {
 		if f.cullFace != direction.Invalid {
@@ -335,10 +336,9 @@ func (p processedModel) Render(x, y, z int, bs *blocksSnapshot, buf []chunkVerte
 				float64(vert.Z),
 				f.facing, p.ambientOcclusion, this.ForceShade(),
 			)
-			buf = append(buf, vert)
+			buildVertex(buf, &vert)
 		}
 	}
-	return buf
 }
 
 // Takes an average of the biome colors of the surrounding area

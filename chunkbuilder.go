@@ -16,7 +16,6 @@ package steven
 
 import (
 	"math/rand"
-	"sync"
 	"unsafe"
 
 	"github.com/thinkofdeath/steven/render"
@@ -42,12 +41,24 @@ type buildPos struct {
 
 var (
 	_, chunkVertexType = builder.Struct(chunkVertex{})
-	builderPool        = sync.Pool{
-		New: func() interface{} {
-			return []chunkVertex(nil)
-		},
-	}
+	builderPool        = make(chan *builder.Buffer, maxBuilders+5)
 )
+
+func getBuilder() *builder.Buffer {
+	select {
+	case buf := <-builderPool:
+		return buf
+	default:
+		return builder.New(chunkVertexType...)
+	}
+}
+
+func putBuilder(b *builder.Buffer) {
+	select {
+	case builderPool <- b:
+	default:
+	}
+}
 
 func (cs *chunkSection) build(complete chan<- buildPos) {
 	ox, oy, oz := (cs.chunk.X<<4)-2, (cs.Y<<4)-2, (cs.chunk.Z<<4)-2
@@ -57,8 +68,10 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 	bs.y = -2
 	bs.z = -2
 	go func() {
-		bO := builderPool.Get().([]chunkVertex)[:0]
-		bT := builderPool.Get().([]chunkVertex)[:0]
+		bO := getBuilder()
+		bT := getBuilder()
+		bO.Reset()
+		bT.Reset()
 		bOI := new(int)
 		bTI := new(int)
 
@@ -76,19 +89,14 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 						r.Int()
 						continue
 					}
-					bI := bOI
-					// Translucent models need special handling
-					if bl.IsTranslucent() {
-						bI = bTI
-					}
 
 					// Liquids can't be represented by the model system
 					// due to the number of possible states they have
 					if l, ok := bl.(*blockLiquid); ok {
 						if bl.IsTranslucent() {
-							bT = l.renderLiquid(bs, x, y, z, bT, bI)
+							l.renderLiquid(bs, x, y, z, bT, bTI)
 						} else {
-							bO = l.renderLiquid(bs, x, y, z, bO, bI)
+							l.renderLiquid(bs, x, y, z, bO, bOI)
 						}
 						r.Int() // See the comment above for non-renderable blocks
 						continue
@@ -98,9 +106,9 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 					// which is constant for that position.
 					if variant := bl.Models().selectModel(r); variant != nil {
 						if bl.IsTranslucent() {
-							bT = variant.Render(x, y, z, bs, bT, bI)
+							variant.Render(x, y, z, bs, bT, bTI)
 						} else {
-							bO = variant.Render(x, y, z, bs, bO, bI)
+							variant.Render(x, y, z, bs, bO, bOI)
 						}
 					}
 				}
@@ -114,22 +122,12 @@ func (cs *chunkSection) build(complete chan<- buildPos) {
 		// Upload the buffers on the render goroutine
 		render.Sync(func() {
 			if cs.Buffer != nil {
-				var data, dataT []byte
-				// Nasty unsafe hack for performance
-				if len(bO) > 0 {
-					size := len(bO) * int(unsafe.Sizeof(bO[0]))
-					data = (*[1 << 28]byte)(unsafe.Pointer(&bO[0]))[:size]
-				}
-				if len(bT) > 0 {
-					size := len(bT) * int(unsafe.Sizeof(bT[0]))
-					dataT = (*[1 << 28]byte)(unsafe.Pointer(&bT[0]))[:size]
-				}
-				cs.Buffer.Upload(data, *bOI, cullBits)
-				cs.Buffer.UploadTrans(dataT, *bTI)
+				cs.Buffer.Upload(bO.Data(), *bOI, cullBits)
+				cs.Buffer.UploadTrans(bT.Data(), *bTI)
 			}
 
-			builderPool.Put(bO)
-			builderPool.Put(bT)
+			putBuilder(bO)
+			putBuilder(bT)
 		})
 		// Free up the builder
 		complete <- buildPos{cs.chunk.X, cs.Y, cs.chunk.Z}
@@ -219,9 +217,15 @@ func floodFill(bs *blocksSnapshot, visited bit.Set, x, y, z int) uint8 {
 	return touched
 }
 
+var vertexSize = unsafe.Sizeof(chunkVertex{})
+
 // builder.Struct works by reflection which is to slow for this
 // as its called so often.
-func buildVertex(b *builder.Buffer, v chunkVertex) {
+func buildVertex(b *builder.Buffer, v *chunkVertex) {
+	b.Write((*[1 << 28]byte)(unsafe.Pointer(v))[:vertexSize])
+}
+
+func buildVertexSafe(b *builder.Buffer, v *chunkVertex) {
 	b.Float(v.X)
 	b.Float(v.Y)
 	b.Float(v.Z)
