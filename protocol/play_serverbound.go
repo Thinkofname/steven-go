@@ -195,6 +195,8 @@ type SteerVehicle struct {
 
 // ResourcePackStatus informs the server of the client's current progress
 // in activating the requested resource pack
+//
+// This is a Minecraft packet
 type ResourcePackStatus struct {
 	Hash   string
 	Result VarInt
@@ -243,13 +245,6 @@ type SpectateTeleport struct {
 	Target UUID `as:"raw"`
 }
 
-// UseItem is sent when the client tries to use an item.
-//
-// This is a Minecraft packet
-type UseItem struct {
-	Hand VarInt
-}
-
 // PlayerBlockPlacement is sent when the client tries to place a block.
 //
 // This is a Minecraft packet
@@ -258,4 +253,11 @@ type PlayerBlockPlacement struct {
 	Face                      VarInt
 	Hand                      VarInt
 	CursorX, CursorY, CursorZ byte
+}
+
+// UseItem is sent when the client tries to use an item.
+//
+// This is a Minecraft packet
+type UseItem struct {
+	Hand VarInt
 }

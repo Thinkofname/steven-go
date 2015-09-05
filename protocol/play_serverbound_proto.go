@@ -762,7 +762,27 @@ func (s *SteerVehicle) read(rr io.Reader) (err error) {
 	return
 }
 
-func (h *HeldItemChange) id() int { return 19 }
+func (r *ResourcePackStatus) id() int { return 19 }
+func (r *ResourcePackStatus) write(ww io.Writer) (err error) {
+	if err = WriteString(ww, r.Hash); err != nil {
+		return
+	}
+	if err = WriteVarInt(ww, r.Result); err != nil {
+		return
+	}
+	return
+}
+func (r *ResourcePackStatus) read(rr io.Reader) (err error) {
+	if r.Hash, err = ReadString(rr); err != nil {
+		return
+	}
+	if r.Result, err = ReadVarInt(rr); err != nil {
+		return
+	}
+	return
+}
+
+func (h *HeldItemChange) id() int { return 20 }
 func (h *HeldItemChange) write(ww io.Writer) (err error) {
 	var tmp [2]byte
 	tmp[0] = byte(h.Slot >> 8)
@@ -781,7 +801,7 @@ func (h *HeldItemChange) read(rr io.Reader) (err error) {
 	return
 }
 
-func (c *CreativeInventoryAction) id() int { return 20 }
+func (c *CreativeInventoryAction) id() int { return 21 }
 func (c *CreativeInventoryAction) write(ww io.Writer) (err error) {
 	var tmp [2]byte
 	tmp[0] = byte(c.Slot >> 8)
@@ -806,7 +826,7 @@ func (c *CreativeInventoryAction) read(rr io.Reader) (err error) {
 	return
 }
 
-func (s *SetSign) id() int { return 21 }
+func (s *SetSign) id() int { return 22 }
 func (s *SetSign) write(ww io.Writer) (err error) {
 	var tmp [8]byte
 	tmp[0] = byte(s.Location >> 56)
@@ -855,7 +875,7 @@ func (s *SetSign) read(rr io.Reader) (err error) {
 	return
 }
 
-func (a *ArmSwing) id() int { return 22 }
+func (a *ArmSwing) id() int { return 23 }
 func (a *ArmSwing) write(ww io.Writer) (err error) {
 	if err = WriteVarInt(ww, a.Hand); err != nil {
 		return
@@ -869,7 +889,7 @@ func (a *ArmSwing) read(rr io.Reader) (err error) {
 	return
 }
 
-func (s *SpectateTeleport) id() int { return 23 }
+func (s *SpectateTeleport) id() int { return 24 }
 func (s *SpectateTeleport) write(ww io.Writer) (err error) {
 	if err = s.Target.Serialize(ww); err != nil {
 		return
@@ -878,20 +898,6 @@ func (s *SpectateTeleport) write(ww io.Writer) (err error) {
 }
 func (s *SpectateTeleport) read(rr io.Reader) (err error) {
 	if err = s.Target.Deserialize(rr); err != nil {
-		return
-	}
-	return
-}
-
-func (u *UseItem) id() int { return 24 }
-func (u *UseItem) write(ww io.Writer) (err error) {
-	if err = WriteVarInt(ww, u.Hand); err != nil {
-		return
-	}
-	return
-}
-func (u *UseItem) read(rr io.Reader) (err error) {
-	if u.Hand, err = ReadVarInt(rr); err != nil {
 		return
 	}
 	return
@@ -958,6 +964,20 @@ func (p *PlayerBlockPlacement) read(rr io.Reader) (err error) {
 	return
 }
 
+func (u *UseItem) id() int { return 26 }
+func (u *UseItem) write(ww io.Writer) (err error) {
+	if err = WriteVarInt(ww, u.Hand); err != nil {
+		return
+	}
+	return
+}
+func (u *UseItem) read(rr io.Reader) (err error) {
+	if u.Hand, err = ReadVarInt(rr); err != nil {
+		return
+	}
+	return
+}
+
 func init() {
 	packetCreator[Play][serverbound][0] = func() Packet { return &TabComplete{} }
 	packetCreator[Play][serverbound][1] = func() Packet { return &ChatMessage{} }
@@ -978,11 +998,12 @@ func init() {
 	packetCreator[Play][serverbound][16] = func() Packet { return &PlayerDigging{} }
 	packetCreator[Play][serverbound][17] = func() Packet { return &PlayerAction{} }
 	packetCreator[Play][serverbound][18] = func() Packet { return &SteerVehicle{} }
-	packetCreator[Play][serverbound][19] = func() Packet { return &HeldItemChange{} }
-	packetCreator[Play][serverbound][20] = func() Packet { return &CreativeInventoryAction{} }
-	packetCreator[Play][serverbound][21] = func() Packet { return &SetSign{} }
-	packetCreator[Play][serverbound][22] = func() Packet { return &ArmSwing{} }
-	packetCreator[Play][serverbound][23] = func() Packet { return &SpectateTeleport{} }
-	packetCreator[Play][serverbound][24] = func() Packet { return &UseItem{} }
+	packetCreator[Play][serverbound][19] = func() Packet { return &ResourcePackStatus{} }
+	packetCreator[Play][serverbound][20] = func() Packet { return &HeldItemChange{} }
+	packetCreator[Play][serverbound][21] = func() Packet { return &CreativeInventoryAction{} }
+	packetCreator[Play][serverbound][22] = func() Packet { return &SetSign{} }
+	packetCreator[Play][serverbound][23] = func() Packet { return &ArmSwing{} }
+	packetCreator[Play][serverbound][24] = func() Packet { return &SpectateTeleport{} }
 	packetCreator[Play][serverbound][25] = func() Packet { return &PlayerBlockPlacement{} }
+	packetCreator[Play][serverbound][26] = func() Packet { return &UseItem{} }
 }
