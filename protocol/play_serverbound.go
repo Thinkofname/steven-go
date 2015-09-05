@@ -16,13 +16,14 @@
 
 package protocol
 
-// KeepAliveServerbound is sent by a client as a response to a
-// KeepAliveClientbound. If the client doesn't reply the server
-// may disconnect the client.
+// TabComplete is sent by the client when the client presses tab in
+// the chat box.
 //
 // This is a Minecraft packet
-type KeepAliveServerbound struct {
-	ID VarInt
+type TabComplete struct {
+	Text      string
+	HasTarget bool
+	Target    Position `if:".HasTarget==true"`
 }
 
 // ChatMessage is sent by the client when it sends a chat message or
@@ -31,6 +32,71 @@ type KeepAliveServerbound struct {
 // This is a Minecraft packet
 type ChatMessage struct {
 	Message string
+}
+
+// ClientStatus is sent to update the client's status
+//
+// This is a Minecraft packet
+type ClientStatus struct {
+	ActionID VarInt
+}
+
+// ClientSettings is sent by the client to update its current settings.
+//
+// This is a Minecraft packet
+type ClientSettings struct {
+	Locale             string
+	ViewDistance       byte
+	ChatMode           byte
+	ChatColors         bool
+	DisplayedSkinParts byte
+	MainHand           VarInt
+}
+
+// ConfirmTransactionServerbound is a reply to ConfirmTransaction.
+//
+// This is a Minecraft packet
+type ConfirmTransactionServerbound struct {
+	ID           byte
+	ActionNumber int16
+	Accepted     bool
+}
+
+// EnchantItem is sent when the client enchants an item.
+//
+// This is a Minecraft packet
+type EnchantItem struct {
+	ID          byte
+	Enchantment byte
+}
+
+// ClickWindow is sent when the client clicks in a window.
+//
+// This is a Minecraft packet
+type ClickWindow struct {
+	ID           byte
+	Slot         int16
+	Button       byte
+	ActionNumber int16
+	Mode         byte
+	ClickedItem  ItemStack `as:"raw"`
+}
+
+// CloseWindow is sent when the client closes a window.
+//
+// This is a Minecraft packet
+type CloseWindow struct {
+	ID byte
+}
+
+// PluginMessageServerbound is used for custom messages between the client
+// and server. This is mainly for plugins/mods but vanilla has a few channels
+// registered too.
+//
+// This is a Minecraft packet
+type PluginMessageServerbound struct {
+	Channel string
+	Data    []byte `length:"remaining"`
 }
 
 // UseEntity is sent when the user interacts (right clicks) or attacks
@@ -46,11 +112,13 @@ type UseEntity struct {
 	Hand     VarInt  `if:".Type==0 .Type==2"`
 }
 
-// Player is used to update whether the player is on the ground or not.
+// KeepAliveServerbound is sent by a client as a response to a
+// KeepAliveClientbound. If the client doesn't reply the server
+// may disconnect the client.
 //
 // This is a Minecraft packet
-type Player struct {
-	OnGround bool
+type KeepAliveServerbound struct {
+	ID VarInt
 }
 
 // PlayerPosition is used to update the player's position.
@@ -59,14 +127,6 @@ type Player struct {
 type PlayerPosition struct {
 	X, Y, Z  float64
 	OnGround bool
-}
-
-// PlayerLook is used to update the player's rotation.
-//
-// This is a Minecraft packet
-type PlayerLook struct {
-	Yaw, Pitch float32
-	OnGround   bool
 }
 
 // PlayerPositionLook is a combination of PlayerPosition and
@@ -79,6 +139,31 @@ type PlayerPositionLook struct {
 	OnGround   bool
 }
 
+// PlayerLook is used to update the player's rotation.
+//
+// This is a Minecraft packet
+type PlayerLook struct {
+	Yaw, Pitch float32
+	OnGround   bool
+}
+
+// Player is used to update whether the player is on the ground or not.
+//
+// This is a Minecraft packet
+type Player struct {
+	OnGround bool
+}
+
+// ClientAbilities is used to modify the players current abilities.
+// Currently flying is the only one
+//
+// This is a Minecraft packet
+type ClientAbilities struct {
+	Flags        byte
+	FlyingSpeed  float32
+	WalkingSpeed float32
+}
+
 // PlayerDigging is sent when the client starts/stops digging a block.
 // It also can be sent for droppping items and eating/shooting.
 //
@@ -87,6 +172,75 @@ type PlayerDigging struct {
 	Status   byte
 	Location Position
 	Face     byte
+}
+
+// PlayerAction is sent when a player preforms various actions.
+//
+// This is a Minecraft packet
+type PlayerAction struct {
+	EntityID  VarInt
+	ActionID  VarInt
+	JumpBoost VarInt
+}
+
+// SteerVehicle is sent by the client when steers or preforms an action
+// on a vehicle.
+//
+// This is a Minecraft packet
+type SteerVehicle struct {
+	Sideways float32
+	Forward  float32
+	Flags    byte
+}
+
+// ResourcePackStatus informs the server of the client's current progress
+// in activating the requested resource pack
+type ResourcePackStatus struct {
+	Hash   string
+	Result VarInt
+}
+
+// HeldItemChange is sent when the player changes the currently active
+// hotbar slot.
+//
+// This is a Minecraft packet
+type HeldItemChange struct {
+	Slot int16
+}
+
+// CreativeInventoryAction is sent when the client clicks in the creative
+// inventory. This is used to spawn items in creative.
+//
+// This is a Minecraft packet
+type CreativeInventoryAction struct {
+	Slot        int16
+	ClickedItem ItemStack `as:"raw"`
+}
+
+// SetSign sets the text on a sign after placing it.
+//
+// This is a Minecraft packet
+type SetSign struct {
+	Location Position
+	Line1    string
+	Line2    string
+	Line3    string
+	Line4    string
+}
+
+// ArmSwing is sent by the client when the player left clicks (to swing their
+// arm).
+//
+// This is a Minecraft packet
+type ArmSwing struct {
+	Hand VarInt
+}
+
+// SpectateTeleport is sent by clients in spectator mode to teleport to a player.
+//
+// This is a Minecraft packet
+type SpectateTeleport struct {
+	Target UUID `as:"raw"`
 }
 
 // UseItem is sent when the client tries to use an item.
@@ -104,158 +258,4 @@ type PlayerBlockPlacement struct {
 	Face                      VarInt
 	Hand                      VarInt
 	CursorX, CursorY, CursorZ byte
-}
-
-// HeldItemChange is sent when the player changes the currently active
-// hotbar slot.
-//
-// This is a Minecraft packet
-type HeldItemChange struct {
-	Slot int16
-}
-
-// ArmSwing is sent by the client when the player left clicks (to swing their
-// arm).
-//
-// This is a Minecraft packetA
-type ArmSwing struct {
-	Hand VarInt
-}
-
-// PlayerAction is sent when a player preforms various actions.
-//
-// This is a Minecraft packetB
-type PlayerAction struct {
-	EntityID  VarInt
-	ActionID  VarInt
-	JumpBoost VarInt
-}
-
-// SteerVehicle is sent by the client when steers or preforms an action
-// on a vehicle.
-//
-// This is a Minecraft packetC
-type SteerVehicle struct {
-	Sideways float32
-	Forward  float32
-	Flags    byte
-}
-
-// CloseWindow is sent when the client closes a window.
-//
-// This is a Minecraft packetD
-type CloseWindow struct {
-	ID byte
-}
-
-// ClickWindow is sent when the client clicks in a window.
-//
-// This is a Minecraft packetE
-type ClickWindow struct {
-	ID           byte
-	Slot         int16
-	Button       byte
-	ActionNumber int16
-	Mode         byte
-	ClickedItem  ItemStack `as:"raw"`
-}
-
-// ConfirmTransactionServerbound is a reply to ConfirmTransaction.
-//
-// This is a Minecraft packetF
-type ConfirmTransactionServerbound struct {
-	ID           byte
-	ActionNumber int16
-	Accepted     bool
-}
-
-// CreativeInventoryAction is sent when the client clicks in the creative
-// inventory. This is used to spawn items in creative.
-//
-// This is a Minecraft packet
-type CreativeInventoryAction struct {
-	Slot        int16
-	ClickedItem ItemStack `as:"raw"`
-}
-
-// EnchantItem is sent when the client enchants an item.
-//
-// This is a Minecraft packet
-type EnchantItem struct {
-	ID          byte
-	Enchantment byte
-}
-
-// SetSign sets the text on a sign after placing it.
-//
-// This is a Minecraft packet
-type SetSign struct {
-	Location Position
-	Line1    string
-	Line2    string
-	Line3    string
-	Line4    string
-}
-
-// ClientAbilities is used to modify the players current abilities.
-// Currently flying is the only one
-//
-// This is a Minecraft packet
-type ClientAbilities struct {
-	Flags        byte
-	FlyingSpeed  float32
-	WalkingSpeed float32
-}
-
-// TabComplete is sent by the client when the client presses tab in
-// the chat box.
-//
-// This is a Minecraft packet
-type TabComplete struct {
-	Text      string
-	HasTarget bool
-	Target    Position `if:".HasTarget==true"`
-}
-
-// ClientSettings is sent by the client to update its current settings.
-//
-// This is a Minecraft packet
-type ClientSettings struct {
-	Locale             string
-	ViewDistance       byte
-	ChatMode           byte
-	ChatColors         bool
-	DisplayedSkinParts byte
-	MainHand           VarInt
-}
-
-// ClientStatus is sent to update the client's status
-//
-// This is a Minecraft packet
-type ClientStatus struct {
-	ActionID VarInt
-}
-
-// PluginMessageServerbound is used for custom messages between the client
-// and server. This is mainly for plugins/mods but vanilla has a few channels
-// registered too.
-//
-// This is a Minecraft packet
-type PluginMessageServerbound struct {
-	Channel string
-	Data    []byte `length:"remaining"`
-}
-
-// SpectateTeleport is sent by clients in spectator mode to teleport to a player.
-//
-// This is a Minecraft packet
-type SpectateTeleport struct {
-	Target UUID `as:"raw"`
-}
-
-// ResourcePackStatus informs the server of the client's current progress
-// in activating the requested resource pack
-type ResourcePackStatus struct {
-	Hash   string
-	Result VarInt
 }

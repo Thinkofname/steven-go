@@ -17,7 +17,6 @@ package steven
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"math"
 	"sort"
 	"sync"
@@ -573,16 +572,22 @@ func loadChunk(x, z int, data *bytes.Reader, mask int32, sky, isNew bool) {
 		}
 		cs := c.Sections[i]
 
-		count, _ := protocol.ReadVarInt(data)
-		blockMap := map[int]int{}
-		for i := 0; i < int(count); i++ {
-			bID, _ := protocol.ReadVarInt(data)
-			blockMap[i] = int(bID)
+		bitSize, err := data.ReadByte()
+		if err != nil {
+			panic(err)
 		}
 
-		bitSize, _ := protocol.ReadVarInt(data)
-		length, _ := protocol.ReadVarInt(data)
-		bits := make([]uint64, length)
+		blockMap := map[int]int{}
+		if bitSize <= 8 {
+			count, _ := protocol.ReadVarInt(data)
+			for i := 0; i < int(count); i++ {
+				bID, _ := protocol.ReadVarInt(data)
+				blockMap[i] = int(bID)
+			}
+		}
+
+		len, _ := protocol.ReadVarInt(data)
+		bits := make([]uint64, len)
 		binary.Read(data, binary.BigEndian, &bits)
 
 		m := bit.NewMapFromRaw(bits, int(bitSize))
@@ -590,7 +595,7 @@ func loadChunk(x, z int, data *bytes.Reader, mask int32, sky, isNew bool) {
 			val := m.Get(i)
 			bID, ok := blockMap[val]
 			if !ok {
-				panic(fmt.Sprintf("Missing block %d", val))
+				bID = val
 			}
 			block := GetBlockByCombinedID(uint16(bID))
 			pos := Position{X: i & 0xF, Z: (i >> 4) & 0xF, Y: i >> 8}
