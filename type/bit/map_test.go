@@ -27,3 +27,18 @@ func TestMap(t *testing.T) {
 		}
 	}
 }
+
+func TestMapOdd(t *testing.T) {
+	for size := 1; size <= 16; size++ {
+		m := NewMap(64*3, size)
+		max := (1 << uint(size)) - 1
+		for i := 0; i < 64*3; i++ {
+			for j := 0; j < max; j++ {
+				m.Set(i, j)
+				if m.Get(i) != j {
+					t.Fatalf("Index(%d) wanted %d and got %d", i, j, m.Get(i))
+				}
+			}
+		}
+	}
+}

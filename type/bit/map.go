@@ -34,7 +34,7 @@ func NewMapFromRaw(bits []uint64, size int) *Map {
 	return &Map{
 		BitSize: size,
 		bits:    bits,
-		Length:  (len(bits) * 64) / size,
+		Length:  (len(bits)*64 + 63) / size,
 	}
 }
 
@@ -53,14 +53,26 @@ func (m *Map) Set(i, val int) {
 	i *= m.BitSize
 	pos := i / 64
 	mask := (uint64(1) << uint(m.BitSize)) - 1
-	i %= 64
-	m.bits[pos] = (m.bits[pos] & ^(mask << uint64(i))) | (uint64(val) << uint64(i))
+	ii := i % 64
+	m.bits[pos] = (m.bits[pos] & ^(mask << uint64(ii))) | (uint64(val) << uint64(ii))
+	pos2 := (i + m.BitSize - 1) / 64
+	if pos2 != pos {
+		used := 64 - ii
+		rem := m.BitSize - used
+		m.bits[pos2] = (m.bits[pos2] >> uint(rem) << uint(rem)) | (uint64(val) >> uint64(used))
+	}
 }
 
 func (m *Map) Get(i int) int {
 	i *= m.BitSize
 	pos := i / 64
 	mask := (uint64(1) << uint(m.BitSize)) - 1
-	i %= 64
-	return int((m.bits[pos] >> uint64(i)) & mask)
+	ii := i % 64
+	pos2 := (i + m.BitSize - 1) / 64
+	if pos2 != pos {
+		used := 64 - ii
+		return int(((m.bits[pos] >> uint64(ii)) | (m.bits[pos2])<<uint(used)) & mask)
+	} else {
+		return int((m.bits[pos] >> uint64(ii)) & mask)
+	}
 }
