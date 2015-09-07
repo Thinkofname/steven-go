@@ -48,6 +48,8 @@ type ChunkBuffer struct {
 
 	renderedOn uint
 
+	progress float64
+
 	neighborChunks [6]*ChunkBuffer
 }
 

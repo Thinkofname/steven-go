@@ -57,7 +57,7 @@ out vec3 vLighting;
 
 void main() {
 	vec3 pos = vec3(aPosition.x, -aPosition.y, aPosition.z);
-	vec3 o = vec3(offset.x, -offset.y, offset.z);
+	vec3 o = vec3(offset.x, -offset.y / 4096.0, offset.z);
 	gl_Position = perspectiveMatrix * cameraMatrix * vec4(pos + o * 16.0, 1.0);
 
 	vColor = aColor;

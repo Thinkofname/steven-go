@@ -187,7 +187,7 @@ sync:
 	}
 
 	renderOrder = renderOrder[:0]
-	renderBuffer(nearestBuffer, chunkPos, direction.Invalid)
+	renderBuffer(nearestBuffer, chunkPos, direction.Invalid, delta)
 
 	drawLines()
 	drawModels()
@@ -219,7 +219,7 @@ sync:
 	gl.BlendFuncSeparate(gl.OneFactor, gl.OneFactor, gl.ZeroFactor, gl.OneMinusSrcAlpha)
 	for _, chunk := range renderOrder {
 		if chunk.countT > 0 && chunk.bufferT.IsValid() {
-			shaderChunkT.Offset.Int3(chunk.X, chunk.Y, chunk.Z)
+			shaderChunkT.Offset.Int3(chunk.X, chunk.Y*4096-chunk.Y*int(4096*(1-chunk.progress)), chunk.Z)
 
 			chunk.arrayT.Bind()
 			gl.DrawElements(gl.Triangles, chunk.countT, elementBufferType, 0)
@@ -264,7 +264,7 @@ const (
 
 var rQueue renderQueue
 
-func renderBuffer(ch *ChunkBuffer, po position, fr direction.Type) {
+func renderBuffer(ch *ChunkBuffer, po position, fr direction.Type, delta float64) {
 	if ch == nil {
 		return
 	}
@@ -286,9 +286,18 @@ func renderBuffer(ch *ChunkBuffer, po position, fr direction.Type) {
 		}
 		renderOrder = append(renderOrder, req.chunk)
 
+		dx := float64(req.pos.X*16+8) - Camera.X
+		dz := float64(req.pos.Z*16+8) - Camera.Z
+
 		req.chunk.Rendered = true
+		if req.chunk.progress < 1 && dx*dx+dz*dz > 3*16*3*16 {
+			req.chunk.progress += delta * 0.01
+		} else {
+			req.chunk.progress = 1
+		}
+
 		if req.chunk.count != 0 && req.chunk.buffer.IsValid() {
-			shaderChunk.Offset.Int3(req.chunk.X, req.chunk.Y, req.chunk.Z)
+			shaderChunk.Offset.Int3(req.chunk.X, req.chunk.Y*4096-req.chunk.Y*int(4096*(1-req.chunk.progress)), req.chunk.Z)
 
 			req.chunk.array.Bind()
 			gl.DrawElements(gl.Triangles, req.chunk.count, elementBufferType, 0)
