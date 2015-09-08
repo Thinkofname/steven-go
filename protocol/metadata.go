@@ -112,6 +112,10 @@ func readMetadata(r io.Reader) (Metadata, error) {
 				err = uuid.Deserialize(r)
 			}
 			m[index] = uuid
+		case 12:
+			var id VarInt
+			id, err = ReadVarInt(r)
+			m[index] = uint16(id)
 		default:
 			err = errors.New("invalid metadata type " + strconv.Itoa(int(t)))
 		}
@@ -171,6 +175,8 @@ func writeMetadata(w io.Writer, m Metadata) error {
 			if v != nil {
 				v.Serialize(w)
 			}
+		case uint16:
+			WriteVarInt(w, VarInt(v))
 		}
 		if err != nil {
 			return err
