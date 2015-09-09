@@ -286,12 +286,13 @@ func renderBuffer(ch *ChunkBuffer, po position, fr direction.Type, delta float64
 		}
 		renderOrder = append(renderOrder, req.chunk)
 
-		dx := float64(req.pos.X*16+8) - Camera.X
-		dz := float64(req.pos.Z*16+8) - Camera.Z
-
 		req.chunk.Rendered = true
-		if req.chunk.progress < 1 && dx*dx+dz*dz > 3*16*3*16 {
-			req.chunk.progress += delta * 0.01
+
+		dx := req.pos.X - int(Camera.X)>>4
+		dz := req.pos.Z - int(Camera.Z)>>4
+
+		if req.chunk.progress < 1 && math.Sqrt(float64(dx*dx+dz*dz)) > 6 {
+			req.chunk.progress += delta * 0.015
 		} else {
 			req.chunk.progress = 1
 		}
