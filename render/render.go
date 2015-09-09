@@ -59,6 +59,11 @@ debugging.
 	ClearColour                   = struct{ R, G, B float32 }{
 		122.0 / 255.0, 165.0 / 255.0, 247.0 / 255.0,
 	}
+
+	slidyChunks = console.NewBoolVar("r_slidy_chunks", false, console.Mutable, console.Serializable).Doc(`
+r_slidy_chunks makes chunks slide into view instead of just
+popping in.
+`)
 )
 
 // Start starts the renderer
@@ -270,6 +275,8 @@ func renderBuffer(ch *ChunkBuffer, po position, fr direction.Type, delta float64
 	}
 	rQueue.Append(renderRequest{ch, po, fr})
 
+	slidy := slidyChunks.Value()
+
 	for !rQueue.Empty() {
 		req := rQueue.Take()
 		if req.chunk.renderedOn == frameID {
@@ -288,11 +295,15 @@ func renderBuffer(ch *ChunkBuffer, po position, fr direction.Type, delta float64
 
 		req.chunk.Rendered = true
 
-		dx := req.pos.X - int(Camera.X)>>4
-		dz := req.pos.Z - int(Camera.Z)>>4
+		if slidy {
+			dx := req.pos.X - int(Camera.X)>>4
+			dz := req.pos.Z - int(Camera.Z)>>4
 
-		if req.chunk.progress < 1 && math.Sqrt(float64(dx*dx+dz*dz)) > 6 {
-			req.chunk.progress += delta * 0.015
+			if req.chunk.progress < 1 && dx*dx+dz*dz > 6*6 {
+				req.chunk.progress += delta * 0.015
+			} else {
+				req.chunk.progress = 1
+			}
 		} else {
 			req.chunk.progress = 1
 		}
