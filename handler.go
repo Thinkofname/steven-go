@@ -151,9 +151,9 @@ func (handler) ChunkData(c *protocol.ChunkData) {
 
 	data := bytes.NewReader(c.Data)
 	if c.New {
-		go loadChunk(pos.X, pos.Z, data, c.BitMask, Client.WorldType == wtOverworld, true)
+		go loadChunk(pos.X, pos.Z, data, int32(c.BitMask), Client.WorldType == wtOverworld, true)
 	} else {
-		loadChunk(pos.X, pos.Z, data, c.BitMask, Client.WorldType == wtOverworld, false)
+		loadChunk(pos.X, pos.Z, data, int32(c.BitMask), Client.WorldType == wtOverworld, false)
 	}
 }
 

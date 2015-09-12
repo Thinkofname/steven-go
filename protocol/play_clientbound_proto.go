@@ -1531,11 +1531,7 @@ func (c *ChunkData) write(ww io.Writer) (err error) {
 	if err = WriteBool(ww, c.New); err != nil {
 		return
 	}
-	tmp[0] = byte(c.BitMask >> 24)
-	tmp[1] = byte(c.BitMask >> 16)
-	tmp[2] = byte(c.BitMask >> 8)
-	tmp[3] = byte(c.BitMask >> 0)
-	if _, err = ww.Write(tmp[:4]); err != nil {
+	if err = WriteVarInt(ww, c.BitMask); err != nil {
 		return
 	}
 	if err = WriteVarInt(ww, VarInt(len(c.Data))); err != nil {
@@ -1559,10 +1555,9 @@ func (c *ChunkData) read(rr io.Reader) (err error) {
 	if c.New, err = ReadBool(rr); err != nil {
 		return
 	}
-	if _, err = rr.Read(tmp[:4]); err != nil {
+	if c.BitMask, err = ReadVarInt(rr); err != nil {
 		return
 	}
-	c.BitMask = int32((uint32(tmp[3]) << 0) | (uint32(tmp[2]) << 8) | (uint32(tmp[1]) << 16) | (uint32(tmp[0]) << 24))
 	var tmp0 VarInt
 	if tmp0, err = ReadVarInt(rr); err != nil {
 		return

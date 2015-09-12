@@ -22,8 +22,7 @@ import (
 )
 
 // SpawnObject is used to spawn an object or vehicle into the world when it
-// is in range of the client. Velocity is only sent if the Data field is
-// non-zero.
+// is in range of the client.
 //
 // This is a Minecraft packet
 type SpawnObject struct {
@@ -363,7 +362,7 @@ type KeepAliveClientbound struct {
 type ChunkData struct {
 	ChunkX, ChunkZ int32
 	New            bool
-	BitMask        int32
+	BitMask        VarInt
 	Data           []byte `length:"VarInt" nolimit:"true"`
 }
 

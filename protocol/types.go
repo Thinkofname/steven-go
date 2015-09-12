@@ -43,7 +43,7 @@ const (
 
 const (
 	// SupportedProtocolVersion is current protocol version this package defines
-	SupportedProtocolVersion = 69
+	SupportedProtocolVersion = 71
 )
 
 const (
