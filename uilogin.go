@@ -106,7 +106,7 @@ func (ls *loginScreen) postLogin(p mojang.Profile, err error) {
 func (ls *loginScreen) refresh() {
 	ls.LoginError.Update("")
 	ls.LoginBtn.SetDisabled(true)
-	ls.LoginTxt.Update("Logging in...")
+	ls.LoginTxt.Update("Logging i...")
 	go func() {
 		p, err := mojang.Refresh(getProfile(), clientToken.Value())
 		syncChan <- func() { ls.postLogin(p, err) }
