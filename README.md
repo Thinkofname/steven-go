@@ -24,7 +24,11 @@ go get github.com/thinkofdeath/steven/cmd/steven
 
 To update, run `go get` with the `-u` option.
 
-Requires `csfml` libraries and headers to build.
+Requires `csfml` libraries and headers to build. To include these in your build, 
+create the following environment variables:
+
+* `CGO_CFLAGS=-Ipath/to/csfml/include`
+* `CGO_LDFLAGS=-Lpath/to/csfml/lib`
 
 ## What works
 
